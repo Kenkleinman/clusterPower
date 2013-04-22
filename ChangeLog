@@ -1,0 +1,9 @@
+ChangeLog file for clusterPower
+
+v0.1 - first fully-functioning package, available on CRAN.
+
+v0.2 - minor bug fixes to power.sim.poisson().
+
+v0.3 - minor bug fixes.
+
+v0.4 - Hayes k power calculation function added. Warnings on using fixed effect methods added. Messages suppressed when running simulations. 
