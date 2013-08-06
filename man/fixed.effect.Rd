@@ -2,6 +2,7 @@
 \alias{fixed.effect}
 \alias{fixed.effect.cluster.level}
 \alias{random.effect}
+\alias{weighted.crossover.cluster.level}
 
 \title{
 Canned estimation functions for the power simulations.
@@ -13,6 +14,7 @@ These functions are designed to be used by the power.sim.XXX functions as the fu
 fixed.effect(dat, incl.period.effect, outcome.type, alpha)
 random.effect(dat, incl.period.effect, outcome.type, alpha)
 fixed.effect.cluster.level(dat, incl.period.effect, outcome.type, alpha)
+weighted.crossover.cluster.level(dat, incl.period.effect, outcome.type, alpha)
 }
 \arguments{
   \item{dat}{ observed data as a data.frame with columns named, "y", "trt" and "clust". "per" column is optional if period.var==0. }
@@ -21,7 +23,7 @@ fixed.effect.cluster.level(dat, incl.period.effect, outcome.type, alpha)
   \item{alpha}{ the type 1 error rate }
 }
 \details{
-random.effect() relies on a call to glmer() from the lme4 package.  fixed.effect() relies on a call to glm(). fixed.effect.cluster.level() will save lots of time if you just want to run a cluster-level analysis and you have lots of observations.
+random.effect() relies on a call to glmer() from the lme4 package.  fixed.effect() relies on a call to glm(). fixed.effect.cluster.level() will save lots of time if you just want to run a cluster-level analysis and you have lots of observations. weighted.crossover.cluster.level() implements methods for fitting a weighted analysis on data from a crossover study (see Turner et al. 1997).
 }
 \value{ A numeric vector with the following three elements, in order: [1] a point estimate for the treatment effect, [2] lower bound of (1-alpha) confidence interval, [3] lower bound of (1-alpha) confidence interval.
 }
