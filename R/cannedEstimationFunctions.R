@@ -1,6 +1,7 @@
 ## estimation functions should have
 ## INPUTS
-##   ~ dat = data as a data.frame
+##   ~ dat = data as a data.frame with columns 
+##          - id, clust, per, trt, mean.y, y, at.risk.time
 ##   ~ incl.period.effect = indicator of whether to include a period effect
 ##   ~ outcome.type = one of "gaussian", "binomial", "poisson"
 ##   ~ alpha = the type 1 error rate
@@ -101,7 +102,35 @@ random.effect <- function(dat, incl.period.effect, outcome.type, alpha) {
 
 	## get CI
 	Z <- qnorm(1-alpha/2)*c(-1,1)
-	est <- summary(fit)@coefs["trt",]
+	est <- coef(summary(fit))["trt",]
 	ci <- est["Estimate"] + Z*est["Std. Error"]
 	return(c(est["Estimate"], ci))
+}
+
+## based on Turner (1997) method C2
+weighted.crossover.cluster.level <- function(dat, incl.period.effect, outcome.type, alpha) {
+        if(outcome.type %in% c("poisson", "binomial"))
+                stop("Currently, only Gaussian models are supported with this method.")
+        if(unique(dat[,"per"])!=2)
+                stop("This method only works for crosover studies with 2 periods.")
+
+        ## takes the mean outcome by cluster-period
+        clust.dat <- aggregate(dat[,"y"], FUN=mean,
+                               list(clust=dat[,"clust"],
+                                    per=as.numeric(dat[,"per"]),
+                                    trt=dat[,"trt"]))
+        ## makes a wide file with separate colums for treatment/control means
+        clust.means <- reshape(clust.dat, idvar="clust", 
+                               v.names=c("x", "per"), 
+                               timevar="trt", direction="wide")
+        clust.diffs <- clust.means[,"x.1"]-clust.means[,"x.0"]
+        ws <- clust.means[,"per.1"]-clust.means[,"per.0"]
+        
+        clust.sizes <- table(dat$clust)
+        wts <- clust.sizes/2 ## section 3.2.2 in Turner (1997)
+        
+        ## fit linear model
+        fit <- lm(clust.diffs ~ ws, weights=wts)
+
+        
 }
