@@ -81,7 +81,6 @@ fixed.effect.cluster.level <- function(dat, incl.period.effect, outcome.type, al
 
 
 random.effect <- function(dat, incl.period.effect, outcome.type, alpha) {
-	require(lme4)
 	if(outcome.type=="poisson"){
 		offsets <- log(dat[,"at.risk.time"])
 	} else {

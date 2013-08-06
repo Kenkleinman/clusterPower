@@ -91,15 +91,15 @@ Nicholas G Reich
 
 \examples{
     
-power.sim.normal(n.sim=10, effect.size=5, alpha=.05, n.clusters=2, n.periods=2, 
+a <- power.sim.normal(n.sim=10, effect.size=5, alpha=.05, n.clusters=2, n.periods=2, 
                  cluster.size=20, btw.clust.var=5, ICC=1/20, period.effect=2, 
                  estimation.function=fixed.effect, verbose=TRUE, period.var=0)
 		 
-power.sim.binomial(n.sim=10, effect.size=log(.75), alpha=.05, n.clusters=20, n.periods=2, 
+b <- power.sim.binomial(n.sim=10, effect.size=log(.75), alpha=.05, n.clusters=20, n.periods=2, 
                    cluster.size=50, btw.clust.var=.2, period.effect=logit(.2), 
                    estimation.function=random.effect, verbose=TRUE, period.var=0)
 
-power.sim.poisson(n.sim=10, effect.size=log(.75), alpha=.05, n.clusters=100, n.periods=2, 
+c <- power.sim.poisson(n.sim=10, effect.size=log(.75), alpha=.05, n.clusters=100, n.periods=2, 
                   cluster.size=10, btw.clust.var=.4, period.effect=log(.2), 
                   estimation.function=random.effect, verbose=TRUE, period.var=0, at.risk.params=10)
 
