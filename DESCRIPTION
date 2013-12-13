@@ -1,6 +1,6 @@
 Package: clusterPower
-Version: 0.4-2
-Date: 2013-08-06	
+Version: 0.5
+Date: 2013-12-13	
 Title: Power calculations for cluster-randomized and cluster-randomized crossover trials
 Author: Nicholas G. Reich <nick@schoolph.umass.edu>, Daniel Obeng <dobeng@gmail.com>
 Maintainer: Nicholas G. Reich <nick@schoolph.umass.edu>

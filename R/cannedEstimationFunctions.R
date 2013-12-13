@@ -99,10 +99,11 @@ random.effect <- function(dat, incl.period.effect, outcome.type, alpha) {
 			     offset=offsets)
 	}
 
-	## get CI
-	Z <- qnorm(1-alpha/2)*c(-1,1)
-	est <- coef(summary(fit))["trt",]
-	ci <- est["Estimate"] + Z*est["Std. Error"]
+	n.clust <- length(unique(dat$clust))
+	df <- n.clust - 2 ## based on k-2 in Donner & Klar p.118
+	t <- qt(1 - alpha/2, df=df) * c(-1, 1)
+	est <- coef(summary(fit))["trt", ]
+	ci <- est["Estimate"] + t * est["Std. Error"]
 	return(c(est["Estimate"], ci))
 }
 

@@ -9,3 +9,5 @@ v0.3 - minor bug fixes.
 v0.4 - Hayes k power calculation function added. Warnings on using fixed effect methods added. Messages suppressed when running simulations. 
 
 v0.4-2 - Updating for compatability with lme4 v1.0.
+
+v0.5 - minor fixes per CRAN compliance requests. Fixing degrees of freedom calculations in random effect models.
