@@ -7,7 +7,10 @@
 Power simulations for cluster-randomized crossover study designs.
 }
 \description{
-These functions run simulations to calculate power for a given cluster-randomized crossover study design.  The user can specify a function which runs the desired method of analysis. The function make.base.data() is not meant to be called directly by users, but is used in the data generation algorithms employed by the other functions.
+These functions run simulations to calculate power for a given cluster-randomized
+crossover study design.  The user can specify a function which runs the desired 
+method of analysis. The function make.base.data() is not meant to be called directly
+by users, but is used in the data generation algorithms employed by the other functions.
 }
 \usage{
 power.sim.normal(n.sim = 10, 
@@ -72,9 +75,20 @@ make.base.data(n.obs, n.clusters, cluster.size, n.periods)
 \details{
 Runs the power simulation.
 
-The period.effect parameter needs to be specified on the "link function scale".  Meaning that if the average baseline risk for a Poisson model is 4/1000, then the period.effect should be specified as log(.004).  Similarly, the baseline risk in a logistic model should be specified on the logit scale.  The period effect can have length of 1, in which case it is treated as the average period effect across all periods, or it can have length equal to n.periods, in which case it is assumed that the investigator is specifying exact period effects s/he wishes to simulate.
+The period.effect parameter needs to be specified on the "link function scale".  Meaning that if
+the average baseline risk for a Poisson model is 4/1000, then the period.effect should be
+specified as log(.004).  Similarly, the baseline risk in a logistic model should be specified on
+the logit scale.  The period effect can have length of 1, in which case it is treated as the
+average period effect across all periods, or it can have length equal to n.periods, in which case
+it is assumed that the investigator is specifying exact period effects s/he wishes to simulate.
 
-For the Poisson simulations, at risk time is computed for each individual in the simulation.  If at.risk.time is specified as a numeric vector of length 1, then the given number is the constant at-risk time which every individual is assumed to have.  If length(at.risk.time)==2, the values are taken as the mean and size parameters of a negative binomial distribution (used as 'mu' and 'size' in the rnbinom() function) from which an at-risk time is drawn for each individual. Specifically, the at risk times are drawn as  at.risk.time = 1 + rnbinom(1, size=at.risk.params[2], mu=at.risk.params[1]).
+For the Poisson simulations, at risk time is computed for each individual in the simulation.  If
+at.risk.time is specified as a numeric vector of length 1, then the given number is the constant
+at-risk time which every individual is assumed to have.  If length(at.risk.time)==2, the values
+are taken as the mean and size parameters of a negative binomial distribution (used as 'mu' and
+'size' in the rnbinom() function) from which an at-risk time is drawn for each individual.
+Specifically, the at risk times are drawn as  
+at.risk.time = 1 + rnbinom(1, size=at.risk.params[2], mu=at.risk.params[1]).
 }
 \value{ A list with the following components:
   \item{results }{ matrix with columns "dataset", "beta.est", "beta.cil", "beta.cih", "reject.null", "pval.permute"}
@@ -91,6 +105,7 @@ Nicholas G Reich
 
 \examples{
     
+\dontrun{
 a <- power.sim.normal(n.sim=10, effect.size=5, alpha=.05, n.clusters=2, n.periods=2, 
                  cluster.size=20, btw.clust.var=5, ICC=1/20, period.effect=2, 
                  estimation.function=fixed.effect, verbose=TRUE, period.var=0)
@@ -102,6 +117,7 @@ b <- power.sim.binomial(n.sim=10, effect.size=log(.75), alpha=.05, n.clusters=20
 c <- power.sim.poisson(n.sim=10, effect.size=log(.75), alpha=.05, n.clusters=100, n.periods=2, 
                   cluster.size=10, btw.clust.var=.4, period.effect=log(.2), 
                   estimation.function=random.effect, verbose=TRUE, period.var=0, at.risk.params=10)
+}
 
 }
 
