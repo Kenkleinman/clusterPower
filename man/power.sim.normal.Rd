@@ -59,7 +59,7 @@ make.base.data(n.obs, n.clusters, cluster.size, n.periods)
   \item{n.obs}{ (for make.base.data() only) -- the total number of observations in the dataset. }
   \item{effect.size}{ effect size, specified on the GLM link scale }
   \item{alpha}{ desired type I error rate}
-  \item{n.clusters}{ number of clusters}
+  \item{n.clusters}{ number of clusters in each arm}
   \item{n.periods}{ number of periods of study}
   \item{cluster.size}{ either a numeric vector of length one or of length(n.clusters) defining the number of individuals in each cluster}
   \item{btw.clust.var}{the between-cluster variance}

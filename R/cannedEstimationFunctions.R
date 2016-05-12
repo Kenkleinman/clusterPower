@@ -100,7 +100,7 @@ random.effect <- function(dat, incl.period.effect, outcome.type, alpha) {
 	}
 
 	n.clust <- length(unique(dat$clust))
-	df <- n.clust - 2 ## based on k-2 in Donner & Klar p.118
+	df <- 2*n.clust - 2 ## based on K-2 in Donner & Klar p.118
 	t <- qt(1 - alpha/2, df=df) * c(-1, 1)
 	est <- coef(summary(fit))["trt", ]
 	ci <- est["Estimate"] + t * est["Std. Error"]
