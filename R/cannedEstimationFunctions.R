@@ -87,17 +87,29 @@ random.effect <- function(dat, incl.period.effect, outcome.type, alpha) {
 		offsets <- rep(0, nrow(dat))
 	}
 
-	if(incl.period.effect==0){
-		fit <- glmer(y ~ trt + (1|clust),
-			     data=dat,
-			     family=outcome.type,
-			     offset=offsets)
-	} else {
-		fit <- glmer(y ~ trt + per + (1|clust) - 1,
-			     data=dat,
-			     family=outcome.type,
-			     offset=offsets)
-	}
+  if(incl.period.effect==0){
+    if(outcome.type=="gaussian"){
+      fit <- lmer(y ~ trt + (1|clust),
+                  data=dat,
+                  offset=offsets)
+    }
+    else {
+      fit <- glmer(y ~ trt + (1|clust),
+                   data=dat,
+                   family=outcome.type,
+                   offset=offsets)
+    }} else {
+      if(outcome.type=="gaussian"){
+        fit <- lmer(y ~ trt + per + (1|clust) - 1,
+                    data=dat,
+                    offset=offsets)
+      }
+      else{
+        fit <- glmer(y ~ trt + per + (1|clust) - 1,
+                     data=dat,
+                     family=outcome.type,
+                     offset=offsets)
+      }}
 
 	n.clust <- length(unique(dat$clust))
 	df <- 2*n.clust - 2 ## based on K-2 in Donner & Klar p.118
