@@ -7,3 +7,4 @@ Maintainer: Nicholas G. Reich <nick@schoolph.umass.edu>
 License: GPL (>= 2)
 Imports: lme4 (>= 1.0)
 Description: This package enables researchers to calculate power for cluster-randomized crossover trials by employing a simulation-based approach.  A particular study design is specified, with fixed sample sizes for all clusters and an assumed treatment effect, and the empirical power for that study design is calculated by simulating hypothetical datasets.
+RoxygenNote: 6.0.1

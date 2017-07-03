@@ -5,15 +5,9 @@
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{d}, \code{ICC}, \code{m},
 #'   \code{n}, and \code{cv} must be passed as \code{NULL}. Note that
-#'   \code{alpha}, \code{power}, \code{d}, and \code{cv} have non-\code{NULL}
+#'   \code{alpha}, \code{power}, and \code{cv} have non-\code{NULL}
 #'   defaults, so if those are the parameters of interest they must be
 #'   explicitly passed as \code{NULL}.
-#'
-#' The user can specify either the number of clusters per condition, \code{m},
-#'   or the total number of clusters, \code{M}. If \code{m} is \code{NULL}
-#'   and \code{M} isn't, then \code{m} will be calculated as half of \code{M}.
-#'   If both \code{m} and \code{M} are \code{NULL} and the other parameters
-#'   are not, the function will return \code{m}.
 #'
 #' @section Note:
 #'   'uniroot' is used to solve power equation for unknowns, so you may see
@@ -42,7 +36,7 @@
 #' @return The computed argument.
 
 crtpower_2mean <- function(alpha = 0.05, power = 0.80, m = NULL,
-                            n = NULL, nsd = NULL, cv = NULL,
+                            n = NULL, nsd = NULL, cv = 0,
                             d = NULL, icc = NULL,
                             varw = NULL, varb = NULL,
                             tol = .Machine$double.eps^0.25){
