@@ -41,8 +41,6 @@
 #'   at least four significant digits.
 #' @return The computed argument.
 
-source("R/misc_functions.R") # remove this before packagizing
-
 crtpower_2mean <- function(alpha = 0.05, power = 0.80, m = NULL,
                             n = NULL, nsd = NULL, cv = NULL,
                             d = NULL, icc = NULL,
