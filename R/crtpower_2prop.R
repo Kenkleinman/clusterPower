@@ -103,23 +103,23 @@ crtpower_2prop <- function(alpha = 0.05, power = 0.80,
   # calculate p1
   if (is.null(p1)) {
     p1dec <- uniroot(function(p1) eval(p.body) - power,
-                    interval = c(0.0001, p2 - 0.0001),
+                    interval = c(1e-7, p2 - 1e-7),
                     tol = tol, extendInt = "yes")$root
 
     p1inc <- uniroot(function(p1) eval(p.body) - power,
-                     interval = c(p2 + 0.0001, 0.9999),
+                     interval = c(p2 + 1e-7, 1 - 1e-7),
                      tol = tol, extendInt = "yes")$root
   }
 
   # calculate p2
   if (is.null(p2)) {
     p2dec <- uniroot(function(p2) eval(p.body) - power,
-                 interval = c(p1 + 0.0001, 0.999),
-                 tol = tol, extendInt = "yes")$root
+                     interval = c(p2 + 1e-7, 1 - 1e-7),
+                     tol = tol, extendInt = "yes")$root
 
     p2inc <- uniroot(function(p2) eval(p.body) - power,
-                  interval = c(0.0001, p1 - 0.0001),
-                  tol = tol, extendInt = "yes")$root
+                     interval = c(1e-7, p2 - 1e-7),
+                     tol = tol, extendInt = "yes")$root
 
   }
 
