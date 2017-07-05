@@ -24,7 +24,7 @@
 #' @return The computed argument.
 
 crtpower_2prop <- function(alpha = 0.05, power = 0.80,
-                           m = NULL, n = NULL, cv = NULL,
+                           m = NULL, n = NULL, cv = 0,
                            p1 = NULL, p2 = NULL,
                            icc = NULL, pooled = FALSE,
                            tol = .Machine$double.eps^0.25){
@@ -73,8 +73,8 @@ crtpower_2prop <- function(alpha = 0.05, power = 0.80,
       sdd <- sqrt((p1*(1-p1) + p2*(1-p2))*DEFF/(m*n))
     }
     zcrit <- qnorm(alpha/2, lower.tail = FALSE)
-    pnorm(zcrit - abs(p1 - p2)/sdd, lower.tail = FALSE)# +
-      #pnorm(-zcrit - (p1 - p2)/sdd, lower.tail = TRUE)
+    pnorm(zcrit - (p1 - p2)/sdd, lower.tail = FALSE) +
+      pnorm(-zcrit - (p1 - p2)/sdd, lower.tail = TRUE)
   })
 
 
@@ -103,11 +103,11 @@ crtpower_2prop <- function(alpha = 0.05, power = 0.80,
   # calculate p1
   if (is.null(p1)) {
     p1dec <- uniroot(function(p1) eval(p.body) - power,
-                    interval = c(1e-7, p2 - 1e-7),
+                    interval = c(1e-4, p2 - 1e-4),
                     tol = tol, extendInt = "yes")$root
 
     p1inc <- uniroot(function(p1) eval(p.body) - power,
-                     interval = c(p2 + 1e-7, 1 - 1e-7),
+                     interval = c(p2 + 1e-4, 1 - 1e-4),
                      tol = tol, extendInt = "yes")$root
   }
 
