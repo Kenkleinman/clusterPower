@@ -22,7 +22,7 @@
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
 #' @return The computed argument.
-#" @export
+#' @export
 
 crtpower_2prop <- function(alpha = 0.05, power = 0.80,
                            m = NULL, n = NULL, cv = 0,
