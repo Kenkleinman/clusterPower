@@ -4,8 +4,8 @@
 \alias{crtpower_2prop}
 \title{Power calculations for simple cluster randomized trials, binary outcome}
 \usage{
-crtpower_2prop(alpha = 0.05, power = 0.8, m = NULL, n = NULL,
-  cv = NULL, p1 = NULL, p2 = NULL, icc = NULL, pooled = FALSE,
+crtpower_2prop(alpha = 0.05, power = 0.8, m = NULL, n = NULL, cv = 0,
+  p1 = NULL, p2 = NULL, icc = NULL, pooled = FALSE,
   tol = .Machine$double.eps^0.25)
 }
 \arguments{

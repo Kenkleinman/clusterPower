@@ -4,9 +4,9 @@
 \alias{crtpower_2mean}
 \title{Power calculations for simple cluster randomized trials, continuous outcome}
 \usage{
-crtpower_2mean(alpha = 0.05, power = 0.8, m = NULL, n = NULL,
-  nsd = NULL, cv = 0, d = NULL, icc = NULL, varw = NULL,
-  varb = NULL, tol = .Machine$double.eps^0.25)
+crtpower_2mean(alpha = 0.05, power = 0.8, m = NULL, n = NULL, nsd = 0,
+  cv = 0, d = NULL, icc = NULL, varw = NULL, varb = NULL,
+  tol = .Machine$double.eps^0.25)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a
