@@ -36,7 +36,7 @@
 #' @return The computed argument.
 
 crtpower_2mean <- function(alpha = 0.05, power = 0.80, m = NULL,
-                            n = NULL, nsd = NULL, cv = 0,
+                            n = NULL, nsd = 0, cv = 0,
                             d = NULL, icc = NULL,
                             varw = NULL, varb = NULL,
                             tol = .Machine$double.eps^0.25){
@@ -68,11 +68,11 @@ crtpower_2mean <- function(alpha = 0.05, power = 0.80, m = NULL,
   nlist <- list(n, nsd, cv)
   nnames <- c("n","nsd","cv")
   nind <- which(unlist(lapply(nlist, is.null))) # find null index
-  # # check to make sure that both n and cv are not NULL
-  # # if only one of n and cv is specified it will be assumed that the user wants other in the pair
-  # if (is.null(n) & is.null(cv)){
-  #   stop("At least one of 'n' and 'cv' must not be NULL.")
-  # }
+  # check to make sure that both n and cv are not NULL
+  # if only one of n and cv is specified it will be assumed that the user wants other in the pair
+  if (is.null(n) & is.null(cv)){
+    stop("At least one of 'n' and 'cv' must not be NULL.")
+  }
 
   # if none of n, nsd, and cv are null, double check to make sure their equality holds
   if (length(nind) == 0) {
@@ -104,12 +104,12 @@ crtpower_2mean <- function(alpha = 0.05, power = 0.80, m = NULL,
   # }
 
   # if none of icc, varw, and varb are null, double check to make sure their equality holds
-  if (length(iccind) == 0) {
-    if(icc != varb/(varw + varb)) {
-      message("Recalcuating icc so that icc = varb/(varw + varb)")
-      icc <- varb/(varw + varb)
-    }
-  }
+  # if (length(iccind) == 0) {
+  #   if(icc != varb/(varw + varb)) {
+  #     message("Recalcuating icc so that icc = varb/(varw + varb)")
+  #     icc <- varb/(varw + varb)
+  #   }
+  # }
 
   # if one of icc, varw, and varb is null, calculate it
   if (length(iccind) == 1) {
