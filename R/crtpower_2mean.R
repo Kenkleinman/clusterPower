@@ -34,6 +34,7 @@
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
 #' @return The computed argument.
+#' @export
 
 crtpower_2mean <- function(alpha = 0.05, power = 0.80, m = NULL,
                             n = NULL, nsd = 0, cv = 0,
