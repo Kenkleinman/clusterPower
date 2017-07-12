@@ -2,6 +2,7 @@
 
 export(crtpower_2mean)
 export(crtpower_2prop)
+export(crtpwr.2mean)
 export(expit)
 export(fixed.effect)
 export(fixed.effect.cluster.level)
