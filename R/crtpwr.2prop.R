@@ -24,49 +24,40 @@
 #' @return The computed argument.
 #' @export
 
-crtpower_2prop <- function(alpha = 0.05, power = 0.80,
+crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
                            m = NULL, n = NULL, cv = 0,
                            p1 = NULL, p2 = NULL,
                            icc = NULL, pooled = FALSE,
                            tol = .Machine$double.eps^0.25){
-
+  
   if(!is.null(m) && m <= 1) {
     stop("'m' must be greater than 1.")
   }
-
-  # if n is a vector of cluster sizes, calculate mean and cv of cluster sizes
-  if (length(n) > 1) {
-    if (!is.null(m) && length(n) != 2*m) { # use && to evaluate !is.null(m) first
-      stop("length(n) is not equal to 2*m. Enter a vector of the correct length,
-           or enter one number for mean cluster size.")
-    }
-    nsd <- sd(n) # find sd of cluster sizes
-    n <- mean(n) # find mean cluster size
-    cv <- nsd/n  # find coeffient of variation
-  }
-
+  
   needlist <- list(alpha, power, m, n, cv, p1, p2, icc)
   neednames <- c("alpha", "power", "m", "n", "cv", "p1", "p2", "icc")
   needind <- which(unlist(lapply(needlist, is.null))) # find null index
-
+  
   if (length(needind) != 1) {
     stop("Exactly one of 'alpha', 'power', 'm', 'n', 'cv', 'p1', 'p2', or 'icc' must be NULL.")
   }
-
+  
+  target <- neednames[needind]
+  
   # p1dec corresponds to the case when p1 < p2
   # p1inc corresponds to the case when p2 > p1
   # these values will be calculated if p1 is null
   p1dec <- NULL
   p1inc <- NULL
-
+  
   # p2dec corresponds to the case when p1 < p2
   # p2inc corresponds to the case when p2 > p1
   # these values will be calculated if p2 is null
   p2dec <- NULL
   p2inc <- NULL
-
+  
   p.body <- quote({
-    DEFF <- 1 + ((cv^2 + 1)*n - 1)*icc
+    DEFF <- 1 + (((cv^2*(m - 1)/m + 1)*n) - 1)*icc
     if (pooled) {
       p <- (p1+p2)/2
       sdd <- sqrt(p*(1 - p)*2*DEFF/(m*n))
@@ -74,74 +65,74 @@ crtpower_2prop <- function(alpha = 0.05, power = 0.80,
       sdd <- sqrt((p1*(1-p1) + p2*(1-p2))*DEFF/(m*n))
     }
     zcrit <- qnorm(alpha/2, lower.tail = FALSE)
-    pnorm(zcrit - (p1 - p2)/sdd, lower.tail = FALSE) +
-      pnorm(-zcrit - (p1 - p2)/sdd, lower.tail = TRUE)
+    pnorm(abs(p1 - p2)/sdd - zcrit, lower.tail = FALSE)# +
+      #pnorm(-zcrit - (p1 - p2)/sdd, lower.tail = TRUE)
   })
-
+  
   # calculate alpha
   if (is.null(alpha)) {
     alpha <- uniroot(function(alpha) eval(p.body) - power,
                      interval = c(1e-10, 1 - 1e-10),
                      tol = tol, extendInt = "yes")$root
   }
-
+  
   # calculate power
   if (is.null(power)) {
     power <- eval(p.body)
   }
-
+  
   # calculate m
   if (is.null(m)) {
     m <- uniroot(function(m) eval(p.body) - power,
                  interval = c(2 + 1e-10, 1e+07),
                  tol = tol, extendInt = "upX")$root
   }
-
+  
   # calculate p1
   if (is.null(p1)) {
     p1dec <- uniroot(function(p1) eval(p.body) - power,
-                    interval = c(1e-7, p2 - 1e-7),
-                    tol = tol, extendInt = "yes")$root
-
+                     interval = c(1e-7, p2 - 1e-7),
+                     tol = tol, extendInt = "yes")$root
+    
     p1inc <- uniroot(function(p1) eval(p.body) - power,
                      interval = c(p2 + 1e-7, 1 - 1e-7),
                      tol = tol, extendInt = "yes")$root
   }
-
+  
   # calculate p2
   if (is.null(p2)) {
     p2dec <- uniroot(function(p2) eval(p.body) - power,
                      interval = c(p2 + 1e-7, 1 - 1e-7),
                      tol = tol, extendInt = "yes")$root
-
+    
     p2inc <- uniroot(function(p2) eval(p.body) - power,
                      interval = c(1e-7, p2 - 1e-7),
                      tol = tol, extendInt = "yes")$root
   }
-
+  
   # calculate n
   if (is.null(n)) {
     n <- uniroot(function(n) eval(p.body) - power,
                  interval = c(2 + 1e-10, 1e+07),
                  tol = tol, extendInt = "upX")$root
   }
-
+  
   # calculate cv
   if (is.null(cv)) {
-
+    
     cv <- uniroot(function(cv) eval(p.body) - power,
                   interval = c(1e-7, 1e+07),
                   tol = tol, extendInt = "downX")$root
   }
-
+  
   # calculate icc
   if (is.null(icc)){
     icc <- uniroot(function(icc) eval(p.body) - power,
                    interval = c(1e-07, 1 - 1e-7),
                    tol = tol, extendInt = "downX")$root
   }
-
-  method <- "Clustered two-sample proportion power calculation"
+  
+  method <- paste("Clustered two-sample proportion power calculation: ", target, sep = "")
   note <- "'m' is the number of clusters in each group and 'n' is the number of individuals in each cluster."
   structure(list(m = m, n = n, cv = cv,
                  p1 = p1, p1dec = p1dec, p1inc = p1inc,
@@ -149,5 +140,5 @@ crtpower_2prop <- function(alpha = 0.05, power = 0.80,
                  icc = icc, alpha = alpha, power = power,
                  note = note, method = method),
             class = "power.htest")
-
+  
 }

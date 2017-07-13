@@ -22,7 +22,8 @@
 #'   error.
 #' @param m The number of clusters per condition. It must be greater than 1.
 #' @param n The mean of the cluster sizes.
-#' @param nsd The standard deviation of the cluster sizes.
+#' @param nsd The standard deviation of the cluster sizes. When \code{nsd} = 0,
+#'   the clusters all have the same size.
 #' @param d The difference in condition means.
 #' @param icc The intraclass correlation.
 #' @param varw The within-cluster variation.
@@ -35,7 +36,7 @@
 #' @export
 
 crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NULL,
-                         n = NULL, nsd = 0,
+                         n = NULL, cv = 0,
                          d = NULL, icc = NULL,
                          varw = NULL,
                          tol = .Machine$double.eps^0.25){
@@ -45,13 +46,13 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NULL,
   }
 
   # list of needed inputs
-  needlist <- list(alpha, power, m, n, nsd, d, icc, varw)
-  neednames <- c("alpha", "power", "m", "n", "nsd", "d", "icc", "varw")
+  needlist <- list(alpha, power, m, n, cv, d, icc, varw)
+  neednames <- c("alpha", "power", "m", "n", "cv", "d", "icc", "varw")
   needind <- which(unlist(lapply(needlist, is.null)))
   # check to see that exactly one needed param is null
   
   if (length(needind) != 1) {
-    neederror = "Exactly one of 'alpha', 'power', 'm', 'n', 'nsd', 'd', 'icc' and 'varw' must be NULL."
+    neederror = "Exactly one of 'alpha', 'power', 'm', 'n', 'cv', 'd', 'icc' and 'varw' must be NULL."
     stop(neederror)
   } 
   
@@ -61,14 +62,15 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NULL,
   p.body <- quote({
     
     # design effect
-    DEFF <- 1 + ((((nsd/n)^2 + 1)*n) - 1)*icc
+    # DEFF <- 1 + (((cv^2*(m - 1)/m + 1)*n) - 1)*icc
+    DEFF <- 1 + ((cv^2 + 1)*n - 1)*icc
     
     tcrit <- qt(alpha/2, 2*(m - 1), lower.tail = FALSE)
     
-    ncp <- sqrt(m*n/(2*DEFF)) * d/sqrt(varw)
+    ncp <- sqrt(m*n/(2*DEFF)) * abs(d)/sqrt(varw)
     
-    pt(tcrit, 2*(m - 1), ncp, lower.tail = FALSE) +
-      pt(-tcrit, 2*(m - 1), ncp, lower.tail = TRUE)
+    pt(tcrit, 2*(m - 1), ncp, lower.tail = FALSE) # +
+      #pt(-tcrit, 2*(m - 1), ncp, lower.tail = TRUE)
   })
   
   # calculate alpha
@@ -97,9 +99,9 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NULL,
                  tol = tol, extendInt = "upX")$root
   }
   
-  # calculate nsd
-  if (is.null(nsd)) {
-    nsd <- uniroot(function(nsd) eval(p.body) - power,
+  # calculate cv
+  if (is.null(cv)) {
+    cv <- uniroot(function(cv) eval(p.body) - power,
                    interval = c(1e-10, 1e+07),
                    tol = tol, extendInt = "downX")$root
   }
@@ -127,7 +129,7 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NULL,
 
   method <- paste("Clustered two-sample t-test power calculation: ", target, sep = "")
   note <- "'m' is the number of clusters in each group and 'n' is the number of individuals in each cluster."
-  structure(list(alpha = alpha, power = power, m = m, n = n, nsd = nsd, d = d,
+  structure(list(alpha = alpha, power = power, m = m, n = n, cv = cv, d = d,
                  icc = icc, varw = varw, note = note, method = method),
             class = "power.htest")
   
