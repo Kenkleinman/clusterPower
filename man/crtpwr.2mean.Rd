@@ -4,7 +4,7 @@
 \alias{crtpwr.2mean}
 \title{Power calculations for simple cluster randomized trials, continuous outcome}
 \usage{
-crtpwr.2mean(alpha = 0.05, power = 0.8, m = NULL, n = NULL, nsd = 0,
+crtpwr.2mean(alpha = 0.05, power = 0.8, m = NULL, n = NULL, cv = 0,
   d = NULL, icc = NULL, varw = NULL, tol = .Machine$double.eps^0.25)
 }
 \arguments{
@@ -18,8 +18,6 @@ error.}
 
 \item{n}{The mean of the cluster sizes.}
 
-\item{nsd}{The standard deviation of the cluster sizes.}
-
 \item{d}{The difference in condition means.}
 
 \item{icc}{The intraclass correlation.}
@@ -28,6 +26,9 @@ error.}
 
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}
+
+\item{nsd}{The standard deviation of the cluster sizes. When \code{nsd} = 0,
+the clusters all have the same size.}
 }
 \value{
 The computed argument.
