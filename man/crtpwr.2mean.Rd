@@ -4,8 +4,8 @@
 \alias{crtpwr.2mean}
 \title{Power calculations for simple cluster randomized trials, continuous outcome}
 \usage{
-crtpwr.2mean(alpha = 0.05, power = 0.8, m = NULL, n = NULL, cv = 0,
-  d = NULL, icc = NULL, varw = NULL, tol = .Machine$double.eps^0.25)
+crtpwr.2mean(alpha = 0.05, power = 0.8, m = NA, n = NA, cv = 0,
+  d = NA, icc = NA, varw = NA, tol = .Machine$double.eps^0.25)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a
@@ -18,6 +18,9 @@ error.}
 
 \item{n}{The mean of the cluster sizes.}
 
+\item{cv}{The coefficient of variation of the cluster sizes. When \code{cv} = 0,
+the clusters all have the same size.}
+
 \item{d}{The difference in condition means.}
 
 \item{icc}{The intraclass correlation.}
@@ -26,9 +29,6 @@ error.}
 
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}
-
-\item{nsd}{The standard deviation of the cluster sizes. When \code{nsd} = 0,
-the clusters all have the same size.}
 }
 \value{
 The computed argument.
@@ -39,10 +39,10 @@ or determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
-  \code{nsd}, \code{d}, \code{icc}, and \code{varw}  must be passed as \code{NULL}.
-  Note that \code{alpha}, \code{power}, and \code{nsd} have non-\code{NULL}
+  \code{nsd}, \code{d}, \code{icc}, and \code{varw}  must be passed as \code{NA}.
+  Note that \code{alpha}, \code{power}, and \code{nsd} have non-\code{NA}
   defaults, so if those are the parameters of interest they must be
-  explicitly passed as \code{NULL}.
+  explicitly passed as \code{NA}.
 }
 \section{Note}{
 

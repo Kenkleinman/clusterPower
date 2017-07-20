@@ -4,10 +4,10 @@
 #' or determine parameters to obtain a target power.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
-#'   \code{nsd}, \code{d}, \code{icc}, and \code{varw}  must be passed as \code{NULL}.
-#'   Note that \code{alpha}, \code{power}, and \code{nsd} have non-\code{NULL}
+#'   \code{nsd}, \code{d}, \code{icc}, and \code{varw}  must be passed as \code{NA}.
+#'   Note that \code{alpha}, \code{power}, and \code{nsd} have non-\code{NA}
 #'   defaults, so if those are the parameters of interest they must be
-#'   explicitly passed as \code{NULL}.
+#'   explicitly passed as \code{NA}.
 #'
 #' @section Note:
 #'   'uniroot' is used to solve power equation for unknowns, so you may see
@@ -22,7 +22,7 @@
 #'   error.
 #' @param m The number of clusters per condition. It must be greater than 1.
 #' @param n The mean of the cluster sizes.
-#' @param nsd The standard deviation of the cluster sizes. When \code{nsd} = 0,
+#' @param cv The coefficient of variation of the cluster sizes. When \code{cv} = 0,
 #'   the clusters all have the same size.
 #' @param d The difference in condition means.
 #' @param icc The intraclass correlation.
@@ -35,24 +35,24 @@
 #'  Int J Epidemiol. 2006 Oct;35(5):1292-300.
 #' @export
 
-crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NULL,
-                         n = NULL, cv = 0,
-                         d = NULL, icc = NULL,
-                         varw = NULL,
+crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
+                         n = NA, cv = 0,
+                         d = NA, icc = NA,
+                         varw = NA,
                          tol = .Machine$double.eps^0.25){
   
-  if(!is.null(m) && m <= 1) {
+  if(!is.na(m) && m <= 1) {
     stop("'m' must be greater than 1.")
   }
-
+  
   # list of needed inputs
   needlist <- list(alpha, power, m, n, cv, d, icc, varw)
   neednames <- c("alpha", "power", "m", "n", "cv", "d", "icc", "varw")
-  needind <- which(unlist(lapply(needlist, is.null)))
-  # check to see that exactly one needed param is null
+  needind <- which(unlist(lapply(needlist, is.na)))
+  # check to see that exactly one needed param is NA
   
   if (length(needind) != 1) {
-    neederror = "Exactly one of 'alpha', 'power', 'm', 'n', 'cv', 'd', 'icc' and 'varw' must be NULL."
+    neederror = "Exactly one of 'alpha', 'power', 'm', 'n', 'cv', 'd', 'icc' and 'varw' must be NA."
     stop(neederror)
   } 
   
@@ -70,67 +70,69 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NULL,
     ncp <- sqrt(m*n/(2*DEFF)) * abs(d)/sqrt(varw)
     
     pt(tcrit, 2*(m - 1), ncp, lower.tail = FALSE) # +
-      #pt(-tcrit, 2*(m - 1), ncp, lower.tail = TRUE)
+    #pt(-tcrit, 2*(m - 1), ncp, lower.tail = TRUE)
   })
   
   # calculate alpha
-  if (is.null(alpha)) {
+  if (is.na(alpha)) {
     alpha <- uniroot(function(alpha) eval(p.body) - power,
                      interval = c(1e-10, 1 - 1e-10),
                      tol = tol, extendInt = "yes")$root
   }
   
   # calculate power
-  if (is.null(power)) {
+  if (is.na(power)) {
     power <- eval(p.body)
   }
   
   # calculate m
-  if (is.null(m)) {
+  if (is.na(m)) {
     m <- uniroot(function(m) eval(p.body) - power,
                  interval = c(2 + 1e-10, 1e+07),
                  tol = tol, extendInt = "upX")$root
   }
   
   # calculate n
-  if (is.null(n)) {
+  if (is.na(n)) {
     n <- uniroot(function(n) eval(p.body) - power,
                  interval = c(2 + 1e-10, 1e+07),
                  tol = tol, extendInt = "upX")$root
   }
   
   # calculate cv
-  if (is.null(cv)) {
+  if (is.na(cv)) {
     cv <- uniroot(function(cv) eval(p.body) - power,
-                   interval = c(1e-10, 1e+07),
-                   tol = tol, extendInt = "downX")$root
+                  interval = c(1e-10, 1e+07),
+                  tol = tol, extendInt = "downX")$root
   }
-
+  
   # calculate d
-  if (is.null(d)) {
+  if (is.na(d)) {
     d <- uniroot(function(d) eval(p.body) - power,
                  interval = c(1e-07, 1e+07),
                  tol = tol, extendInt = "upX")$root
   }
-
+  
   # calculate icc
-  if (is.null(icc)){
+  if (is.na(icc)){
     icc <- uniroot(function(icc) eval(p.body) - power,
                    interval = c(1e-07, 1e+07),
                    tol = tol, extendInt = "downX")$root
   }
   
   # calculate varw
-  if (is.null(varw)) {
+  if (is.na(varw)) {
     varw <- uniroot(function(varw) eval(p.body) - power,
                     interval = c(1e-07, 1e+07),
                     tol = tol, extendInt = "downX")$root
   }
-
-  method <- paste("Clustered two-sample t-test power calculation: ", target, sep = "")
-  note <- "'m' is the number of clusters in each group and 'n' is the number of individuals in each cluster."
-  structure(list(alpha = alpha, power = power, m = m, n = n, cv = cv, d = d,
-                 icc = icc, varw = varw, note = note, method = method),
-            class = "power.htest")
+  
+  structure(get(target), names = target)
+  
+  # method <- paste("Clustered two-sample t-test power calculation: ", target, sep = "")
+  # note <- "'m' is the number of clusters in each group and 'n' is the number of individuals in each cluster."
+  # structure(list(alpha = alpha, power = power, m = m, n = n, cv = cv, d = d,
+  #                icc = icc, varw = varw, note = note, method = method),
+  #           class = "power.htest")
   
 }
