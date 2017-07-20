@@ -20,7 +20,7 @@
 #' @return The computed argument.
 #' @export
 
-crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
+crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
                          m = NA, py = NA,
                          l1 = NA, l2 = NA,
                          cvb = NA,
