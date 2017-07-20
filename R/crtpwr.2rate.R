@@ -95,14 +95,5 @@ crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
   }
 
   structure(get(target), names = target)
-  
-  # method <- paste("Clustered two-sample proportion power calculation: ", target, sep = "")
-  # note <- "'m' is the number of clusters in each group and 'n' is the number of individuals in each cluster."
-  # structure(list(m = m, n = n, cv = cv,
-  #                p1 = p1, p1dec = p1dec, p1inc = p1inc,
-  #                p2 = p2, p2dec = p2dec, p2inc = p2inc,
-  #                icc = icc, alpha = alpha, power = power,
-  #                note = note, method = method),
-  #           class = "power.htest")
-  
+
 }
