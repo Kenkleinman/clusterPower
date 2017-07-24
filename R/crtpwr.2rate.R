@@ -12,8 +12,8 @@
 #'   error.
 #' @param m The number of clusters per condition. It must be greater than 1.
 #' @param py The number of person-years of observation per cluster.
-#' @param l1 The expected mean event rate per unit time in the treatment group.
-#' @param l2 The mean event rate per unit time in the control group.
+#' @param r1 The expected mean event rate per unit time in the treatment group.
+#' @param r2 The mean event rate per unit time in the control group.
 #' @param cvb The between-cluster coefficient of variation.
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
@@ -22,7 +22,7 @@
 
 crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
                          m = NA, py = NA,
-                         l1 = NA, l2 = NA,
+                         r1 = NA, r2 = NA,
                          cvb = NA,
                          tol = .Machine$double.eps^0.25){
   
@@ -30,21 +30,21 @@ crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
     stop("'m' must be greater than 1.")
   }
   
-  needlist <- list(alpha, power, m, n, py, l1, l2, cvb)
-  neednames <- c("alpha", "power", "m", "py", "l1", "l2", "cvb")
+  needlist <- list(alpha, power, m, py, r1, r2, cvb)
+  neednames <- c("alpha", "power", "m", "py", "r1", "r2", "cvb")
   needind <- which(unlist(lapply(needlist, is.na))) # find NA index
   
   if (length(needind) != 1) {
-    stop("Exactly one of 'alpha', 'power', 'm', 'py', 'l1', 'l2', or 'cvb' must be NA.")
+    stop("Exactly one of 'alpha', 'power', 'm', 'py', 'r1', 'r2', or 'cvb' must be NA.")
   }
   
   target <- neednames[needind]
   
   p.body <- quote({
-    DEFF <- 1 + cvb^2*(l1^2 + l2^2)*py/(l1 + l2)
+    DEFF <- 1 + cvb^2*(r1^2 + r2^2)*py/(r1 + r2)
     zcrit <- qnorm(alpha/2, lower.tail = FALSE)
-    vard <- (l1 + l2)*DEFF/py
-    pnorm(sqrt((m - 1)*(l1 - l2)^2/vard) - zcrit, lower.tail = FALSE)
+    vard <- (r1 + r2)*DEFF/py
+    pnorm(sqrt((m - 1)*(r1 - r2)^2/vard) - zcrit, lower.tail = TRUE)
   })
   
   # calculate alpha
@@ -67,22 +67,22 @@ crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
   }
   
   # calculate py
-  if (is.na(n)) {
+  if (is.na(py)) {
     py <- uniroot(function(py) eval(p.body) - power,
                   interval = c(1e-10, 1e+07),
                   tol = tol, extendInt = "upX")$root
   }
   
-  # calculate l1
-  if (is.na(l1)) {
-      l1 <- uniroot(function(l1) eval(p.body) - power,
+  # calculate r1
+  if (is.na(r1)) {
+      r1 <- uniroot(function(r1) eval(p.body) - power,
                     interval = c(1e-7, 1e7),
                     tol = tol, extendInt = "yes")$root
   }
   
-  # calculate l2
-  if (is.na(l2)) {
-    l1 <- uniroot(function(l2) eval(p.body) - power,
+  # calculate r2
+  if (is.na(r2)) {
+    r1 <- uniroot(function(r2) eval(p.body) - power,
                   interval = c(1e-7, 1e7),
                   tol = tol, extendInt = "yes")$root
   }

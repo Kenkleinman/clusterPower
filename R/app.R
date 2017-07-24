@@ -9,16 +9,16 @@ make_sequence <- function(x){
   # trim any spaces before and after the supplied string
   x <- str_trim(x)
   if(x == ""){
-  # if x is an empty string, just return NA
+    # if x is an empty string, just return NA
     as.numeric(x)
   } else if(str_detect(x, "^[0-9.]")){
-  # if the initial character of x is a digit or period, use the supplied
-  # numbers to create a vector of possibilities
+    # if the initial character of x is a digit or period, use the supplied
+    # numbers to create a vector of possibilities
     temp <- as.numeric(str_split(x,"[^0-9.]",simplify=TRUE))
     temp[!is.na(temp)]
   } else {
-  # if the initial character of x is not a digit or period, use the three
-  # supplied numbers to create a sequence 'from x to y by z'
+    # if the initial character of x is not a digit or period, use the three
+    # supplied numbers to create a sequence 'from x to y by z'
     temp <- as.numeric(str_split(x,"[^0-9.]",simplify=TRUE))
     temp <- temp[!is.na(temp)]
     seq(temp[1], temp[2], by = temp[3])
@@ -33,25 +33,25 @@ ui <- fluidPage(
                         column(12,
                                fluidRow(
                                  column(4, textInput("alpha2mean", HTML("Type I Error Rate (&alpha;)"),
-                                                        value = "0.05")),
+                                                     value = "0.05")),
                                  column(4, textInput("power2mean", "Power",
-                                                        value = "0.80")),
+                                                     value = "0.80")),
                                  column(4, textInput("cv2mean", "Cluster size CV (cv)",
-                                                        value = "0"))
+                                                     value = "0"))
                                ),
                                fluidRow(
                                  column(4, textInput("m2mean", "Clusters per arm (m)",
-                                                        value = "")),
+                                                     value = "")),
                                  column(4, textInput("n2mean", "Cluster size (n)",
-                                                        value = "")),
+                                                     value = "")),
                                  column(4, textInput("d2mean", "Difference (d)",
-                                                        value = ""))
+                                                     value = ""))
                                ),
                                fluidRow(
                                  column(4, textInput("icc2mean", "ICC (icc)",
-                                                        value = "")),
+                                                     value = "")),
                                  column(4, textInput("varw2mean", HTML(paste("&sigma;", tags$sup(2)," within (varw)", sep = "")),
-                                                        value = ""))
+                                                     value = ""))
                                ),
                                fluidRow(
                                  column(4, actionButton("default2mean", "Defaults")),
@@ -60,8 +60,8 @@ ui <- fluidPage(
                                fluidRow(
                                  dataTableOutput("table2mean")
                                )
-                        )
-               ),
+                        ) # end column(12 ...
+               ), # end tabPanel("Continuous ...
                tabPanel("Binary",
                         column(12,
                                fluidRow(
@@ -81,13 +81,18 @@ ui <- fluidPage(
                                                      value = ""))
                                ),
                                fluidRow(
-                                 column(4, textInput("p12prop", "Trt Proportion (p1)",
-                                                     value = ""),
-                                        checkboxInput("p1inc2prop", "Expect Increase?")),
+                                 column(4, textInput("p12prop", "Treatment Proportion (p1)",
+                                                     value = "")),
                                  column(4, textInput("p22prop", "Control Proportion (p2)",
                                                      value = "")),
-                                 column(4, checkboxInput("pooled2prop", "Pooled"))
-                               ),
+                                 column(4, 
+                                        fluidRow(
+                                          column(12,
+                                                 checkboxInput("pooled2prop", "Pooled")),
+                                          column(12,
+                                                 checkboxInput("p1inc2prop", "Expect increase? (p1 > p2)"))
+                                        )
+                                 )),
                                fluidRow(
                                  column(4, actionButton("default2prop", "Defaults")),
                                  column(4, actionButton("clear2prop", "Clear All")),
@@ -95,8 +100,39 @@ ui <- fluidPage(
                                fluidRow(
                                  dataTableOutput("table2prop")
                                )
-                        )
-               )
+                        ) # end column(12 ...
+               ), # end tabPanel("Binary ...
+               tabPanel("Count",
+                        column(12,
+                               fluidRow(
+                                 column(4, textInput("alpha2rate", HTML("Type I Error Rate (&alpha;)"),
+                                                     value = "0.05")),
+                                 column(4, textInput("power2rate", "Power",
+                                                     value = "0.80")),
+                                 column(4, textInput("m2rate", "Clusters per arm (m)",
+                                                     value = ""))
+                               ),
+                               fluidRow(
+                                 column(4, textInput("py2rate", "Person-years per cluster (py)",
+                                                     value = "")),
+                                 column(4, textInput("r12rate", "Treatment rate (r1)",
+                                                     value = "")),
+                                 column(4, textInput("r22rate", "Control rate (r2)",
+                                                     value = ""))
+                               ),
+                               fluidRow(
+                                 column(4, textInput("cvb2rate", "Between-cluster CV (cvb)",
+                                                     value = ""))
+                               ),
+                               fluidRow(
+                                 column(4, actionButton("default2rate", "Defaults")),
+                                 column(4, actionButton("clear2rate", "Clear All")),
+                                 column(4, actionButton("calc2rate", "Calculate"))),
+                               fluidRow(
+                                 dataTableOutput("table2rate")
+                               )
+                        ) # end column(12 ...
+               ) # end tabPanel("Count ...
              )
     ),
     tabPanel("Other stuff",
@@ -139,6 +175,20 @@ server <- function(input, output, session){
     } # end observeEvent(input$default2prop ...
   )
   
+  # observeEvent to reset 2rate inputs to default values
+  observeEvent(
+    input$default2rate,
+    {
+      updateTextInput(session, inputId = "alpha2rate", value = "0.05")
+      updateTextInput(session, inputId = "power2rate", value = "0.80")
+      updateTextInput(session, inputId = "m2rate", value = "")
+      updateTextInput(session, inputId = "py2rate", value = "")
+      updateTextInput(session, inputId = "r12rate", value = "")
+      updateTextInput(session, inputId = "r22rate", value = "")
+      updateTextInput(session, inputId = "cvb2rate", value = "")
+    } # end observeEvent(input$default2rate ...
+  )
+  
   # observeEvent to clear 2mean inputs 
   observeEvent(
     input$clear2mean,
@@ -170,6 +220,22 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "p1inc2prop", value = FALSE)
     } 
   ) # end observeEvent(input$clear2prop ...
+  
+  
+  # observeEvent to clear 2rate inputs 
+  observeEvent(
+    input$clear2rate,
+    {
+      updateTextInput(session, inputId = "alpha2rate", value = "")
+      updateTextInput(session, inputId = "power2rate", value = "")
+      updateTextInput(session, inputId = "m2rate", value = "")
+      updateTextInput(session, inputId = "py2rate", value = "")
+      updateTextInput(session, inputId = "r12rate", value = "")
+      updateTextInput(session, inputId = "r22rate", value = "")
+      updateTextInput(session, inputId = "cvb2rate", value = "")
+    } # end observeEvent(input$clear2rate ...
+  )
+  
   
   
   res2mean <- eventReactive(
@@ -241,6 +307,40 @@ server <- function(input, output, session){
   
   output$table2prop = renderDataTable({
     res2prop()
+  })
+  
+  
+  
+  res2rate <- eventReactive(
+    input$calc2rate,
+    {
+      alpha <- make_sequence(isolate(input$alpha2rate))
+      power <- make_sequence(isolate(input$power2rate))
+      m <- make_sequence(isolate(input$m2rate))
+      py <- make_sequence(isolate(input$py2rate))
+      r1 <- make_sequence(isolate(input$r12rate))
+      r2 <- make_sequence(isolate(input$r22rate))
+      cvb <- make_sequence(isolate(input$cvb2rate))
+      
+      tab <- expand.grid(alpha,
+                         power,
+                         m,
+                         py,
+                         r1,
+                         r2,
+                         cvb,
+                         stringsAsFactors = FALSE)
+      
+      needind <- which(is.na(tab[1,]))
+      names(tab) <- names(as.list(args(crtpwr.2rate)))[1:7]
+      target <- names(tab)[needind]
+      
+      tab[[target]] <- signif(pmap_dbl(tab, crtpwr.2rate),4)
+      as.data.frame(tab)
+    })
+  
+  output$table2rate = renderDataTable({
+    res2rate()
   })
   
   

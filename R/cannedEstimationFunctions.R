@@ -97,23 +97,23 @@ random.effect <- function(dat, incl.period.effect, outcome.type, alpha) {
 
   if(incl.period.effect==0){
     if(outcome.type=="gaussian"){
-      fit <- lmer(y ~ trt + (1|clust),
+      fit <- lme4::lmer(y ~ trt + (1|clust),
                   data=dat,
                   offset=offsets)
     }
     else {
-      fit <- glmer(y ~ trt + (1|clust),
+      fit <- lme4::glmer(y ~ trt + (1|clust),
                    data=dat,
                    family=outcome.type,
                    offset=offsets)
     }} else {
       if(outcome.type=="gaussian"){
-        fit <- lmer(y ~ trt + per + (1|clust) - 1,
+        fit <- lme4::lmer(y ~ trt + per + (1|clust) - 1,
                     data=dat,
                     offset=offsets)
       }
       else{
-        fit <- glmer(y ~ trt + per + (1|clust) - 1,
+        fit <- lme4::glmer(y ~ trt + per + (1|clust) - 1,
                      data=dat,
                      family=outcome.type,
                      offset=offsets)
