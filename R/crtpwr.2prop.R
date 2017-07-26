@@ -46,7 +46,7 @@ crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
   target <- neednames[needind]
   
   p.body <- quote({
-    DEFF <- 1 + (((cv^2*(m - 1)/m + 1)*n) - 1)*icc
+    DEFF <- 1 + ((cv^2 + 1)*n - 1)*icc
     if (pooled) {
       p <- (p1+p2)/2
       sdd <- sqrt(p*(1 - p)*2*DEFF/(m*n))

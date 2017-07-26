@@ -4,6 +4,7 @@ library(stringr)
 
 # source("crtpwr.2mean.R")
 # source("crtpwr.2prop.R")
+# source("crtpwr.2prop.R")
 
 make_sequence <- function(x){
   # trim any spaces before and after the supplied string
