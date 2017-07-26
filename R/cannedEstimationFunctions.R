@@ -5,11 +5,21 @@
 #' effects models and return the estimated treatment effect. These functions are
 #' not designed to be called directly by the user.
 #' 
+#' \code{random.effect()} relies on a call to \code{glmer()} from the \code{lme4}
+#' package. \code{fixed.effect()} relies on a call to \code{glm()}. 
+#' \code{fixed.effect.cluster.level()} will save lots of time if you just want to
+#' run a cluster-level analysis and you have lots of observations. 
+#' \code{weighted.crossover.cluster.level()} implements methods for fitting
+#' a weighted analysis on data from a crossover study (see Turner et al. 1997).
+#' 
 #' @param dat observed data as a data.frame with columns named, "y", "trt" and
 #'   "clust". "per" column is optional if period.var==0.
 #' @param incl.period.effect indicator of whether to include a period effect
 #' @param outcome.type one of "gaussian", "binomial", "poisson"
 #' @param alpha the type I error rate
+#' @seealso \code{\link{power.sim.normal}}, \code{\link{power.sim.binomial}},
+#' \code{\link{power.sim.poisson}}
+#' @author Nicholas G. Reich
 #' @return A numeric vector with the following three elements, in order: 
 #'  [1] a point estimate for the treatment effect, [2] lower bound of (1-alpha)
 #'  confidence interval, [3] lower bound of (1-alpha) confidence interval.

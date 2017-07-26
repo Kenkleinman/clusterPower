@@ -32,9 +32,9 @@ ui <- fluidPage(
                tabPanel("Continous",
                         column(12,
                                fluidRow(
-                                 column(4, textInput("alpha2mean", HTML("Type I Error Rate (&alpha;)"),
+                                 column(4, textInput("alpha2mean", HTML("Type I error rate, &alpha; (alpha)"),
                                                      value = "0.05")),
-                                 column(4, textInput("power2mean", "Power",
+                                 column(4, textInput("power2mean", "Power (power)",
                                                      value = "0.80")),
                                  column(4, textInput("cv2mean", "Cluster size CV (cv)",
                                                      value = "0"))
@@ -50,7 +50,7 @@ ui <- fluidPage(
                                fluidRow(
                                  column(4, textInput("icc2mean", "ICC (icc)",
                                                      value = "")),
-                                 column(4, textInput("varw2mean", HTML(paste("&sigma;", tags$sup(2)," within (varw)", sep = "")),
+                                 column(4, textInput("varw2mean", "Within-cluster variance (varw)",
                                                      value = ""))
                                ),
                                fluidRow(
@@ -65,9 +65,9 @@ ui <- fluidPage(
                tabPanel("Binary",
                         column(12,
                                fluidRow(
-                                 column(4, textInput("alpha2prop", HTML("Type I Error Rate (&alpha;)"),
+                                 column(4, textInput("alpha2prop", HTML("Type I error rate, &alpha; (alpha)"),
                                                      value = "0.05")),
-                                 column(4, textInput("power2prop", "Power",
+                                 column(4, textInput("power2prop", "Power (power)",
                                                      value = "0.80")),
                                  column(4, textInput("cv2prop", "Cluster size CV (cv)",
                                                      value = "0"))
@@ -105,9 +105,9 @@ ui <- fluidPage(
                tabPanel("Count",
                         column(12,
                                fluidRow(
-                                 column(4, textInput("alpha2rate", HTML("Type I Error Rate (&alpha;)"),
+                                 column(4, textInput("alpha2rate", HTML("Type I error rate, &alpha; (alpha)"),
                                                      value = "0.05")),
-                                 column(4, textInput("power2rate", "Power",
+                                 column(4, textInput("power2rate", "Power (power)",
                                                      value = "0.80")),
                                  column(4, textInput("m2rate", "Clusters per arm (m)",
                                                      value = ""))

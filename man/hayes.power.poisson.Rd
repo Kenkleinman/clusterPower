@@ -23,6 +23,9 @@ hayes.power.poisson(n.clusters, period.effect, btw.clust.var, at.risk.params,
 
 \item{alpha}{desired type I error rate}
 }
+\value{
+A numeric vector of length 1, containing the estimated power for the given study specifications.
+}
 \description{
 This function calculates the power for a specified cluster-randomized study
 based on the methods described by Hayes et al (1999).
@@ -36,10 +39,18 @@ coefficient of varation between cluster-level outcomes is calculated using
 conditional expectation (see \code{mixed.eff.params()}) and then the formula from Hayes
 and Bennett (1999) is implemented.
 }
+\examples{
+hayes.power.poisson(n.clusters=36, period.effect=log(.015), btw.clust.var=0,
+  at.risk.params=20, cluster.size=20, effect.size=log(.7))
+
+}
 \references{
 Reich NG et al.  PLoS ONE.  Empirical Power and Sample Size Calculations for
   Cluster-Randomized and Cluster-Randomized Crossover Studies. 2012.  \url{http://ow.ly/fEn39}
 
 Hayes RJ and Bennett S. Int J Epi. Simple sample size calculation for
   cluster-randomized trials. 1999. \url{http://www.ncbi.nlm.nih.gov/pubmed/10342698}
+}
+\seealso{
+\code{\link{mixed.eff.params}}
 }

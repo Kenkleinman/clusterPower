@@ -4,8 +4,8 @@
 \alias{crtpwr.2rate}
 \title{Power calculations for simple cluster randomized trials, count outcome}
 \usage{
-crtpwr.2rate(alpha = 0.05, power = 0.8, m = NA, py = NA, l1 = NA,
-  l2 = NA, cvb = NA, tol = .Machine$double.eps^0.25)
+crtpwr.2rate(alpha = 0.05, power = 0.8, m = NA, py = NA, r1 = NA,
+  r2 = NA, cvb = NA, tol = .Machine$double.eps^0.25)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a
@@ -18,9 +18,9 @@ error.}
 
 \item{py}{The number of person-years of observation per cluster.}
 
-\item{l1}{The expected mean event rate per unit time in the treatment group.}
+\item{r1}{The expected mean event rate per unit time in the treatment group.}
 
-\item{l2}{The mean event rate per unit time in the control group.}
+\item{r2}{The mean event rate per unit time in the control group.}
 
 \item{cvb}{The between-cluster coefficient of variation.}
 

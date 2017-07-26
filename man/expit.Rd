@@ -14,6 +14,9 @@ logit(p)
 
 \item{p}{a number between 0 and 1, i.e. a probability}
 }
+\value{
+A numeric value, possibly vectorized, depending on the input.
+}
 \description{
 The expit and logit functions are useful shortcuts when using logistic regression models.
 }
@@ -29,4 +32,7 @@ curve(expit(x), from=-5, to=5)
 
 logit(.5)
 curve(logit(x), from=0, to=1)
+}
+\author{
+Nicholas G. Reich
 }

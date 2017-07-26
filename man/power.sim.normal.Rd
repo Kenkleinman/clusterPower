@@ -4,6 +4,7 @@
 \alias{power.sim.normal}
 \alias{power.sim.binomial}
 \alias{power.sim.poisson}
+\alias{make.base.data}
 \title{Power simulations for cluster-randomized crossover study designs.}
 \usage{
 power.sim.normal(n.sim = 10, effect.size, alpha = 0.05, n.clusters,
@@ -18,6 +19,8 @@ power.sim.binomial(n.sim = 10, effect.size, alpha = 0.05, n.clusters,
 power.sim.poisson(n.sim = 10, effect.size, alpha = 0.05, n.clusters,
   n.periods, cluster.size, btw.clust.var, period.effect, period.var,
   estimation.function, at.risk.params, permute = FALSE, verbose = FALSE)
+
+make.base.data(n.obs, n.clusters, cluster.size, n.periods)
 }
 \arguments{
 \item{n.sim}{number of datasets to simulate}
@@ -71,9 +74,26 @@ A list with the following components
 \description{
 These functions run simulations to calculate power for a given 
 cluster-randomized crossover study design. The user can specify a function
-which runs the desired method of analysis. The function make.base.data() is
+which runs the desired method of analysis. The function \code{make.base.data()} is
 not meant to be called directly by users, but is used in the data generation
 algorithms employed by the other functions.
+}
+\details{
+Runs the power simulation.
+
+The \code{period.effect} parameter needs to be specified on the "link function scale". Meaning that if the
+average baseline risk for a Poisson model is 4/1000, then the \code{period.effect} should be specified as
+log(.004). Similarly, the baseline risk in a logistic model should be specified on the logit scale. The
+period effect can have length of 1, in which case it is treated as the average period effect across all
+periods, or it can have length equal to n.periods, in which case it is assumed that the investigator is
+specifying exact period effects s/he wishes to simulate.
+
+For the Poisson simulations, at risk time is computed for each individual in the simulation. If
+\code{at.risk.time} is specified as a numeric vector of length 1, then the given number is the constant atrisk
+time which every individual is assumed to have. If \code{length(at.risk.time)==2}, the values are taken
+as the mean and size parameters of a negative binomial distribution (used as \code{mu} and \code{size} in the
+\code{rnbinom()} function) from which an at-risk time is drawn for each individual. Specifically, the at risk
+times are drawn as \code{at.risk.time = 1 + rnbinom(1, size=at.risk.params[2], mu=at.risk.params[1])}.
 }
 \examples{
 \dontrun{
@@ -90,4 +110,11 @@ c <- power.sim.poisson(n.sim=10, effect.size=log(.75), alpha=.05, n.clusters=100
   estimation.function=random.effect, verbose=TRUE, period.var=0, at.risk.params=10)
 }
 
+}
+\references{
+Turner RM, White IR, Croudace T, PIP Study Group. Analysis of cluster randomized cross-over
+trial data: a comparison of methods. Stat Med. 2007 Jan 30;26(2):274-89.
+}
+\author{
+Nicholas G. Reich
 }

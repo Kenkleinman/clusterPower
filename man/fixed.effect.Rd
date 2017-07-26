@@ -36,3 +36,18 @@ functions which estimate the treatment effect. They fit simple fixed and random
 effects models and return the estimated treatment effect. These functions are
 not designed to be called directly by the user.
 }
+\details{
+\code{random.effect()} relies on a call to \code{glmer()} from the \code{lme4}
+package. \code{fixed.effect()} relies on a call to \code{glm()}. 
+\code{fixed.effect.cluster.level()} will save lots of time if you just want to
+run a cluster-level analysis and you have lots of observations. 
+\code{weighted.crossover.cluster.level()} implements methods for fitting
+a weighted analysis on data from a crossover study (see Turner et al. 1997).
+}
+\seealso{
+\code{\link{power.sim.normal}}, \code{\link{power.sim.binomial}},
+\code{\link{power.sim.poisson}}
+}
+\author{
+Nicholas G. Reich
+}

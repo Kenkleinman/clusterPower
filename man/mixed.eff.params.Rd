@@ -21,13 +21,27 @@ A numeric vector with the following three named elements, in order:
 }
 \description{
 This function is designed to calculate the overall variance for cluster-level 
-  outcomes in a mixedeffect Poisson model. Conditional expectation calculations
-  are implemented.
-  
-\code{mixed.eff.params()} is used by the \code{hayes.power.poisson()} function to 
-  compute the effective coefficient of variation, or k, for a particular
-  study design.
+outcomes in a mixedeffect Poisson model. Conditional expectation calculations
+are implemented.
+}
+\details{
+The \code{mixed.eff.params()} function is used by the \code{hayes.power.poisson()} function to 
+compute the effective coefficient of variation, or k, for a particular
+study design.
 }
 \examples{
 mixed.eff.params(pi0=log(1), btw.clust.var=.5, Tk=100)
+}
+\references{
+Reich NG et al.  PLoS ONE.  Empirical Power and Sample Size Calculations for
+  Cluster-Randomized and Cluster-Randomized Crossover Studies. 2012.  \url{http://ow.ly/fEn39}
+
+Hayes RJ and Bennett S. Int J Epi. Simple sample size calculation for
+  cluster-randomized trials. 1999. \url{http://www.ncbi.nlm.nih.gov/pubmed/10342698}
+}
+\seealso{
+\code{\link{hayes.power.poisson}}
+}
+\author{
+Nicholas G. Reich
 }
