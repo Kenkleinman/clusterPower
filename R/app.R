@@ -27,123 +27,118 @@ make_sequence <- function(x){
 }
 
 ui <- fluidPage(
-  navlistPanel(
-    tabPanel("Two-Arm",
-             HTML("<h3>Simple Two-Arm Designs</h3>
-                   <p>To use the two-arm calculator, leave the desired quantity blank and entering values for the other quantities.</p>
-                   <p>You may specify more than one input quantity by separating numbers with spaces or commas.<p>
-                   <p>You may specify a sequence of values by typing 'from X to Y by Z', where 'X' is the starting value, 'Y' is the ending value, and 'Z' is the increment.</p>"),
-             tabsetPanel(
-               tabPanel("Continous",
-                        column(12,
-                               fluidRow(
-                                 column(4, textInput("alpha2mean", HTML("Type I error rate, &alpha; (alpha)"),
-                                                     value = "0.05")),
-                                 column(4, textInput("power2mean", "Power (power)",
-                                                     value = "0.80")),
-                                 column(4, textInput("cv2mean", "Cluster size CV (cv)",
-                                                     value = "0"))
-                               ),
-                               fluidRow(
-                                 column(4, textInput("m2mean", "Clusters per arm (m)",
-                                                     value = "")),
-                                 column(4, textInput("n2mean", "Cluster size (n)",
-                                                     value = "")),
-                                 column(4, textInput("d2mean", "Difference (d)",
-                                                     value = ""))
-                               ),
-                               fluidRow(
-                                 column(4, textInput("icc2mean", "ICC (icc)",
-                                                     value = "")),
-                                 column(4, textInput("varw2mean", "Within-cluster variance (varw)",
-                                                     value = ""))
-                               ),
-                               fluidRow(
-                                 column(4, actionButton("default2mean", "Defaults")),
-                                 column(4, actionButton("clear2mean", "Clear All")),
-                                 column(4, actionButton("calc2mean", "Calculate"))),
-                               fluidRow(
-                                 dataTableOutput("table2mean")
-                               )
-                        ) # end column(12 ...
-               ), # end tabPanel("Continuous ...
-               tabPanel("Binary",
-                        column(12,
-                               fluidRow(
-                                 column(4, textInput("alpha2prop", HTML("Type I error rate, &alpha; (alpha)"),
-                                                     value = "0.05")),
-                                 column(4, textInput("power2prop", "Power (power)",
-                                                     value = "0.80")),
-                                 column(4, textInput("cv2prop", "Cluster size CV (cv)",
-                                                     value = "0"))
-                               ),
-                               fluidRow(
-                                 column(4, textInput("m2prop", "Clusters per arm (m)",
-                                                     value = "")),
-                                 column(4, textInput("n2prop", "Cluster size (n)",
-                                                     value = "")),
-                                 column(4, textInput("icc2prop", "ICC (icc)",
-                                                     value = ""))
-                               ),
-                               fluidRow(
-                                 column(4, textInput("p12prop", "Treatment Proportion (p1)",
-                                                     value = "")),
-                                 column(4, textInput("p22prop", "Control Proportion (p2)",
-                                                     value = "")),
-                                 column(4, 
-                                        fluidRow(
-                                          column(12,
-                                                 checkboxInput("pooled2prop", "Pooled")),
-                                          column(12,
-                                                 checkboxInput("p1inc2prop", "Expect increase? (p1 > p2)"))
-                                        )
-                                 )),
-                               fluidRow(
-                                 column(4, actionButton("default2prop", "Defaults")),
-                                 column(4, actionButton("clear2prop", "Clear All")),
-                                 column(4, actionButton("calc2prop", "Calculate"))),
-                               fluidRow(
-                                 dataTableOutput("table2prop")
-                               )
-                        ) # end column(12 ...
-               ), # end tabPanel("Binary ...
-               tabPanel("Count",
-                        column(12,
-                               fluidRow(
-                                 column(4, textInput("alpha2rate", HTML("Type I error rate, &alpha; (alpha)"),
-                                                     value = "0.05")),
-                                 column(4, textInput("power2rate", "Power (power)",
-                                                     value = "0.80")),
-                                 column(4, textInput("m2rate", "Clusters per arm (m)",
-                                                     value = ""))
-                               ),
-                               fluidRow(
-                                 column(4, textInput("py2rate", "Person-years per cluster (py)",
-                                                     value = "")),
-                                 column(4, textInput("r12rate", "Treatment rate (r1)",
-                                                     value = "")),
-                                 column(4, textInput("r22rate", "Control rate (r2)",
-                                                     value = ""))
-                               ),
-                               fluidRow(
-                                 column(4, textInput("cvb2rate", "Between-cluster CV (cvb)",
-                                                     value = ""))
-                               ),
-                               fluidRow(
-                                 column(4, actionButton("default2rate", "Defaults")),
-                                 column(4, actionButton("clear2rate", "Clear All")),
-                                 column(4, actionButton("calc2rate", "Calculate"))),
-                               fluidRow(
-                                 dataTableOutput("table2rate")
-                               )
-                        ) # end column(12 ...
-               ) # end tabPanel("Count ...
+  HTML("<h3>Simple Two-Arm Designs</h3>
+        <p>To use the two-arm calculator, leave the desired quantity blank and entering values for the other quantities.</p>
+        <p>You may specify more than one input quantity by separating numbers with spaces or commas.<p>
+        <p>You may specify a sequence of values by typing 'from X to Y by Z', where 'X' is the starting value, 'Y' is the ending value, and 'Z' is the increment.</p>"),
+  tabsetPanel(
+    tabPanel("Continous",
+             column(3,
+                    fluidRow(textInput("alpha2mean", HTML("Type I rate, &alpha; (alpha)"),
+                                          value = "0.05", width = "100%")),
+                    fluidRow(textInput("power2mean", "Power (power)",
+                                          value = "0.80", width = "100%")),
+                    fluidRow(textInput("cv2mean", "Cluster size CV (cv)",
+                                          value = "0", width = "100%")),
+                    fluidRow(textInput("d2mean", "Difference (d)",
+                                          value = "", width = "100%")),
+                    fluidRow(textInput("m2mean", "Clusters per arm (m)",
+                                          value = "", width = "100%")),
+                    fluidRow(textInput("n2mean", "Cluster size (n)",
+                                          value = "", width = "100%")),
+                    fluidRow(textInput("icc2mean", "ICC (icc)",
+                                          value = "", width = "100%")),
+                    fluidRow(textInput("varw2mean", "Within variance (varw)",
+                                          value = "", width = "100%")),
+                    fluidRow(
+                      column(6, actionButton("default2mean", "Defaults", width = "100%")),
+                      column(6, actionButton("clear2mean", "Clear All", width = "100%"))
+                      ),
+                    fluidRow(
+                      column(12, actionButton("calc2mean", "Calculate", width = "100%"))
+                    )
+             ),
+             column(9,
+                    fluidRow(
+                      conditionalPanel(condition = "output.table2mean != null",
+                                       downloadButton("dl2mean", "Download"))
+                      
+                    ),
+                    dataTableOutput("table2mean")
              )
-    ),
-    tabPanel("Other stuff",
-             "Under construction ..."
-    )
-  ) # end navlistPanel
+    ), # end tabPanel("Continuous ...
+    tabPanel("Binary",
+             column(3,
+                    fluidRow(textInput("alpha2prop", HTML("Type I rate, &alpha; (alpha)"),
+                                          value = "0.05", width = "100%")),
+                    fluidRow(textInput("power2prop", "Power (power)",
+                                          value = "0.80", width = "100%")),
+                    fluidRow(textInput("cv2prop", "Cluster size CV (cv)",
+                                          value = "0", width = "100%")),
+                    fluidRow(textInput("icc2prop", "ICC (icc)",
+                                          value = "", width = "100%")),
+                    fluidRow(textInput("m2prop", "Clusters per arm (m)",
+                                          value = "", width = "100%")),
+                    fluidRow(textInput("n2prop", "Cluster size (n)",
+                                          value = "", width = "100%")),
+                    fluidRow(textInput("p12prop", "Trt Proportion (p1)",
+                                          value = "", width = "100%")),
+                    fluidRow(textInput("p22prop", "Ctrl Proportion (p2)",
+                                          value = "", width = "100%")),
+                    fluidRow(
+                      column(6,checkboxInput("p1inc2prop", "Expect p1 > p2?")),
+                      column(6,checkboxInput("pooled2prop", "Pooled"))
+                    ),
+                    fluidRow(
+                      column(6, actionButton("default2prop", "Defaults", width = "100%")),
+                      column(6, actionButton("clear2prop", "Clear All", width = "100%"))
+                    ),
+                    fluidRow(
+                      column(12, actionButton("calc2prop", "Calculate", width = "100%"))
+                    )
+             ),
+             column(9,
+                    fluidRow(
+                      conditionalPanel(condition = "output.table2prop != null",
+                                       downloadButton("dl2prop", "Download"))
+                      
+                    ),
+                    dataTableOutput("table2prop")
+             )
+    ), # end tabPanel("Binary ...
+    tabPanel("Count",
+             column(3,
+                    fluidRow(textInput("alpha2rate", HTML("Type I rate, &alpha; (alpha)"),
+                                          value = "0.05", width = "100%")),
+                    fluidRow(textInput("power2rate", "Power (power)",
+                                          value = "0.80", width = "100%")),
+                    fluidRow(textInput("m2rate", "Clusters per arm (m)",
+                                          value = "", width = "100%")),
+                    fluidRow(textInput("py2rate", "PY per cluster (py)",
+                                          value = "", width = "100%")),
+                    fluidRow(textInput("r12rate", "Trt Rate (r1)",
+                                          value = "", width = "100%")),
+                    fluidRow(textInput("r22rate", "Ctrl Rate (r2)",
+                                          value = "", width = "100%")),
+                    fluidRow(textInput("cvb2rate", "Btwn-cluster CV (cvb)",
+                                          value = "", width = "100%")),
+                    fluidRow(
+                      column(6, actionButton("default2rate", "Defaults", width = "100%")),
+                      column(6, actionButton("clear2rate", "Clear All", width = "100%"))),
+                    fluidRow(
+                      column(12, actionButton("calc2rate", "Calculate", width = "100%"))
+                    )
+             ),
+             column(9,
+                    fluidRow(
+                      conditionalPanel(condition = "output.table2rate != null",
+                                       downloadButton("dl2rate", "Download"))
+                      
+                    ),
+                    dataTableOutput("table2rate")
+             )
+    ) # end tabPanel("Count ...
+  )
 ) # end fluidPage
 
 server <- function(input, output, session){
@@ -241,7 +236,9 @@ server <- function(input, output, session){
     } # end observeEvent(input$clear2rate ...
   )
   
-  
+  #----------------------------------------------------------------------------
+  # Two means
+  #----------------------------------------------------------------------------
   
   res2mean <- eventReactive(
     input$calc2mean,
@@ -277,6 +274,19 @@ server <- function(input, output, session){
     res2mean()
   })
   
+  output$dl2mean <- downloadHandler(
+    filename = function() {
+      paste('data-2mean-', Sys.time(), '.csv', sep='')
+    },
+    content = function(file) {
+      write.csv(res2mean(), file)
+    }
+  )
+  
+  
+  #----------------------------------------------------------------------------
+  # Two proportions
+  #----------------------------------------------------------------------------
   
   res2prop <- eventReactive(
     input$calc2prop,
@@ -314,7 +324,19 @@ server <- function(input, output, session){
     res2prop()
   })
   
+  output$dl2prop <- downloadHandler(
+    filename = function() {
+      paste('data-2prop-', Sys.time(), '.csv', sep='')
+    },
+    content = function(con) {
+      write.csv(data, con)
+    }
+  )
   
+  
+  #----------------------------------------------------------------------------
+  # Two rates
+  #----------------------------------------------------------------------------
   
   res2rate <- eventReactive(
     input$calc2rate,
@@ -347,6 +369,15 @@ server <- function(input, output, session){
   output$table2rate = renderDataTable({
     res2rate()
   })
+  
+  output$dl2rate <- downloadHandler(
+    filename = function() {
+      paste('data-2rate-', Sys.time(), '.csv', sep='')
+    },
+    content = function(con) {
+      write.csv(data, con)
+    }
+  )
   
   
 }
