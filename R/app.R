@@ -3,9 +3,9 @@ library(DT)
 library(tidyverse)
 library(stringr)
 
-source("crtpwr.2mean.R")
-source("crtpwr.2prop.R")
-source("crtpwr.2rate.R")
+source("R/crtpwr.2mean.R")
+source("R/crtpwr.2prop.R")
+source("R/crtpwr.2rate.R")
 
 names2mean <- names(as.list(args(crtpwr.2mean)))[1:8]
 names2prop <- names(as.list(args(crtpwr.2prop)))[1:8]
