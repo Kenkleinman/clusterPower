@@ -3,13 +3,9 @@ library(DT)
 library(tidyverse)
 library(stringr)
 
-source("crtpwr.2mean.R")
-source("crtpwr.2prop.R")
-source("crtpwr.2rate.R")
-
-names2mean <- names(as.list(args(crtpwr.2mean)))[1:8]
-names2prop <- names(as.list(args(crtpwr.2prop)))[1:8]
-names2rate <- names(as.list(args(crtpwr.2rate)))[1:7]
+names2mean <- c("alpha","power","m","n","cv","d","icc","varw")
+names2prop <- c("alpha","power","m","n","cv","p1","p2","icc")
+names2rate <- c("alpha","power","m","py","r1","r2","cvb")
 
 umass <- "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-weight: bold; color: #ffffff; background-color: #881c1c; border: 3px solid #000000;"
 
@@ -30,14 +26,6 @@ make_sequence <- function(x){
     temp <- as.numeric(str_split(x,"[^0-9.]",simplify=TRUE))
     temp <- temp[!is.na(temp)]
     seq(temp[1], temp[2], by = temp[3])
-  }
-}
-
-get_graph_width <- function(x){
-  if(is.na(x)){
-    "auto"
-  } else {
-    x
   }
 }
 
