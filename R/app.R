@@ -3,9 +3,9 @@ library(DT)
 library(tidyverse)
 library(stringr)
 
-source("R/crtpwr.2mean.R")
-source("R/crtpwr.2prop.R")
-source("R/crtpwr.2rate.R")
+source("crtpwr.2mean.R")
+source("crtpwr.2prop.R")
+source("crtpwr.2rate.R")
 
 names2mean <- names(as.list(args(crtpwr.2mean)))[1:8]
 names2prop <- names(as.list(args(crtpwr.2prop)))[1:8]
@@ -161,9 +161,9 @@ ui <- fluidPage(
                                                            choices = c(None = ".", names2prop))),
                                       fluidRow(numericInput("height2prop", "Plot Height", value = 400,
                                                             min = 100, max = 2000, step = 10)),
-                                      fluidRow(numericInput("psize2mean", "Point Size", value = 3,
+                                      fluidRow(numericInput("psize2prop", "Point Size", value = 3,
                                                             min = 0.5, max = 4, step = 0.25)),
-                                      fluidRow(numericInput("lsize2mean", "Line Width", value = 1,
+                                      fluidRow(numericInput("lsize2prop", "Line Width", value = 1,
                                                             min = 0.5, max = 2, step = 0.25))
                                ),
                                column(10,
