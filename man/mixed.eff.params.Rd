@@ -31,6 +31,7 @@ study design.
 }
 \examples{
 mixed.eff.params(pi0=log(1), btw.clust.var=.5, Tk=100)
+
 }
 \references{
 Reich NG et al.  PLoS ONE.  Empirical Power and Sample Size Calculations for

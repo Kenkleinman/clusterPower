@@ -520,6 +520,7 @@ expit <- function(x) exp(x)/(1+exp(x))
 #' @export
 logit <- function(p) log(p/(1-p))
 
+
 #' Calculation of variance in Poisson mixed model setting.
 #'
 #' This function is designed to calculate the overall variance for cluster-level 
@@ -549,14 +550,16 @@ logit <- function(p) log(p/(1-p))
 #' 
 #' @examples 
 #' mixed.eff.params(pi0=log(1), btw.clust.var=.5, Tk=100)
-
-## converts mixed effect model parameters to hayes k parameters, for log-linearmixed effect models only
+#' 
+#' @export
 mixed.eff.params <- function(pi0, btw.clust.var, Tk) {
         e <- Tk * exp(pi0) * exp(btw.clust.var/2)
         v <- e + e^2*(exp(btw.clust.var)-1)
         k <- sqrt(v)/e
         return(c(expectation=e, variance=v, hayes.k=k))
 }
+
+
 
 #' An implementation of power calculations for cluster-randomized study based
 #' on the coefficient of variation.
