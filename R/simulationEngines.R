@@ -39,7 +39,7 @@
 #'   at \code{period.effect} with variance \code{period.var}. If \code{period.var = 0},
 #'   period effect is assumed to be the same for all periods.
 #' @param estimation.function function to run the data analysis
-#' @param at.risk.parameters a numeric vector of length 1 or 2. See details.
+#' @param at.risk.params a numeric vector of length 1 or 2. See details.
 #' @param permute indicator of whether to run permutation inferences. Defaults to FALSE.
 #' @param verbose indicator of whether to print out updates as the simulator is running.
 #'   Defaults to FALSE
