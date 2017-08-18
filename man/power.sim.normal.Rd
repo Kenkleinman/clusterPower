@@ -53,12 +53,12 @@ period effect is assumed to be the same for all periods.}
 \item{verbose}{indicator of whether to print out updates as the simulator is running.
 Defaults to FALSE}
 
+\item{at.risk.params}{a numeric vector of length 1 or 2. See details.}
+
 \item{n.obs}{(for \code{make.base.data()} only) - the total number of
 observations in the data set}
 
 \item{n.cluster}{number of clusters}
-
-\item{at.risk.parameters}{a numeric vector of length 1 or 2. See details.}
 }
 \value{
 A list with the following components
