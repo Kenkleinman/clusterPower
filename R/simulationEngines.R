@@ -27,7 +27,7 @@
 #'   observations in the data set
 #' @param effect.size effect size, specified on the GLM link scale
 #' @param alpha desired type I error rate
-#' @param n.cluster number of clusters
+#' @param n.clusters number of clusters
 #' @param n.periods number of periods of study
 #' @param cluster.size either a numeric vector length one or of length(n.clusters)
 #'   defining the number of individuals in each cluster.

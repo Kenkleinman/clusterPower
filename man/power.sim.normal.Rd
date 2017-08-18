@@ -29,6 +29,8 @@ make.base.data(n.obs, n.clusters, cluster.size, n.periods)
 
 \item{alpha}{desired type I error rate}
 
+\item{n.clusters}{number of clusters}
+
 \item{n.periods}{number of periods of study}
 
 \item{cluster.size}{either a numeric vector length one or of length(n.clusters)
@@ -57,8 +59,6 @@ Defaults to FALSE}
 
 \item{n.obs}{(for \code{make.base.data()} only) - the total number of
 observations in the data set}
-
-\item{n.cluster}{number of clusters}
 }
 \value{
 A list with the following components
