@@ -40,7 +40,7 @@ crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
   
   target <- neednames[needind]
   
-  p.body <- quote({
+  pwr <- quote({
     DEFF <- 1 + cvb^2*(r1^2 + r2^2)*py/(r1 + r2)
     zcrit <- qnorm(alpha/2, lower.tail = FALSE)
     vard <- (r1 + r2)*DEFF/py
@@ -49,47 +49,47 @@ crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
   
   # calculate alpha
   if (is.na(alpha)) {
-    alpha <- uniroot(function(alpha) eval(p.body) - power,
+    alpha <- uniroot(function(alpha) eval(pwr) - power,
                      interval = c(1e-10, 1 - 1e-10),
                      tol = tol, extendInt = "yes")$root
   }
   
   # calculate power
   if (is.na(power)) {
-    power <- eval(p.body)
+    power <- eval(pwr)
   }
   
   # calculate m
   if (is.na(m)) {
-    m <- uniroot(function(m) eval(p.body) - power,
+    m <- uniroot(function(m) eval(pwr) - power,
                  interval = c(2 + 1e-10, 1e+07),
                  tol = tol)$root
   }
   
   # calculate py
   if (is.na(py)) {
-    py <- uniroot(function(py) eval(p.body) - power,
+    py <- uniroot(function(py) eval(pwr) - power,
                   interval = c(1e-10, 1e+07),
                   tol = tol, extendInt = "upX")$root
   }
   
   # calculate r1
   if (is.na(r1)) {
-      r1 <- uniroot(function(r1) eval(p.body) - power,
+      r1 <- uniroot(function(r1) eval(pwr) - power,
                     interval = c(1e-7, 1e7),
                     tol = tol, extendInt = "yes")$root
   }
   
   # calculate r2
   if (is.na(r2)) {
-    r1 <- uniroot(function(r2) eval(p.body) - power,
+    r1 <- uniroot(function(r2) eval(pwr) - power,
                   interval = c(1e-7, 1e7),
                   tol = tol, extendInt = "yes")$root
   }
   
   # calculate cvb
   if (is.na(cvb)) {
-    cv <- uniroot(function(cvb) eval(p.body) - power,
+    cv <- uniroot(function(cvb) eval(pwr) - power,
                   interval = c(1e-7, 1e+07),
                   tol = tol, extendInt = "downX")$root
   }

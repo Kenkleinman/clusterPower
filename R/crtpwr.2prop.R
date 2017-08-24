@@ -45,7 +45,7 @@ crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
   
   target <- neednames[needind]
   
-  p.body <- quote({
+  pwr <- quote({
     DEFF <- 1 + ((cv^2 + 1)*n - 1)*icc
     if (pooled) {
       p <- (p1+p2)/2
@@ -60,19 +60,19 @@ crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
   
   # calculate alpha
   if (is.na(alpha)) {
-    alpha <- uniroot(function(alpha) eval(p.body) - power,
+    alpha <- uniroot(function(alpha) eval(pwr) - power,
                      interval = c(1e-10, 1 - 1e-10),
                      tol = tol, extendInt = "yes")$root
   }
   
   # calculate power
   if (is.na(power)) {
-    power <- eval(p.body)
+    power <- eval(pwr)
   }
   
   # calculate m
   if (is.na(m)) {
-    m <- uniroot(function(m) eval(p.body) - power,
+    m <- uniroot(function(m) eval(pwr) - power,
                  interval = c(2 + 1e-10, 1e+07),
                  tol = tol)$root
   }
@@ -80,11 +80,11 @@ crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
   # calculate p1
   if (is.na(p1)) {
     if(p1inc){
-      p1 <- uniroot(function(p1) eval(p.body) - power,
+      p1 <- uniroot(function(p1) eval(pwr) - power,
                     interval = c(p2 + 1e-7, 1 - 1e-7),
                     tol = tol, extendInt = "yes")$root
     } else {
-      p1 <- uniroot(function(p1) eval(p.body) - power,
+      p1 <- uniroot(function(p1) eval(pwr) - power,
                     interval = c(1e-7, p2 - 1e-7),
                     tol = tol, extendInt = "yes")$root
     }
@@ -93,12 +93,12 @@ crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
   # calculate p2
   if (is.na(p2)) {
     if(p1inc){
-      p2 <- uniroot(function(p2) eval(p.body) - power,
+      p2 <- uniroot(function(p2) eval(pwr) - power,
                     interval = c(1e-7, p1 - 1e-7),
                     tol = tol, extendInt = "yes")$root
       
     } else {
-      p2 <- uniroot(function(p2) eval(p.body) - power,
+      p2 <- uniroot(function(p2) eval(pwr) - power,
                     interval = c(p1 + 1e-7, 1 - 1e-7),
                     tol = tol, extendInt = "yes")$root
     }
@@ -106,7 +106,7 @@ crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
   
   # calculate n
   if (is.na(n)) {
-    n <- uniroot(function(n) eval(p.body) - power,
+    n <- uniroot(function(n) eval(pwr) - power,
                  interval = c(2 + 1e-10, 1e+07),
                  tol = tol, extendInt = "upX")$root
   }
@@ -114,14 +114,14 @@ crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
   # calculate cv
   if (is.na(cv)) {
     
-    cv <- uniroot(function(cv) eval(p.body) - power,
+    cv <- uniroot(function(cv) eval(pwr) - power,
                   interval = c(1e-7, 1e+07),
                   tol = tol, extendInt = "downX")$root
   }
   
   # calculate icc
   if (is.na(icc)){
-    icc <- uniroot(function(icc) eval(p.body) - power,
+    icc <- uniroot(function(icc) eval(pwr) - power,
                    interval = c(1e-07, 1 - 1e-7),
                    tol = tol, extendInt = "downX")$root
   }

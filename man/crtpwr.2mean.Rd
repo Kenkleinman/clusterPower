@@ -5,7 +5,8 @@
 \title{Power calculations for simple cluster randomized trials, continuous outcome}
 \usage{
 crtpwr.2mean(alpha = 0.05, power = 0.8, m = NA, n = NA, cv = 0,
-  d = NA, icc = NA, varw = NA, tol = .Machine$double.eps^0.25)
+  d = NA, icc = NA, varw = NA, method = c("taylor", "weighted"),
+  tol = .Machine$double.eps^0.25)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a
@@ -16,7 +17,7 @@ error.}
 
 \item{m}{The number of clusters per condition. It must be greater than 1.}
 
-\item{n}{The mean of the cluster sizes.}
+\item{n}{The mean of the cluster sizes, or a vector of cluster sizes for one arm.}
 
 \item{cv}{The coefficient of variation of the cluster sizes. When \code{cv} = 0,
 the clusters all have the same size.}
@@ -26,6 +27,10 @@ the clusters all have the same size.}
 \item{icc}{The intraclass correlation.}
 
 \item{varw}{The within-cluster variation.}
+
+\item{method}{The method for calculating variance inflation due to unequal cluster
+sizes. Either a method based on Taylor approximation of relative efficiency 
+("taylor"), or weighting by cluster size ("weighted")}
 
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}
@@ -43,6 +48,11 @@ Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
   Note that \code{alpha}, \code{power}, and \code{nsd} have non-\code{NA}
   defaults, so if those are the parameters of interest they must be
   explicitly passed as \code{NA}.
+  
+If \code{n} is a vector the values, \code{m} and \code{cv} will be recalculated
+   using the values in \code{n}. If \code{n} is a vector and \code{method} is
+   "taylor", the exact relative efficiency will be calculated as described in
+   van Breukelen et al (2007).
 }
 \section{Note}{
 
@@ -52,9 +62,13 @@ Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
 }
 
 \references{
-Eldridge SM, Ashby D, Kerry S. Sample size for cluster randomized
+Eldridge SM, Ashby D, Kerry S. (2006) Sample size for cluster randomized
   trials: effect of coefficient of variation of cluster size and analysis method.
- Int J Epidemiol. 2006 Oct;35(5):1292-300.
+  Int J Epidemiol. 35(5):1292-300.
+
+van Breukelen GJP, Candel MJJM, Berger MPF. (2007) Relative efficiency of
+  unequal versus equal cluster sizes in cluster randomized and multicentre trials.
+  Statist Med. 26:2589-2603.
 }
 \author{
 Jonathan Moyer (\email{jon.moyer@gmail.com})
