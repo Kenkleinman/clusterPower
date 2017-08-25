@@ -64,7 +64,7 @@ If \code{n} is a vector the values, \code{m} and \code{cv} will be recalculated
 \references{
 Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation
   Coefficient in Cluster Randomized Trials: A Review of Definitions. Int Stat Rev. 
-  77: 378–394.
+  77: 378-394.
 
 Eldridge SM, Ashby D, Kerry S. (2006) Sample size for cluster randomized
   trials: effect of coefficient of variation of cluster size and analysis method.
