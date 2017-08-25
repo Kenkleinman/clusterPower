@@ -38,7 +38,7 @@
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
 #' @return The computed argument.
-#' @references Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intr-Cluster Correlation
+#' @references Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation
 #'   Coefficient in Cluster Randomized Trials: A Review of Definitions. Int Stat Rev. 
 #'   77: 378–394.
 #' @references Eldridge SM, Ashby D, Kerry S. (2006) Sample size for cluster randomized
