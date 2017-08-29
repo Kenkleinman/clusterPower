@@ -101,7 +101,7 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
     } else if(!is.na(n)){
       if(method == "taylor"){
         DEFF <- 1 + (n - 1)*icc
-        L <- m*icc/DEFF
+        L <- n*icc/DEFF
         REt <- 1/(1 - cv^2*L*(1 - L))
         VIF <- DEFF*REt
       } else {
@@ -113,7 +113,7 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
     
     ncp <- sqrt(m*n/(2*VIF)) * abs(d)/sqrt(varw)
     
-    pt(tcrit, 2*(m - 1), ncp, lower.tail = FALSE) # +
+    pt(tcrit, 2*(m - 1), ncp, lower.tail = FALSE)#+
     #pt(-tcrit, 2*(m - 1), ncp, lower.tail = TRUE)
   })
   
