@@ -1,16 +1,30 @@
-## estimation functions should have
-## INPUTS
-##   ~ dat = data as a data.frame with columns 
-##          - id, clust, per, trt, mean.y, y, at.risk.time
-##   ~ incl.period.effect = indicator of whether to include a period effect
-##   ~ outcome.type = one of "gaussian", "binomial", "poisson"
-##   ~ alpha = the type 1 error rate
-## OUTPUTS
-##   ~ a vector with three elements, in order:
-##       [1] a point estimate for the treatment effect
-##       [2] lower bound of (1-alpha) confidence interval
-##       [3] lower bound of (1-alpha) confidence interval
-
+#' Canned estimation functions for the power simulations.
+#'
+#' These functions are designed to be used by the power.sim.XXX functions as the
+#' functions which estimate the treatment effect. They fit simple fixed and random
+#' effects models and return the estimated treatment effect. These functions are
+#' not designed to be called directly by the user.
+#' 
+#' \code{random.effect()} relies on a call to \code{glmer()} from the \code{lme4}
+#' package. \code{fixed.effect()} relies on a call to \code{glm()}. 
+#' \code{fixed.effect.cluster.level()} will save lots of time if you just want to
+#' run a cluster-level analysis and you have lots of observations. 
+#' \code{weighted.crossover.cluster.level()} implements methods for fitting
+#' a weighted analysis on data from a crossover study (see Turner et al. 1997).
+#' 
+#' @param dat observed data as a data.frame with columns named, "y", "trt" and
+#'   "clust". "per" column is optional if period.var==0.
+#' @param incl.period.effect indicator of whether to include a period effect
+#' @param outcome.type one of "gaussian", "binomial", "poisson"
+#' @param alpha the type I error rate
+#' @seealso \code{\link{power.sim.normal}}, \code{\link{power.sim.binomial}},
+#' \code{\link{power.sim.poisson}}
+#' @author Nicholas G. Reich
+#' @return A numeric vector with the following three elements, in order: 
+#'  [1] a point estimate for the treatment effect, [2] lower bound of (1-alpha)
+#'  confidence interval, [3] lower bound of (1-alpha) confidence interval.
+#'  
+#' @export
 
 fixed.effect <- function(dat, incl.period.effect, outcome.type, alpha) {
 	if(outcome.type=="poisson"){
@@ -38,6 +52,9 @@ fixed.effect <- function(dat, incl.period.effect, outcome.type, alpha) {
 	return(c(est["Estimate"], ci))
 
 }
+
+#' @rdname fixed.effect
+#' @export
 
 fixed.effect.cluster.level <- function(dat, incl.period.effect, outcome.type, alpha) {
 	cols <- c("y", "at.risk.time")
@@ -67,8 +84,7 @@ fixed.effect.cluster.level <- function(dat, incl.period.effect, outcome.type, al
 		failures <- clust.dat[,"at.risk.time"]-clust.dat[,"y"]
 		form <- formula(cbind(successes, failures) ~ trt + per + clust - 1)
 	}
-
-
+	
 	fit <- glm(form, data=clust.dat, family=outcome.type, offset=offsets)
 
 	## get CI
@@ -79,6 +95,8 @@ fixed.effect.cluster.level <- function(dat, incl.period.effect, outcome.type, al
 
 }
 
+#' @rdname fixed.effect
+#' @export
 
 random.effect <- function(dat, incl.period.effect, outcome.type, alpha) {
 	if(outcome.type=="poisson"){
@@ -89,23 +107,23 @@ random.effect <- function(dat, incl.period.effect, outcome.type, alpha) {
 
   if(incl.period.effect==0){
     if(outcome.type=="gaussian"){
-      fit <- lmer(y ~ trt + (1|clust),
+      fit <- lme4::lmer(y ~ trt + (1|clust),
                   data=dat,
                   offset=offsets)
     }
     else {
-      fit <- glmer(y ~ trt + (1|clust),
+      fit <- lme4::glmer(y ~ trt + (1|clust),
                    data=dat,
                    family=outcome.type,
                    offset=offsets)
     }} else {
       if(outcome.type=="gaussian"){
-        fit <- lmer(y ~ trt + per + (1|clust) - 1,
+        fit <- lme4::lmer(y ~ trt + per + (1|clust) - 1,
                     data=dat,
                     offset=offsets)
       }
       else{
-        fit <- glmer(y ~ trt + per + (1|clust) - 1,
+        fit <- lme4::glmer(y ~ trt + per + (1|clust) - 1,
                      data=dat,
                      family=outcome.type,
                      offset=offsets)
@@ -118,6 +136,9 @@ random.effect <- function(dat, incl.period.effect, outcome.type, alpha) {
 	ci <- est["Estimate"] + t * est["Std. Error"]
 	return(c(est["Estimate"], ci))
 }
+
+#' @rdname fixed.effect
+#' @export
 
 ## based on Turner (1997) method C2
 weighted.crossover.cluster.level <- function(dat, incl.period.effect, outcome.type, alpha) {

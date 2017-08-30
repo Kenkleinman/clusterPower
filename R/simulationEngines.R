@@ -1,8 +1,79 @@
-## all power functions have
-## OUTPUTS
-##   ~ results matrix with cols
-##          "dataset", "beta.est", "beta.cil", "beta.cih", "reject.null", "pval.permute"
-
+#' Power simulations for cluster-randomized crossover study designs.
+#'
+#' These functions run simulations to calculate power for a given 
+#' cluster-randomized crossover study design. The user can specify a function
+#' which runs the desired method of analysis. The function \code{make.base.data()} is
+#' not meant to be called directly by users, but is used in the data generation
+#' algorithms employed by the other functions.
+#' 
+#' Runs the power simulation.
+#' 
+#' The \code{period.effect} parameter needs to be specified on the "link function scale". Meaning that if the
+#' average baseline risk for a Poisson model is 4/1000, then the \code{period.effect} should be specified as
+#' log(.004). Similarly, the baseline risk in a logistic model should be specified on the logit scale. The
+#' period effect can have length of 1, in which case it is treated as the average period effect across all
+#' periods, or it can have length equal to n.periods, in which case it is assumed that the investigator is
+#' specifying exact period effects s/he wishes to simulate.
+#' 
+#' For the Poisson simulations, at risk time is computed for each individual in the simulation. If
+#' \code{at.risk.time} is specified as a numeric vector of length 1, then the given number is the constant atrisk
+#' time which every individual is assumed to have. If \code{length(at.risk.time)==2}, the values are taken
+#' as the mean and size parameters of a negative binomial distribution (used as \code{mu} and \code{size} in the
+#' \code{rnbinom()} function) from which an at-risk time is drawn for each individual. Specifically, the at risk
+#' times are drawn as \code{at.risk.time = 1 + rnbinom(1, size=at.risk.params[2], mu=at.risk.params[1])}.
+#' 
+#' @param n.sim number of datasets to simulate
+#' @param n.obs (for \code{make.base.data()} only) - the total number of
+#'   observations in the data set
+#' @param effect.size effect size, specified on the GLM link scale
+#' @param alpha desired type I error rate
+#' @param n.clusters number of clusters
+#' @param n.periods number of periods of study
+#' @param cluster.size either a numeric vector length one or of length(n.clusters)
+#'   defining the number of individuals in each cluster.
+#' @param btw.clust.var the between-cluster variance
+#' @param indiv.var for normal outcomes only, the individual level variance
+#' @param ICC for normal outcomes only, the ICC may be specified instead of indiv.var
+#' @param period.effect period effect, on the link scale. See details.
+#' @param period.var the period effects are drawn from a normal distribution centered
+#'   at \code{period.effect} with variance \code{period.var}. If \code{period.var = 0},
+#'   period effect is assumed to be the same for all periods.
+#' @param estimation.function function to run the data analysis
+#' @param at.risk.params a numeric vector of length 1 or 2. See details.
+#' @param permute indicator of whether to run permutation inferences. Defaults to FALSE.
+#' @param verbose indicator of whether to print out updates as the simulator is running.
+#'   Defaults to FALSE
+#' @return A list with the following components
+#' \describe{
+#'   \item{results}{matrix with columns "dataset", "beta.est", "beta.cil", "beta.cih",
+#'     "reject.null", "pval.permute"}
+#'   \item{power}{numeric, the estimated power}
+#'   \item{permute.power}{numeric, the estimated power using the permutation inference}
+#'   \item{sample.data}{a data frame containing the final simulated data set from the
+#'     simulation run}
+#' }
+#' 
+#' @author Nicholas G. Reich
+#' 
+#' @references Turner RM, White IR, Croudace T, PIP Study Group. Analysis of cluster randomized cross-over
+#' trial data: a comparison of methods. Stat Med. 2007 Jan 30;26(2):274-89.
+#' 
+#' @examples 
+#' \dontrun{
+#' a <- power.sim.normal(n.sim=10, effect.size=5, alpha=.05, n.clusters=2, n.periods=2, 
+#'   cluster.size=20, btw.clust.var=5, ICC=1/20, period.effect=2, 
+#'   estimation.function=fixed.effect, verbose=TRUE, period.var=0)
+#'   
+#' b <- power.sim.binomial(n.sim=10, effect.size=log(.75), alpha=.05, n.clusters=20, n.periods=2, 
+#'   cluster.size=50, btw.clust.var=.2, period.effect=logit(.2), 
+#'   estimation.function=random.effect, verbose=TRUE, period.var=0)
+#' 
+#' c <- power.sim.poisson(n.sim=10, effect.size=log(.75), alpha=.05, n.clusters=100, n.periods=2, 
+#'   cluster.size=10, btw.clust.var=.4, period.effect=log(.2), 
+#'   estimation.function=random.effect, verbose=TRUE, period.var=0, at.risk.params=10)
+#' }
+#'
+#' @export
 
 power.sim.normal <- function(n.sim=10,
 			     effect.size,
@@ -116,6 +187,8 @@ power.sim.normal <- function(n.sim=10,
 	return(out)
 }
 
+#' @rdname power.sim.normal
+#' @export
 
 power.sim.binomial <- function(n.sim=10,
 			     effect.size,
@@ -226,6 +299,8 @@ power.sim.binomial <- function(n.sim=10,
 	return(out)
 }
 
+#' @rdname power.sim.normal
+#' @export
 
 power.sim.poisson <- function(n.sim=10,
 			      effect.size,
@@ -349,8 +424,7 @@ power.sim.poisson <- function(n.sim=10,
 	return(out)
 }
 
-
-
+#' @rdname power.sim.normal
 make.base.data <- function(n.obs, n.clusters,
 			   cluster.size, n.periods){
 	## #####################
@@ -420,17 +494,108 @@ make.base.data <- function(n.obs, n.clusters,
 
 }
 
-
-logit <- function(p) log(p/(1-p))
+#' The expit and logit functions
+#' 
+#' The expit and logit functions are useful shortcuts when using logistic regression models.
+#' 
+#' The logit function is defined as logit(p) = log(p)/log(1-p) and can also be 
+#'   described as the log odds of a given probability. The expit is the inverse 
+#'   of the logit function and is defined as expit(x) = exp(x)/(1+exp(x)).
+#'   
+#' @param x a real number
+#' @param p a number between 0 and 1, i.e. a probability
+#' @author Nicholas G. Reich
+#' @return A numeric value, possibly vectorized, depending on the input.
+#' 
+#' @examples  
+#' expit(-2)
+#' curve(expit(x), from=-5, to=5)
+#' 
+#' logit(.5)
+#' curve(logit(x), from=0, to=1)
+#' @export
 expit <- function(x) exp(x)/(1+exp(x))
 
-## converts mixed effect model parameters to hayes k parameters, for log-linear mixed effect models only
+#' @rdname expit
+#' @export
+logit <- function(p) log(p/(1-p))
+
+
+#' Calculation of variance in Poisson mixed model setting.
+#'
+#' This function is designed to calculate the overall variance for cluster-level 
+#' outcomes in a mixedeffect Poisson model. Conditional expectation calculations
+#' are implemented.
+#' 
+#' The \code{mixed.eff.params()} function is used by the \code{hayes.power.poisson()} function to 
+#' compute the effective coefficient of variation, or k, for a particular
+#' study design.
+#' 
+#' @references Reich NG et al.  PLoS ONE.  Empirical Power and Sample Size Calculations for
+#'   Cluster-Randomized and Cluster-Randomized Crossover Studies. 2012.  \url{http://ow.ly/fEn39}
+#' 
+#' @references Hayes RJ and Bennett S. Int J Epi. Simple sample size calculation for
+#'   cluster-randomized trials. 1999. \url{http://www.ncbi.nlm.nih.gov/pubmed/10342698} 
+#'   
+#' @param pi0 the baseline cluster-level mean on the scale of the link function
+#' @param btw.clust.var the between-cluster-variance
+#' @param Tk the at-risk time for each cluster
+#' @author Nicholas G. Reich
+#' @return A numeric vector with the following three named elements, in order:
+#'   ["expectation"] the overall mean of cluster-level outcomes, ["variance"] 
+#'   the overall variance of cluster-level outcomes, ["hayes.k"] the estimated
+#'   coefficient of variation.
+#'   
+#' @seealso \code{\link{hayes.power.poisson}}
+#' 
+#' @examples 
+#' mixed.eff.params(pi0=log(1), btw.clust.var=.5, Tk=100)
+#' 
+#' @export
 mixed.eff.params <- function(pi0, btw.clust.var, Tk) {
         e <- Tk * exp(pi0) * exp(btw.clust.var/2)
         v <- e + e^2*(exp(btw.clust.var)-1)
         k <- sqrt(v)/e
         return(c(expectation=e, variance=v, hayes.k=k))
 }
+
+
+
+#' An implementation of power calculations for cluster-randomized study based
+#' on the coefficient of variation.
+#' 
+#' This function calculates the power for a specified cluster-randomized study
+#' based on the methods described by Hayes et al (1999).
+#' 
+#' Calculates, for a specified study design, the power of that study to detect the
+#' specified effect size. The model is specified as a Poisson log-linear random 
+#' effects model (\code{period.effect} and \code{btw.clust.var} are parameters from 
+#' the model specified in Reich et al (2012)). Based on this model specification, the 
+#' coefficient of varation between cluster-level outcomes is calculated using 
+#' conditional expectation (see \code{mixed.eff.params()}) and then the formula from Hayes
+#' and Bennett (1999) is implemented. 
+#' 
+#' @references Reich NG et al.  PLoS ONE.  Empirical Power and Sample Size Calculations for
+#'   Cluster-Randomized and Cluster-Randomized Crossover Studies. 2012.  \url{http://ow.ly/fEn39}
+#' 
+#' @references Hayes RJ and Bennett S. Int J Epi. Simple sample size calculation for
+#'   cluster-randomized trials. 1999. \url{http://www.ncbi.nlm.nih.gov/pubmed/10342698} 
+#' 
+#' @param n.clusters number of clusters
+#' @param period.effect period effect, on the link scale. See details.
+#' @param btw.clust.var the between-cluster variance
+#' @param at.risk.params the expected at-risk time per individual in the study
+#' @param cluster.size the number of individuals in each cluster
+#' @param effect.size effect size, specified on the GLM link scale
+#' @param alpha desired type I error rate
+#' @seealso \code{\link{mixed.eff.params}}
+#' @return A numeric vector of length 1, containing the estimated power for the given study specifications.
+#'
+#' @examples 
+#' hayes.power.poisson(n.clusters=36, period.effect=log(.015), btw.clust.var=0,
+#'   at.risk.params=20, cluster.size=20, effect.size=log(.7))
+#'
+#' @export
 
 ## implements power calculation based on Hayes (1999) formulas and the coef of variation, k
 hayes.power.poisson <- function(n.clusters, period.effect, btw.clust.var, at.risk.params, cluster.size, effect.size, alpha=.05) {
