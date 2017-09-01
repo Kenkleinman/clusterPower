@@ -34,19 +34,19 @@ fixed.effect <- function(dat, incl.period.effect, outcome.type, alpha) {
 	}
 
 	if(incl.period.effect==0){
-		fit <- glm(y ~ trt + clust,
+		fit <- stats::glm(y ~ trt + clust,
 			   data=dat,
 			   family=outcome.type,
 			   offset=offsets)
 	} else {
-		fit <- glm(y ~ trt + per + clust - 1,
+		fit <- stats::glm(y ~ trt + per + clust - 1,
 			   data=dat,
 			   family=outcome.type,
 			   offset=offsets)
 	}
 
 	## get CI
-	Z <- qnorm(1-alpha/2)*c(-1,1)
+	Z <- stats::qnorm(1-alpha/2)*c(-1,1)
 	est <- summary(fit)$coef["trt",]
 	ci <- est["Estimate"] + Z*est["Std. Error"]
 	return(c(est["Estimate"], ci))
@@ -59,7 +59,7 @@ fixed.effect <- function(dat, incl.period.effect, outcome.type, alpha) {
 fixed.effect.cluster.level <- function(dat, incl.period.effect, outcome.type, alpha) {
 	cols <- c("y", "at.risk.time")
 
-	clust.dat <- aggregate(dat[,cols], FUN=sum,
+	clust.dat <- stats::aggregate(dat[,cols], FUN=sum,
 			       list(clust=dat[,"clust"],
 				    per=dat[,"per"],
 				    trt=dat[,"trt"]))
@@ -71,24 +71,24 @@ fixed.effect.cluster.level <- function(dat, incl.period.effect, outcome.type, al
 
 	## set the formula
 	if(incl.period.effect==0 & outcome.type!="binomial")
-		form <- formula(y ~ trt + clust)
+		form <- stats::formula(y ~ trt + clust)
 	if(incl.period.effect==0 & outcome.type=="binomial"){
 		successes <- clust.dat[,"y"]
 		failures <- clust.dat[,"at.risk.time"]-clust.dat[,"y"]
-		form <- formula(cbind(successes, failures) ~ trt + clust)
+		form <- stats::formula(cbind(successes, failures) ~ trt + clust)
 	}
 	if(incl.period.effect!=0 & outcome.type!="binomial")
-		form <- formula(y ~ trt + per + clust - 1)
+		form <- stats::formula(y ~ trt + per + clust - 1)
 	if(incl.period.effect!=0 & outcome.type=="binomial") {
 		successes <- clust.dat[,"y"]
 		failures <- clust.dat[,"at.risk.time"]-clust.dat[,"y"]
-		form <- formula(cbind(successes, failures) ~ trt + per + clust - 1)
+		form <- stats::formula(cbind(successes, failures) ~ trt + per + clust - 1)
 	}
 	
-	fit <- glm(form, data=clust.dat, family=outcome.type, offset=offsets)
+	fit <- stats::glm(form, data=clust.dat, family=outcome.type, offset=offsets)
 
 	## get CI
-	Z <- qnorm(1-alpha/2)*c(-1,1)
+	Z <- stats::qnorm(1-alpha/2)*c(-1,1)
 	est <- summary(fit)$coef["trt",]
 	ci <- est["Estimate"] + Z*est["Std. Error"]
 	return(c(est["Estimate"], ci))
@@ -131,8 +131,8 @@ random.effect <- function(dat, incl.period.effect, outcome.type, alpha) {
 
 	n.clust <- length(unique(dat$clust))
 	df <- n.clust - 2 ## based on k-2 in Donner & Klar p.118
-	t <- qt(1 - alpha/2, df=df) * c(-1, 1)
-	est <- coef(summary(fit))["trt", ]
+	t <- stats::qt(1 - alpha/2, df=df) * c(-1, 1)
+	est <- stats::coef(summary(fit))["trt", ]
 	ci <- est["Estimate"] + t * est["Std. Error"]
 	return(c(est["Estimate"], ci))
 }
@@ -148,12 +148,12 @@ weighted.crossover.cluster.level <- function(dat, incl.period.effect, outcome.ty
                 stop("This method only works for crosover studies with 2 periods.")
 
         ## takes the mean outcome by cluster-period
-        clust.dat <- aggregate(dat[,"y"], FUN=mean,
+        clust.dat <- stats::aggregate(dat[,"y"], FUN=mean,
                                list(clust=dat[,"clust"],
                                     per=as.numeric(dat[,"per"]),
                                     trt=dat[,"trt"]))
         ## makes a wide file with separate colums for treatment/control means
-        clust.means <- reshape(clust.dat, idvar="clust", 
+        clust.means <- stats::reshape(clust.dat, idvar="clust", 
                                v.names=c("x", "per"), 
                                timevar="trt", direction="wide")
         clust.diffs <- clust.means[,"x.1"]-clust.means[,"x.0"]
@@ -163,7 +163,7 @@ weighted.crossover.cluster.level <- function(dat, incl.period.effect, outcome.ty
         wts <- clust.sizes/2 ## section 3.2.2 in Turner (1997)
         
         ## fit linear model
-        fit <- lm(clust.diffs ~ ws, weights=wts)
+        fit <- stats::lm(clust.diffs ~ ws, weights=wts)
 
         
 }

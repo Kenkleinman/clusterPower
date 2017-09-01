@@ -49,7 +49,7 @@ crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
   
   # calculate alpha
   if (is.na(alpha)) {
-    alpha <- uniroot(function(alpha) eval(pwr) - power,
+    alpha <- stats::uniroot(function(alpha) eval(pwr) - power,
                      interval = c(1e-10, 1 - 1e-10),
                      tol = tol, extendInt = "yes")$root
   }
@@ -61,35 +61,35 @@ crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
   
   # calculate m
   if (is.na(m)) {
-    m <- uniroot(function(m) eval(pwr) - power,
+    m <- stats::uniroot(function(m) eval(pwr) - power,
                  interval = c(2 + 1e-10, 1e+07),
                  tol = tol)$root
   }
   
   # calculate py
   if (is.na(py)) {
-    py <- uniroot(function(py) eval(pwr) - power,
+    py <- stats::uniroot(function(py) eval(pwr) - power,
                   interval = c(1e-10, 1e+07),
                   tol = tol, extendInt = "upX")$root
   }
   
   # calculate r1
   if (is.na(r1)) {
-      r1 <- uniroot(function(r1) eval(pwr) - power,
+      r1 <- stats::uniroot(function(r1) eval(pwr) - power,
                     interval = c(1e-7, 1e7),
                     tol = tol, extendInt = "yes")$root
   }
   
   # calculate r2
   if (is.na(r2)) {
-    r1 <- uniroot(function(r2) eval(pwr) - power,
+    r1 <- stats::uniroot(function(r2) eval(pwr) - power,
                   interval = c(1e-7, 1e7),
                   tol = tol, extendInt = "yes")$root
   }
   
   # calculate cvb
   if (is.na(cvb)) {
-    cv <- uniroot(function(cvb) eval(pwr) - power,
+    cv <- stats::uniroot(function(cvb) eval(pwr) - power,
                   interval = c(1e-7, 1e+07),
                   tol = tol, extendInt = "downX")$root
   }

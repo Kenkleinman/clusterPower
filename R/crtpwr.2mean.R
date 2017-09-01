@@ -62,7 +62,7 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
   if(length(n) > 1){
     nvec <- n
     n <- mean(nvec)
-    nsd <- sd(nvec)
+    nsd <- stats::sd(nvec)
     cv <- nsd/n
     m <- length(nvec)
   }
@@ -119,7 +119,7 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
   
   # calculate alpha
   if (is.na(alpha)) {
-    alpha <- uniroot(function(alpha) eval(pwr) - power,
+    alpha <- stats::uniroot(function(alpha) eval(pwr) - power,
                      interval = c(1e-10, 1 - 1e-10),
                      tol = tol, extendInt = "yes")$root
   }
@@ -131,42 +131,42 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
   
   # calculate m
   if (is.na(m)) {
-    m <- uniroot(function(m) eval(pwr) - power,
+    m <- stats::uniroot(function(m) eval(pwr) - power,
                  interval = c(2 + 1e-10, 1e+07),
                  tol = tol, extendInt = "upX")$root
   }
   
   # calculate n
   if (is.na(n)) {
-    n <- uniroot(function(n) eval(pwr) - power,
+    n <- stats::uniroot(function(n) eval(pwr) - power,
                  interval = c(2 + 1e-10, 1e+07),
                  tol = tol, extendInt = "upX")$root
   }
   
   # calculate cv
   if (is.na(cv)) {
-    cv <- uniroot(function(cv) eval(pwr) - power,
+    cv <- stats::uniroot(function(cv) eval(pwr) - power,
                   interval = c(1e-10, 1e+07),
                   tol = tol, extendInt = "downX")$root
   }
   
   # calculate d
   if (is.na(d)) {
-    d <- uniroot(function(d) eval(pwr) - power,
+    d <- stats::uniroot(function(d) eval(pwr) - power,
                  interval = c(1e-07, 1e+07),
                  tol = tol, extendInt = "upX")$root
   }
   
   # calculate icc
   if (is.na(icc)){
-    icc <- uniroot(function(icc) eval(pwr) - power,
+    icc <- stats::uniroot(function(icc) eval(pwr) - power,
                    interval = c(1e-07, 1e+07),
                    tol = tol, extendInt = "downX")$root
   }
   
   # calculate varw
   if (is.na(varw)) {
-    varw <- uniroot(function(varw) eval(pwr) - power,
+    varw <- stats::uniroot(function(varw) eval(pwr) - power,
                     interval = c(1e-07, 1e+07),
                     tol = tol, extendInt = "downX")$root
   }

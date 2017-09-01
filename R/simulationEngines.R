@@ -140,8 +140,8 @@ power.sim.normal <- function(n.sim=10,
 		sim.dat <- sim.dat.base
 
 		## generate dataset
-		clust.effects <- rnorm(n.clusters, mean=0, sd=sqrt(btw.clust.var))
-		period.effect <- rnorm(n.periods,
+		clust.effects <- stats::rnorm(n.clusters, mean=0, sd=sqrt(btw.clust.var))
+		period.effect <- stats::rnorm(n.periods,
 				       mean=period.effect,
 				       sd=sqrt(period.var))
 		full.beta <- c(effect.size, clust.effects, period.effect)
@@ -150,7 +150,7 @@ power.sim.normal <- function(n.sim=10,
 		if(is.null(indiv.var)) {
 			indiv.var <- btw.clust.var*(1/ICC - 1)
 		}
-		noise <- rnorm(n.obs, 0, sd=sqrt(indiv.var))
+		noise <- stats::rnorm(n.obs, 0, sd=sqrt(indiv.var))
 		sim.dat[,"y"] <- mean.y + noise
 
 		sim.dat <- data.frame(sim.dat, at.risk.time=1)
@@ -255,14 +255,14 @@ power.sim.binomial <- function(n.sim=10,
 		sim.dat <- sim.dat.base
 
 		## generate dataset
-		clust.effects <- rnorm(n.clusters, mean=0, sd=sqrt(btw.clust.var))
-		period.effect <- rnorm(n.periods,
+		clust.effects <- stats::rnorm(n.clusters, mean=0, sd=sqrt(btw.clust.var))
+		period.effect <- stats::rnorm(n.periods,
 				       mean=period.effect,
 				       sd=sqrt(period.var))
 		full.beta <- c(effect.size, clust.effects, period.effect)
 		mean.y <- design.mat %*% full.beta
 		sim.dat[,"mean.y"] <- mean.y
-		sim.dat[,"y"] <- rbinom(nrow(sim.dat), size=1, prob=expit(mean.y))
+		sim.dat[,"y"] <- stats::rbinom(nrow(sim.dat), size=1, prob=expit(mean.y))
 
 		## using "at risk time" column to count cluster sizes
 		sim.dat <- data.frame(sim.dat, at.risk.time=1)
@@ -372,14 +372,14 @@ power.sim.poisson <- function(n.sim=10,
 		sim.dat <- sim.dat.base
 
 		## generate dataset
-		clust.effects <- rnorm(n.clusters, mean=0, sd=sqrt(btw.clust.var))
-		period.effect <- rnorm(n.periods,
+		clust.effects <- stats::rnorm(n.clusters, mean=0, sd=sqrt(btw.clust.var))
+		period.effect <- stats::rnorm(n.periods,
 				       mean=period.effect,
 				       sd=sqrt(period.var))
 		if(length(at.risk.params)==1){
 			at.risk.time <- rep(at.risk.params, n.obs)
 		} else {
-			at.risk.time <- 1 + rnbinom(n.obs,
+			at.risk.time <- 1 + stats::rnbinom(n.obs,
 						    size=at.risk.params[2],
 						    mu=at.risk.params[1])
 		}
@@ -388,7 +388,7 @@ power.sim.poisson <- function(n.sim=10,
 		full.beta <- c(effect.size, clust.effects, period.effect)
 		mean.y <- design.mat %*% full.beta + log(at.risk.time)
 		sim.dat[,"mean.y"] <- mean.y
-		sim.dat[,"y"] <- rpois(nrow(sim.dat), exp(mean.y))
+		sim.dat[,"y"] <- stats::rpois(nrow(sim.dat), exp(mean.y))
 
 		sim.dat <- data.frame(sim.dat, at.risk.time=at.risk.time)
 		sim.dat$clust <- factor(sim.dat$clust)
@@ -600,7 +600,7 @@ mixed.eff.params <- function(pi0, btw.clust.var, Tk) {
 ## implements power calculation based on Hayes (1999) formulas and the coef of variation, k
 hayes.power.poisson <- function(n.clusters, period.effect, btw.clust.var, at.risk.params, cluster.size, effect.size, alpha=.05) {
 	Tk <- at.risk.params*cluster.size
-        z.a <- qnorm(alpha/2, lower.tail=FALSE)
+        z.a <- stats::qnorm(alpha/2, lower.tail=FALSE)
         l0 <- exp(period.effect)
         l1 <- exp(period.effect)*exp(effect.size)
         ## calculate Hayes metrics
@@ -608,6 +608,6 @@ hayes.power.poisson <- function(n.clusters, period.effect, btw.clust.var, at.ris
         obs.k <- me.pars["hayes.k"]
         ## from formula 2 in Hayes et al.
         z.b <- sqrt((n.clusters-1) * (l0-l1)^2 / ( (l0+l1)/Tk + obs.k^2 * (l0^2+l1^2)) )-z.a
-	beta <- unname(pnorm(z.b, lower.tail=FALSE))
+	beta <- unname(stats::pnorm(z.b, lower.tail=FALSE))
         return(1-beta)
 }
