@@ -1,7 +1,7 @@
 Package: clusterPower
-Version: 0.6.0
-Date: 2017-09-01	
-Title: Power calculations for cluster-randomized and cluster-randomized crossover trials
+Version: 0.6.01
+Date: 2017-09-02	
+Title: Power Calculations for Cluster-Randomized and Cluster-Randomized Crossover Trials
 Authors@R: c(
   person("Ken", "Kleinman", email = "ken.kleinman@gmail.com", rol = c("aut","cre")),
   person("Jon", "Moyer", email = "jon.moyer@gmail.com", rol = c("aut")),
@@ -10,7 +10,7 @@ Authors@R: c(
   )
 License: GPL (>= 2)
 Imports: lme4 (>= 1.0)
-Description: This package enables researchers to calculate power for cluster randomized trials (CRTs) comparing
-  two means, two proportions, or two counts using closed-form solutions. In addition, this package calculates power for cluster randomized 
-  crossover trials by employing a simulation-based approach.
+Description: Calculate power for cluster randomized trials (CRTs) that compare
+  two means, two proportions, or two counts using closed-form solutions. In addition, 
+  calculate power for cluster randomized  crossover trials using Monte Carlo methods.
 RoxygenNote: 6.0.1
