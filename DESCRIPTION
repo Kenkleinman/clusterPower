@@ -1,5 +1,5 @@
 Package: clusterPower
-Version: 0.6.01
+Version: 0.6.1
 Date: 2017-09-02	
 Title: Power Calculations for Cluster-Randomized and Cluster-Randomized Crossover Trials
 Authors@R: c(
