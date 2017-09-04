@@ -1,7 +1,7 @@
 clusterPower
 ============
 
-[![](http://cranlogs.r-pkg.org/badges/clusterPower)](https://cran.r-project.org/web/packages/clusterPower/index.html)
+[![](http://cranlogs.r-pkg.org/badges/clusterPower)](https://CRAN.R-project.org/package=clusterPower)
 [![Build Status](https://travis-ci.org/Kenkleinman/clusterPower.svg?branch=master)](https://travis-ci.org/Kenkleinman/clusterPower)
 
 
