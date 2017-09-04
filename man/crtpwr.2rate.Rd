@@ -29,6 +29,13 @@ at least four significant digits.}
 }
 \value{
 The computed argument.
+#' #' @examples 
+# Find the number of clusters per condition needed for a trial with alpha = .05, 
+# power = 0.8, 10 person-years per cluster, rate
+in condition 1 of .1 and condition 2 of .2, and cvb = 0.1.
+crtpwr.2rate(py=10, r1=.1, r2=.2, cvb=.1)
+# 
+# The result, showimg m of greater than 24, suggests 25 clusters per condition should be used.
 }
 \description{
 Compute the power of a simple cluster randomized trial with a count outcome,

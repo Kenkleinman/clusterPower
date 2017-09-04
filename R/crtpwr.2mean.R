@@ -43,6 +43,8 @@
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
 #' # of 1 unit,  icc = 0.1 and   a variance of five units.
 #' crtpwr.2mean(n=10 ,d=1, icc=.1, varw=5)
+#' # 
+#' # The result, showimg m of greater than 15, suggests 16 clusters per condition should be used.
 #' @references Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation
 #'   Coefficient in Cluster Randomized Trials: A Review of Definitions. Int Stat Rev. 
 #'   77: 378-394.
