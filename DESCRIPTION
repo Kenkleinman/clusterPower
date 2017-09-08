@@ -12,3 +12,4 @@ License: GPL (>= 2)
 Imports: lme4 (>= 1.0)
 Description: Calculate power for cluster randomized trials (CRTs) that compare two means, two proportions, or two counts using closed-form solutions. In addition, calculate power for cluster randomized  crossover trials using Monte Carlo methods. For more information, see Reich et al. (2012) <doi:10.1371/journal.pone.0035564>.
 RoxygenNote: 6.0.1
+Suggests: shiny (>= 1.0.5)
