@@ -1,4 +1,4 @@
-#' Shiny app for running 
+#' Run a Shiny app for power analysis functions
 #'
 #' This function runs a Shiny app that employs the \code{crtpwr.2mean},
 #' \code{crtpwr.2prop}, and \code{crtpwr.2rate}. The app can do calculations

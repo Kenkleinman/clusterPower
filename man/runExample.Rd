@@ -2,7 +2,7 @@
 % Please edit documentation in R/runExample.R
 \name{runExample}
 \alias{runExample}
-\title{Shiny app for running}
+\title{Run a Shiny app for power analysis functions}
 \usage{
 runExample()
 }
