@@ -427,8 +427,14 @@ server <- function(input, output, session){
                          method,
                          stringsAsFactors = FALSE)
       
-      # record the name of the target parameter
+      # record the column index of the target parameter
       needind <- which(is.na(tab[1,]))
+      # validate that only one input is blank
+      validate(
+        need(length(needind) == 1,
+             "Exactly one of 'alpha', 'power', 'd', 'm', 'n', 'icc', 'varw', and 'cv' must be left blank."
+        )
+      )
       names(tab) <- names2mean
       target <- names2mean[needind]
       
@@ -446,7 +452,7 @@ server <- function(input, output, session){
     })
   
   # create 2mean output table
-  output$table2mean = DT::renderDataTable(
+  output$table2mean <- DT::renderDataTable(
     res2mean()[,1:10],
     filter = 'top',
     options = list(
@@ -578,7 +584,14 @@ server <- function(input, output, session){
                          icc,
                          stringsAsFactors = FALSE)
       
+      # record the column index of the target parameter
       needind <- which(is.na(tab[1,]))
+      # validate that only one input is blank
+      validate(
+        need(length(needind) == 1,
+             "Exactly one of 'alpha', 'power', 'p1', 'p2', 'm', 'n', 'icc' or 'cv' must be left blank."
+        )
+      )
       names(tab) <- names2prop
       target <- names2prop[needind]
       
@@ -596,7 +609,7 @@ server <- function(input, output, session){
     })
   
   # create 2prop output table
-  output$table2prop = DT::renderDataTable(
+  output$table2prop <- DT::renderDataTable(
     res2prop()[,1:9],
     filter = 'top',
     options = list(
@@ -717,7 +730,14 @@ server <- function(input, output, session){
                          cvb,
                          stringsAsFactors = FALSE)
       
+      # record column index of target parameter
       needind <- which(is.na(tab[1,]))
+      # validate that only one input is blank
+      validate(
+        need(length(needind) == 1,
+             "Exactly one of 'alpha', 'power', 'r1', 'r2', 'm', 'py', or 'cvb' must be left blank."
+        )
+      )
       names(tab) <- names2rate
       target <- names2rate[needind]
       
@@ -735,7 +755,7 @@ server <- function(input, output, session){
     })
   
   # create 2rate output table
-  output$table2rate = DT::renderDataTable(
+  output$table2rate <- DT::renderDataTable(
     res2rate()[,1:8],
     filter = 'top',
     options = list(
