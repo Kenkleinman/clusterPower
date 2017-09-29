@@ -87,7 +87,7 @@ ui <- fluidPage(
         <p>To use the two-arm calculator, leave the desired quantity blank and enter values for the other quantities.</p>
         <p>You may specify more than one input quantity by separating numbers with spaces or commas.<p>
         <p>You may specify a sequence of values by typing 'from X to Y by Z', where 'X' is the starting value, 'Y' is the ending value, and 'Z' is the increment.</p>"),
-  HTML("App created by Jon Moyer and Ken Kleinman; support from NIGMS grant R01GM121370.  This Beta has minimal documentation; please contact ken.kleinman@gmail.com with any feedback."),
+  HTML("This Beta has minimal documentation; please contact ken.kleinman@gmail.com with any feedback."),
   tabsetPanel(
     #-----------------------------------------------------------------------------------------------------------
     tabPanel("Continuous",
@@ -145,7 +145,9 @@ ui <- fluidPage(
                     ),
                     fluidRow(
                       column(12, style='padding: 0px;', actionButton("calc2mean", "Calculate", width = "100%",
-                                                                     style = umass))
+                                                                     style = umass)),
+                    fluidRow(column(12, HTML("App created by Jon Moyer and Ken Kleinman; support from NIGMS grant R01GM121370.")))
+                      
                     ),
                     conditionalPanel(condition = "output.table2mean != null",
                                      fluidRow(downloadButton("dl2mean", "Download")))
@@ -240,7 +242,9 @@ ui <- fluidPage(
                     ),
                     fluidRow(
                       column(12, style='padding:0px;', actionButton("calc2prop", "Calculate", width = "100%",
-                                                                    style = umass))
+                                                                    style = umass)),
+                    fluidRow(column(12, HTML("App created by Jon Moyer and Ken Kleinman; support from NIGMS grant R01GM121370.")))
+                      
                     ),
                     conditionalPanel(condition = "output.table2prop != null",
                                      fluidRow(downloadButton("dl2prop", "Download")))
@@ -321,7 +325,8 @@ ui <- fluidPage(
                       column(6, style='padding:0px;', actionButton("clear2rate", "Clear All", width = "100%"))),
                     fluidRow(
                       column(12, style='padding:0px;', actionButton("calc2rate", "Calculate", width = "100%",
-                                                                    style = umass))
+                                                                    style = umass)),
+                    fluidRow(column(12, HTML("App created by Jon Moyer and Ken Kleinman; support from NIGMS grant R01GM121370.")))
                     ),
                     conditionalPanel(condition = "output.table2rate != null",
                                      fluidRow(downloadButton("dl2rate", "Download")))
