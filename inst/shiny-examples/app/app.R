@@ -87,7 +87,7 @@ ui <- fluidPage(
         <p>To use the two-arm calculator, leave the desired quantity blank and enter values for the other quantities.</p>
         <p>You may specify more than one input quantity by separating numbers with spaces or commas.<p>
         <p>You may specify a sequence of values by typing 'from X to Y by Z', where 'X' is the starting value, 'Y' is the ending value, and 'Z' is the increment.</p>"),
-  HTML("App created by Jon Moyer and Ken Kleinman; support from NIGMS grant R01GM121370"),
+  HTML("App created by Jon Moyer and Ken Kleinman; support from NIGMS grant R01GM121370.  This Beta has minimal documentation; please contact ken.kleinman@gmail.com with any feedback."),
   tabsetPanel(
     #-----------------------------------------------------------------------------------------------------------
     tabPanel("Continuous",
