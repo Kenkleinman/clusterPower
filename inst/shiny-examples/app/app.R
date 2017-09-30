@@ -5,11 +5,14 @@ library(tidyverse)
 library(stringr)
 library(clusterPower)
 
+source("labels.R")
+
+# vectors of names for graphin purposes
 names2mean <- c("alpha","power","m","n","cv","d","icc","varw","method")
 names2prop <- c("alpha","power","m","n","cv","p1","p2","icc")
 names2rate <- c("alpha","power","m","py","r1","r2","cvb")
 
-# "safe versions of functions to catch errors
+# "safe" versions of functions to catch errors
 crtpwr.2mean.safe <- function(alpha,power,m,n,cv,d,icc,varw,method){
   # make safe version
   fun <- safely(crtpwr.2mean, otherwise = NA)
@@ -93,64 +96,64 @@ ui <- fluidPage(
     tabPanel("Continuous",
              column(2,
                     #----------------------------------------------------------
-                    fluidRow(textInput("alpha2mean", HTML("&alpha; (alpha)"),
+                    fluidRow(textInput("alpha2mean", HTML(alphatext),
                                        value = "0.05", width = "100%")),
-                    bsTooltip("alpha2mean",'Type I error rate.',
+                    bsTooltip("alpha2mean", alphatooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("power2mean", "Power (power)",
+                    fluidRow(textInput("power2mean", powertext,
                                        value = "", width = "100%")),
-                    bsTooltip("power2mean",'Power of the test. Should be close to 1 (e.g. 0.80 or 0.90).',
+                    bsTooltip("power2mean", powertooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("d2mean", "Difference (d)",
+                    fluidRow(textInput("d2mean", dtext,
                                        value = "", width = "100%")),
-                    bsTooltip("d2mean",'Expected difference in condition means.',
+                    bsTooltip("d2mean", dtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("m2mean", "Clusters per arm (m)",
+                    fluidRow(textInput("m2mean", mtext,
                                        value = "", width = "100%")),
-                    bsTooltip("m2mean",'The number of clusters per arm.',
+                    bsTooltip("m2mean", mtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("n2mean", "Cluster size (n)",
+                    fluidRow(textInput("n2mean", ntext,
                                        value = "", width = "100%")),
-                    bsTooltip("n2mean",'The mean sample size per cluster.',
+                    bsTooltip("n2mean", ntooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("icc2mean", "ICC (icc)",
+                    fluidRow(textInput("icc2mean", icctext,
                                        value = "", width = "100%")),
-                    bsTooltip("icc2mean",'Intracluster correlation coefficient.',
+                    bsTooltip("icc2mean", icctooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("varw2mean", "Within variance (varw)",
+                    fluidRow(textInput("varw2mean", varwtext,
                                        value = "", width = "100%")),
-                    bsTooltip("varw2mean",'Within cluster variance. Assumed to be the same for all clusters.',
+                    bsTooltip("varw2mean", varwtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("cv2mean", "Cluster size CV (cv)",
+                    fluidRow(textInput("cv2mean", cvtext,
                                        value = "0", width = "100%")),
-                    bsTooltip("cv2mean",'Coefficient of variation of the cluster sizes. When this equals 0, all clusters have the same size.',
+                    bsTooltip("cv2mean", cvtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(checkboxGroupInput("method2mean", "Unequal Cluster Size Adjustment",
+                    fluidRow(checkboxGroupInput("method2mean", methodtext,
                                                 choices = c(Taylor = "taylor", Weighted = "weighted"),
                                                 selected = "taylor")),
-                    bsTooltip("method2mean",'Method for calculating the variance inflation and design effect due to unequal cluster sizes. When CV = 0, "method" has no effect.',
+                    bsTooltip("method2mean", methodtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(
-                      column(6, style='padding:0px;', actionButton("default2mean", "Defaults", width = "100%")),
-                      column(6, style='padding:0px;', actionButton("clear2mean", "Clear All", width = "100%"))
+                      column(6, style='padding:0px;', actionButton("default2mean", defaulttext, width = "100%")),
+                      column(6, style='padding:0px;', actionButton("clear2mean", clearalltext, width = "100%"))
                     ),
                     fluidRow(
-                      column(12, style='padding: 0px;', actionButton("calc2mean", "Calculate", width = "100%",
+                      column(12, style='padding: 0px;', actionButton("calc2mean", calctext, width = "100%",
                                                                      style = umass)),
-                    fluidRow(column(12, HTML("App created by Jon Moyer and Ken Kleinman; support from NIGMS grant R01GM121370.")))
+                    fluidRow(column(12, credittext))
                       
                     ),
                     conditionalPanel(condition = "output.table2mean != null",
-                                     fluidRow(downloadButton("dl2mean", "Download")))
+                                     fluidRow(downloadButton("dl2mean", dltext)))
              ),
              column(10,
                     tabsetPanel(
@@ -159,22 +162,22 @@ ui <- fluidPage(
                       ),
                       tabPanel("Graphs",
                                column(2,
-                                      fluidRow(selectInput("y2mean", "Y",
+                                      fluidRow(selectInput("y2mean", ylab,
                                                            choices = c(None = ".", names2mean), selected = ".")),
-                                      fluidRow(selectInput("x2mean", "X",
+                                      fluidRow(selectInput("x2mean", xlab,
                                                            choices = c(None = ".", names2mean), selected = ".")),
-                                      fluidRow(selectInput("group2mean", "Group",
+                                      fluidRow(selectInput("group2mean", grouplab,
                                                            choices = c(None = ".", names2mean), selected = ".")),
-                                      fluidRow(checkboxInput("color2mean", "Color by Group",value = TRUE)),
-                                      fluidRow(selectInput("row2mean", "Facet Row",
+                                      fluidRow(checkboxInput("color2mean", colorlab,value = TRUE)),
+                                      fluidRow(selectInput("row2mean", rowlab,
                                                            choices = c(None = ".", names2mean))),
-                                      fluidRow(selectInput("col2mean", "Facet Column",
+                                      fluidRow(selectInput("col2mean", collab,
                                                            choices = c(None = ".", names2mean))),
-                                      fluidRow(numericInput("height2mean", "Plot Height", value = 400,
+                                      fluidRow(numericInput("height2mean", heightlab, value = 400,
                                                             min = 100, max = 2000, step = 10)),
-                                      fluidRow(numericInput("psize2mean", "Point Size", value = 3,
+                                      fluidRow(numericInput("psize2mean", psizelab, value = 3,
                                                             min = 0.5, max = 4, step = 0.25)),
-                                      fluidRow(numericInput("lsize2mean", "Line Width", value = 1,
+                                      fluidRow(numericInput("lsize2mean", lsizelab, value = 1,
                                                             min = 0.5, max = 2, step = 0.25))
                                ),
                                column(10,
@@ -188,66 +191,66 @@ ui <- fluidPage(
     tabPanel("Binary",
              column(2,
                     #----------------------------------------------------------
-                    fluidRow(textInput("alpha2prop", HTML("&alpha; (alpha)"),
+                    fluidRow(textInput("alpha2prop", HTML(alphatext),
                                        value = "0.05", width = "100%")),
-                    bsTooltip("alpha2prop", 'Type I error rate.',
+                    bsTooltip("alpha2prop", alphatooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("power2prop", "Power (power)",
+                    fluidRow(textInput("power2prop", powertext,
                                        value = "0.80", width = "100%")),
-                    bsTooltip("power2prop", 'Power of the test. Should be close to 1 (e.g. 0.80 or 0.90).',
+                    bsTooltip("power2prop", powertooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("p12prop", "Proportion 1 (p1)",
+                    fluidRow(textInput("p12prop", p1text,
                                        value = "", width = "100%")),
-                    bsTooltip("p12prop",'The expected proportion in the treatment group.',
+                    bsTooltip("p12prop", p1tooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("p22prop", "Proportion 2 (p2)",
+                    fluidRow(textInput("p22prop", p2text,
                                        value = "", width = "100%")),
-                    bsTooltip("p22prop",'The proportion in the control group.',
+                    bsTooltip("p22prop", p2tooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(checkboxInput("p1inc2prop", "p1 > p2")),
-                    bsTooltip("p1inc2prop", 'Select to indicate that the treatment group proportion is greater than the control group proportion. This selection only matters if the target values are "p1" or "p2".',
+                    fluidRow(checkboxInput("p1inc2prop", p1inctext)),
+                    bsTooltip("p1inc2prop", p1inctooltip,
                               'top', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(checkboxInput("pooled2prop", "Pooled")),
-                    bsTooltip("pooled2prop", "Select to indicate if pooled variance is desired.",
+                    fluidRow(checkboxInput("pooled2prop", pooledtext)),
+                    bsTooltip("pooled2prop", pooledtooltip,
                               'top', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("m2prop", "Clusters per arm (m)",
+                    fluidRow(textInput("m2prop", mtext,
                                        value = "", width = "100%")),
-                    bsTooltip("m2prop",'The number of clusters per arm.',
+                    bsTooltip("m2prop", mtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("n2prop", "Cluster size (n)",
+                    fluidRow(textInput("n2prop", ntext,
                                        value = "", width = "100%")),
-                    bsTooltip("n2prop",'The mean sample size per cluster.',
+                    bsTooltip("n2prop", ntooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("icc2prop", "ICC (icc)",
+                    fluidRow(textInput("icc2prop", icctext,
                                        value = "", width = "100%")),
-                    bsTooltip("icc2prop", 'Intracluster correlation coefficient.',
+                    bsTooltip("icc2prop", icctooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("cv2prop", "Cluster size CV (cv)",
+                    fluidRow(textInput("cv2prop", cvtext,
                                        value = "0", width = "100%")),
-                    bsTooltip("cv2prop", 'Coefficient of variation of the cluster sizes. When this equals 0, all clusters have the same size.',
+                    bsTooltip("cv2prop", cvtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(
-                      column(6, style='padding:0px;', actionButton("default2prop", "Defaults", width = "100%")),
-                      column(6, style='padding:0px;', actionButton("clear2prop", "Clear All", width = "100%"))
+                      column(6, style='padding:0px;', actionButton("default2prop", defaulttext, width = "100%")),
+                      column(6, style='padding:0px;', actionButton("clear2prop", clearalltext, width = "100%"))
                     ),
                     fluidRow(
-                      column(12, style='padding:0px;', actionButton("calc2prop", "Calculate", width = "100%",
+                      column(12, style='padding:0px;', actionButton("calc2prop", calctext, width = "100%",
                                                                     style = umass)),
-                    fluidRow(column(12, HTML("App created by Jon Moyer and Ken Kleinman; support from NIGMS grant R01GM121370.")))
+                    fluidRow(column(12, credittext))
                       
                     ),
                     conditionalPanel(condition = "output.table2prop != null",
-                                     fluidRow(downloadButton("dl2prop", "Download")))
+                                     fluidRow(downloadButton("dl2prop", dltext)))
              ), # end column(2, ..
              column(10,
                     tabsetPanel(
@@ -256,22 +259,22 @@ ui <- fluidPage(
                       ),
                       tabPanel("Graphs",
                                column(2,
-                                      fluidRow(selectInput("y2prop", "Y",
+                                      fluidRow(selectInput("y2prop", ylab,
                                                            choices = names2prop, selected = "power")),
-                                      fluidRow(selectInput("x2prop", "X",
+                                      fluidRow(selectInput("x2prop", xlab,
                                                            choices = names2prop, selected = "m")),
-                                      fluidRow(selectInput("group2prop", "Group",
+                                      fluidRow(selectInput("group2prop", grouplab,
                                                            choices = c(None = ".", names2prop), selected = "n")),
-                                      fluidRow(checkboxInput("color2prop", "Color by Group",value = TRUE)),
-                                      fluidRow(selectInput("row2prop", "Facet Row",
+                                      fluidRow(checkboxInput("color2prop", colorlab,value = TRUE)),
+                                      fluidRow(selectInput("row2prop", rowlab,
                                                            choices = c(None = ".", names2prop))),
-                                      fluidRow(selectInput("col2prop", "Facet Column",
+                                      fluidRow(selectInput("col2prop", collab,
                                                            choices = c(None = ".", names2prop))),
-                                      fluidRow(numericInput("height2prop", "Plot Height", value = 400,
+                                      fluidRow(numericInput("height2prop", heightlab, value = 400,
                                                             min = 100, max = 2000, step = 10)),
-                                      fluidRow(numericInput("psize2prop", "Point Size", value = 3,
+                                      fluidRow(numericInput("psize2prop", psizelab, value = 3,
                                                             min = 0.5, max = 4, step = 0.25)),
-                                      fluidRow(numericInput("lsize2prop", "Line Width", value = 1,
+                                      fluidRow(numericInput("lsize2prop", lsizelab, value = 1,
                                                             min = 0.5, max = 2, step = 0.25))
                                ),
                                column(10,
@@ -285,51 +288,51 @@ ui <- fluidPage(
     tabPanel("Count",
              column(2,
                     #----------------------------------------------------------
-                    fluidRow(textInput("alpha2rate", HTML("&alpha; (alpha)"),
+                    fluidRow(textInput("alpha2rate", HTML(alphatext),
                                        value = "0.05", width = "100%")),
-                    bsTooltip("alpha2rate", 'Type I error rate.',
+                    bsTooltip("alpha2rate", alphatooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("power2rate", "Power (power)",
+                    fluidRow(textInput("power2rate", powertext,
                                        value = "0.80", width = "100%")),
-                    bsTooltip("power2rate", 'Power of the test. Should be close to 1 (e.g. 0.80 or 0.90).',
+                    bsTooltip("power2rate", powertooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("r12rate", "Rate 1 (r1)",
+                    fluidRow(textInput("r12rate", r1text,
                                        value = "", width = "100%")),
-                    bsTooltip("r12rate", 'The expected rate in the treatment group.',
+                    bsTooltip("r12rate", r1tooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("r22rate", "Rate 2 (r2)",
+                    fluidRow(textInput("r22rate", r2text,
                                        value = "", width = "100%")),
-                    bsTooltip("r22rate", 'The expected rate in the control group.',
+                    bsTooltip("r22rate", r2tooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("m2rate", "Clusters per arm (m)",
+                    fluidRow(textInput("m2rate", mtext,
                                        value = "", width = "100%")),
-                    bsTooltip("m2rate", 'The number of clusters per arm.',
+                    bsTooltip("m2rate", mtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("py2rate", "PY per cluster (py)",
+                    fluidRow(textInput("py2rate", pytext,
                                        value = "", width = "100%")),
-                    bsTooltip("py2rate", 'Person years per cluster.',
+                    bsTooltip("py2rate", pytooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("cvb2rate", "Btwn-cluster CV (cvb)",
+                    fluidRow(textInput("cvb2rate", cvbtext,
                                        value = "", width = "100%")),
-                    bsTooltip("cvb2rate", 'The coefficient of variation of the person years per cluster.',
+                    bsTooltip("cvb2rate", cvbtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(
-                      column(6, style='padding:0px;', actionButton("default2rate", "Defaults", width = "100%")),
-                      column(6, style='padding:0px;', actionButton("clear2rate", "Clear All", width = "100%"))),
+                      column(6, style='padding:0px;', actionButton("default2rate", defaulttext, width = "100%")),
+                      column(6, style='padding:0px;', actionButton("clear2rate", clearalltext, width = "100%"))),
                     fluidRow(
-                      column(12, style='padding:0px;', actionButton("calc2rate", "Calculate", width = "100%",
+                      column(12, style='padding:0px;', actionButton("calc2rate", calctext, width = "100%",
                                                                     style = umass)),
-                    fluidRow(column(12, HTML("App created by Jon Moyer and Ken Kleinman; support from NIGMS grant R01GM121370.")))
+                    fluidRow(column(12,credittext))
                     ),
                     conditionalPanel(condition = "output.table2rate != null",
-                                     fluidRow(downloadButton("dl2rate", "Download")))
+                                     fluidRow(downloadButton("dl2rate", dltext)))
              ),
              column(10,
                     tabsetPanel(
@@ -338,22 +341,22 @@ ui <- fluidPage(
                       ),
                       tabPanel("Graphs",
                                column(2,
-                                      fluidRow(selectInput("y2rate", "Y",
+                                      fluidRow(selectInput("y2rate", ylab,
                                                            choices = names2rate, selected = "power")),
-                                      fluidRow(selectInput("x2rate", "X",
+                                      fluidRow(selectInput("x2rate", xlab,
                                                            choices = names2rate, selected = "m")),
-                                      fluidRow(selectInput("group2rate", "Group",
+                                      fluidRow(selectInput("group2rate", grouplab,
                                                            choices = names2rate, selected = "py")),
-                                      fluidRow(checkboxInput("color2rate", "Color by Group",value = TRUE)),
-                                      fluidRow(selectInput("row2rate", "Facet Row",
+                                      fluidRow(checkboxInput("color2rate", colorlab,value = TRUE)),
+                                      fluidRow(selectInput("row2rate", rowlab,
                                                            choices = c(None = ".", names2rate))),
-                                      fluidRow(selectInput("col2rate", "Facet Column",
+                                      fluidRow(selectInput("col2rate", collab,
                                                            choices = c(None = ".", names2rate))),
-                                      fluidRow(numericInput("height2rate", "Plot Height", value = 400,
+                                      fluidRow(numericInput("height2rate", heightlab, value = 400,
                                                             min = 100, max = 2000, step = 10)),
-                                      fluidRow(numericInput("psize2rate", "Point Size", value = 3,
+                                      fluidRow(numericInput("psize2rate", psizelab, value = 3,
                                                             min = 0.5, max = 4, step = 0.25)),
-                                      fluidRow(numericInput("lsize2rate", "Line Width", value = 1,
+                                      fluidRow(numericInput("lsize2rate", lsizelab, value = 1,
                                                             min = 0.5, max = 2, step = 0.25))
                                ),
                                column(10,
@@ -421,6 +424,16 @@ server <- function(input, output, session){
       icc <- make_sequence(isolate(input$icc2mean))
       varw <- make_sequence(isolate(input$varw2mean))
       method <- na.omit(isolate(input$method2mean))
+      
+      validate(
+        need(power >= 0 & power <= 1,
+             powervalidmsg)
+      )
+      
+      validate(
+        need(alpha >= 0 & alpha <= 1,
+             alphavalidmsg)
+      )
       
       # create a table of input values
       tab <- expand.grid(alpha,
@@ -591,6 +604,16 @@ server <- function(input, output, session){
                          icc,
                          stringsAsFactors = FALSE)
       
+      validate(
+        need(power >= 0 & power <= 1,
+             powervalidmsg)
+      )
+      
+      validate(
+        need(alpha >= 0 & alpha <= 1,
+             alphavalidmsg)
+      )
+      
       # record the column index of the target parameter
       needind <- which(is.na(tab[1,]))
       # validate that only one input is blank
@@ -736,6 +759,16 @@ server <- function(input, output, session){
                          r2,
                          cvb,
                          stringsAsFactors = FALSE)
+      
+      validate(
+        need(power >= 0 & power <= 1,
+             powervalidmsg)
+      )
+      
+      validate(
+        need(alpha >= 0 & alpha <= 1,
+             alphavalidmsg)
+      )
       
       # record column index of target parameter
       needind <- which(is.na(tab[1,]))
