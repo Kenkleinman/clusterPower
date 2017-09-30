@@ -539,15 +539,19 @@ server <- function(input, output, session){
                          icc,
                          stringsAsFactors = FALSE)
       
-      validate(
-        need(power >= 0 & power <= 1,
-             powervalidmsg)
-      )
+      if(!is.na(power)){
+        validate(
+          need(power >= 0 & power <= 1,
+               powervalidmsg)
+        )
+      }
       
-      validate(
-        need(alpha >= 0 & alpha <= 1,
-             alphavalidmsg)
-      )
+      if(!is.na(alpha)){
+        validate(
+          need(alpha >= 0 & alpha <= 1,
+               alphavalidmsg)
+        )
+      }
       
       # record the column index of the target parameter
       needind <- which(is.na(tab[1,]))
@@ -695,15 +699,19 @@ server <- function(input, output, session){
                          cvb,
                          stringsAsFactors = FALSE)
       
-      validate(
-        need(power >= 0 & power <= 1,
-             powervalidmsg)
-      )
+      if(!is.na(power)){
+        validate(
+          need(power >= 0 & power <= 1,
+               powervalidmsg)
+        )
+      }
       
-      validate(
-        need(alpha >= 0 & alpha <= 1,
-             alphavalidmsg)
-      )
+      if(!is.na(alpha)){
+        validate(
+          need(alpha >= 0 & alpha <= 1,
+               alphavalidmsg)
+        )
+      }
       
       # record column index of target parameter
       needind <- which(is.na(tab[1,]))
