@@ -1,5 +1,5 @@
 # parameters common to at least two outcomes
-alphatext <- '&alpha; (alpha)'
+alphatext <- HTML('&alpha; (alpha)')
 alphatooltip <- 'Type I error rate. Should be between 0 and 1, preferably close to 0 (e.g. 0.05).'
 alphavalidmsg <- 'Type I error rate should be between 0 and 1.'
 

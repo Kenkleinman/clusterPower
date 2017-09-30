@@ -6,84 +6,14 @@ library(stringr)
 library(clusterPower)
 
 source("labels.R")
+source("helpers.R")
 
 # vectors of names for graphin purposes
 names2mean <- c("alpha","power","m","n","cv","d","icc","varw","method")
 names2prop <- c("alpha","power","m","n","cv","p1","p2","icc")
 names2rate <- c("alpha","power","m","py","r1","r2","cvb")
 
-# "safe" versions of functions to catch errors
-crtpwr.2mean.safe <- function(alpha,power,m,n,cv,d,icc,varw,method){
-  # make safe version
-  fun <- safely(crtpwr.2mean, otherwise = NA)
-  # store result
-  res <- fun(alpha,power,m,n,cv,d,icc,varw,method)
-  # if res$error NULL, set to NA, otherwise set to message
-  if(is.null(res$error)){
-    res$error = NA
-  } else {
-    res$error <- res$error$message
-  }
-  res
-}
-
-crtpwr.2prop.safe <- function(alpha,power,m,n,cv,p1,p2,icc){
-  # make safe version
-  fun <- safely(crtpwr.2prop, otherwise = NA)
-  # store result
-  res <- fun(alpha,power,m,n,cv,p1,p2,icc)
-  # if res$error NULL, set to NA, otherwise set to message
-  if(is.null(res$error)){
-    res$error = NA
-  } else {
-    res$error <- res$error$message
-  }
-  res
-}
-
-crtpwr.2rate.safe <- function(alpha,power,m,py,r1,r2,cvb){
-  # make safe version
-  fun <- safely(crtpwr.2rate, otherwise = NA)
-  # store result
-  res <- fun(alpha,power,m,py,r1,r2,cvb)
-  # if res$error NULL, set to NA, otherwise set to message
-  if(is.null(res$error)){
-    res$error = NA
-  } else {
-    res$error <- res$error$message
-  }
-  res
-}
-
-# function to shorten error messages
-shorten_error <- function(err, target){
-  ifelse(err == "did not succeed extending the interval endpoints for f(lower) * f(upper) <= 0",
-         paste0("No '", target, "' found for given inputs."),
-         err)
-}
-  
 umass <- "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-weight: bold; color: #ffffff; background-color: #881c1c; border: 3px solid #000000;"
-
-# function to convert app input into numeric vectors
-make_sequence <- function(x){
-  # trim any spaces before and after the supplied string
-  x <- str_trim(x)
-  if(x == ""){
-    # if x is an empty string, just return NA
-    as.numeric(x)
-  } else if(str_detect(x, "^[0-9.]")){
-    # if the initial character of x is a digit or period, use the supplied
-    # numbers to create a vector of possibilities
-    temp <- as.numeric(str_split(x,"[^0-9.]",simplify=TRUE))
-    temp[!is.na(temp)]
-  } else {
-    # if the initial character of x is not a digit or period, use the three
-    # supplied numbers to create a sequence 'from x to y by z'
-    temp <- as.numeric(str_split(x,"[^0-9.]",simplify=TRUE))
-    temp <- temp[!is.na(temp)]
-    seq(temp[1], temp[2], by = temp[3])
-  }
-}
 
 ui <- fluidPage(
   HTML("<h3>Simple Two-Arm Designs</h3>
@@ -96,7 +26,7 @@ ui <- fluidPage(
     tabPanel("Continuous",
              column(2,
                     #----------------------------------------------------------
-                    fluidRow(textInput("alpha2mean", HTML(alphatext),
+                    fluidRow(textInput("alpha2mean", alphatext,
                                        value = "0.05", width = "100%")),
                     bsTooltip("alpha2mean", alphatooltip,
                               'right', options = list(container = "body")),
@@ -191,7 +121,7 @@ ui <- fluidPage(
     tabPanel("Binary",
              column(2,
                     #----------------------------------------------------------
-                    fluidRow(textInput("alpha2prop", HTML(alphatext),
+                    fluidRow(textInput("alpha2prop", alphatext,
                                        value = "0.05", width = "100%")),
                     bsTooltip("alpha2prop", alphatooltip,
                               'right', options = list(container = "body")),
@@ -288,7 +218,7 @@ ui <- fluidPage(
     tabPanel("Count",
              column(2,
                     #----------------------------------------------------------
-                    fluidRow(textInput("alpha2rate", HTML(alphatext),
+                    fluidRow(textInput("alpha2rate", alphatext,
                                        value = "0.05", width = "100%")),
                     bsTooltip("alpha2rate", alphatooltip,
                               'right', options = list(container = "body")),
@@ -425,15 +355,20 @@ server <- function(input, output, session){
       varw <- make_sequence(isolate(input$varw2mean))
       method <- na.omit(isolate(input$method2mean))
       
-      validate(
-        need(power >= 0 & power <= 1,
-             powervalidmsg)
-      )
-      
-      validate(
-        need(alpha >= 0 & alpha <= 1,
-             alphavalidmsg)
-      )
+      if(!is.na(power)){
+        validate(
+          need(power >= 0 & power <= 1,
+               powervalidmsg)
+        )
+      }
+
+      if(!is.na(alpha)){
+        validate(
+          need(alpha >= 0 & alpha <= 1,
+               alphavalidmsg)
+        )
+      }
+
       
       # create a table of input values
       tab <- expand.grid(alpha,
