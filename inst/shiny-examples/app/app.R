@@ -8,7 +8,7 @@ library(clusterPower)
 source("labels.R")
 source("helpers.R")
 
-# vectors of names for graphin purposes
+# vectors of names, needed for graphs and target param selection
 names2mean <- c("alpha","power","m","n","cv","d","icc","varw","method")
 names2prop <- c("alpha","power","m","n","cv","p1","p2","icc")
 names2rate <- c("alpha","power","m","py","r1","r2","cvb")
@@ -86,35 +86,36 @@ ui <- fluidPage(
                                      fluidRow(downloadButton("dl2mean", dltext)))
              ),
              column(10,
-                    tabsetPanel(
-                      tabPanel("Data",
-                               DT::dataTableOutput("table2mean")
-                      ),
-                      tabPanel("Graphs",
-                               column(2,
-                                      fluidRow(selectInput("y2mean", ylab,
-                                                           choices = c(None = ".", names2mean), selected = ".")),
-                                      fluidRow(selectInput("x2mean", xlab,
-                                                           choices = c(None = ".", names2mean), selected = ".")),
-                                      fluidRow(selectInput("group2mean", grouplab,
-                                                           choices = c(None = ".", names2mean), selected = ".")),
-                                      fluidRow(checkboxInput("color2mean", colorlab,value = TRUE)),
-                                      fluidRow(selectInput("row2mean", rowlab,
-                                                           choices = c(None = ".", names2mean))),
-                                      fluidRow(selectInput("col2mean", collab,
-                                                           choices = c(None = ".", names2mean))),
-                                      fluidRow(numericInput("height2mean", heightlab, value = 400,
-                                                            min = 100, max = 2000, step = 10)),
-                                      fluidRow(numericInput("psize2mean", psizelab, value = 3,
-                                                            min = 0.5, max = 4, step = 0.25)),
-                                      fluidRow(numericInput("lsize2mean", lsizelab, value = 1,
-                                                            min = 0.5, max = 2, step = 0.25))
-                               ),
-                               column(10,
-                                      plotOutput("graph2mean", height = "auto")
-                               )
-                      ) # end tabPanel("Graphs"...
-                    ) # end tabsetPanel(...
+                    make_table_and_graph("mean", names2mean)
+                    # tabsetPanel(
+                    #   tabPanel("Data",
+                    #            DT::dataTableOutput("table2mean")
+                    #   ),
+                    #   tabPanel("Graphs",
+                    #            column(2,
+                    #                   fluidRow(selectInput("y2mean", ylab,
+                    #                                        choices = c(None = ".", names2mean), selected = ".")),
+                    #                   fluidRow(selectInput("x2mean", xlab,
+                    #                                        choices = c(None = ".", names2mean), selected = ".")),
+                    #                   fluidRow(selectInput("group2mean", grouplab,
+                    #                                        choices = c(None = ".", names2mean), selected = ".")),
+                    #                   fluidRow(checkboxInput("color2mean", colorlab,value = TRUE)),
+                    #                   fluidRow(selectInput("row2mean", rowlab,
+                    #                                        choices = c(None = ".", names2mean))),
+                    #                   fluidRow(selectInput("col2mean", collab,
+                    #                                        choices = c(None = ".", names2mean))),
+                    #                   fluidRow(numericInput("height2mean", heightlab, value = 400,
+                    #                                         min = 100, max = 2000, step = 10)),
+                    #                   fluidRow(numericInput("psize2mean", psizelab, value = 3,
+                    #                                         min = 0.5, max = 4, step = 0.25)),
+                    #                   fluidRow(numericInput("lsize2mean", lsizelab, value = 1,
+                    #                                         min = 0.5, max = 2, step = 0.25))
+                    #            ),
+                    #            column(10,
+                    #                   plotOutput("graph2mean", height = "auto")
+                    #            )
+                    #   ) # end tabPanel("Graphs"...
+                    # ) # end tabsetPanel(...
              ) # end column(10,...
     ), # end tabPanel("Continuous ...
     #-----------------------------------------------------------------------------------------------------------
@@ -183,35 +184,36 @@ ui <- fluidPage(
                                      fluidRow(downloadButton("dl2prop", dltext)))
              ), # end column(2, ..
              column(10,
-                    tabsetPanel(
-                      tabPanel("Data",
-                               DT::dataTableOutput("table2prop")
-                      ),
-                      tabPanel("Graphs",
-                               column(2,
-                                      fluidRow(selectInput("y2prop", ylab,
-                                                           choices = names2prop, selected = "power")),
-                                      fluidRow(selectInput("x2prop", xlab,
-                                                           choices = names2prop, selected = "m")),
-                                      fluidRow(selectInput("group2prop", grouplab,
-                                                           choices = c(None = ".", names2prop), selected = "n")),
-                                      fluidRow(checkboxInput("color2prop", colorlab,value = TRUE)),
-                                      fluidRow(selectInput("row2prop", rowlab,
-                                                           choices = c(None = ".", names2prop))),
-                                      fluidRow(selectInput("col2prop", collab,
-                                                           choices = c(None = ".", names2prop))),
-                                      fluidRow(numericInput("height2prop", heightlab, value = 400,
-                                                            min = 100, max = 2000, step = 10)),
-                                      fluidRow(numericInput("psize2prop", psizelab, value = 3,
-                                                            min = 0.5, max = 4, step = 0.25)),
-                                      fluidRow(numericInput("lsize2prop", lsizelab, value = 1,
-                                                            min = 0.5, max = 2, step = 0.25))
-                               ),
-                               column(10,
-                                      plotOutput("graph2prop", height = "auto")
-                               )
-                      ) # end tabPanel("Graphs"...
-                    ) # end tabsetPanel(...
+                    make_table_and_graph("prop", names2prop)
+                    # tabsetPanel(
+                    #   tabPanel("Data",
+                    #            DT::dataTableOutput("table2prop")
+                    #   ),
+                    #   tabPanel("Graphs",
+                    #            column(2,
+                    #                   fluidRow(selectInput("y2prop", ylab,
+                    #                                        choices = names2prop, selected = "power")),
+                    #                   fluidRow(selectInput("x2prop", xlab,
+                    #                                        choices = names2prop, selected = "m")),
+                    #                   fluidRow(selectInput("group2prop", grouplab,
+                    #                                        choices = c(None = ".", names2prop), selected = "n")),
+                    #                   fluidRow(checkboxInput("color2prop", colorlab,value = TRUE)),
+                    #                   fluidRow(selectInput("row2prop", rowlab,
+                    #                                        choices = c(None = ".", names2prop))),
+                    #                   fluidRow(selectInput("col2prop", collab,
+                    #                                        choices = c(None = ".", names2prop))),
+                    #                   fluidRow(numericInput("height2prop", heightlab, value = 400,
+                    #                                         min = 100, max = 2000, step = 10)),
+                    #                   fluidRow(numericInput("psize2prop", psizelab, value = 3,
+                    #                                         min = 0.5, max = 4, step = 0.25)),
+                    #                   fluidRow(numericInput("lsize2prop", lsizelab, value = 1,
+                    #                                         min = 0.5, max = 2, step = 0.25))
+                    #            ),
+                    #            column(10,
+                    #                   plotOutput("graph2prop", height = "auto")
+                    #            )
+                    #   ) # end tabPanel("Graphs"...
+                    # ) # end tabsetPanel(...
              ) # end column(10,...
     ), # end tabPanel("Binary ...
     #-----------------------------------------------------------------------------------------------------------
@@ -265,6 +267,7 @@ ui <- fluidPage(
                                      fluidRow(downloadButton("dl2rate", dltext)))
              ),
              column(10,
+                    #make_table_and_graph("rate", names2rate)
                     tabsetPanel(
                       tabPanel("Data",
                                DT::dataTableOutput("table2rate")
@@ -769,14 +772,14 @@ server <- function(input, output, session){
                  # if the target is m, set default x-axis to n, otherwise set default axis to m
                  if(target == "m"){
                    updateSelectInput(session, "x2rate", label = "X",
-                                     choices = c(None = ".", names2rate), selected = "n")
+                                     choices = c(None = ".", names2rate), selected = "py")
                    updateSelectInput(session, "group2rate", label = "X",
-                                     choices = c(None = ".", names2rate), selected = "n")
+                                     choices = c(None = ".", names2rate), selected = "py")
                  } else {
                    updateSelectInput(session, "x2rate", label = "X",
                                      choices = c(None = ".", names2rate), selected = "m")
                    updateSelectInput(session, "group2rate", label = "X",
-                                     choices = c(None = ".", names2rate), selected = "n")
+                                     choices = c(None = ".", names2rate), selected = "py")
                  }
                })
   
@@ -794,6 +797,7 @@ server <- function(input, output, session){
                              y = input$y2rate,
                              group = input$group2rate))
     }
+    
     p <- p + geom_line(size = input$lsize2rate) +
       geom_point(size = input$psize2rate) +
       theme_grey(base_size = 18) 
