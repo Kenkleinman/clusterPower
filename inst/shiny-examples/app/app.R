@@ -267,36 +267,36 @@ ui <- fluidPage(
                                      fluidRow(downloadButton("dl2rate", dltext)))
              ),
              column(10,
-                    #make_table_and_graph("rate", names2rate)
-                    tabsetPanel(
-                      tabPanel("Data",
-                               DT::dataTableOutput("table2rate")
-                      ),
-                      tabPanel("Graphs",
-                               column(2,
-                                      fluidRow(selectInput("y2rate", ylab,
-                                                           choices = names2rate, selected = "power")),
-                                      fluidRow(selectInput("x2rate", xlab,
-                                                           choices = names2rate, selected = "m")),
-                                      fluidRow(selectInput("group2rate", grouplab,
-                                                           choices = names2rate, selected = "py")),
-                                      fluidRow(checkboxInput("color2rate", colorlab,value = TRUE)),
-                                      fluidRow(selectInput("row2rate", rowlab,
-                                                           choices = c(None = ".", names2rate))),
-                                      fluidRow(selectInput("col2rate", collab,
-                                                           choices = c(None = ".", names2rate))),
-                                      fluidRow(numericInput("height2rate", heightlab, value = 400,
-                                                            min = 100, max = 2000, step = 10)),
-                                      fluidRow(numericInput("psize2rate", psizelab, value = 3,
-                                                            min = 0.5, max = 4, step = 0.25)),
-                                      fluidRow(numericInput("lsize2rate", lsizelab, value = 1,
-                                                            min = 0.5, max = 2, step = 0.25))
-                               ),
-                               column(10,
-                                      plotOutput("graph2rate", height = "auto")
-                               )
-                      ) # end tabPanel("Graphs"...
-                    ) # end tabsetPanel(...
+                    make_table_and_graph("rate", names2rate)
+                    # tabsetPanel(
+                    #   tabPanel("Data",
+                    #            DT::dataTableOutput("table2rate")
+                    #   ),
+                    #   tabPanel("Graphs",
+                    #            column(2,
+                    #                   fluidRow(selectInput("y2rate", ylab,
+                    #                                        choices = names2rate, selected = "power")),
+                    #                   fluidRow(selectInput("x2rate", xlab,
+                    #                                        choices = names2rate, selected = "m")),
+                    #                   fluidRow(selectInput("group2rate", grouplab,
+                    #                                        choices = names2rate, selected = "py")),
+                    #                   fluidRow(checkboxInput("color2rate", colorlab,value = TRUE)),
+                    #                   fluidRow(selectInput("row2rate", rowlab,
+                    #                                        choices = c(None = ".", names2rate))),
+                    #                   fluidRow(selectInput("col2rate", collab,
+                    #                                        choices = c(None = ".", names2rate))),
+                    #                   fluidRow(numericInput("height2rate", heightlab, value = 400,
+                    #                                         min = 100, max = 2000, step = 10)),
+                    #                   fluidRow(numericInput("psize2rate", psizelab, value = 3,
+                    #                                         min = 0.5, max = 4, step = 0.25)),
+                    #                   fluidRow(numericInput("lsize2rate", lsizelab, value = 1,
+                    #                                         min = 0.5, max = 2, step = 0.25))
+                    #            ),
+                    #            column(10,
+                    #                   plotOutput("graph2rate", height = "auto")
+                    #            )
+                    #   ) # end tabPanel("Graphs"...
+                    # ) # end tabsetPanel(...
              ) # end column(10,...
     ) # end tabPanel("Count ...
     #-----------------------------------------------------------------------------------------------------------
@@ -437,18 +437,18 @@ server <- function(input, output, session){
                  # store target
                  target <- unique(res2mean()$target)
                  # update y-axis to target variable
-                 updateSelectInput(session, "y2mean", label = "Y",
+                 updateSelectInput(session, "y2mean", label = ylab,
                                    choices = c(None = ".", names2mean), selected = target)
                  # if the target is m, set default x-axis to n, otherwise set default axis to m
                  if(target == "m"){
-                   updateSelectInput(session, "x2mean", label = "X",
+                   updateSelectInput(session, "x2mean", label = xlab,
                                      choices = c(None = ".", names2mean), selected = "n")
-                   updateSelectInput(session, "group2mean", label = "X",
+                   updateSelectInput(session, "group2mean", label = grouplab,
                                      choices = c(None = ".", names2mean), selected = "n")
                  } else {
-                   updateSelectInput(session, "x2mean", label = "X",
+                   updateSelectInput(session, "x2mean", label = xlab,
                                      choices = c(None = ".", names2mean), selected = "m")
-                   updateSelectInput(session, "group2mean", label = "X",
+                   updateSelectInput(session, "group2mean", label = grouplab,
                                      choices = c(None = ".", names2mean), selected = "n")
                  }
                })
@@ -607,18 +607,18 @@ server <- function(input, output, session){
                  # store target
                  target <- unique(res2prop()$target)
                  # update y-axis to target variable
-                 updateSelectInput(session, "y2prop", label = "Y",
+                 updateSelectInput(session, "y2prop", label = ylab,
                                    choices = c(None = ".", names2prop), selected = target)
                  # if the target is m, set default x-axis to n, otherwise set default axis to m
                  if(target == "m"){
-                   updateSelectInput(session, "x2prop", label = "X",
+                   updateSelectInput(session, "x2prop", label = xlab,
                                      choices = c(None = ".", names2prop), selected = "n")
-                   updateSelectInput(session, "group2prop", label = "X",
+                   updateSelectInput(session, "group2prop", label = grouplab,
                                      choices = c(None = ".", names2prop), selected = "n")
                  } else {
-                   updateSelectInput(session, "x2prop", label = "X",
+                   updateSelectInput(session, "x2prop", label = xlab,
                                      choices = c(None = ".", names2prop), selected = "m")
-                   updateSelectInput(session, "group2prop", label = "X",
+                   updateSelectInput(session, "group2prop", label = grouplab,
                                      choices = c(None = ".", names2prop), selected = "n")
                  }
                })
@@ -767,18 +767,18 @@ server <- function(input, output, session){
                  # store target
                  target <- unique(res2rate()$target)
                  # update y-axis to target variable
-                 updateSelectInput(session, "y2rate", label = "Y",
+                 updateSelectInput(session, "y2rate", label = ylab,
                                    choices = c(None = ".", names2rate), selected = target)
                  # if the target is m, set default x-axis to n, otherwise set default axis to m
                  if(target == "m"){
-                   updateSelectInput(session, "x2rate", label = "X",
+                   updateSelectInput(session, "x2rate", label = xlab,
                                      choices = c(None = ".", names2rate), selected = "py")
-                   updateSelectInput(session, "group2rate", label = "X",
+                   updateSelectInput(session, "group2rate", label = grouplab,
                                      choices = c(None = ".", names2rate), selected = "py")
                  } else {
-                   updateSelectInput(session, "x2rate", label = "X",
+                   updateSelectInput(session, "x2rate", label = xlab,
                                      choices = c(None = ".", names2rate), selected = "m")
-                   updateSelectInput(session, "group2rate", label = "X",
+                   updateSelectInput(session, "group2rate", label = grouplab,
                                      choices = c(None = ".", names2rate), selected = "py")
                  }
                })
