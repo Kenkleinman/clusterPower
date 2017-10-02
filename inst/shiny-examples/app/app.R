@@ -7,6 +7,7 @@ library(clusterPower)
 
 source("labels.R")
 source("helpers.R")
+source("builders.R")
 
 # vectors of names, needed for graphs and target param selection
 names2mean <- c("alpha","power","m","n","cv","d","icc","varw","method")
@@ -87,35 +88,6 @@ ui <- fluidPage(
              ),
              column(10,
                     make_table_and_graph("mean", names2mean)
-                    # tabsetPanel(
-                    #   tabPanel("Data",
-                    #            DT::dataTableOutput("table2mean")
-                    #   ),
-                    #   tabPanel("Graphs",
-                    #            column(2,
-                    #                   fluidRow(selectInput("y2mean", ylab,
-                    #                                        choices = c(None = ".", names2mean), selected = ".")),
-                    #                   fluidRow(selectInput("x2mean", xlab,
-                    #                                        choices = c(None = ".", names2mean), selected = ".")),
-                    #                   fluidRow(selectInput("group2mean", grouplab,
-                    #                                        choices = c(None = ".", names2mean), selected = ".")),
-                    #                   fluidRow(checkboxInput("color2mean", colorlab,value = TRUE)),
-                    #                   fluidRow(selectInput("row2mean", rowlab,
-                    #                                        choices = c(None = ".", names2mean))),
-                    #                   fluidRow(selectInput("col2mean", collab,
-                    #                                        choices = c(None = ".", names2mean))),
-                    #                   fluidRow(numericInput("height2mean", heightlab, value = 400,
-                    #                                         min = 100, max = 2000, step = 10)),
-                    #                   fluidRow(numericInput("psize2mean", psizelab, value = 3,
-                    #                                         min = 0.5, max = 4, step = 0.25)),
-                    #                   fluidRow(numericInput("lsize2mean", lsizelab, value = 1,
-                    #                                         min = 0.5, max = 2, step = 0.25))
-                    #            ),
-                    #            column(10,
-                    #                   plotOutput("graph2mean", height = "auto")
-                    #            )
-                    #   ) # end tabPanel("Graphs"...
-                    # ) # end tabsetPanel(...
              ) # end column(10,...
     ), # end tabPanel("Continuous ...
     #-----------------------------------------------------------------------------------------------------------
@@ -185,35 +157,6 @@ ui <- fluidPage(
              ), # end column(2, ..
              column(10,
                     make_table_and_graph("prop", names2prop)
-                    # tabsetPanel(
-                    #   tabPanel("Data",
-                    #            DT::dataTableOutput("table2prop")
-                    #   ),
-                    #   tabPanel("Graphs",
-                    #            column(2,
-                    #                   fluidRow(selectInput("y2prop", ylab,
-                    #                                        choices = names2prop, selected = "power")),
-                    #                   fluidRow(selectInput("x2prop", xlab,
-                    #                                        choices = names2prop, selected = "m")),
-                    #                   fluidRow(selectInput("group2prop", grouplab,
-                    #                                        choices = c(None = ".", names2prop), selected = "n")),
-                    #                   fluidRow(checkboxInput("color2prop", colorlab,value = TRUE)),
-                    #                   fluidRow(selectInput("row2prop", rowlab,
-                    #                                        choices = c(None = ".", names2prop))),
-                    #                   fluidRow(selectInput("col2prop", collab,
-                    #                                        choices = c(None = ".", names2prop))),
-                    #                   fluidRow(numericInput("height2prop", heightlab, value = 400,
-                    #                                         min = 100, max = 2000, step = 10)),
-                    #                   fluidRow(numericInput("psize2prop", psizelab, value = 3,
-                    #                                         min = 0.5, max = 4, step = 0.25)),
-                    #                   fluidRow(numericInput("lsize2prop", lsizelab, value = 1,
-                    #                                         min = 0.5, max = 2, step = 0.25))
-                    #            ),
-                    #            column(10,
-                    #                   plotOutput("graph2prop", height = "auto")
-                    #            )
-                    #   ) # end tabPanel("Graphs"...
-                    # ) # end tabsetPanel(...
              ) # end column(10,...
     ), # end tabPanel("Binary ...
     #-----------------------------------------------------------------------------------------------------------
@@ -268,35 +211,6 @@ ui <- fluidPage(
              ),
              column(10,
                     make_table_and_graph("rate", names2rate)
-                    # tabsetPanel(
-                    #   tabPanel("Data",
-                    #            DT::dataTableOutput("table2rate")
-                    #   ),
-                    #   tabPanel("Graphs",
-                    #            column(2,
-                    #                   fluidRow(selectInput("y2rate", ylab,
-                    #                                        choices = names2rate, selected = "power")),
-                    #                   fluidRow(selectInput("x2rate", xlab,
-                    #                                        choices = names2rate, selected = "m")),
-                    #                   fluidRow(selectInput("group2rate", grouplab,
-                    #                                        choices = names2rate, selected = "py")),
-                    #                   fluidRow(checkboxInput("color2rate", colorlab,value = TRUE)),
-                    #                   fluidRow(selectInput("row2rate", rowlab,
-                    #                                        choices = c(None = ".", names2rate))),
-                    #                   fluidRow(selectInput("col2rate", collab,
-                    #                                        choices = c(None = ".", names2rate))),
-                    #                   fluidRow(numericInput("height2rate", heightlab, value = 400,
-                    #                                         min = 100, max = 2000, step = 10)),
-                    #                   fluidRow(numericInput("psize2rate", psizelab, value = 3,
-                    #                                         min = 0.5, max = 4, step = 0.25)),
-                    #                   fluidRow(numericInput("lsize2rate", lsizelab, value = 1,
-                    #                                         min = 0.5, max = 2, step = 0.25))
-                    #            ),
-                    #            column(10,
-                    #                   plotOutput("graph2rate", height = "auto")
-                    #            )
-                    #   ) # end tabPanel("Graphs"...
-                    # ) # end tabsetPanel(...
              ) # end column(10,...
     ) # end tabPanel("Count ...
     #-----------------------------------------------------------------------------------------------------------
@@ -434,49 +348,16 @@ server <- function(input, output, session){
   # update graph UI
   observeEvent(res2mean(),
                {
-                 # store target
-                 target <- unique(res2mean()$target)
-                 # update y-axis to target variable
-                 updateSelectInput(session, "y2mean", label = ylab,
-                                   choices = c(None = ".", names2mean), selected = target)
-                 # if the target is m, set default x-axis to n, otherwise set default axis to m
-                 if(target == "m"){
-                   updateSelectInput(session, "x2mean", label = xlab,
-                                     choices = c(None = ".", names2mean), selected = "n")
-                   updateSelectInput(session, "group2mean", label = grouplab,
-                                     choices = c(None = ".", names2mean), selected = "n")
-                 } else {
-                   updateSelectInput(session, "x2mean", label = xlab,
-                                     choices = c(None = ".", names2mean), selected = "m")
-                   updateSelectInput(session, "group2mean", label = grouplab,
-                                     choices = c(None = ".", names2mean), selected = "n")
-                 }
+                 update_graph_ui(session, res2mean(), "mean", names2mean)
                })
   
   # create 2mean graph
   output$graph2mean <- renderPlot({
-    if(input$color2mean){
-      p <- ggplot(res2mean(),
-                  aes_string(x = input$x2mean,
-                             y = input$y2mean,
-                             group = input$group2mean,
-                             color = input$group2mean))
-    } else {
-      p <- ggplot(res2mean(),
-                  aes_string(x = input$x2mean,
-                             y = input$y2mean,
-                             group = input$group2mean))
-    }
-    p <- p + geom_line(size = input$lsize2mean) +
-      geom_point(size = input$psize2mean) +
-      theme_grey(base_size = 18) 
-    
-    facets <- paste(input$row2mean,"~",input$col2mean)
-    if(facets != ". ~ .") p <- p + facet_grid(facets)
-    
-    p
+    create_graph(res2mean(), input$x2mean, input$y2mean, input$group2mean,
+                 input$lsize2mean, input$psize2mean, input$row2mean, input$col2mean)
   },
-  height = reactive({input$height2mean}))
+  height = reactive({input$height2mean})
+  )
   
   
   #----------------------------------------------------------------------------
@@ -604,49 +485,16 @@ server <- function(input, output, session){
   # update graph UI
   observeEvent(res2prop(),
                {
-                 # store target
-                 target <- unique(res2prop()$target)
-                 # update y-axis to target variable
-                 updateSelectInput(session, "y2prop", label = ylab,
-                                   choices = c(None = ".", names2prop), selected = target)
-                 # if the target is m, set default x-axis to n, otherwise set default axis to m
-                 if(target == "m"){
-                   updateSelectInput(session, "x2prop", label = xlab,
-                                     choices = c(None = ".", names2prop), selected = "n")
-                   updateSelectInput(session, "group2prop", label = grouplab,
-                                     choices = c(None = ".", names2prop), selected = "n")
-                 } else {
-                   updateSelectInput(session, "x2prop", label = xlab,
-                                     choices = c(None = ".", names2prop), selected = "m")
-                   updateSelectInput(session, "group2prop", label = grouplab,
-                                     choices = c(None = ".", names2prop), selected = "n")
-                 }
+                 update_graph_ui(session, res2prop(), "prop", names2prop)
                })
   
   # create 2prop graph
   output$graph2prop <- renderPlot({
-    if(input$color2prop){
-      p <- ggplot(res2prop(),
-                  aes_string(x = input$x2prop,
-                             y = input$y2prop,
-                             group = input$group2prop,
-                             color = input$group2prop))
-    } else {
-      p <- ggplot(res2prop(),
-                  aes_string(x = input$x2prop,
-                             y = input$y2prop,
-                             group = input$group2prop))
-    }
-    p <- p + geom_line(size = input$lsize2prop) +
-      geom_point(size = input$psize2prop) +
-      theme_grey(base_size = 18) 
-    
-    facets <- paste(input$row2prop,"~",input$col2prop)
-    if(facets != ". ~ .") p <- p + facet_grid(facets)
-    
-    p
+    create_graph(res2prop(), input$x2prop, input$y2prop, input$group2prop,
+                 input$lsize2prop, input$psize2prop, input$row2prop, input$col2prop)
   },
-  height = reactive({input$height2prop}))
+  height = reactive({input$height2prop})
+  )
   
   
   #----------------------------------------------------------------------------
@@ -764,50 +612,16 @@ server <- function(input, output, session){
   # update graph UI
   observeEvent(res2rate(),
                {
-                 # store target
-                 target <- unique(res2rate()$target)
-                 # update y-axis to target variable
-                 updateSelectInput(session, "y2rate", label = ylab,
-                                   choices = c(None = ".", names2rate), selected = target)
-                 # if the target is m, set default x-axis to n, otherwise set default axis to m
-                 if(target == "m"){
-                   updateSelectInput(session, "x2rate", label = xlab,
-                                     choices = c(None = ".", names2rate), selected = "py")
-                   updateSelectInput(session, "group2rate", label = grouplab,
-                                     choices = c(None = ".", names2rate), selected = "py")
-                 } else {
-                   updateSelectInput(session, "x2rate", label = xlab,
-                                     choices = c(None = ".", names2rate), selected = "m")
-                   updateSelectInput(session, "group2rate", label = grouplab,
-                                     choices = c(None = ".", names2rate), selected = "py")
-                 }
+                 update_graph_ui(session, res2rate(), "rate", names2rate)
                })
   
   # create 2rate graph
   output$graph2rate <- renderPlot({
-    if(input$color2rate){
-      p <- ggplot(res2rate(),
-                  aes_string(x = input$x2rate,
-                             y = input$y2rate,
-                             group = input$group2rate,
-                             color = input$group2rate))
-    } else {
-      p <- ggplot(res2rate(),
-                  aes_string(x = input$x2rate,
-                             y = input$y2rate,
-                             group = input$group2rate))
-    }
-    
-    p <- p + geom_line(size = input$lsize2rate) +
-      geom_point(size = input$psize2rate) +
-      theme_grey(base_size = 18) 
-    
-    facets <- paste(input$row2rate,"~",input$col2rate)
-    if(facets != ". ~ .") p <- p + facet_grid(facets)
-    
-    p
+    create_graph(res2rate(), input$x2rate, input$y2rate, input$group2rate,
+                 input$lsize2rate, input$psize2rate, input$row2rate, input$col2rate)
   },
-  height = reactive({input$height2rate}))
+  height = reactive({input$height2rate})
+  )
   
 }
 

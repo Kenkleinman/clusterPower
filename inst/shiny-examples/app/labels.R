@@ -4,7 +4,7 @@ alphatooltip <- 'Type I error rate. Should be between 0 and 1, preferably close 
 alphavalidmsg <- 'Type I error rate should be between 0 and 1.'
 
 powertext <- 'Power (power)'
-powertooltip <- 'Power of the test. Should be between 0 and 1, and preferably close to 1 (e.g. 0.80 or 0.90).'
+powertooltip <- 'Power of the test. Should be between 0 and 1, preferably close to 1 (e.g. 0.80 or 0.90).'
 powervalidmsg <- 'Power should be between 0 and 1.'
 
 mtext <- 'Clusters per arm (m)'
@@ -37,7 +37,7 @@ p2text <- 'Proportion 2 (p2)'
 p2tooltip <- 'The proportion in the control group.'
 
 p1inctext <- 'p1 > p2'
-p1inctooltip <- 'Select to indicate that the treatment group proportion is greater than the control group proportion. This selection only matters if the target values are "p1" or "p2".'
+p1inctooltip <- 'Select to indicate that the treatment group proportion is greater than the control group proportion. This option is needed only when the target quantity is either "p1" or "p2". If both "p1" and "p2" are given this option has no effect.'
 
 pooledtext <- 'Pooled'
 pooledtooltip <- 'Select to indicate if pooled variance is desired.'
@@ -52,7 +52,7 @@ r2tooltip <- 'The expected rate in the control group.'
 pytext <- 'Person-years per cluster (py)'
 pytooltip <- 'Person years per cluster.'
 
-cvbtext <- 'Btwn-cluster CV (cvb)'
+cvbtext <- 'Between-cluster CV (cvb)'
 cvbtooltip <- 'The coefficient of variation of the person years per cluster. Analogous to ICC for two continuous outcomes.'
 
 # static/button text

@@ -70,37 +70,3 @@ make_sequence <- function(x){
     seq(temp[1], temp[2], by = temp[3])
   }
 }
-
-
-# function to generate graph output
-make_table_and_graph <- function(outcome, paramnames){
-  tabsetPanel(
-    tabPanel("Data",
-             DT::dataTableOutput(paste0("table2",outcome))
-    ),
-    tabPanel("Graphs",
-             column(2,
-                    fluidRow(selectInput(paste0("y2",outcome), ylab,
-                                         choices = c(None = ".", paramnames), selected = ".")),
-                    fluidRow(selectInput(paste0("x2",outcome), xlab,
-                                         choices = c(None = ".", paramnames), selected = ".")),
-                    fluidRow(selectInput(paste0("group2",outcome), grouplab,
-                                         choices = c(None = ".", paramnames), selected = ".")),
-                    fluidRow(checkboxInput(paste0("color2",outcome), colorlab,value = TRUE)),
-                    fluidRow(selectInput(paste0("row2",outcome), rowlab,
-                                         choices = c(None = ".", paramnames))),
-                    fluidRow(selectInput(paste0("col2",outcome), collab,
-                                         choices = c(None = ".", paramnames))),
-                    fluidRow(numericInput(paste0("height2",outcome), heightlab, value = 400,
-                                          min = 100, max = 2000, step = 10)),
-                    fluidRow(numericInput(paste0("psize2",outcome), psizelab, value = 3,
-                                          min = 0.5, max = 4, step = 0.25)),
-                    fluidRow(numericInput(paste0("lsize2",outcome), lsizelab, value = 1,
-                                          min = 0.5, max = 2, step = 0.25))
-             ),
-             column(10,
-                    plotOutput(paste0("graph2",outcome), height = "auto")
-             )
-    ) # end tabPanel("Graphs"...
-  ) # end tabsetPanel(...
-}
