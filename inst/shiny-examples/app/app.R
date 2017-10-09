@@ -82,9 +82,7 @@ ui <- fluidPage(
                                                                      style = umass)),
                     fluidRow(column(12, credittext))
                       
-                    ),
-                    conditionalPanel(condition = "output.table2mean != null",
-                                     fluidRow(downloadButton("dl2mean", dltext)))
+                    )
              ),
              column(10,
                     make_table_and_graph("mean", names2mean)
@@ -151,9 +149,7 @@ ui <- fluidPage(
                                                                     style = umass)),
                     fluidRow(column(12, credittext))
                       
-                    ),
-                    conditionalPanel(condition = "output.table2prop != null",
-                                     fluidRow(downloadButton("dl2prop", dltext)))
+                    )
              ), # end column(2, ..
              column(10,
                     make_table_and_graph("prop", names2prop)
@@ -205,9 +201,7 @@ ui <- fluidPage(
                       column(12, style='padding:0px;', actionButton("calc2rate", calctext, width = "100%",
                                                                     style = umass)),
                     fluidRow(column(12,credittext))
-                    ),
-                    conditionalPanel(condition = "output.table2rate != null",
-                                     fluidRow(downloadButton("dl2rate", dltext)))
+                    )
              ),
              column(10,
                     make_table_and_graph("rate", names2rate)
@@ -326,25 +320,20 @@ server <- function(input, output, session){
   # create 2mean output table
   output$table2mean <- DT::renderDataTable(
     res2mean()[,1:10],
+    server = FALSE,
+    extensions = 'Buttons',
     filter = 'top',
     options = list(
+      # create the button
+      dom = 'fBrtip',
+      buttons = list(list(extend = 'csv', filename = paste('data-2mean-', Sys.time(), sep=''), text = 'Download')),
       autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 10)),
       pageLength = 10
     )
   )
-  
-  # set up 2mean download handler
-  output$dl2mean <- downloadHandler(
-    filename = function() {
-      paste('data-2mean-', Sys.time(), '.csv', sep='')
-    },
-    content = function(file) {
-      write.csv(res2mean(), file, row.names = FALSE)
-    }
-  )
-  
+
   # update graph UI
   observeEvent(res2mean(),
                {
@@ -464,24 +453,20 @@ server <- function(input, output, session){
   # create 2prop output table
   output$table2prop <- DT::renderDataTable(
     res2prop()[,1:9],
+    server = FALSE,
+    extensions = 'Buttons',
     filter = 'top',
     options = list(
-      columnDefs = list(list(className = 'dt-center', targets = '_all')),
-      pageLength = 10,
-      autoWidth = TRUE
+      # create the button
+      dom = 'fBrtip',
+      buttons = list(list(extend = 'csv', filename = paste('data-2prop-', Sys.time(), sep=''), text = 'Download')),
+      autoWidth = TRUE,
+      columnDefs = list(list(className = 'dt-center', targets = '_all'),
+                        list(width = '500px', targets = 9)),
+      pageLength = 10
     )
   )
-  
-  # setup 2prop download handler
-  output$dl2prop <- downloadHandler(
-    filename = function() {
-      paste('data-2prop-', Sys.time(), '.csv', sep='')
-    },
-    content = function(con) {
-      write.csv(res2prop(), file, row.names = FALSE)
-    }
-  )
-  
+
   # update graph UI
   observeEvent(res2prop(),
                {
@@ -591,24 +576,20 @@ server <- function(input, output, session){
   # create 2rate output table
   output$table2rate <- DT::renderDataTable(
     res2rate()[,1:8],
+    server = FALSE,
+    extensions = 'Buttons',
     filter = 'top',
     options = list(
-      columnDefs = list(list(className = 'dt-center', targets = '_all')),
-      pageLength = 10,
-      autoWidth = TRUE
+      # create the button
+      dom = 'fBrtip',
+      buttons = list(list(extend = 'csv', filename = paste('data-2rate-', Sys.time(), sep=''), text = 'Download')),
+      autoWidth = TRUE,
+      columnDefs = list(list(className = 'dt-center', targets = '_all'),
+                        list(width = '500px', targets = 8)),
+      pageLength = 10
     )
   )
-  
-  # setup 2rate download handler
-  output$dl2rate <- downloadHandler(
-    filename = function() {
-      paste('data-2rate-', Sys.time(), '.csv', sep='')
-    },
-    content = function(con) {
-      write.csv(res2rate(), file, row.names = FALSE)
-    }
-  )
-  
+
   # update graph UI
   observeEvent(res2rate(),
                {

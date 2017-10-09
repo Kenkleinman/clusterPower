@@ -8,7 +8,7 @@ crtpwr.2mean.safe <- function(alpha,power,m,n,cv,d,icc,varw,method){
   res <- fun(alpha,power,m,n,cv,d,icc,varw,method)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
-    res$error = NA
+    res$error = 'None'
   } else {
     res$error <- res$error$message
   }
@@ -22,7 +22,7 @@ crtpwr.2prop.safe <- function(alpha,power,m,n,cv,p1,p2,icc){
   res <- fun(alpha,power,m,n,cv,p1,p2,icc)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
-    res$error = NA
+    res$error = 'None'
   } else {
     res$error <- res$error$message
   }
@@ -36,7 +36,7 @@ crtpwr.2rate.safe <- function(alpha,power,m,py,r1,r2,cvb){
   res <- fun(alpha,power,m,py,r1,r2,cvb)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
-    res$error = NA
+    res$error = 'None'
   } else {
     res$error <- res$error$message
   }
