@@ -4,8 +4,8 @@
 #' or determine parameters to obtain a target power.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
-#'   \code{nsd}, \code{d}, \code{icc}, and \code{varw}  must be passed as \code{NA}.
-#'   Note that \code{alpha}, \code{power}, and \code{nsd} have non-\code{NA}
+#'   \code{cv}, \code{d}, \code{icc}, and \code{varw}  must be passed as \code{NA}.
+#'   Note that \code{alpha}, \code{power}, and \code{cv} have non-\code{NA}
 #'   defaults, so if those are the parameters of interest they must be
 #'   explicitly passed as \code{NA}.
 #'   
