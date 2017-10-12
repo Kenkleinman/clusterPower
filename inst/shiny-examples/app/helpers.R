@@ -15,6 +15,20 @@ crtpwr.2mean.safe <- function(alpha,power,m,n,cv,d,icc,varw,method){
   res
 }
 
+crtpwr.2meanD.safe <- function(alpha,power,m,n,d,icc,rho_c,rho_s,varw){
+  # make safe version
+  fun <- safely(crtpwr.2meanD, otherwise = NA)
+  # store result
+  res <- fun(alpha,power,m,n,d,icc,rho_c,rho_s,varw)
+  # if res$error NULL, set to NA, otherwise set to message
+  if(is.null(res$error)){
+    res$error = 'None'
+  } else {
+    res$error <- res$error$message
+  }
+  res
+}
+
 crtpwr.2prop.safe <- function(alpha,power,m,n,cv,p1,p2,icc){
   # make safe version
   fun <- safely(crtpwr.2prop, otherwise = NA)

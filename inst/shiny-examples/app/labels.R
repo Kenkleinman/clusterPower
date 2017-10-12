@@ -19,6 +19,7 @@ icctooltip <- 'Intracluster correlation coefficient.'
 cvtext <- 'Cluster size CV (cv)'
 cvtooltip <- 'Coefficient of variation of the cluster sizes. When this equals 0, all clusters have the same size.'
 
+# -----------------------------------------------------------------------------
 # specific to 2mean:
 varwtext <- 'Within variance (varw)'
 varwtooltip <- 'Within cluster variance. Assumed to be the same for all clusters.'
@@ -29,6 +30,18 @@ dtooltip <- 'Expected difference in condition means.'
 methodtext <- 'Unequal Cluster Size Adjustment'
 methodtooltip <- 'Method for calculating the variance inflation and design effect due to unequal cluster sizes. When CV = 0, "method" has no effect.'
 
+# -----------------------------------------------------------------------------
+# specific to 2meanD:
+dDtext <- 'Difference in difference (d)'
+dDtooltip <- 'Expected difference-in-difference between condition means.'
+
+rho_ctext <- 'Within cluster correlation (rho_c)'
+rho_ctooltip <- 'The correlation between baseline and post-test outcomes at the cluster level. Used in both cohort and cross-sectional designs. A value of "0" is a conservative estimate.'
+
+rho_stext <- 'Within subject correlation (rho_s)'
+rho_stooltip <- 'The correlation between baseline and post-test outcomes at the subject level. For a purely cross-sectional design, this value should be 0.'
+
+# -----------------------------------------------------------------------------
 # specific to 2prop:
 p1text <- 'Proportion 1 (p1)'
 p1tooltip <- 'The expected proportion in the treatment group.'
