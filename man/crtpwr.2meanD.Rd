@@ -72,7 +72,7 @@ crtpwr.2meanD(n = 100 , d = 0.5, icc = 0.05, rho_c = 0.50, rho_s = 0.70, varw = 
 }
 \references{
 Rutterford C, Copas A, Eldridge S. (2015) Methods for sample size
-  determination in cluster randomized trials. Int J Epidemiol. 44(3):1051–1067.
+  determination in cluster randomized trials. Int J Epidemiol. 44(3):1051-1067.
 
 Teerenstra S, Eldridge S, Graff M, de Hoop E, Borm, GF. (2012) A simple
   sample size formula for analysis of covariance in cluster randomized trials.

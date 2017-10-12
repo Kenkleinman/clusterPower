@@ -47,7 +47,7 @@
 #' # The result, m = 4.683358, suggests 5 clusters per condition should be used.
 #' 
 #' @references Rutterford C, Copas A, Eldridge S. (2015) Methods for sample size
-#'   determination in cluster randomized trials. Int J Epidemiol. 44(3):1051–1067.
+#'   determination in cluster randomized trials. Int J Epidemiol. 44(3):1051-1067.
 #' @references Teerenstra S, Eldridge S, Graff M, de Hoop E, Borm, GF. (2012) A simple
 #'   sample size formula for analysis of covariance in cluster randomized trials.
 #'   Statist Med. 31:2169-2178 
