@@ -96,11 +96,12 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
   pwr <- quote({
   
     # variance inflation
-    if (length(n) > 1) {
+    # if nvec exists, calcuate exact relative efficiency
+    if (exists("nvec")) {
       if(method == "taylor"){
         a <- (1 - icc)/icc
         DEFF <- 1 + (n - 1)*icc
-        RE <- ((n + a)/n)*(sum((nvec/(nvec+a)))/m)
+        RE <- ((n + a)/n)*(sum((nvec/(nvec+a)))/m) # exact relative efficiency
         VIF <- DEFF*RE
       } else{
         VIF <- 1 + ((cv^2 + 1)*n - 1)*icc
@@ -109,7 +110,7 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
       if(method == "taylor"){
         DEFF <- 1 + (n - 1)*icc
         L <- n*icc/DEFF
-        REt <- 1/(1 - cv^2*L*(1 - L))
+        REt <- 1/(1 - cv^2*L*(1 - L)) # taylor approximation
         VIF <- DEFF*REt
       } else {
         VIF <- 1 + ((cv^2 + 1)*n - 1)*icc
@@ -120,8 +121,7 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
     
     ncp <- sqrt(m*n/(2*VIF)) * abs(d)/sqrt(varw)
     
-    pt(tcrit, 2*(m - 1), ncp, lower.tail = FALSE)#+
-    #pt(-tcrit, 2*(m - 1), ncp, lower.tail = TRUE)
+    pt(tcrit, 2*(m - 1), ncp, lower.tail = FALSE) #+ pt(-tcrit, 2*(m - 1), ncp, lower.tail = TRUE)
   })
   
   # calculate alpha

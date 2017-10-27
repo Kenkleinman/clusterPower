@@ -2,6 +2,7 @@
 
 export(crtpwr.2mean)
 export(crtpwr.2meanD)
+export(crtpwr.2meanM)
 export(crtpwr.2prop)
 export(crtpwr.2rate)
 export(expit)
