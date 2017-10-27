@@ -38,15 +38,13 @@ or determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
-  \code{cv}, \code{d}, \code{icc}, and \code{varw}  must be passed as \code{NA}.
+  \code{d}, \code{icc}, \code{varw}, \code{rho_m}  must be passed as \code{NA}.
   Note that \code{alpha}, \code{power}, and \code{rho_m} have non-\code{NA}
   defaults, so if those are the parameters of interest they must be
   explicitly passed as \code{NA}.
   
 If \code{n} is a vector the values, \code{m} will be recalculated
-   using the values in \code{n}. If \code{n} is a vector and \code{method} is
-   "taylor", the exact relative efficiency will be calculated as described in
-   van Breukelen et al (2007).
+   using the values in \code{n}.
 }
 \section{Note}{
 
