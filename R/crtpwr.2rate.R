@@ -96,7 +96,7 @@ crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
   
   # calculate cvb
   if (is.na(cvb)) {
-    cv <- stats::uniroot(function(cvb) eval(pwr) - power,
+    cvb <- stats::uniroot(function(cvb) eval(pwr) - power,
                   interval = c(1e-7, 1e+07),
                   tol = tol, extendInt = "downX")$root
   }
