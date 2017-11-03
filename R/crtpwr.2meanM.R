@@ -5,7 +5,7 @@
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
 #'   \code{d}, \code{icc}, \code{varw}, \code{rho_m}  must be passed as \code{NA}.
-#'   Note that \code{alpha}, \code{power}, and \code{rho_m} have non-\code{NA}
+#'   Note that \code{alpha} and \code{power} have non-\code{NA}
 #'   defaults, so if those are the parameters of interest they must be
 #'   explicitly passed as \code{NA}.
 #'   

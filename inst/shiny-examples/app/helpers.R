@@ -29,11 +29,11 @@ crtpwr.2meanD.safe <- function(alpha,power,m,n,d,icc,rho_c,rho_s,varw){
   res
 }
 
-crtpwr.2prop.safe <- function(alpha,power,m,n,cv,p1,p2,icc){
+crtpwr.2prop.safe <- function(alpha,power,m,n,cv,p1,p2,icc,pooled,p1inc){
   # make safe version
   fun <- safely(crtpwr.2prop, otherwise = NA)
   # store result
-  res <- fun(alpha,power,m,n,cv,p1,p2,icc)
+  res <- fun(alpha,power,m,n,cv,p1,p2,icc,pooled,p1inc)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
     res$error = 'None'
@@ -43,11 +43,11 @@ crtpwr.2prop.safe <- function(alpha,power,m,n,cv,p1,p2,icc){
   res
 }
 
-crtpwr.2rate.safe <- function(alpha,power,m,py,r1,r2,cvb){
+crtpwr.2rate.safe <- function(alpha,power,m,py,r1,r2,cvb,r1inc){
   # make safe version
   fun <- safely(crtpwr.2rate, otherwise = NA)
   # store result
-  res <- fun(alpha,power,m,py,r1,r2,cvb)
+  res <- fun(alpha,power,m,py,r1,r2,cvb,r1inc)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
     res$error = 'None'

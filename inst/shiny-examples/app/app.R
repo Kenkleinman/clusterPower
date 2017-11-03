@@ -13,8 +13,8 @@ source("builders.R")
 names2mean <- c("alpha","power","m","n","cv","d","icc","varw","method")
 names2meanD <- c("alpha","power","m","n","d","icc","rho_c","rho_s","varw")
 names2meanM <- c("alpha","power","m","n","d","icc","varw","rho_m")
-names2prop <- c("alpha","power","m","n","cv","p1","p2","icc")
-names2rate <- c("alpha","power","m","py","r1","r2","cvb")
+names2prop <- c("alpha","power","m","n","cv","p1","p2","icc","pooled","p1inc")
+names2rate <- c("alpha","power","m","py","r1","r2","cvb","r1inc")
 
 umass <- "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-weight: bold; color: #ffffff; background-color: #881c1c; border: 3px solid #000000;"
 
@@ -617,6 +617,8 @@ server <- function(input, output, session){
                          p1,
                          p2,
                          icc,
+                         pooled,
+                         p1inc,
                          stringsAsFactors = FALSE)
       
       if(!is.na(power)){
@@ -659,7 +661,7 @@ server <- function(input, output, session){
   
   # create 2prop output table
   output$table2prop <- DT::renderDataTable(
-    res2prop()[,1:9],
+    res2prop()[,c(1:8,11)],
     server = FALSE,
     extensions = 'Buttons',
     filter = 'top',
@@ -743,6 +745,7 @@ server <- function(input, output, session){
                          r1,
                          r2,
                          cvb,
+                         r1inc,
                          stringsAsFactors = FALSE)
       
       if(!is.na(power)){
@@ -785,7 +788,7 @@ server <- function(input, output, session){
   
   # create 2rate output table
   output$table2rate <- DT::renderDataTable(
-    res2rate()[,1:8],
+    res2rate()[,c(1:7,9)],
     server = FALSE,
     extensions = 'Buttons',
     filter = 'top',
