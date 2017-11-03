@@ -12,6 +12,7 @@ source("builders.R")
 # vectors of names, needed for graphs and target param selection
 names2mean <- c("alpha","power","m","n","cv","d","icc","varw","method")
 names2meanD <- c("alpha","power","m","n","d","icc","rho_c","rho_s","varw")
+names2meanM <- c("alpha","power","m","n","d","icc","varw","rho_m")
 names2prop <- c("alpha","power","m","n","cv","p1","p2","icc")
 names2rate <- c("alpha","power","m","py","r1","r2","cvb")
 
@@ -242,6 +243,10 @@ ui <- fluidPage(
                                        value = "", width = "100%")),
                     bsTooltip("r22rate", r2tooltip,
                               'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(checkboxInput("r1inc2rate", r1inctext)),
+                    bsTooltip("r1inc2rate", r1inctooltip,
+                              'top', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(textInput("m2rate", mtext,
                                        value = "", width = "100%")),
@@ -699,6 +704,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "r12rate", value = "")
       updateTextInput(session, inputId = "r22rate", value = "")
       updateTextInput(session, inputId = "cvb2rate", value = "")
+      updateTextInput(session, inputId = "r1inc2rate", value = FALSE)
     } # end observeEvent(input$default2rate ...
   )
   
@@ -713,6 +719,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "r12rate", value = "")
       updateTextInput(session, inputId = "r22rate", value = "")
       updateTextInput(session, inputId = "cvb2rate", value = "")
+      updateTextInput(session, inputId = "r1inc2rate", value = FALSE)
     } # end observeEvent(input$clear2rate ...
   )
   
@@ -727,6 +734,7 @@ server <- function(input, output, session){
       r1 <- make_sequence(isolate(input$r12rate))
       r2 <- make_sequence(isolate(input$r22rate))
       cvb <- make_sequence(isolate(input$cvb2rate))
+      r1inc <- isolate(input$r1inc2rate)
       
       tab <- expand.grid(alpha,
                          power,
