@@ -394,11 +394,12 @@ server <- function(input, output, session){
     filter = 'top',
     options = list(
       # create the button
-      dom = 'fBrtip',
+      dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2mean-', Sys.time(), sep=''), text = 'Download')),
       autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 10)),
+      lengthMenu = list(c(10, 25, 100, -1), list('10','25','100','All')),
       pageLength = 10
     )
   )
@@ -532,12 +533,13 @@ server <- function(input, output, session){
     filter = 'top',
     options = list(
       # create the button
-      dom = 'fBrtip',
+      dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2meanD-', Sys.time(), sep=''), text = 'Download')),
       autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 10)),
-      pageLength = 10
+      pageLength = 10,
+      lengthMenu =  list(c(10, 25, 100, -1), list('10', '25', '100', 'All')) 
     )
   )
   
@@ -667,12 +669,13 @@ server <- function(input, output, session){
     filter = 'top',
     options = list(
       # create the button
-      dom = 'fBrtip',
+      dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2prop-', Sys.time(), sep=''), text = 'Download')),
       autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 9)),
-      pageLength = 10
+      pageLength = 10,
+      lengthMenu =  list(c(10, 25, 100, -1), list('10', '25', '100', 'All')) 
     )
   )
 
@@ -794,12 +797,13 @@ server <- function(input, output, session){
     filter = 'top',
     options = list(
       # create the button
-      dom = 'fBrtip',
+      dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2rate-', Sys.time(), sep=''), text = 'Download')),
       autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 8)),
-      pageLength = 10
+      pageLength = 10,
+      lengthMenu =  list(c(10, 25, 100, -1), list('10', '25', '100', 'All')) 
     )
   )
 
