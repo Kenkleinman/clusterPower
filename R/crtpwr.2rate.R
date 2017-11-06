@@ -83,14 +83,14 @@ crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
   # calculate r1
   if (is.na(r1)) {
       r1 <- stats::uniroot(function(r1) eval(pwr) - power,
-                    interval = c(1e-7, 1e7),
+                    interval = c(0.00000001, r2-.000000001),
                     tol = tol, extendInt = "yes")$root
   }
   
   # calculate r2
   if (is.na(r2)) {
     r2 <- stats::uniroot(function(r2) eval(pwr) - power,
-                  interval = c(1e-7, 1e7),
+                  interval = c(r1+.0000001, 1e+07),
                   tol = tol, extendInt = "yes")$root
   }
   
