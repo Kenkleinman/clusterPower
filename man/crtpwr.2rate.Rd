@@ -5,7 +5,7 @@
 \title{Power calculations for simple cluster randomized trials, count outcome}
 \usage{
 crtpwr.2rate(alpha = 0.05, power = 0.8, m = NA, py = NA, r1 = NA,
-  r2 = NA, cvb = NA, tol = .Machine$double.eps^0.25)
+  r2 = NA, cvb = NA, r1inc = TRUE, tol = .Machine$double.eps^0.25)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a
@@ -24,18 +24,14 @@ error.}
 
 \item{cvb}{The between-cluster coefficient of variation.}
 
+\item{r1inc}{Logical indicating if r1 is expected to be greater than r2. This is
+only important to specify if one of r1 or r2 is NA.}
+
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}
 }
 \value{
 The computed argument.
-#' #' @examples 
-# Find the number of clusters per condition needed for a trial with alpha = .05, 
-# power = 0.8, 10 person-years per cluster, rate
-in condition 1 of .1 and condition 2 of .2, and cvb = 0.1.
-crtpwr.2rate(py=10, r1=.1, r2=.2, cvb=.1)
-# 
-# The result, showimg m of greater than 24, suggests 25 clusters per condition should be used.
 }
 \description{
 Compute the power of a simple cluster randomized trial with a count outcome,
@@ -46,3 +42,16 @@ or determine parameters to obtain a target power.
 Jonathan Moyer (\email{jon.moyer@gmail.com})
 }
 
+\examples{
+# Find the number of clusters per condition needed for a trial with alpha = 0.05, 
+# power = 0.80, 10 person-years per cluster, rate in condition 1 of 0.10 and condition 2 of 0.20, and cvb = 0.10.
+crtpwr.2rate(py=10, r1=0.10, r2=0.20, cvb=0.10)
+# 
+# The result, showimg m of greater than 24, suggests 25 clusters per condition should be used.
+
+}
+\references{
+Donner A, Klar N. Design and Analysis of Cluster Randomization Trials in Health Research. Chichester, UK; 2009.
+
+Hayes JR, Moulton LH. Cluster Randomized Trials. Boca Raton, FL: CRC Press; 2009.
+}

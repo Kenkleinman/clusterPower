@@ -1,0 +1,12 @@
+name: ClusterPower
+title: ClusterPower
+username:
+account: kenkleinman
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 214280
+bundleId: 1003765
+url: https://kenkleinman.shinyapps.io/ClusterPower/
+when: 1506707263.18645
+asMultiple: FALSE
+asStatic: FALSE

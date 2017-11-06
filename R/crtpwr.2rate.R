@@ -15,22 +15,27 @@
 #' @param r1 The expected mean event rate per unit time in the treatment group.
 #' @param r2 The mean event rate per unit time in the control group.
 #' @param cvb The between-cluster coefficient of variation.
+#' @param r1inc Logical indicating if r1 is expected to be greater than r2. This is
+#'   only important to specify if one of r1 or r2 is NA.
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
 #' @return The computed argument.
-#' #' #' @examples 
-#' # Find the number of clusters per condition needed for a trial with alpha = .05, 
-#' # power = 0.8, 10 person-years per cluster, rate
-#' in condition 1 of .1 and condition 2 of .2, and cvb = 0.1.
-#' crtpwr.2rate(py=10, r1=.1, r2=.2, cvb=.1)
+#' @examples 
+#' # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
+#' # power = 0.80, 10 person-years per cluster, rate in condition 1 of 0.10 and condition 2 of 0.20, and cvb = 0.10.
+#' crtpwr.2rate(py=10, r1=0.10, r2=0.20, cvb=0.10)
 #' # 
 #' # The result, showimg m of greater than 24, suggests 25 clusters per condition should be used.
+#' 
+#' @references Donner A, Klar N. Design and Analysis of Cluster Randomization Trials in Health Research. Chichester, UK; 2009.
+#' 
+#' @references Hayes JR, Moulton LH. Cluster Randomized Trials. Boca Raton, FL: CRC Press; 2009.
 #' @export
 
 crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
                          m = NA, py = NA,
                          r1 = NA, r2 = NA,
-                         cvb = NA,
+                         cvb = NA, r1inc = TRUE,
                          tol = .Machine$double.eps^0.25){
   
   if(!is.na(m) && m <= 1) {
@@ -48,9 +53,9 @@ crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
   target <- neednames[needind]
   
   pwr <- quote({
-    DEFF <- 1 + cvb^2*(r1^2 + r2^2)*py/(r1 + r2)
+    IF <- 1 + cvb^2*(r1^2 + r2^2)*py/(r1 + r2)
     zcrit <- qnorm(alpha/2, lower.tail = FALSE)
-    vard <- (r1 + r2)*DEFF/py
+    vard <- (r1 + r2)*IF/py
     pnorm(sqrt((m - 1)*(r1 - r2)^2/vard) - zcrit, lower.tail = TRUE)
   })
   
@@ -82,16 +87,29 @@ crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
   
   # calculate r1
   if (is.na(r1)) {
+    if(r1inc){
       r1 <- stats::uniroot(function(r1) eval(pwr) - power,
-                    interval = c(0.00000001, r2-.000000001),
-                    tol = tol, extendInt = "yes")$root
+                           interval = c(r2 + 1e-7, 1 - 1e-7),
+                           tol = tol, extendInt = "yes")$root
+    } else {
+      r1 <- stats::uniroot(function(r1) eval(pwr) - power,
+                           interval = c(1e-7, r2 - 1e-7),
+                           tol = tol, extendInt = "yes")$root
+    }
   }
   
   # calculate r2
   if (is.na(r2)) {
-    r2 <- stats::uniroot(function(r2) eval(pwr) - power,
-                  interval = c(r1+.0000001, 1e+07),
-                  tol = tol, extendInt = "yes")$root
+    if(r1inc){
+      r2 <- stats::uniroot(function(r2) eval(pwr) - power,
+                           interval = c(1e-7, r1 - 1e-7),
+                           tol = tol, extendInt = "yes")$root
+      
+    } else {
+      r2 <- stats::uniroot(function(r2) eval(pwr) - power,
+                           interval = c(r1 + 1e-7, 1 - 1e-7),
+                           tol = tol, extendInt = "yes")$root
+    }
   }
   
   # calculate cvb

@@ -62,6 +62,9 @@ r1tooltip <- 'The expected rate in the treatment group.'
 r2text <- 'Rate 2 (r2)'
 r2tooltip <- 'The expected rate in the control group.'
 
+r1inctext <- 'r1 > r2'
+r1inctooltip <- 'Select to indicate that the treatment group rate is greater than the control group rate. This option is needed only when the target quantity is either "r1" or "r2". If both "r1" and "r2" are given this option has no effect.'
+
 pytext <- 'Person-years per cluster (py)'
 pytooltip <- 'Person years per cluster.'
 

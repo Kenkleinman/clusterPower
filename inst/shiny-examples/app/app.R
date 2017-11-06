@@ -12,8 +12,9 @@ source("builders.R")
 # vectors of names, needed for graphs and target param selection
 names2mean <- c("alpha","power","m","n","cv","d","icc","varw","method")
 names2meanD <- c("alpha","power","m","n","d","icc","rho_c","rho_s","varw")
-names2prop <- c("alpha","power","m","n","cv","p1","p2","icc")
-names2rate <- c("alpha","power","m","py","r1","r2","cvb")
+names2meanM <- c("alpha","power","m","n","d","icc","varw","rho_m")
+names2prop <- c("alpha","power","m","n","cv","p1","p2","icc","pooled","p1inc")
+names2rate <- c("alpha","power","m","py","r1","r2","cvb","r1inc")
 
 umass <- "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-weight: bold; color: #ffffff; background-color: #881c1c; border: 3px solid #000000;"
 
@@ -243,6 +244,10 @@ ui <- fluidPage(
                     bsTooltip("r22rate", r2tooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
+                    fluidRow(checkboxInput("r1inc2rate", r1inctext)),
+                    bsTooltip("r1inc2rate", r1inctooltip,
+                              'top', options = list(container = "body")),
+                    #----------------------------------------------------------
                     fluidRow(textInput("m2rate", mtext,
                                        value = "", width = "100%")),
                     bsTooltip("m2rate", mtooltip,
@@ -389,11 +394,12 @@ server <- function(input, output, session){
     filter = 'top',
     options = list(
       # create the button
-      dom = 'fBrtip',
+      dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2mean-', Sys.time(), sep=''), text = 'Download')),
       autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 10)),
+      lengthMenu = list(c(10, 25, 100, -1), list('10','25','100','All')),
       pageLength = 10
     )
   )
@@ -527,12 +533,13 @@ server <- function(input, output, session){
     filter = 'top',
     options = list(
       # create the button
-      dom = 'fBrtip',
+      dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2meanD-', Sys.time(), sep=''), text = 'Download')),
       autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 10)),
-      pageLength = 10
+      pageLength = 10,
+      lengthMenu =  list(c(10, 25, 100, -1), list('10', '25', '100', 'All')) 
     )
   )
   
@@ -612,6 +619,8 @@ server <- function(input, output, session){
                          p1,
                          p2,
                          icc,
+                         pooled,
+                         p1inc,
                          stringsAsFactors = FALSE)
       
       if(!is.na(power)){
@@ -654,18 +663,19 @@ server <- function(input, output, session){
   
   # create 2prop output table
   output$table2prop <- DT::renderDataTable(
-    res2prop()[,1:9],
+    res2prop()[,c(1:8,11)],
     server = FALSE,
     extensions = 'Buttons',
     filter = 'top',
     options = list(
       # create the button
-      dom = 'fBrtip',
+      dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2prop-', Sys.time(), sep=''), text = 'Download')),
       autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 9)),
-      pageLength = 10
+      pageLength = 10,
+      lengthMenu =  list(c(10, 25, 100, -1), list('10', '25', '100', 'All')) 
     )
   )
 
@@ -699,6 +709,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "r12rate", value = "")
       updateTextInput(session, inputId = "r22rate", value = "")
       updateTextInput(session, inputId = "cvb2rate", value = "")
+      updateTextInput(session, inputId = "r1inc2rate", value = FALSE)
     } # end observeEvent(input$default2rate ...
   )
   
@@ -713,6 +724,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "r12rate", value = "")
       updateTextInput(session, inputId = "r22rate", value = "")
       updateTextInput(session, inputId = "cvb2rate", value = "")
+      updateTextInput(session, inputId = "r1inc2rate", value = FALSE)
     } # end observeEvent(input$clear2rate ...
   )
   
@@ -727,6 +739,7 @@ server <- function(input, output, session){
       r1 <- make_sequence(isolate(input$r12rate))
       r2 <- make_sequence(isolate(input$r22rate))
       cvb <- make_sequence(isolate(input$cvb2rate))
+      r1inc <- isolate(input$r1inc2rate)
       
       tab <- expand.grid(alpha,
                          power,
@@ -735,6 +748,7 @@ server <- function(input, output, session){
                          r1,
                          r2,
                          cvb,
+                         r1inc,
                          stringsAsFactors = FALSE)
       
       if(!is.na(power)){
@@ -777,18 +791,19 @@ server <- function(input, output, session){
   
   # create 2rate output table
   output$table2rate <- DT::renderDataTable(
-    res2rate()[,1:8],
+    res2rate()[,c(1:7,9)],
     server = FALSE,
     extensions = 'Buttons',
     filter = 'top',
     options = list(
       # create the button
-      dom = 'fBrtip',
+      dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2rate-', Sys.time(), sep=''), text = 'Download')),
       autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 8)),
-      pageLength = 10
+      pageLength = 10,
+      lengthMenu =  list(c(10, 25, 100, -1), list('10', '25', '100', 'All')) 
     )
   )
 
