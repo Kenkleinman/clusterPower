@@ -41,6 +41,13 @@ rho_ctooltip <- 'The correlation between baseline and post-test outcomes at the 
 rho_stext <- 'Within subject correlation (rho_s)'
 rho_stooltip <- 'The correlation between baseline and post-test outcomes at the subject level. For a purely cross-sectional design, this value should be 0.'
 
+#
+#
+rho_mtext <- 'Mathcing correltion (rho_m)'
+rho_mtooltip <- 'The correlation in outcome used between matched clusters.'
+
+
+
 # -----------------------------------------------------------------------------
 # specific to 2prop:
 p1text <- 'Proportion 1 (p1)'

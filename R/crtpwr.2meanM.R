@@ -125,6 +125,13 @@ crtpwr.2meanM <- function(alpha = 0.05, power = 0.80, m = NA,
                            tol = tol, extendInt = "downX")$root
   }
   
+  # calculate rho_m
+  if (is.na(rho_m)){
+    rho_m <- stats::uniroot(function(rho_m) eval(pwr) - power,
+                          interval = c(1e-07, 1- 1e-07),
+                          tol = tol, extendInt = "upX")$root
+  }
+  
   structure(get(target), names = target)
   
 }

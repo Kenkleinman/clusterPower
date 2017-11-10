@@ -153,6 +153,63 @@ ui <- fluidPage(
                     make_table_and_graph("meanD", names2meanD)
              ) # end column(10,...
     ), # end tabPanel("Continuous ...
+    tabPanel("Continuous Matched",
+             column(2,
+                    #----------------------------------------------------------
+                    fluidRow(textInput("alpha2meanM", alphatext,
+                                       value = "0.05", width = "100%")),
+                    bsTooltip("alpha2meanM", alphatooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("power2meanM", powertext,
+                                       value = "", width = "100%")),
+                    bsTooltip("power2meanM", powertooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("d2meanM", dtext,
+                                       value = "", width = "100%")),
+                    bsTooltip("d2meanM", dtooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("m2meanM", mtext,
+                                       value = "", width = "100%")),
+                    bsTooltip("m2meanM", mtooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("n2meanM", ntext,
+                                       value = "", width = "100%")),
+                    bsTooltip("n2meanM", ntooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("icc2meanM", icctext,
+                                       value = "", width = "100%")),
+                    bsTooltip("icc2meanM", icctooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("rho_m2meanM", rho_mtext,
+                                       value = "", width = "100%")),
+                    bsTooltip("rho_m2meanM", rho_mtooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("varw2meanM", varwtext,
+                                       value = "", width = "100%")),
+                    bsTooltip("varw2meanM", varwtooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(
+                      column(6, style='padding:0px;', actionButton("default2meanM", defaulttext, width = "100%")),
+                      column(6, style='padding:0px;', actionButton("clear2meanM", clearalltext, width = "100%"))
+                    ),
+                    fluidRow(
+                      column(12, style='padding: 0px;', actionButton("calc2meanM", calctext, width = "100%",
+                                                                     style = umass)),
+                      fluidRow(column(12, credittext))
+                    )
+             ),
+             column(10,
+                    make_table_and_graph("meanM", names2meanM)
+             ) # end column(10,...
+    ), # end tabPanel("Continuous ...
     #-----------------------------------------------------------------------------------------------------------
     tabPanel("Binary",
              column(2,
@@ -555,6 +612,142 @@ server <- function(input, output, session){
                  input$lsize2meanD, input$psize2meanD, input$row2meanD, input$col2meanD)
   },
   height = reactive({input$height2meanD})
+  )
+  
+  
+  #----------------------------------------------------------------------------
+  # Two means: Matching
+  #----------------------------------------------------------------------------
+  
+  # reset 2meanM inputs to default values
+  observeEvent(
+    input$default2meanM,
+    {
+      updateTextInput(session, inputId = "alpha2meanM", value = "0.05")
+      updateTextInput(session, inputId = "power2meanM", value = "")
+      updateTextInput(session, inputId = "rho_m2meanM", value = "")
+      updateTextInput(session, inputId = "m2meanM", value = "")
+      updateTextInput(session, inputId = "n2meanM", value = "")
+      updateTextInput(session, inputId = "d2meanM", value = "")
+      updateTextInput(session, inputId = "icc2meanM", value = "")
+      updateTextInput(session, inputId = "varw2meanM", value = "")
+    }
+  ) # end observeEvent(input$default2meanM ...
+  
+  
+  # clear 2meanM inputs 
+  observeEvent(
+    input$clear2meanM,
+    {
+      updateTextInput(session, inputId = "alpha2meanM", value = "")
+      updateTextInput(session, inputId = "power2meanM", value = "")
+      updateTextInput(session, inputId = "rho_m2meanM", value = "")
+      updateTextInput(session, inputId = "m2meanM", value = "")
+      updateTextInput(session, inputId = "n2meanM", value = "")
+      updateTextInput(session, inputId = "d2meanM", value = "")
+      updateTextInput(session, inputId = "icc2meanM", value = "")
+      updateTextInput(session, inputId = "varw2meanM", value = "")
+    }
+  ) # end observeEvent(input$clear2meanM ...
+  
+  # create 2meanM data
+  res2meanM <- eventReactive(
+    input$calc2meanM,
+    {
+      # convert inputs to numeric vectors
+      alpha <- make_sequence(isolate(input$alpha2meanM))
+      power <- make_sequence(isolate(input$power2meanM))
+      m <- make_sequence(isolate(input$m2meanM))
+      n <- make_sequence(isolate(input$n2meanM))
+      rho_m <- make_sequence(isolate(input$rho_m2meanM))
+      d <- make_sequence(isolate(input$d2meanM))
+      icc <- make_sequence(isolate(input$icc2meanM))
+      varw <- make_sequence(isolate(input$varw2meanM))
+      
+      if(!is.na(power)){
+        validate(
+          need(power >= 0 & power <= 1,
+               powervalidmsg)
+        )
+      }
+      
+      if(!is.na(alpha)){
+        validate(
+          need(alpha >= 0 & alpha <= 1,
+               alphavalidmsg)
+        )
+      }
+      
+      
+      # create a table of input values
+      tab <- expand.grid(alpha,
+                         power,
+                         m,
+                         n,
+                         d,
+                         icc,
+                         varw,
+                         rho_m,
+                         stringsAsFactors = FALSE)
+      
+      # record the column index of the target parameter
+      needind <- which(is.na(tab[1,]))
+      # validate that only one input is blank
+      validate(
+        need(length(needind) == 1,
+             "Exactly one of 'alpha', 'power', 'd', 'm', 'n', 'icc', 'rho_m', and 'varw' must be left blank."
+        )
+      )
+      names(tab) <- names2meanM
+      target <- names2meanM[needind]
+      
+      # apply function over table of input values
+      temp <-pmap_df(tab, crtpwr.2meanM.safe)
+      
+      tab[[target]] <- signif(temp$result, 4)
+      tab$error <- map_chr(temp$error, shorten_error, target = target)
+      
+      # make a column to store target variable for use in graphing
+      tab$target <- target
+      
+      # check to see if there are errors, if so, set maxcol to 10 to show error in datatable
+      # if not, set colmax to 9 so that error column not displayed
+      #tab$colmax <- ifelse(sum(!is.na(res2meanM()$error) != 0, 10, 9))
+      
+      # convert all input values to factors for ggplot
+      mutate_if(tab, !(names(tab) %in% c(target,"error","target")), factor)
+    })
+  
+  # create 2meanM output table
+  output$table2meanM <- DT::renderDataTable(
+    res2meanM()[, 1:10],
+    server = FALSE,
+    extensions = 'Buttons',
+    filter = 'top',
+    options = list(
+      # create the button
+      dom = 'fBrtlip',
+      buttons = list(list(extend = 'csv', filename = paste('data-2meanM-', Sys.time(), sep=''), text = 'Download')),
+      autoWidth = TRUE,
+      columnDefs = list(list(className = 'dt-center', targets = '_all'),
+                        list(width = '500px', targets = 10)),
+      pageLength = 10,
+      lengthMenu =  list(c(10, 25, 100, -1), list('10', '25', '100', 'All')) 
+    )
+  )
+  
+  # update graph UI
+  observeEvent(res2meanM(),
+               {
+                 update_graph_ui(session, res2meanM(), "meanM", names2meanM)
+               })
+  
+  # create 2meanM graph
+  output$graph2meanM <- renderPlot({
+    create_graph(res2meanM(), input$x2meanM, input$y2meanM, input$group2meanM,
+                 input$lsize2meanM, input$psize2meanM, input$row2meanM, input$col2meanM)
+  },
+  height = reactive({input$height2meanM})
   )
   
   

@@ -22,7 +22,7 @@
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
 #' @return The computed argument.
-#' #' @examples 
+#' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, probability
 #' in condition 1 of .1 and condition 2 of .2, and icc = 0.1.

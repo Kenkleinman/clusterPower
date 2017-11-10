@@ -37,13 +37,6 @@ at least four significant digits.}
 }
 \value{
 The computed argument.
-#' @examples 
-# Find the number of clusters per condition needed for a trial with alpha = .05, 
-# power = 0.8, 10 observations per cluster, no variation in cluster size, probability
-in condition 1 of .1 and condition 2 of .2, and icc = 0.1.
-crtpwr.2prop(n=10 ,p1=.1, p2=.2, icc=.1)
-# 
-# The result, showimg m of greater than 37, suggests 38 clusters per condition should be used.
 }
 \description{
 Compute the power of a simple cluster randomized trial with a binary outcome,
@@ -54,3 +47,11 @@ or determine parameters to obtain a target power.
 Jonathan Moyer (\email{jon.moyer@gmail.com})
 }
 
+\examples{
+# Find the number of clusters per condition needed for a trial with alpha = .05, 
+# power = 0.8, 10 observations per cluster, no variation in cluster size, probability
+in condition 1 of .1 and condition 2 of .2, and icc = 0.1.
+crtpwr.2prop(n=10 ,p1=.1, p2=.2, icc=.1)
+# 
+# The result, showimg m of greater than 37, suggests 38 clusters per condition should be used.
+}
