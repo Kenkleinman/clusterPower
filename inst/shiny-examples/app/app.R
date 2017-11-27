@@ -87,7 +87,7 @@ ui <- fluidPage(
                     )
              ),
              column(10,
-                    make_table_and_graph("mean", names2mean)
+                    make_table_and_graph("2mean", names2mean)
              ) # end column(10,...
     ), # end tabPanel("Continuous ...
     #-----------------------------------------------------------------------------------------------------------
@@ -150,7 +150,7 @@ ui <- fluidPage(
                     )
              ),
              column(10,
-                    make_table_and_graph("meanD", names2meanD)
+                    make_table_and_graph("2meanD", names2meanD)
              ) # end column(10,...
     ), # end tabPanel("Continuous ...
     tabPanel("Continuous Matched",
@@ -207,7 +207,7 @@ ui <- fluidPage(
                     )
              ),
              column(10,
-                    make_table_and_graph("meanM", names2meanM)
+                    make_table_and_graph("2meanM", names2meanM)
              ) # end column(10,...
     ), # end tabPanel("Continuous ...
     #-----------------------------------------------------------------------------------------------------------
@@ -274,7 +274,7 @@ ui <- fluidPage(
                     )
              ), # end column(2, ..
              column(10,
-                    make_table_and_graph("prop", names2prop)
+                    make_table_and_graph("2prop", names2prop)
              ) # end column(10,...
     ), # end tabPanel("Binary ...
     #-----------------------------------------------------------------------------------------------------------
@@ -330,7 +330,7 @@ ui <- fluidPage(
                     )
              ),
              column(10,
-                    make_table_and_graph("rate", names2rate)
+                    make_table_and_graph("2rate", names2rate)
              ) # end column(10,...
     ) # end tabPanel("Count ...
     #-----------------------------------------------------------------------------------------------------------
@@ -464,7 +464,7 @@ server <- function(input, output, session){
   # update graph UI
   observeEvent(res2mean(),
                {
-                 update_graph_ui(session, res2mean(), "mean", names2mean)
+                 update_graph_ui(session, res2mean(), "2mean", names2mean)
                })
   
   # create 2mean graph
@@ -603,7 +603,7 @@ server <- function(input, output, session){
   # update graph UI
   observeEvent(res2meanD(),
                {
-                 update_graph_ui(session, res2meanD(), "meanD", names2meanD)
+                 update_graph_ui(session, res2meanD(), "2meanD", names2meanD)
                })
   
   # create 2meanD graph
@@ -739,7 +739,7 @@ server <- function(input, output, session){
   # update graph UI
   observeEvent(res2meanM(),
                {
-                 update_graph_ui(session, res2meanM(), "meanM", names2meanM)
+                 update_graph_ui(session, res2meanM(), "2meanM", names2meanM)
                })
   
   # create 2meanM graph
@@ -875,7 +875,7 @@ server <- function(input, output, session){
   # update graph UI
   observeEvent(res2prop(),
                {
-                 update_graph_ui(session, res2prop(), "prop", names2prop)
+                 update_graph_ui(session, res2prop(), "2prop", names2prop)
                })
   
   # create 2prop graph
@@ -1003,7 +1003,7 @@ server <- function(input, output, session){
   # update graph UI
   observeEvent(res2rate(),
                {
-                 update_graph_ui(session, res2rate(), "rate", names2rate)
+                 update_graph_ui(session, res2rate(), "2rate", names2rate)
                })
   
   # create 2rate graph
