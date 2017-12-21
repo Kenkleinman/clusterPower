@@ -13,6 +13,15 @@ mtooltip <- 'The number of clusters per arm.'
 ntext <- 'Cluster size (n)'
 ntooltip <- 'The mean sample size per cluster.'
 
+p1text <- 'Proportion 1 (p1)'
+p1tooltip <- 'The expected proportion in the treatment group.'
+
+p2text <- 'Proportion 2 (p2)'
+p2tooltip <- 'The proportion in the control group.'
+
+p1inctext <- 'p1 > p2'
+p1inctooltip <- 'Select to indicate that the treatment group proportion is greater than the control group proportion. This option is needed only when the target quantity is either "p1" or "p2". If both "p1" and "p2" are given this option has no effect.'
+
 icctext <- 'ICC (icc)'
 icctooltip <- 'Intracluster correlation coefficient.'
 
@@ -50,17 +59,14 @@ rho_mtooltip <- 'The correlation in outcome used between matched clusters.'
 
 # -----------------------------------------------------------------------------
 # specific to 2prop:
-p1text <- 'Proportion 1 (p1)'
-p1tooltip <- 'The expected proportion in the treatment group.'
-
-p2text <- 'Proportion 2 (p2)'
-p2tooltip <- 'The proportion in the control group.'
-
-p1inctext <- 'p1 > p2'
-p1inctooltip <- 'Select to indicate that the treatment group proportion is greater than the control group proportion. This option is needed only when the target quantity is either "p1" or "p2". If both "p1" and "p2" are given this option has no effect.'
-
 pooledtext <- 'Pooled'
 pooledtooltip <- 'Select to indicate if pooled variance is desired.'
+
+# -----------------------------------------------------------------------------
+# specific to 2propM:
+cvmtext <- "Within-pair Outcome CV (cvm)"
+cvmtooltip <- "The coefficient of variation in the outcome within matched clusters."
+
 
 # specific to 2rate:
 r1text <- 'Rate 1 (r1)'
