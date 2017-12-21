@@ -52,7 +52,7 @@ rho_stooltip <- 'The correlation between baseline and post-test outcomes at the 
 
 #
 #
-rho_mtext <- 'Mathcing correltion (rho_m)'
+rho_mtext <- 'Matching correlation (rho_m)'
 rho_mtooltip <- 'The correlation in outcome used between matched clusters.'
 
 

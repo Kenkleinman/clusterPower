@@ -58,6 +58,20 @@ crtpwr.2prop.safe <- function(alpha,power,m,n,cv,p1,p2,icc,pooled,p1inc){
   res
 }
 
+crtpwr.2propM.safe <- function(alpha,power,m,n,p1,p2,cvm,p1inc){
+  # make safe version
+  fun <- safely(crtpwr.2propM, otherwise = NA)
+  # store result
+  res <- fun(alpha,power,m,n,p1,p2,cvm,p1inc)
+  # if res$error NULL, set to NA, otherwise set to message
+  if(is.null(res$error)){
+    res$error = 'None'
+  } else {
+    res$error <- res$error$message
+  }
+  res
+}
+
 crtpwr.2rate.safe <- function(alpha,power,m,py,r1,r2,cvb,r1inc){
   # make safe version
   fun <- safely(crtpwr.2rate, otherwise = NA)
@@ -85,17 +99,19 @@ make_sequence <- function(x){
   x <- str_trim(x)
   if(x == ""){
     # if x is an empty string, just return NA
-    as.numeric(x)
-  } else if(str_detect(x, "^[0-9.]")){
-    # if the initial character of x is a digit or period, use the supplied
-    # numbers to create a vector of possibilities
-    temp <- as.numeric(str_split(x,"[^0-9.]",simplify=TRUE))
-    temp[!is.na(temp)]
-  } else {
-    # if the initial character of x is not a digit or period, use the three
-    # supplied numbers to create a sequence 'from x to y by z'
+    return(as.numeric(x))
+  } 
+  
+  # split x based on commas or space
+  y <- str_split(x, "[,\\s]", simplify = TRUE)
+  
+  if(length(y) == 5 & y[2] == "to" & y[4] == "by"){
+    # check if in "X to Y by Z" format
     temp <- as.numeric(str_split(x,"[^0-9.]",simplify=TRUE))
     temp <- temp[!is.na(temp)]
-    seq(temp[1], temp[2], by = temp[3])
+    return(seq(temp[1], temp[2], by = temp[3]))
+  } else {
+    temp <- as.numeric(str_split(x,"[^0-9.]",simplify=TRUE))
+    return(temp[!is.na(temp)])
   }
 }

@@ -14,6 +14,7 @@ names2mean <- c("alpha","power","m","n","cv","d","icc","varw","method")
 names2meanD <- c("alpha","power","m","n","d","icc","rho_c","rho_s","varw")
 names2meanM <- c("alpha","power","m","n","d","icc","varw","rho_m")
 names2prop <- c("alpha","power","m","n","cv","p1","p2","icc","pooled","p1inc")
+names2propM <- c("alpha","power","m","n","p1","p2","cvm","p1inc")
 names2rate <- c("alpha","power","m","py","r1","r2","cvb","r1inc")
 
 umass <- "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-weight: bold; color: #ffffff; background-color: #881c1c; border: 3px solid #000000;"
@@ -22,7 +23,7 @@ ui <- fluidPage(
   HTML("<h3>Simple Two-Arm Designs</h3>
         <p>To use the two-arm calculator, leave the desired quantity blank and enter values for the other quantities.</p>
         <p>You may specify more than one input quantity by separating numbers with spaces or commas.<p>
-        <p>You may specify a sequence of values by typing 'from X to Y by Z', where 'X' is the starting value, 'Y' is the ending value, and 'Z' is the increment.</p>"),
+        <p>You may specify a sequence of values by typing 'X to Y by Z', where 'X' is the starting value, 'Y' is the ending value, and 'Z' is the increment.</p>"),
   HTML("This Beta has minimal documentation; please contact ken.kleinman@gmail.com with any feedback."),
   tabsetPanel(
     #-----------------------------------------------------------------------------------------------------------
@@ -277,6 +278,64 @@ ui <- fluidPage(
                     make_table_and_graph("2prop", names2prop)
              ) # end column(10,...
     ), # end tabPanel("Binary ...
+    #-----------------------------------------------------------------------------------------------------------
+    tabPanel("Binary Matched",
+             column(2,
+                    #----------------------------------------------------------
+                    fluidRow(textInput("alpha2propM", alphatext,
+                                       value = "0.05", width = "100%")),
+                    bsTooltip("alpha2propM", alphatooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("power2propM", powertext,
+                                       value = "0.80", width = "100%")),
+                    bsTooltip("power2propM", powertooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("p12propM", p1text,
+                                       value = "", width = "100%")),
+                    bsTooltip("p12propM", p1tooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("p22propM", p2text,
+                                       value = "", width = "100%")),
+                    bsTooltip("p22propM", p2tooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(checkboxInput("p1inc2propM", p1inctext)),
+                    bsTooltip("p1inc2propM", p1inctooltip,
+                              'top', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("m2propM", mtext,
+                                       value = "", width = "100%")),
+                    bsTooltip("m2propM", mtooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("n2propM", ntext,
+                                       value = "", width = "100%")),
+                    bsTooltip("n2propM", ntooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("cvm2propM", cvmtext,
+                                       value = "", width = "100%")),
+                    bsTooltip("cvm2propM", cvmtooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(
+                      column(6, style='padding:0px;', actionButton("default2propM", defaulttext, width = "100%")),
+                      column(6, style='padding:0px;', actionButton("clear2propM", clearalltext, width = "100%"))
+                    ),
+                    fluidRow(
+                      column(12, style='padding:0px;', actionButton("calc2propM", calctext, width = "100%",
+                                                                    style = umass)),
+                      fluidRow(column(12, credittext))
+                      
+                    )
+             ), # end column(2, ..
+             column(10,
+                    make_table_and_graph("2propM", names2propM)
+             ) # end column(10,...
+    ), # end tabPanel("Binary Matched ...
     #-----------------------------------------------------------------------------------------------------------
     tabPanel("Count",
              column(2,
@@ -884,6 +943,134 @@ server <- function(input, output, session){
                  input$lsize2prop, input$psize2prop, input$row2prop, input$col2prop)
   },
   height = reactive({input$height2prop})
+  )
+  
+  
+  #----------------------------------------------------------------------------
+  # Two proportions, matched
+  #----------------------------------------------------------------------------
+  
+  # reset 2propM inputs to default values
+  observeEvent(
+    input$default2propM,
+    {
+      updateTextInput(session, inputId = "alpha2propM", value = "0.05")
+      updateTextInput(session, inputId = "power2propM", value = "0.80")
+      updateTextInput(session, inputId = "cvm2propM", value = "")
+      updateTextInput(session, inputId = "m2propM", value = "")
+      updateTextInput(session, inputId = "n2propM", value = "")
+      updateTextInput(session, inputId = "p12propM", value = "")
+      updateTextInput(session, inputId = "p22propM", value = "")
+      updateTextInput(session, inputId = "p1inc2propM", value = FALSE)
+    } # end observeEvent(input$default2propM ...
+  )
+  
+  # clear 2propM inputs
+  observeEvent(
+    input$clear2propM,
+    {
+      updateTextInput(session, inputId = "alpha2propM", value = "")
+      updateTextInput(session, inputId = "power2propM", value = "")
+      updateTextInput(session, inputId = "cvm2propM", value = "")
+      updateTextInput(session, inputId = "m2propM", value = "")
+      updateTextInput(session, inputId = "n2propM", value = "")
+      updateTextInput(session, inputId = "p12propM", value = "")
+      updateTextInput(session, inputId = "p22propM", value = "")
+      updateTextInput(session, inputId = "p1inc2propM", value = FALSE)
+    } 
+  ) # end observeEvent(input$clear2propM ...
+  
+  # create 2propM data
+  res2propM <- eventReactive(
+    input$calc2propM,
+    {
+      alpha <- make_sequence(isolate(input$alpha2propM))
+      power <- make_sequence(isolate(input$power2propM))
+      m <- make_sequence(isolate(input$m2propM))
+      n <- make_sequence(isolate(input$n2propM))
+      p1 <- make_sequence(isolate(input$p12propM))
+      p2 <- make_sequence(isolate(input$p22propM))
+      cvm <- make_sequence(isolate(input$cvm2propM))
+      p1inc <- isolate(input$p1inc2propM)
+      
+      tab <- expand.grid(alpha,
+                         power,
+                         m,
+                         n,
+                         p1,
+                         p2,
+                         cvm,
+                         p1inc,
+                         stringsAsFactors = FALSE)
+      
+      if(!is.na(power)){
+        validate(
+          need(power >= 0 & power <= 1,
+               powervalidmsg)
+        )
+      }
+      
+      if(!is.na(alpha)){
+        validate(
+          need(alpha >= 0 & alpha <= 1,
+               alphavalidmsg)
+        )
+      }
+      
+      # record the column index of the target parameter
+      needind <- which(is.na(tab[1,]))
+      # validate that only one input is blank
+      validate(
+        need(length(needind) == 1,
+             "Exactly one of 'alpha', 'power', 'p1', 'p2', 'm', 'n', or 'cvm' must be left blank."
+        )
+      )
+      names(tab) <- names2propM
+      target <- names2propM[needind]
+      
+      # apply function over table of input values
+      temp <-pmap_df(tab, crtpwr.2propM.safe)
+      
+      tab[[target]] <- signif(temp$result, 4)
+      tab$error <- map_chr(temp$error, shorten_error, target = target)
+      
+      # make a column to store target variable for use in graphing
+      tab$target <- target
+      
+      # convert all input values to factors for ggplot
+      mutate_if(tab, !(names(tab) %in% c(target,"error","target")), factor)
+    })
+  
+  # create 2propM output table
+  output$table2propM <- DT::renderDataTable(
+    res2propM()[,c(1:7,9)],
+    server = FALSE,
+    extensions = 'Buttons',
+    filter = 'top',
+    options = list(
+      # create the button
+      dom = 'fBrtlip',
+      buttons = list(list(extend = 'csv', filename = paste('data-2propM-', Sys.time(), sep=''), text = 'Download')),
+      autoWidth = TRUE,
+      columnDefs = list(list(className = 'dt-center', targets = '_all'),
+                        list(width = '500px', targets = 8)),
+      pageLength = 10,
+      lengthMenu =  list(c(10, 25, 100, -1), list('10', '25', '100', 'All')) 
+    )
+  )
+  
+  # update graph UI
+  observeEvent(res2propM(),
+               {
+                 update_graph_ui(session, res2propM(), "2propM", names2propM)
+               })
+  
+  # create 2propM graph
+  output$graph2propM <- renderPlot({
+    create_graph(res2propM(), input$x2propM, input$y2propM, input$group2propM,
+                 input$lsize2propM, input$psize2propM, input$row2propM, input$col2propM)
+  },
+  height = reactive({input$height2propM})
   )
   
   

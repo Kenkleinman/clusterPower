@@ -39,7 +39,7 @@
 #' crtpwr.2meanM(n=10 ,rho_m=0.7,d=1, icc=.1, varw=5)
 #' # 
 #' # The result, showimg m of greater than 11, suggests 12 clusters per condition should be used.
-#' @references Crespy CM. (2016) Improved Designs for Cluster Randomized Trials. Annu Rev Public Health. 
+#' @references Crespi CM. (2016) Improved Designs for Cluster Randomized Trials. Annu Rev Public Health. 
 #'   37:1-16.
 #' @export
 

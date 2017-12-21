@@ -48,4 +48,8 @@ Jonathan Moyer (\email{jon.moyer@gmail.com})
 crtpwr.2propM(n=80 ,p1=0.80, p2=0.60, cvm = 0.2)
 # 
 # The result, showimg m of greater than 10, suggests 11 clusters per condition should be used.
+
+}
+\references{
+Hayes JR, Moulton LH. Cluster Randomized Trials. Boca Raton, FL: CRC Press; 2009.
 }

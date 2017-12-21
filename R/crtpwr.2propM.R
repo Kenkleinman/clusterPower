@@ -26,6 +26,9 @@
 #' crtpwr.2propM(n=80 ,p1=0.80, p2=0.60, cvm = 0.2)
 #' # 
 #' # The result, showimg m of greater than 10, suggests 11 clusters per condition should be used.
+#' 
+#' @references Hayes JR, Moulton LH. Cluster Randomized Trials. Boca Raton, FL: CRC Press; 2009.
+#' 
 #' @export
 
 crtpwr.2propM <- function(alpha = 0.05, power = 0.80,
@@ -107,7 +110,7 @@ crtpwr.2propM <- function(alpha = 0.05, power = 0.80,
                         tol = tol, extendInt = "upX")$root
   }
   
-  # calculate cv
+  # calculate cvm
   if (is.na(cvm)) {
     
     cvm <- stats::uniroot(function(cvm) eval(pwr) - power,
@@ -116,14 +119,5 @@ crtpwr.2propM <- function(alpha = 0.05, power = 0.80,
   }
   
   structure(get(target), names = target)
-  
-  # method <- paste("Clustered two-sample proportion power calculation: ", target, sep = "")
-  # note <- "'m' is the number of clusters in each group and 'n' is the number of individuals in each cluster."
-  # structure(list(m = m, n = n, cv = cv,
-  #                p1 = p1, p1dec = p1dec, p1inc = p1inc,
-  #                p2 = p2, p2dec = p2dec, p2inc = p2inc,
-  #                icc = icc, alpha = alpha, power = power,
-  #                note = note, method = method),
-  #           class = "power.htest")
   
 }
