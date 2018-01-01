@@ -42,7 +42,7 @@ methodtooltip <- 'Method for calculating the variance inflation and design effec
 # -----------------------------------------------------------------------------
 # specific to 2meanD:
 dDtext <- 'Difference in difference (d)'
-dDtooltip <- 'Expected difference-in-difference between condition means.'
+dDtooltip <- 'Expected net difference in outcome statistics (means, proportions, etc.).'
 
 rho_ctext <- 'Within cluster correlation (rho_c)'
 rho_ctooltip <- 'The correlation between baseline and post-test outcomes at the cluster level. Used in both cohort and cross-sectional designs. A value of "0" is a conservative estimate.'
@@ -61,6 +61,14 @@ rho_mtooltip <- 'The correlation in outcome used between matched clusters.'
 # specific to 2prop:
 pooledtext <- 'Pooled'
 pooledtooltip <- 'Select to indicate if pooled variance is desired.'
+
+
+# -----------------------------------------------------------------------------
+# specific to 2propD:
+ptext <- "Expected mean proportion (p)"
+ptooltip <- "The expected mean proportion at the post-test, averaged across treatment and control arms."
+
+
 
 # -----------------------------------------------------------------------------
 # specific to 2propM:
@@ -103,3 +111,24 @@ collab <- 'Facet Column'
 heightlab <- 'Plot Height'
 psizelab <- 'Point Size'
 lsizelab <- 'Line Size'
+
+# labels for the various quantities
+graph_labels <- c(
+  `alpha` = "Level of Significance",
+  `power` = "Power",
+  `d` = "Difference",
+  `m` = "Mean Clusters Per Arm",
+  `n` = "Mean Cluster Size",
+  `icc` = "ICC",
+  `varw` = "Within-Cluster Variance",
+  `cv` = "Cluster Size CV",
+  `rho_c` = "Within-Cluster Correlation",
+  `rho_s` = "Within-Subject Correlation",
+  `rho_m` = "Matching Correlation",
+  `p1` = "Treatment Proportion",
+  `p2` = "Control Propotion",
+  `cvm` = "Within-Pair Outcome CV",
+  `r1` = "Treatment Rate",
+  `r2` = "Control Rate",
+  `py` = "Person-Years Per Cluster",
+  `cvb` = "Between-Cluster CV") 

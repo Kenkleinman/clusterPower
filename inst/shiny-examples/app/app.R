@@ -14,6 +14,7 @@ names2mean <- c("alpha","power","m","n","cv","d","icc","varw","method")
 names2meanD <- c("alpha","power","m","n","d","icc","rho_c","rho_s","varw")
 names2meanM <- c("alpha","power","m","n","d","icc","varw","rho_m")
 names2prop <- c("alpha","power","m","n","cv","p1","p2","icc","pooled","p1inc")
+names2propD <- c("alpha","power","m","n","p","d","icc","rho_c","rho_s")
 names2propM <- c("alpha","power","m","n","p1","p2","cvm","p1inc")
 names2rate <- c("alpha","power","m","py","r1","r2","cvb","r1inc")
 
@@ -153,7 +154,8 @@ ui <- fluidPage(
              column(10,
                     make_table_and_graph("2meanD", names2meanD)
              ) # end column(10,...
-    ), # end tabPanel("Continuous ...
+    ), # end tabPanel("Continuous DID ...
+    #-----------------------------------------------------------------------------------------------------------
     tabPanel("Continuous Matched",
              column(2,
                     #----------------------------------------------------------
@@ -210,7 +212,7 @@ ui <- fluidPage(
              column(10,
                     make_table_and_graph("2meanM", names2meanM)
              ) # end column(10,...
-    ), # end tabPanel("Continuous ...
+    ), # end tabPanel("Continuous Matched ...
     #-----------------------------------------------------------------------------------------------------------
     tabPanel("Binary",
              column(2,
@@ -278,6 +280,69 @@ ui <- fluidPage(
                     make_table_and_graph("2prop", names2prop)
              ) # end column(10,...
     ), # end tabPanel("Binary ...
+    #-----------------------------------------------------------------------------------------------------------
+    tabPanel("Binary DID",
+             column(2,
+                    #----------------------------------------------------------
+                    fluidRow(textInput("alpha2propD", alphatext,
+                                       value = "0.05", width = "100%")),
+                    bsTooltip("alpha2propD", alphatooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("power2propD", powertext,
+                                       value = "", width = "100%")),
+                    bsTooltip("power2propD", powertooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("p2propD", ptext,
+                                       value = "", width = "100%")),
+                    bsTooltip("p2propD", ptooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("d2propD", dDtext,
+                                       value = "", width = "100%")),
+                    bsTooltip("d2propD", dDtooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("m2propD", mtext,
+                                       value = "", width = "100%")),
+                    bsTooltip("m2propD", mtooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("n2propD", ntext,
+                                       value = "", width = "100%")),
+                    bsTooltip("n2propD", ntooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("icc2propD", icctext,
+                                       value = "", width = "100%")),
+                    bsTooltip("icc2propD", icctooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("rho_c2propD", rho_ctext,
+                                       value = "", width = "100%")),
+                    bsTooltip("rho_c2propD", rho_ctooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("rho_s2propD", rho_stext,
+                                       value = "", width = "100%")),
+                    bsTooltip("rho_s2propD", rho_stooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(
+                      column(6, style='padding:0px;', actionButton("default2propD", defaulttext, width = "100%")),
+                      column(6, style='padding:0px;', actionButton("clear2propD", clearalltext, width = "100%"))
+                    ),
+                    fluidRow(
+                      column(12, style='padding: 0px;', actionButton("calc2propD", calctext, width = "100%",
+                                                                     style = umass)),
+                      fluidRow(column(12, credittext))
+                    )
+             ),
+             column(10,
+                    make_table_and_graph("2propD", names2propD)
+             ) # end column(10,...
+    ), # end tabPanel("Binary DID ...
     #-----------------------------------------------------------------------------------------------------------
     tabPanel("Binary Matched",
              column(2,
@@ -945,6 +1010,145 @@ server <- function(input, output, session){
   height = reactive({input$height2prop})
   )
   
+  
+  #----------------------------------------------------------------------------
+  # Two proportions, difference in difference
+  #----------------------------------------------------------------------------
+  
+  # reset 2propD inputs to default values
+  observeEvent(
+    input$default2propD,
+    {
+      updateTextInput(session, inputId = "alpha2propD", value = "0.05")
+      updateTextInput(session, inputId = "power2propD", value = "")
+      updateTextInput(session, inputId = "rho_c2propD", value = "")
+      updateTextInput(session, inputId = "rho_s2propD", value = "")
+      updateTextInput(session, inputId = "m2propD", value = "")
+      updateTextInput(session, inputId = "n2propD", value = "")
+      updateTextInput(session, inputId = "p2propD", value = "")
+      updateTextInput(session, inputId = "d2propD", value = "")
+      updateTextInput(session, inputId = "icc2propD", value = "")
+    }
+  ) # end observeEvent(input$default2propD ...
+  
+  
+  # clear 2propD inputs 
+  observeEvent(
+    input$clear2propD,
+    {
+      updateTextInput(session, inputId = "alpha2propD", value = "")
+      updateTextInput(session, inputId = "power2propD", value = "")
+      updateTextInput(session, inputId = "rho_c2propD", value = "")
+      updateTextInput(session, inputId = "rho_s2propD", value = "")
+      updateTextInput(session, inputId = "m2propD", value = "")
+      updateTextInput(session, inputId = "n2propD", value = "")
+      updateTextInput(session, inputId = "p2propD", value = "")
+      updateTextInput(session, inputId = "d2propD", value = "")
+      updateTextInput(session, inputId = "icc2propD", value = "")
+    }
+  ) # end observeEvent(input$clear2propD ...
+  
+  # create 2propD data
+  res2propD <- eventReactive(
+    input$calc2propD,
+    {
+      # convert inputs to numeric vectors
+      alpha <- make_sequence(isolate(input$alpha2propD))
+      power <- make_sequence(isolate(input$power2propD))
+      m <- make_sequence(isolate(input$m2propD))
+      n <- make_sequence(isolate(input$n2propD))
+      rho_c <- make_sequence(isolate(input$rho_c2propD))
+      rho_s <- make_sequence(isolate(input$rho_s2propD))
+      p <- make_sequence(isolate(input$p2propD))
+      d <- make_sequence(isolate(input$d2propD))
+      icc <- make_sequence(isolate(input$icc2propD))
+
+      if(!is.na(power)){
+        validate(
+          need(power >= 0 & power <= 1,
+               powervalidmsg)
+        )
+      }
+      
+      if(!is.na(alpha)){
+        validate(
+          need(alpha >= 0 & alpha <= 1,
+               alphavalidmsg)
+        )
+      }
+      
+      
+      # create a table of input values
+      tab <- expand.grid(alpha,
+                         power,
+                         m,
+                         n,
+                         p,
+                         d,
+                         icc,
+                         rho_c,
+                         rho_s,
+                         stringsAsFactors = FALSE)
+      
+      # record the column index of the target parameter
+      needind <- which(is.na(tab[1,]))
+      # validate that only one input is blank
+      validate(
+        need(length(needind) == 1,
+             "Exactly one of 'alpha', 'power', 'p', 'd', 'm', 'n', 'icc', 'rho_c', and 'rho_s' must be left blank."
+        )
+      )
+      names(tab) <- names2propD
+      target <- names2propD[needind]
+      
+      # apply function over table of input values
+      temp <-pmap_df(tab, crtpwr.2propD.safe)
+      
+      tab[[target]] <- signif(temp$result, 4)
+      tab$error <- map_chr(temp$error, shorten_error, target = target)
+      
+      # make a column to store target variable for use in graphing
+      tab$target <- target
+      
+      # check to see if there are errors, if so, set maxcol to 10 to show error in datatable
+      # if not, set colmax to 9 so that error column not displayed
+      #tab$colmax <- ifelse(sum(!is.na(res2propD()$error) != 0, 10, 9))
+      
+      # convert all input values to factors for ggplot
+      mutate_if(tab, !(names(tab) %in% c(target,"error","target")), factor)
+    })
+  
+  # create 2propD output table
+  output$table2propD <- DT::renderDataTable(
+    res2propD()[, c(1:10)],
+    server = FALSE,
+    extensions = 'Buttons',
+    filter = 'top',
+    options = list(
+      # create the button
+      dom = 'fBrtlip',
+      buttons = list(list(extend = 'csv', filename = paste('data-2propD-', Sys.time(), sep=''), text = 'Download')),
+      autoWidth = TRUE,
+      columnDefs = list(list(className = 'dt-center', targets = '_all'),
+                        list(width = '500px', targets = 10)),
+      pageLength = 10,
+      lengthMenu =  list(c(10, 25, 100, -1), list('10', '25', '100', 'All')) 
+    )
+  )
+  
+  # update graph UI
+  observeEvent(res2propD(),
+               {
+                 update_graph_ui(session, res2propD(), "2propD", names2propD)
+               })
+  
+  # create 2propD graph
+  output$graph2propD <- renderPlot({
+    create_graph(res2propD(), input$x2propD, input$y2propD, input$group2propD,
+                 input$lsize2propD, input$psize2propD, input$row2propD, input$col2propD)
+  },
+  height = reactive({input$height2propD})
+  )
   
   #----------------------------------------------------------------------------
   # Two proportions, matched

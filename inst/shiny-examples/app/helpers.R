@@ -58,6 +58,20 @@ crtpwr.2prop.safe <- function(alpha,power,m,n,cv,p1,p2,icc,pooled,p1inc){
   res
 }
 
+crtpwr.2propD.safe <- function(alpha,power,m,n,p,d,icc,rho_c,rho_s){
+  # make safe version
+  fun <- safely(crtpwr.2propD, otherwise = NA)
+  # store result
+  res <- fun(alpha,power,m,n,p,d,icc,rho_c,rho_s)
+  # if res$error NULL, set to NA, otherwise set to message
+  if(is.null(res$error)){
+    res$error = 'None'
+  } else {
+    res$error <- res$error$message
+  }
+  res
+}
+
 crtpwr.2propM.safe <- function(alpha,power,m,n,p1,p2,cvm,p1inc){
   # make safe version
   fun <- safely(crtpwr.2propM, otherwise = NA)
@@ -107,11 +121,11 @@ make_sequence <- function(x){
   
   if(length(y) == 5 & y[2] == "to" & y[4] == "by"){
     # check if in "X to Y by Z" format
-    temp <- as.numeric(str_split(x,"[^0-9.]",simplify=TRUE))
+    temp <- as.numeric(str_split(x,"[^0-9.\\-]",simplify=TRUE))
     temp <- temp[!is.na(temp)]
     return(seq(temp[1], temp[2], by = temp[3]))
   } else {
-    temp <- as.numeric(str_split(x,"[^0-9.]",simplify=TRUE))
+    temp <- as.numeric(str_split(x,"[^0-9.\\-]",simplify=TRUE))
     return(temp[!is.na(temp)])
   }
 }
