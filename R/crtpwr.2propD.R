@@ -28,6 +28,14 @@
 #'   subject level. This should be used for a cohort design or a mixture of cohort
 #'   and cross-sectional designs. In a purely cross-sectional design (baseline subjects
 #'   are completely different from post-test subjects), this value should be 0.
+#' @param covdf The degrees of freedom used by group-level covariates. A value of 0 means no regression 
+#'   adjustment using covariates.
+#' @param pvar_c The expected cluster-level proportion of variance to be explained by regression
+#'   adjustment for covariates. If covariate adjustment isn't used or its effects not known, this value should
+#'   be 0.
+#' @param pvar_s The expected subject-level proportion of variance to be explained by regression
+#'   adjustment for covariates. If covariate adjustment isn't used or its effects not known, this value should
+#'   be 0.
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
 #' @return The computed argument.
@@ -49,6 +57,7 @@ crtpwr.2propD <- function(alpha = 0.05, power = 0.80,
                           m = NA, n = NA,
                           p = NA, d = NA, icc = NA, 
                           rho_c = NA, rho_s = NA,
+                          covdf = 0, pvar_c = 0, pvar_s = 0,
                           tol = .Machine$double.eps^0.25){
   
   if(!is.na(m) && m <= 1) {
@@ -69,12 +78,12 @@ crtpwr.2propD <- function(alpha = 0.05, power = 0.80,
     }
   }
   
-  needlist <- list(alpha, power, m, n, p, d, icc, rho_c, rho_s)
-  neednames <- c("alpha", "power", "m", "n", "p", "d", "icc", "rho_c", "rho_s")
+  needlist <- list(alpha, power, m, n, p, d, icc, rho_c, rho_s, covdf, pvar_s, pvar_c)
+  neednames <- c("alpha", "power", "m", "n", "p", "d", "icc", "rho_c", "rho_s", "covdf", "pvar_s", "pvar_c")
   needind <- which(unlist(lapply(needlist, is.na))) # find NA index
   
   if (length(needind) != 1) {
-    stop("Exactly one of 'alpha', 'power', 'm', 'n', 'p', 'd', 'icc', 'rho_c', or 'rho_s' must be NA.")
+    stop("Exactly one of 'alpha', 'power', 'm', 'n', 'p', 'd', 'icc', 'rho_c', 'rho_s', 'covdf', 'pvar_s', or 'pvar_c' must be NA.")
   }
   
   target <- neednames[needind]
@@ -87,9 +96,11 @@ crtpwr.2propD <- function(alpha = 0.05, power = 0.80,
     # between cluster: varb = p*(1-p)*icc
     # within cluster: varw = p*(1-p)*(1 - icc)
     # 2*2*(p*(1-p)*(1 - icc)*(1 - rho_s) + n*p*(1-p)*icc*(1 - rho_c))/(n*m)
-    ncp <- d/sqrt(2*2*(p*(1-p)*(1 - icc)*(1 - rho_s) + n*p*(1-p)*icc*(1 - rho_c))/(n*m))
+    varb <- p*(1-p)*icc
+    varw <- p*(1-p)*(1 - icc)
+    ncp <- d/sqrt(2*2*(varw*(1 - rho_s)*(1 - pvar_s) + n*varb*(1 - rho_c)*(1 - pvar_c))/(n*m))
     
-    pt(tcrit, 2*(m - 1), ncp, lower.tail = FALSE) 
+    pt(tcrit, 2*(m - 1) - covdf, ncp, lower.tail = FALSE) 
   })
   
   # calculate alpha
@@ -107,8 +118,8 @@ crtpwr.2propD <- function(alpha = 0.05, power = 0.80,
   # calculate m
   if (is.na(m)) {
     m <- stats::uniroot(function(m) eval(pwr) - power,
-                        interval = c(2 + 1e-10, 1e+07),
-                        tol = tol)$root
+                        interval = c(2 + covdf + 1e-10, 1e+07),
+                        tol = tol, extendInt = "upX")$root
   }
   
   # calculate n
@@ -142,14 +153,35 @@ crtpwr.2propD <- function(alpha = 0.05, power = 0.80,
   # calculate rho_c
   if (is.na(rho_c)){
     rho_c <- stats::uniroot(function(rho_c) eval(pwr) - power,
-                            interval = c(1e-07, 1e+07),
+                            interval = c(1e-07, 1 - 1e-7),
                             tol = tol, extendInt = "upX")$root
   }
   
   # calculate rho_s
   if (is.na(rho_s)){
     rho_s <- stats::uniroot(function(rho_s) eval(pwr) - power,
+                            interval = c(1e-07, 1 - 1e-7),
+                            tol = tol, extendInt = "upX")$root
+  }
+  
+  # calculate covdf
+  if (is.na(covdf)){
+    covdf <- stats::uniroot(function(covdf) eval(pwr) - power,
                             interval = c(1e-07, 1e+07),
+                            tol = tol, extendInt = "upX")$root
+  }
+  
+  # calculate pvar_c
+  if (is.na(pvar_c)){
+    pvar_c <- stats::uniroot(function(pvar_c) eval(pwr) - power,
+                            interval = c(1e-07, 1 - 1e-7),
+                            tol = tol, extendInt = "upX")$root
+  }
+  
+  # calculate pvar_s
+  if (is.na(pvar_s)){
+    pvar_s <- stats::uniroot(function(pvar_s) eval(pwr) - power,
+                            interval = c(1e-07, 1 - 1e-7),
                             tol = tol, extendInt = "upX")$root
   }
   

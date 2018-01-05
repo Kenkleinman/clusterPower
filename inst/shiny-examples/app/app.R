@@ -14,7 +14,7 @@ names2mean <- c("alpha","power","m","n","cv","d","icc","varw","method")
 names2meanD <- c("alpha","power","m","n","d","icc","rho_c","rho_s","varw")
 names2meanM <- c("alpha","power","m","n","d","icc","varw","rho_m")
 names2prop <- c("alpha","power","m","n","cv","p1","p2","icc","pooled","p1inc")
-names2propD <- c("alpha","power","m","n","p","d","icc","rho_c","rho_s")
+names2propD <- c("alpha","power","m","n","p","d","icc","rho_c","rho_s","covdf","pvar_c","pvar_s")
 names2propM <- c("alpha","power","m","n","p1","p2","cvm","p1inc")
 names2rate <- c("alpha","power","m","py","r1","r2","cvb","r1inc")
 
@@ -327,6 +327,21 @@ ui <- fluidPage(
                     fluidRow(textInput("rho_s2propD", rho_stext,
                                        value = "", width = "100%")),
                     bsTooltip("rho_s2propD", rho_stooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("covdf2propD", covdftext,
+                                       value = "0", width = "100%")),
+                    bsTooltip("covdf2propD", covdftooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("pvar_c2propD", pvar_ctext,
+                                       value = "0", width = "100%")),
+                    bsTooltip("pvar_c2propD", pvar_ctooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("pvar_s2propD", pvar_stext,
+                                       value = "0", width = "100%")),
+                    bsTooltip("pvar_s2propD", pvar_stooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(
@@ -1028,6 +1043,9 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "p2propD", value = "")
       updateTextInput(session, inputId = "d2propD", value = "")
       updateTextInput(session, inputId = "icc2propD", value = "")
+      updateTextInput(session, inputId = "covdf2propD", value = "0")
+      updateTextInput(session, inputId = "pvar_c2propD", value = "0")
+      updateTextInput(session, inputId = "pvar_s2propD", value = "0")
     }
   ) # end observeEvent(input$default2propD ...
   
@@ -1045,6 +1063,9 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "p2propD", value = "")
       updateTextInput(session, inputId = "d2propD", value = "")
       updateTextInput(session, inputId = "icc2propD", value = "")
+      updateTextInput(session, inputId = "covdf2propD", value = "")
+      updateTextInput(session, inputId = "pvar_c2propD", value = "")
+      updateTextInput(session, inputId = "pvar_s2propD", value = "")
     }
   ) # end observeEvent(input$clear2propD ...
   
@@ -1062,6 +1083,9 @@ server <- function(input, output, session){
       p <- make_sequence(isolate(input$p2propD))
       d <- make_sequence(isolate(input$d2propD))
       icc <- make_sequence(isolate(input$icc2propD))
+      covdf <- make_sequence(isolate(input$covdf2propD))
+      pvar_c <- make_sequence(isolate(input$pvar_c2propD))
+      pvar_s <- make_sequence(isolate(input$pvar_s2propD))
 
       if(!is.na(power)){
         validate(
@@ -1088,6 +1112,9 @@ server <- function(input, output, session){
                          icc,
                          rho_c,
                          rho_s,
+                         covdf,
+                         pvar_c,
+                         pvar_s,
                          stringsAsFactors = FALSE)
       
       # record the column index of the target parameter
@@ -1095,7 +1122,7 @@ server <- function(input, output, session){
       # validate that only one input is blank
       validate(
         need(length(needind) == 1,
-             "Exactly one of 'alpha', 'power', 'p', 'd', 'm', 'n', 'icc', 'rho_c', and 'rho_s' must be left blank."
+             "Exactly one of 'alpha', 'power', 'p', 'd', 'm', 'n', 'icc', 'rho_c', 'rho_s', 'covdf', 'pvar_c', and 'pvar_s' must be left blank."
         )
       )
       names(tab) <- names2propD
@@ -1120,7 +1147,7 @@ server <- function(input, output, session){
   
   # create 2propD output table
   output$table2propD <- DT::renderDataTable(
-    res2propD()[, c(1:10)],
+    res2propD()[, c(1:13)],
     server = FALSE,
     extensions = 'Buttons',
     filter = 'top',
@@ -1130,7 +1157,7 @@ server <- function(input, output, session){
       buttons = list(list(extend = 'csv', filename = paste('data-2propD-', Sys.time(), sep=''), text = 'Download')),
       autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
-                        list(width = '500px', targets = 10)),
+                        list(width = '500px', targets = 13)),
       pageLength = 10,
       lengthMenu =  list(c(10, 25, 100, -1), list('10', '25', '100', 'All')) 
     )
