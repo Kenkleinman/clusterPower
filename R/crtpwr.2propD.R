@@ -10,8 +10,7 @@
 #'   explicitly passed as \code{NA}.
 #'
 #' @section Authors:
-#' Jonathan Moyer (\email{jon.moyer@@gmail.com})
-#' Ken Kleinman (\email(ken.kleinman@@gmail.com))
+#' Jonathan Moyer (\email{jon.moyer@@gmail.com}), Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
 #' @section Note:
 #'   This function was inspired by work from Stephane Champely (pwr.t.test) and

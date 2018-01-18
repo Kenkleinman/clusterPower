@@ -64,8 +64,7 @@ Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
 }
 \section{Authors}{
 
-Jonathan Moyer (\email{jon.moyer@gmail.com})
-Ken Kleinman (\email(ken.kleinman@gmail.com))
+Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
 }
 
 \section{Note}{

@@ -57,8 +57,7 @@ If \code{n} is a vector the values, \code{m} will be recalculated
 
 \section{Authors}{
 
-Jonathan Moyer (\email{jon.moyer@gmail.com})
-Ken Kleinman (\email(ken.kleinman@gmail.com))
+Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
 }
 
 \examples{
