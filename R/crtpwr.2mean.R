@@ -22,7 +22,7 @@
 #'   invalid arguments are given.
 #'
 #' @section Authors:
-#' Jonathan Moyer (\email{jon.moyer@@gmail.com}), Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' Jonathan Moyer (\email{jon.moyer@@gmail.com})
 #'
 #' @param alpha The level of significance of the test, the probability of a
 #'   Type I error.
