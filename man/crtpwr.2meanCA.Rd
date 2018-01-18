@@ -52,9 +52,17 @@ If \code{n} is a vector the values, \code{m} will be recalculated
 }
 \section{Note}{
 
-  'uniroot' is used to solve power equation for unknowns, so you may see
+  This function was inspired by work from Stephane Champely (pwr.t.test) and
+  Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
+  solve power equation for unknowns, so you may see
   errors from it, notably about inability to bracket the root when
   invalid arguments are given.
+}
+
+\section{Authors}{
+
+Jonathan Moyer (\email{jon.moyer@gmail.com})
+Ken Kleinman (\email(ken.kleinman@gmail.com))
 }
 
 \examples{
@@ -68,7 +76,4 @@ crtpwr.2meanCA(n=10 ,d=1, icc=.1, varw=5, covdf=1, rho_b=.7)
 \references{
 Moerbeek M, Teerenstra S. (2016) Power Analysis of Trials with Multilevel Data. 
   Boca Raton: CRC Press; 2016: 84-87
-}
-\author{
-Jonathan Moyer (\email{jon.moyer@gmail.com})
 }

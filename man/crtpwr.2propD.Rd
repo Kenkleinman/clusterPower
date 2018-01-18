@@ -65,6 +65,16 @@ Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
 \section{Authors}{
 
 Jonathan Moyer (\email{jon.moyer@gmail.com})
+Ken Kleinman (\email(ken.kleinman@gmail.com))
+}
+
+\section{Note}{
+
+  This function was inspired by work from Stephane Champely (pwr.t.test) and
+  Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
+  solve power equation for unknowns, so you may see
+  errors from it, notably about inability to bracket the root when
+  invalid arguments are given.
 }
 
 \examples{

@@ -56,9 +56,17 @@ If \code{n} is a vector the values, \code{m} and \code{cv} will be recalculated
 }
 \section{Note}{
 
-  'uniroot' is used to solve power equation for unknowns, so you may see
+  This function was inspired by work from Stephane Champely (pwr.t.test) and
+  Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
+  solve power equation for unknowns, so you may see
   errors from it, notably about inability to bracket the root when
   invalid arguments are given.
+}
+
+\section{Authors}{
+
+Jonathan Moyer (\email{jon.moyer@gmail.com})
+Ken Kleinman (\email(ken.kleinman@gmail.com))
 }
 
 \examples{
@@ -81,7 +89,4 @@ Eldridge SM, Ashby D, Kerry S. (2006) Sample size for cluster randomized
 van Breukelen GJP, Candel MJJM, Berger MPF. (2007) Relative efficiency of
   unequal versus equal cluster sizes in cluster randomized and multicentre trials.
   Statist Med. 26:2589-2603.
-}
-\author{
-Jonathan Moyer (\email{jon.moyer@gmail.com})
 }

@@ -15,11 +15,15 @@
 #'    van Breukelen et al (2007).
 #'
 #' @section Note:
-#'   'uniroot' is used to solve power equation for unknowns, so you may see
+#'   This function was inspired by work from Stephane Champely (pwr.t.test) and
+#'   Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
+#'   solve power equation for unknowns, so you may see
 #'   errors from it, notably about inability to bracket the root when
 #'   invalid arguments are given.
 #'
-#' @author Jonathan Moyer (\email{jon.moyer@@gmail.com})
+#' @section Authors:
+#' Jonathan Moyer (\email{jon.moyer@@gmail.com})
+#' Ken Kleinman (\email(ken.kleinman@@gmail.com))
 #'
 #' @param alpha The level of significance of the test, the probability of a
 #'   Type I error.
@@ -128,7 +132,7 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
   if (is.na(alpha)) {
     alpha <- stats::uniroot(function(alpha) eval(pwr) - power,
                      interval = c(1e-10, 1 - 1e-10),
-                     tol = tol, extendInt = "yes")$root
+                     tol = tol)$root
   }
   
   # calculate power

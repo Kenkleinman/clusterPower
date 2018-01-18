@@ -56,9 +56,17 @@ If \code{n} is a vector the values, \code{m} will be recalculated
 }
 \section{Note}{
 
-  'uniroot' is used to solve power equation for unknowns, so you may see
+  This function was inspired by work from Stephane Champely (pwr.t.test) and
+  Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
+  solve power equation for unknowns, so you may see
   errors from it, notably about inability to bracket the root when
   invalid arguments are given.
+}
+
+\section{Authors}{
+
+Jonathan Moyer (\email{jon.moyer@gmail.com})
+Ken Kleinman (\email(ken.kleinman@gmail.com))
 }
 
 \examples{
@@ -77,7 +85,4 @@ Rutterford C, Copas A, Eldridge S. (2015) Methods for sample size
 Teerenstra S, Eldridge S, Graff M, de Hoop E, Borm, GF. (2012) A simple
   sample size formula for analysis of covariance in cluster randomized trials.
   Statist Med. 31:2169-2178
-}
-\author{
-Jonathan Moyer (\email{jon.moyer@gmail.com})
 }
