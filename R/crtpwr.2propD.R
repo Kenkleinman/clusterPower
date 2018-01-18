@@ -141,35 +141,35 @@ crtpwr.2propD <- function(alpha = 0.05, power = 0.80,
   if (is.na(p)) {
     p <- stats::uniroot(function(p) eval(pwr) - power,
                         interval = c(1e-7, 1 - 1e-7),
-                        tol = tol, extendInt = "yes")$root
+                        tol = tol)$root
   }
   
   # calculate d
   if (is.na(d)) {
     d <- stats::uniroot(function(d) eval(pwr) - power,
                         interval = c(1e-7, 1 - 1e-7),
-                        tol = tol, extendInt = "yes")$root
+                        tol = tol)$root
   }
   
   # calculate icc
   if (is.na(icc)){
     icc <- stats::uniroot(function(icc) eval(pwr) - power,
                           interval = c(1e-07, 1 - 1e-7),
-                          tol = tol, extendInt = "downX")$root
+                          tol = tol)$root
   }
   
   # calculate rho_c
   if (is.na(rho_c)){
     rho_c <- stats::uniroot(function(rho_c) eval(pwr) - power,
                             interval = c(1e-07, 1 - 1e-7),
-                            tol = tol, extendInt = "upX")$root
+                            tol = tol)$root
   }
   
   # calculate rho_s
   if (is.na(rho_s)){
     rho_s <- stats::uniroot(function(rho_s) eval(pwr) - power,
                             interval = c(1e-07, 1 - 1e-7),
-                            tol = tol, extendInt = "upX")$root
+                            tol = tol)$root
   }
   
   # calculate covdf
@@ -183,14 +183,14 @@ crtpwr.2propD <- function(alpha = 0.05, power = 0.80,
   if (is.na(pvar_c)){
     pvar_c <- stats::uniroot(function(pvar_c) eval(pwr) - power,
                             interval = c(1e-07, 1 - 1e-7),
-                            tol = tol, extendInt = "upX")$root
+                            tol = tol)$root
   }
   
   # calculate pvar_s
   if (is.na(pvar_s)){
     pvar_s <- stats::uniroot(function(pvar_s) eval(pwr) - power,
                             interval = c(1e-07, 1 - 1e-7),
-                            tol = tol, extendInt = "upX")$root
+                            tol = tol)$root
   }
   
   structure(get(target), names = target)

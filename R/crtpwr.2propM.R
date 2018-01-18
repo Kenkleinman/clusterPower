@@ -89,11 +89,11 @@ crtpwr.2propM <- function(alpha = 0.05, power = 0.80,
     if(p1inc){
       p1 <- stats::uniroot(function(p1) eval(pwr) - power,
                            interval = c(p2 + 1e-7, 1 - 1e-7),
-                           tol = tol, extendInt = "yes")$root
+                           tol = tol)$root
     } else {
       p1 <- stats::uniroot(function(p1) eval(pwr) - power,
                            interval = c(1e-7, p2 - 1e-7),
-                           tol = tol, extendInt = "yes")$root
+                           tol = tol)$root
     }
   }
   
@@ -102,12 +102,12 @@ crtpwr.2propM <- function(alpha = 0.05, power = 0.80,
     if(p1inc){
       p2 <- stats::uniroot(function(p2) eval(pwr) - power,
                            interval = c(1e-7, p1 - 1e-7),
-                           tol = tol, extendInt = "yes")$root
+                           tol = tol)$root
       
     } else {
       p2 <- stats::uniroot(function(p2) eval(pwr) - power,
                            interval = c(p1 + 1e-7, 1 - 1e-7),
-                           tol = tol, extendInt = "yes")$root
+                           tol = tol)$root
     }
   }
   

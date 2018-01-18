@@ -147,14 +147,14 @@ crtpwr.2meanCA <- function(alpha = 0.05, power = 0.80, m = NA,
   if (is.na(d)) {
     d <- stats::uniroot(function(d) eval(pwr) - power,
                         interval = c(1e-10, 1e+07),
-                        tol = tol, extendInt = "upX")$root
+                        tol = tol)$root
   }
   
   # calculate icc
   if (is.na(icc)){
     icc <- stats::uniroot(function(icc) eval(pwr) - power,
-                          interval = c(1e-10, 1e+07),
-                          tol = tol, extendInt = "downX")$root
+                          interval = c(1e-07, 1 - 1e-07),
+                          tol = tol)$root
   }
   
   # calculate varw
@@ -174,8 +174,8 @@ crtpwr.2meanCA <- function(alpha = 0.05, power = 0.80, m = NA,
   # calculate rho_b
   if (is.na(rho_b)) {
     rho_b <- stats::uniroot(function(rho_b) eval(pwr) - power,
-                            interval = c(1e-10, 1 - 1e-7),
-                            tol = tol, extendInt = "upX")$root
+                            interval = c(1e-07, 1 - 1e-07),
+                            tol = tol)$root
   }
   
   structure(get(target), names = target)

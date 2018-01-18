@@ -140,22 +140,22 @@ crtpwr.2meanD <- function(alpha = 0.05, power = 0.80, m = NA,
   # calculate icc
   if (is.na(icc)){
     icc <- stats::uniroot(function(icc) eval(pwr) - power,
-                          interval = c(1e-07, 1e+07),
-                          tol = tol, extendInt = "downX")$root
+                          interval = c(1e-07, 1 - 1e-07),
+                          tol = tol)$root
   }
   
   # calculate rho_c
   if (is.na(rho_c)){
     rho_c <- stats::uniroot(function(rho_c) eval(pwr) - power,
-                          interval = c(1e-07, 1e+07),
-                          tol = tol, extendInt = "upX")$root
+                          interval = c(1e-07, 1 - 1e-07),
+                          tol = tol)$root
   }
   
   # calculate rho_s
   if (is.na(rho_s)){
     rho_s <- stats::uniroot(function(rho_s) eval(pwr) - power,
-                          interval = c(1e-07, 1e+07),
-                          tol = tol, extendInt = "upX")$root
+                          interval = c(1e-07, 1 - 1e-07),
+                          tol = tol)$root
   }
   
   # calculate varw

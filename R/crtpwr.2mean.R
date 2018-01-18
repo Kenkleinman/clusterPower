@@ -171,8 +171,8 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
   # calculate icc
   if (is.na(icc)){
     icc <- stats::uniroot(function(icc) eval(pwr) - power,
-                   interval = c(1e-07, 1e+07),
-                   tol = tol, extendInt = "downX")$root
+                   interval = c(1e-07, 1 - 1e-07),
+                   tol = tol)$root
   }
   
   # calculate varw

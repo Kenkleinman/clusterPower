@@ -118,8 +118,8 @@ crtpwr.2meanM <- function(alpha = 0.05, power = 0.80, m = NA,
   # calculate icc
   if (is.na(icc)){
     icc <- stats::uniroot(function(icc) eval(pwr) - power,
-                          interval = c(1e-07, 1e+07),
-                          tol = tol, extendInt = "downX")$root
+                          interval = c(1e-07, 1- 1e-07),
+                          tol = tol)$root
   }
   
   # calculate varw
@@ -133,7 +133,7 @@ crtpwr.2meanM <- function(alpha = 0.05, power = 0.80, m = NA,
   if (is.na(rho_m)){
     rho_m <- stats::uniroot(function(rho_m) eval(pwr) - power,
                           interval = c(1e-07, 1- 1e-07),
-                          tol = tol, extendInt = "upX")$root
+                          tol = tol)$root
   }
   
   structure(get(target), names = target)
