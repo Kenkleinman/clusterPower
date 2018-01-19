@@ -67,6 +67,8 @@ generate_did_data <- function(j, k, m,
     keep2 <- with(data, which((k <= korig - kloss | k > korig) & X2 == 1))
     keep <- c(keep1, keep2)
     data <- data[keep,]
+    y <- with(data, {y <- B0 + B1*X1 + B2*X2 + B3*X1*X2 + b1 + b2*X2 + b3 + b4*X2 + e})
+    data$y <- y
     rownames(data) <- NULL
     data
     # keep1 indicates the original k subjects
@@ -92,9 +94,9 @@ sdb3 <- 0.1
 sdb4 <- 0.1
 sde <- 0.1
 
-ltf <- 0.25
+ltf <- 1
 
 test <- generate_did_data(j,k,m,B0,B1,B2,B3,sdb1,sdb2,sdb3,sdb4,sde,ltf)
 
-mod <- lmer(y ~ X1*X2 + (X2|clust) + (X2|subj), data = test)
+#mod <- lmer(y ~ X1*X2 + (X2|clust) + (X2|subj), data = test)
 
