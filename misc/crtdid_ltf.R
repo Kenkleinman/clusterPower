@@ -20,7 +20,8 @@ generate_did_data <- function(j, k, m,
                               X1 = 0:1, X2 = 0:1){
   
   # determine number lost to follow up, use to determine number of all subjects
-  kloss <- ceiling(k*ltf)
+  kloss <- round(k*ltf)
+  korig <- k
   kmax <- k + kloss
   
   data <- expand.grid(X1 = X1, X2 = X2,
@@ -62,8 +63,8 @@ generate_did_data <- function(j, k, m,
     within(data = data, {y <- B0 + B1*X1 + B2*X2 + B3*X1*X2 + b1 + b2*X2 + b3 + b4*X2 + e})
   } else {
     # determine which subjects to keep at pre, post
-    keep1 <- with(data, which(X2 == 0 & k <= (kmax - kloss)))
-    keep2 <- with(data, which(X2 == 1 & !(k %in% ) < (kmax - kloss) | k > (kmax - kloss)) ))
+    keep1 <- with(data, which(k <= korig & X2 == 0))
+    keep2 <- with(data, which((k <= korig - kloss | k > korig) & X2 == 1))
     keep <- c(keep1, keep2)
     data <- data[keep,]
     rownames(data) <- NULL
@@ -91,7 +92,7 @@ sdb3 <- 0.1
 sdb4 <- 0.1
 sde <- 0.1
 
-ltf <- 1
+ltf <- 0.25
 
 test <- generate_did_data(j,k,m,B0,B1,B2,B3,sdb1,sdb2,sdb3,sdb4,sde,ltf)
 
