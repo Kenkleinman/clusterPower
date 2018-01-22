@@ -592,7 +592,7 @@ server <- function(input, output, session){
       # create the button
       dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2mean-', Sys.time(), sep=''), text = 'Download')),
-      autoWidth = TRUE,
+      #autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '700px', targets = 10)),
       lengthMenu = list(c(10, 25, 100, -1), list('10','25','100','All')),
