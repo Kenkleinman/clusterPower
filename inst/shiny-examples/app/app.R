@@ -594,7 +594,7 @@ server <- function(input, output, session){
       buttons = list(list(extend = 'csv', filename = paste('data-2mean-', Sys.time(), sep=''), text = 'Download')),
       autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
-                        list(width = '500px', targets = 1:9)),
+                        list(width = '200px', targets = 1:9)),
       lengthMenu = list(c(10, 25, 100, -1), list('10','25','100','All')),
       pageLength = 10
     )
