@@ -731,7 +731,7 @@ server <- function(input, output, session){
       # create the button
       dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2meanD-', Sys.time(), sep=''), text = 'Download')),
-      autoWidth = TRUE,
+      #autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 10)),
       pageLength = 10,
@@ -867,7 +867,7 @@ server <- function(input, output, session){
       # create the button
       dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2meanM-', Sys.time(), sep=''), text = 'Download')),
-      autoWidth = TRUE,
+      #autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 10)),
       pageLength = 10,
@@ -1003,7 +1003,7 @@ server <- function(input, output, session){
       # create the button
       dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2prop-', Sys.time(), sep=''), text = 'Download')),
-      autoWidth = TRUE,
+      #autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 9)),
       pageLength = 10,
@@ -1155,7 +1155,7 @@ server <- function(input, output, session){
       # create the button
       dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2propD-', Sys.time(), sep=''), text = 'Download')),
-      autoWidth = TRUE,
+      #autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 13)),
       pageLength = 10,
@@ -1282,7 +1282,7 @@ server <- function(input, output, session){
       # create the button
       dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2propM-', Sys.time(), sep=''), text = 'Download')),
-      autoWidth = TRUE,
+      #autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 8)),
       pageLength = 10,
@@ -1410,7 +1410,7 @@ server <- function(input, output, session){
       # create the button
       dom = 'fBrtlip',
       buttons = list(list(extend = 'csv', filename = paste('data-2rate-', Sys.time(), sep=''), text = 'Download')),
-      autoWidth = TRUE,
+      #autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = '_all'),
                         list(width = '500px', targets = 8)),
       pageLength = 10,
