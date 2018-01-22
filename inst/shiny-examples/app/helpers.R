@@ -103,7 +103,10 @@ crtpwr.2rate.safe <- function(alpha,power,m,py,r1,r2,cvb,r1inc){
 # function to shorten error messages
 shorten_error <- function(err, target){
   ifelse(err == "did not succeed extending the interval endpoints for f(lower) * f(upper) <= 0",
-         paste0("No '", target, "' found for given inputs."),
+         paste0("No value of '", target, "' can be found for the given inputs."),
+         err)
+  ifelse(err == "f() values at end points not of opposite sign",
+         paste0("No value of '", target, "' can be found for the given inputs."),
          err)
 }
 
