@@ -1,4 +1,4 @@
-# clusterPower 0.7
+# clusterPower 0.6.200
 
 - Adding functions for difference in difference models
 - Adding shiny app  with runExample for GUI access to the package
