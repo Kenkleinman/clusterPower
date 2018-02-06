@@ -1,6 +1,6 @@
 Package: clusterPower
 Version: 0.6.2
-Date: 2017-09-03	
+Date: 2018-02-06	
 Title: Power Calculations for Cluster-Randomized and Cluster-Randomized Crossover Trials
 Authors@R: c(
   person("Ken", "Kleinman", email = "ken.kleinman@gmail.com", rol = c("aut","cre")),
