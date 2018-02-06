@@ -53,7 +53,8 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
-# power = 0.80, 10 person-years per cluster, rate in condition 1 of 0.10 and condition 2 of 0.20, and cvb = 0.10.
+# power = 0.80, 10 person-years per cluster, rate in condition 1 of 0.10 
+# and condition 2 of 0.20, and cvb = 0.10.
 crtpwr.2rate(py=10, r1=0.10, r2=0.20, cvb=0.10)
 # 
 # The result, showimg m of greater than 24, suggests 25 clusters per condition should be used.
