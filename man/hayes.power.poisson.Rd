@@ -35,7 +35,7 @@ Calculates, for a specified study design, the power of that study to detect the
 specified effect size. The model is specified as a Poisson log-linear random 
 effects model (\code{period.effect} and \code{btw.clust.var} are parameters from 
 the model specified in Reich et al (2012)). Based on this model specification, the 
-coefficient of varation between cluster-level outcomes is calculated using 
+coefficient of variation between cluster-level outcomes is calculated using 
 conditional expectation (see \code{mixed.eff.params()}) and then the formula from Hayes
 and Bennett (1999) is implemented.
 }
