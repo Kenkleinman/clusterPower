@@ -1,4 +1,60 @@
-cps.normal = function(nsim = NULL, n = NULL, m = NULL, difference = NULL,
+#' Power simulations for cluster-randomized trials: Simple Designs.
+#'
+#' This set of functions utilize iterative simulations to determine 
+#' approximate power for cluster-randomized controlled trials. Users 
+#' can modify a variety of parameters to suit the simulations to their
+#' desired experimental situation.
+#' 
+#' Runs the power simulation.
+#' 
+#' Users must specify the desired number of simulations, number of subjects per 
+#' cluster, number of clusters per treatment arm, expected absolute difference 
+#' between treatments, two of the following: ICC, within-cluster variance, or 
+#' between-cluster variance; significance level, analytic method, and whether 
+#' or not progress updates should be displayed while the function is running.
+#' 
+#' 
+#' @param nsim Number of datasets to simulate; accepts integer (required).
+#' @param m Number of subjects per cluster; accepts integer (required). Currently in development to
+#' accept vectors of treatment-specific cluster numbers and distributional forms. 
+#' @param n Number of clusters per treatment group; accepts single integer (required) or 
+#' vector of length 2 for unequal number of clusters per treatment group 
+#' @param difference Expected absolute treatment effect; accepts numeric (required).
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE); accepts c('glmm', 'gee') (required).
+#' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default is FALSE.
+#' At least 2 of the following must be specified:
+#' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
+#' @param sigma_w Within-cluster variance; accepts numeric
+#' @param sigma_b Between-cluster variance; accepts numeric
+#' If clusters differ between treatment groups, at least 2 of the following 
+#' must be specified:
+#' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
+#' @param sigma_w2 Within-cluster variance for clusters in TREATMENT group
+#' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
+#' 
+#' @return A list with the following components
+#' \describe{
+#'   \item{sim.data}{Data frame with columns "Estimate" (Estimate of treatment effect for a given simulation), 
+#'                   "Std.Err" (Standard error for treatment effect estimate), 
+#'                   "Test.statistic" (t-value (for GLMM) or Wald statistic (for GEE)), 
+#'                   "p.value", "is.signif" (Is p-value less than alpha?)}
+#'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
+#'                "lower.95.ci" (Lower 95% confidence interval bound), 
+#'                "upper.95.ci" (Upper 95% confidence interval bound)}
+#' }
+#' 
+#' @author Alexander R. Bogdan
+#' 
+#' @examples 
+#' \dontrun{
+#' my.normal.sim = cps.normal(nsim = 100, n = 50, m = 6, difference = 30, ICC = 0.2, sigma_w = 100,
+#'                     alpha = 0.05, method = 'glmm', quiet = FALSE)
+#' }
+#'
+#' @export
+
+
+cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
                       ICC = NULL, sigma = NULL, sigma_b = NULL,
                       ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL,
                       alpha = 0.05, method, quiet = FALSE){
@@ -31,13 +87,13 @@ cps.normal = function(nsim = NULL, n = NULL, m = NULL, difference = NULL,
   if(!is.wholenumber(m) || m < 1){
     stop(paste0("M", min1.warning))
   }
-  if(length(m) > 2){
-    stop("M can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)")
+  if(length(n) > 2){
+    stop("N can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)")
   }
   
   # Set cluster sizes for treatment arm (if not already specified)
-  if(length(m) == 1){
-    m[2] = m[1]
+  if(length(n) == 1){
+    n[2] = n[1]
   }
   
   # Validate DIFFERENCE, ALPHA
@@ -91,7 +147,7 @@ cps.normal = function(nsim = NULL, n = NULL, m = NULL, difference = NULL,
     }
     if(!is.null(c(sigma, sigma_b)) && is.null(ICC)){
       ICC = sigma_b / (sigma_b + sigma)
-      ICC = ICC * sqrt((n - m[1]) / stats::rchisq(1, df = n - m[1]))
+      ICC = ICC * sqrt((m - n[1]) / stats::rchisq(1, df = m - n[1]))
     }
     
     
@@ -112,7 +168,7 @@ cps.normal = function(nsim = NULL, n = NULL, m = NULL, difference = NULL,
     }
     if(!is.null(c(sigma2, sigma_b2)) && is.null(ICC2)){
       ICC2 = sigma_b2 / (sigma_b2 + sigma2)
-      ICC2 = ICC2 * sqrt((n - m[2]) / stats::rchisq(1, df = n - m[2]))
+      ICC2 = ICC2 * sqrt((m - n[2]) / stats::rchisq(1, df = m - n[2]))
     }
     
     
@@ -128,19 +184,19 @@ cps.normal = function(nsim = NULL, n = NULL, m = NULL, difference = NULL,
     
     # Generate simulated data
     # Create indicators for treatment group & cluster
-    trt = c(rep(0, length.out = n*m[1]), rep(1, length.out = n*m[2]))
-    clust = c(rep(1:m[1], each = n), rep((1+m[1]):(m[1] +m[2]), each = n))
+    trt = c(rep(0, length.out = m*n[1]), rep(1, length.out = m*n[2]))
+    clust = c(rep(1:n[1], each = m), rep((1+n[1]):(n[1] +n[2]), each = m))
     
     
     # Generate response values for non-treatment group using m[1], sigma[1] & 
     #sigma_b[1]
-    randint.0 = stats::rnorm(m[1], mean = 0, sd = sqrt(sigma_b[1]))
-    y.0 = rep(randint.0, each = n) + stats::rnorm(n*m[1], mean = 0, sd = sqrt(sigma[1]))
+    randint.0 = stats::rnorm(n[1], mean = 0, sd = sqrt(sigma_b[1]))
+    y.0 = rep(randint.0, each = m) + stats::rnorm(m*n[1], mean = 0, sd = sqrt(sigma[1]))
     
     # Generate response values for treatment group using m[2], sigma[2] & sigma_b[2]
     #(sigma2 & sigma_b2 if specified)
-    randint.1 = stats::rnorm(m[2], mean = 0, sd = sqrt(sigma_b[2]))
-    y.1 = rep(randint.1, each = n) + stats::rnorm(n*m[2], mean = difference, sd = sqrt(sigma[2]))
+    randint.1 = stats::rnorm(n[2], mean = 0, sd = sqrt(sigma_b[2]))
+    y.1 = rep(randint.1, each = m) + stats::rnorm(m*n[2], mean = difference, sd = sqrt(sigma[2]))
     
     y = c(y.0,y.1)
     
