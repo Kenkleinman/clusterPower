@@ -207,7 +207,7 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
     if(method == 'glmm'){
       my.mod = lme4::lmer(y.resp ~ trt + (1|clust), data = sim.dat)
       glmm.values = summary(my.mod)$coefficient
-      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = m * 2 - 2)
+      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(n) - 1)
       est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
       se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
       stat.vector = append(stat.vector, glmm.values['trt', 't value'])
