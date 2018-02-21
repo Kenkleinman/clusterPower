@@ -132,13 +132,6 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
   for(i in 1:nsim){
     ## Create simulated response variable
     # Single set of cluster parameters
-    #if(!is.null(ICC)){
-    #icc_jitter = ICC * sqrt((n - m[1]) / stats::rchisq(1, df = n - m[1]))
-    #}
-    #if(!is.null(c(sigma, sigma_b)) && is.null(ICC)){
-    #ICC = sigma_b / (sigma_b + sigma)
-    #icc_jitter = ICC * sqrt((n - m[1]) / stats::rchisq(1, df = n - m[1]))
-    #}
     if(!is.null(c(ICC, sigma)) && is.null(sigma_b)){
       sigma_b = ICC * sigma / (1 - ICC)
     }
@@ -147,19 +140,9 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
     }
     if(!is.null(c(sigma, sigma_b)) && is.null(ICC)){
       ICC = sigma_b / (sigma_b + sigma)
-      ICC = ICC * sqrt((m - n[1]) / stats::rchisq(1, df = m - n[1]))
     }
     
-    
     # Second set of cluster parameters
-    #if(!is.null(ICC2)){
-    #icc2_jitter = ICC2 * sqrt((n - m[2]) / stats::rchisq(1, df = n - m[2]))
-    #}
-    #if(!is.null(c(sigma2, sigma_b2)) && is.null(ICC2)){
-    #ICC2 = sigma_b2 / (sigma_b2 + sigma2)
-    #icc2_jitter = ICC2 * sqrt((n - m[2]) / stats::rchisq(1, df = n - m[2]))
-    #}
-    
     if(!is.null(c(ICC2, sigma2)) && is.null(sigma_b2)){
       sigma_b2 = ICC2 * sigma2 / (1 - ICC2)
     }
@@ -168,9 +151,7 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
     }
     if(!is.null(c(sigma2, sigma_b2)) && is.null(ICC2)){
       ICC2 = sigma_b2 / (sigma_b2 + sigma2)
-      ICC2 = ICC2 * sqrt((m - n[2]) / stats::rchisq(1, df = m - n[2]))
     }
-    
     
     # Set within/between cluster variance for treatment group (if not already specified)
     if(!is.null(sigma2)){
