@@ -47,7 +47,7 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' my.normal.sim = cps.normal(nsim = 100, n = 50, m = 6, difference = 30, ICC = 0.2, sigma_w = 100,
+#' my.normal.sim = cps.normal(nsim = 100, m = 50, n = 30, difference = 30, ICC = 0.2, sigma_w = 100,
 #'                     alpha = 0.05, method = 'glmm', quiet = FALSE)
 #' }
 #'
@@ -94,6 +94,17 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
   # Set cluster sizes for treatment arm (if not already specified)
   if(length(n) == 1){
     n[2] = n[1]
+  }
+  
+  # Set sample sizes for each cluster (if not already specified)
+  if(length(m) == 1){
+    m[1:sum(n)] = m
+  } 
+  if(n[1] == n[2] && length(m) == n[1]){
+    m = rep(m, 2)
+  }
+  if(length(n) == 2 && length(m) != 1 && length(m) != sum(n)){
+    stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for M")
   }
   
   # Validate DIFFERENCE, ALPHA
@@ -165,20 +176,24 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
     
     # Generate simulated data
     # Create indicators for treatment group & cluster
-    trt = c(rep(0, length.out = m*n[1]), rep(1, length.out = m*n[2]))
-    clust = c(rep(1:n[1], each = m), rep((1+n[1]):(n[1] +n[2]), each = m))
+    trt = c(rep(0, length.out = sum(m[1:n[1]])), rep(1, length.out = sum(m[(n[1]+1):(n[1]+n[2])])))
+    clust = unlist(lapply(1:sum(n), function(x) rep(x, length.out = m[x])))
     
-    
-    # Generate response values for non-treatment group using m[1], sigma[1] & 
-    #sigma_b[1]
+    # Generate between-cluster effects for non-treatment and treatment
     randint.0 = stats::rnorm(n[1], mean = 0, sd = sqrt(sigma_b[1]))
-    y.0 = rep(randint.0, each = m) + stats::rnorm(m*n[1], mean = 0, sd = sqrt(sigma[1]))
-    
-    # Generate response values for treatment group using m[2], sigma[2] & sigma_b[2]
-    #(sigma2 & sigma_b2 if specified)
     randint.1 = stats::rnorm(n[2], mean = 0, sd = sqrt(sigma_b[2]))
-    y.1 = rep(randint.1, each = m) + stats::rnorm(m*n[2], mean = difference, sd = sqrt(sigma[2]))
     
+    # Create non-treatment y-value
+    y0.bclust = unlist(lapply(1:n[1], function(x) rep(randint.0[x], length.out = m[x])))
+    y0.wclust = unlist(lapply(m[1:n[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[1]))))
+    y.0 = y0.bclust + y0.wclust
+    
+    # Create treatment y-value
+    y1.bclust = unlist(lapply(1:n[2], function(x) rep(randint.1[x], length.out = m[n[1]+x])))
+    y1.wclust = unlist(lapply(m[(n[1]+1):(n[1]+n[2])], function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma[2]))))
+    y.1 = y1.bclust + y1.wclust
+    
+    # Create single response vector
     y = c(y.0,y.1)
     
     # Create data frame for simulated dataset
