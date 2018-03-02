@@ -20,8 +20,6 @@
 #' @param n Number of clusters per treatment group; accepts single integer (required) or 
 #' vector of length 2 for unequal number of clusters per treatment group 
 #' @param difference Expected absolute treatment effect; accepts numeric (required).
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE); accepts c('glmm', 'gee') (required).
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default is FALSE.
 #' At least 2 of the following must be specified:
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
 #' @param sigma_w Within-cluster variance; accepts numeric
@@ -31,6 +29,10 @@
 #' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
 #' @param sigma_w2 Within-cluster variance for clusters in TREATMENT group
 #' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
+#' @param alpha Significance level. Default = 0.05.
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default is FALSE.
+
 #' 
 #' @return A list with the following components
 #' \describe{
@@ -57,7 +59,7 @@
 cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
                       ICC = NULL, sigma = NULL, sigma_b = NULL,
                       ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL,
-                      alpha = 0.05, method, quiet = FALSE){
+                      alpha = 0.05, method = 'glmm', quiet = FALSE){
   
   # Create vectors to collect iteration-specific values
   est.vector = NULL
@@ -164,15 +166,10 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
       ICC2 = sigma_b2 / (sigma_b2 + sigma2)
     }
     
-    # Set within/between cluster variance for treatment group (if not already specified)
-    if(!is.null(sigma2)){
-      sigma[2] = sigma2
-    }
-    sigma[2] = sigma[1]
-    if(!is.null(sigma_b2)){
-      sigma_b[2] = sigma_b2
-    }
-    sigma_b[2] = sigma_b[1]
+    # Set within/between cluster variance & ICC for treatment group (if not already specified)
+    sigma[2] = ifelse(!is.null(sigma2), sigma2, sigma[1])
+    sigma_b[2] = ifelse(!is.null(sigma_b2), sigma_b2, sigma_b[1])
+    ICC[2] = ifelse(!is.null(ICC2), ICC2, ICC[1])
     
     # Generate simulated data
     # Create indicators for treatment group & cluster
@@ -261,6 +258,9 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
       }
     }
   }
+  # Create object containing summary statement
+  summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations")
+  
   # Store simulation output in data frame
   cps.sim.dat = data.frame(estimates = as.vector(unlist(est.vector)),
                            stderrs = as.vector(unlist(se.vector)),
@@ -274,7 +274,15 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
                            lower.95.ci = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                            upper.95.ci = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
+  # Create object containing group-specific cluster sizes
+  cluster.sizes = list('Group 1 (Non-Treatment)' = m[1:n[1]], 'Group 2 (Treatment)' = m[(n[1]+1):(n[1]+n[2])])
+  
+  # Create object containing group-specific variance parameters
+  var.parms = t(data.frame('Group.1.Non.Treatment' = c('ICC' = ICC[1], 'sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
+                           'Group.2.Treatment' = c('ICC' = ICC[2], 'sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
+    
   # Create list containing all output and return
-  complete.output = list("sim.data" = cps.sim.dat, "power" = power.parms)
+  complete.output = list("overview" = summary.message, "sim.data" = cps.sim.dat, "power" = power.parms, "cluster.sizes" = cluster.sizes, 
+                         "variance.parms" = var.parms, "alpha" = alpha)
   return(complete.output)
   }
