@@ -125,11 +125,17 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
   if(sum(parm1.args) > 1){
     stop("At least two of the following terms must be specified: ICC, sigma, sigma_b")
   }
+  if(sum(parm1.args) == 0 && ICC != sigma_b / (sigma_b + sigma)){
+    stop("At least one of the following terms has be misspecified: ICC, sigma, sigma_b")
+  }
   parm2.arg.list = list(ICC2, sigma2, sigma_b2)
   parm2.args = unlist(lapply(parm2.arg.list, is.null))
   if(sum(parm2.args) > 1 && sum(parm2.args) != 3){
     stop("At least two of the following terms must be provided to simulate treatment-specific
          variances: ICC2, sigma2, sigma_b2")
+  }
+  if(sum(parm2.args) == 0 && ICC2 != sigma_b2 / (sigma_b2 + sigma2)){
+    stop("At least one of the following terms has be misspecified: ICC2, sigma2, sigma_b2")
   }
   
   # Validate METHOD, QUIET
