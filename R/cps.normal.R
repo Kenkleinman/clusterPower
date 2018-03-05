@@ -189,12 +189,14 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
     # Create non-treatment y-value
     y0.bclust = unlist(lapply(1:n[1], function(x) rep(randint.0[x], length.out = m[x])))
     y0.wclust = unlist(lapply(m[1:n[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[1]))))
-    y.0 = y0.bclust + y0.wclust
+    #y0.beta = unlist(lapply(m[1:n[1]], function(x) stats::rnorm(x, mean = 0, sd = 1)))
+    y.0 = y0.bclust + y0.wclust #+ y0.beta
     
     # Create treatment y-value
     y1.bclust = unlist(lapply(1:n[2], function(x) rep(randint.1[x], length.out = m[n[1]+x])))
     y1.wclust = unlist(lapply(m[(n[1]+1):(n[1]+n[2])], function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma[2]))))
-    y.1 = y1.bclust + y1.wclust
+    #y1.beta = unlist(lapply(m[(n[1]+1):(n[1]+n[2])], function(x) stats::rnorm(x, mean = difference, sd = difference + 1)))
+    y.1 = y1.bclust + y1.wclust #+ y1.beta
     
     # Create single response vector
     y = c(y.0,y.1)
@@ -206,7 +208,7 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
     if(method == 'glmm'){
       my.mod = lme4::lmer(y.resp ~ trt + (1|clust), data = sim.dat)
       glmm.values = summary(my.mod)$coefficient
-      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(n) - 1)
+      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(n) - 2)
       est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
       se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
       stat.vector = append(stat.vector, glmm.values['trt', 't value'])
