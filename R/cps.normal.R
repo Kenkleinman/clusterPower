@@ -189,14 +189,12 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
     # Create non-treatment y-value
     y0.bclust = unlist(lapply(1:n[1], function(x) rep(randint.0[x], length.out = m[x])))
     y0.wclust = unlist(lapply(m[1:n[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[1]))))
-    #y0.beta = unlist(lapply(m[1:n[1]], function(x) stats::rnorm(x, mean = 0, sd = 1)))
-    y.0 = y0.bclust + y0.wclust #+ y0.beta
+    y.0 = y0.bclust + y0.wclust
     
     # Create treatment y-value
     y1.bclust = unlist(lapply(1:n[2], function(x) rep(randint.1[x], length.out = m[n[1]+x])))
     y1.wclust = unlist(lapply(m[(n[1]+1):(n[1]+n[2])], function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma[2]))))
-    #y1.beta = unlist(lapply(m[(n[1]+1):(n[1]+n[2])], function(x) stats::rnorm(x, mean = difference, sd = difference + 1)))
-    y.1 = y1.bclust + y1.wclust #+ y1.beta
+    y.1 = y1.bclust + y1.wclust
     
     # Create single response vector
     y = c(y.0,y.1)
