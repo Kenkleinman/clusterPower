@@ -276,19 +276,20 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
   
   # Calculate and store power estimate & confidence intervals
   pval.power = sum(cps.sim.dat[, 'sig.vals']) / nrow(cps.sim.dat)
-  power.parms = data.frame(power = round(pval.power, 3),
-                           lower.95.ci = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                           upper.95.ci = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
+  power.parms = data.frame(Power = round(pval.power, 3),
+                           Lower.95.CI = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
+                           Upper.95.CI = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
   # Create object containing group-specific cluster sizes
   cluster.sizes = list('Group 1 (Non-Treatment)' = m[1:n[1]], 'Group 2 (Treatment)' = m[(n[1]+1):(n[1]+n[2])])
   
   # Create object containing group-specific variance parameters
-  var.parms = t(data.frame('Group.1.Non.Treatment' = c('ICC' = ICC[1], 'sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
-                           'Group.2.Treatment' = c('ICC' = ICC[2], 'sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
+  var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
+                           'Treatment' = c('ICC' = ICC[2], 'sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
     
   # Create list containing all output and return
-  complete.output = list("overview" = summary.message, "sim.data" = cps.sim.dat, "power" = power.parms, "cluster.sizes" = cluster.sizes, 
-                         "variance.parms" = var.parms, "alpha" = alpha)
+  complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
+                                   "cluster.sizes" = cluster.sizes, "variance.parms" = var.parms, "sim.data" = cps.sim.dat), 
+                              class = 'crtpwr')
   return(complete.output)
   }
