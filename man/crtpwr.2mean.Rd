@@ -44,7 +44,7 @@ or determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
-  \code{cv}, \code{d}, \code{icc}, and \code{varw}  must be passed as \code{NA}.
+  \code{cv}, \code{d}, \code{icc}, and \code{vart}  must be passed as \code{NA}.
   Note that \code{alpha}, \code{power}, and \code{cv} have non-\code{NA}
   defaults, so if those are the parameters of interest they must be
   explicitly passed as \code{NA}.
@@ -72,7 +72,7 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 # Find the number of clusters per condition needed for a trial with alpha = .05, 
 # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
 # of 1 unit,  icc = 0.1 and   a variance of five units.
-crtpwr.2mean(n=10 ,d=1, icc=.1, varw=5)
+crtpwr.2mean(n=10 ,d=1, icc=.1, vart=5)
 # 
 # The result, showimg m of greater than 15, suggests 16 clusters per condition should be used.
 }
