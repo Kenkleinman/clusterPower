@@ -265,7 +265,7 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
     }
   }
   # Create object containing summary statement
-  summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations")
+  summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: Continuous Outcome")
   
   # Store simulation output in data frame
   cps.sim.dat = data.frame(estimates = as.vector(unlist(est.vector)),
