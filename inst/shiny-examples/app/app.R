@@ -10,9 +10,9 @@ source("helpers.R")
 source("builders.R")
 
 # vectors of names, needed for graphs and target param selection
-names2mean <- c("alpha","power","m","n","cv","d","icc","varw","method")
-names2meanD <- c("alpha","power","m","n","d","icc","rho_c","rho_s","varw")
-names2meanM <- c("alpha","power","m","n","d","icc","varw","rho_m")
+names2mean <- c("alpha","power","m","n","cv","d","icc","vart","method")
+names2meanD <- c("alpha","power","m","n","d","icc","rho_c","rho_s","vart")
+names2meanM <- c("alpha","power","m","n","d","icc","vart","rho_m")
 names2prop <- c("alpha","power","m","n","cv","p1","p2","icc","pooled","p1inc")
 names2propD <- c("alpha","power","m","n","p","d","icc","rho_c","rho_s","covdf","pvar_c","pvar_s")
 names2propM <- c("alpha","power","m","n","p1","p2","cvm","p1inc")
@@ -61,9 +61,9 @@ ui <- fluidPage(
                     bsTooltip("icc2mean", icctooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("varw2mean", varwtext,
+                    fluidRow(textInput("vart2mean", varttext,
                                        value = "", width = "100%")),
-                    bsTooltip("varw2mean", varwtooltip,
+                    bsTooltip("vart2mean", varttooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(textInput("cv2mean", cvtext,
@@ -136,9 +136,9 @@ ui <- fluidPage(
                     bsTooltip("rho_s2meanD", rho_stooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("varw2meanD", varwtext,
+                    fluidRow(textInput("vart2meanD", varttext,
                                        value = "", width = "100%")),
-                    bsTooltip("varw2meanD", varwtooltip,
+                    bsTooltip("vart2meanD", varttooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(
@@ -194,9 +194,9 @@ ui <- fluidPage(
                     bsTooltip("rho_m2meanM", rho_mtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("varw2meanM", varwtext,
+                    fluidRow(textInput("vart2meanM", varttext,
                                        value = "", width = "100%")),
-                    bsTooltip("varw2meanM", varwtooltip,
+                    bsTooltip("vart2meanM", varttooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(
@@ -494,7 +494,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "n2mean", value = "")
       updateTextInput(session, inputId = "d2mean", value = "")
       updateTextInput(session, inputId = "icc2mean", value = "")
-      updateTextInput(session, inputId = "varw2mean", value = "")
+      updateTextInput(session, inputId = "vart2mean", value = "")
     }
   ) # end observeEvent(input$default2mean ...
   
@@ -512,7 +512,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "n2mean", value = "")
       updateTextInput(session, inputId = "d2mean", value = "")
       updateTextInput(session, inputId = "icc2mean", value = "")
-      updateTextInput(session, inputId = "varw2mean", value = "")
+      updateTextInput(session, inputId = "vart2mean", value = "")
     }
   ) # end observeEvent(input$clear2mean ...
   
@@ -528,7 +528,7 @@ server <- function(input, output, session){
       cv <- make_sequence(isolate(input$cv2mean))
       d <- make_sequence(isolate(input$d2mean))
       icc <- make_sequence(isolate(input$icc2mean))
-      varw <- make_sequence(isolate(input$varw2mean))
+      vart <- make_sequence(isolate(input$vart2mean))
       method <- na.omit(isolate(input$method2mean))
       
       if(!is.na(power)){
@@ -554,7 +554,7 @@ server <- function(input, output, session){
                          cv,
                          d,
                          icc,
-                         varw,
+                         vart,
                          method,
                          stringsAsFactors = FALSE)
       
@@ -563,7 +563,7 @@ server <- function(input, output, session){
       # validate that only one input is blank
       validate(
         need(length(needind) == 1,
-             "Exactly one of 'alpha', 'power', 'd', 'm', 'n', 'icc', 'varw', and 'cv' must be left blank."
+             "Exactly one of 'alpha', 'power', 'd', 'm', 'n', 'icc', 'vart', and 'cv' must be left blank."
         )
       )
       names(tab) <- names2mean
@@ -630,7 +630,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "n2meanD", value = "")
       updateTextInput(session, inputId = "d2meanD", value = "")
       updateTextInput(session, inputId = "icc2meanD", value = "")
-      updateTextInput(session, inputId = "varw2meanD", value = "")
+      updateTextInput(session, inputId = "vart2meanD", value = "")
     }
   ) # end observeEvent(input$default2meanD ...
   
@@ -647,7 +647,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "n2meanD", value = "")
       updateTextInput(session, inputId = "d2meanD", value = "")
       updateTextInput(session, inputId = "icc2meanD", value = "")
-      updateTextInput(session, inputId = "varw2meanD", value = "")
+      updateTextInput(session, inputId = "vart2meanD", value = "")
     }
   ) # end observeEvent(input$clear2meanD ...
   
@@ -664,7 +664,7 @@ server <- function(input, output, session){
       rho_s <- make_sequence(isolate(input$rho_s2meanD))
       d <- make_sequence(isolate(input$d2meanD))
       icc <- make_sequence(isolate(input$icc2meanD))
-      varw <- make_sequence(isolate(input$varw2meanD))
+      vart <- make_sequence(isolate(input$vart2meanD))
       
       if(!is.na(power)){
         validate(
@@ -690,7 +690,7 @@ server <- function(input, output, session){
                          icc,
                          rho_c,
                          rho_s,
-                         varw,
+                         vart,
                          stringsAsFactors = FALSE)
       
       # record the column index of the target parameter
@@ -698,7 +698,7 @@ server <- function(input, output, session){
       # validate that only one input is blank
       validate(
         need(length(needind) == 1,
-             "Exactly one of 'alpha', 'power', 'd', 'm', 'n', 'icc', 'rho_c', 'rho_s', and 'varw' must be left blank."
+             "Exactly one of 'alpha', 'power', 'd', 'm', 'n', 'icc', 'rho_c', 'rho_s', and 'vart' must be left blank."
         )
       )
       names(tab) <- names2meanD
@@ -769,7 +769,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "n2meanM", value = "")
       updateTextInput(session, inputId = "d2meanM", value = "")
       updateTextInput(session, inputId = "icc2meanM", value = "")
-      updateTextInput(session, inputId = "varw2meanM", value = "")
+      updateTextInput(session, inputId = "vart2meanM", value = "")
     }
   ) # end observeEvent(input$default2meanM ...
   
@@ -785,7 +785,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "n2meanM", value = "")
       updateTextInput(session, inputId = "d2meanM", value = "")
       updateTextInput(session, inputId = "icc2meanM", value = "")
-      updateTextInput(session, inputId = "varw2meanM", value = "")
+      updateTextInput(session, inputId = "vart2meanM", value = "")
     }
   ) # end observeEvent(input$clear2meanM ...
   
@@ -801,7 +801,7 @@ server <- function(input, output, session){
       rho_m <- make_sequence(isolate(input$rho_m2meanM))
       d <- make_sequence(isolate(input$d2meanM))
       icc <- make_sequence(isolate(input$icc2meanM))
-      varw <- make_sequence(isolate(input$varw2meanM))
+      vart <- make_sequence(isolate(input$vart2meanM))
       
       if(!is.na(power)){
         validate(
@@ -825,7 +825,7 @@ server <- function(input, output, session){
                          n,
                          d,
                          icc,
-                         varw,
+                         vart,
                          rho_m,
                          stringsAsFactors = FALSE)
       
@@ -834,7 +834,7 @@ server <- function(input, output, session){
       # validate that only one input is blank
       validate(
         need(length(needind) == 1,
-             "Exactly one of 'alpha', 'power', 'd', 'm', 'n', 'icc', 'rho_m', and 'varw' must be left blank."
+             "Exactly one of 'alpha', 'power', 'd', 'm', 'n', 'icc', 'rho_m', and 'vart' must be left blank."
         )
       )
       names(tab) <- names2meanM

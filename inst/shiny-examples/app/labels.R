@@ -30,8 +30,8 @@ cvtooltip <- 'Coefficient of variation of the cluster sizes. When this equals 0,
 
 # -----------------------------------------------------------------------------
 # specific to 2mean:
-varwtext <- 'Within variance (varw)'
-varwtooltip <- 'Within cluster variance. Assumed to be the same for all clusters.'
+varttext <- 'Total variance (vart)'
+varttooltip <- 'The total variation of the outcome.'
 
 dtext <- 'Difference (d)'
 dtooltip <- 'Expected difference in condition means.'

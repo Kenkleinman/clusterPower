@@ -5,7 +5,7 @@
 \title{Power calculations for difference-in-difference cluster randomized trials, continuous outcome}
 \usage{
 crtpwr.2meanD(alpha = 0.05, power = 0.8, m = NA, n = NA, d = NA,
-  icc = NA, rho_c = NA, rho_s = NA, varw = NA,
+  icc = NA, rho_c = NA, rho_s = NA, vart = NA,
   tol = .Machine$double.eps^0.25)
 }
 \arguments{
@@ -32,7 +32,7 @@ subject level. This should be used for a cohort design or a mixture of cohort
 and cross-sectional designs. In a purely cross-sectional design (baseline subjects
 are completely different from post-test subjects), this value should be 0.}
 
-\item{varw}{The within-cluster variation.}
+\item{vart}{The total variation of the outcome (the sum of within- and between-cluster variation).}
 
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}
@@ -46,7 +46,7 @@ or determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
-  \code{d}, \code{icc}, \code{rho_c}, \code{rho_s}, and \code{varw}
+  \code{d}, \code{icc}, \code{rho_c}, \code{rho_s}, and \code{vart}
   must be passed as \code{NA}. Note that \code{alpha} and\code{power}
   have non-\code{NA} defaults, so if those are the parameters of 
   interest they must be explicitly passed as \code{NA}.
@@ -73,8 +73,8 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
 # power = 0.80, n = 100, d = 0.50 units, icc = 0.05, rho_c = 0.50, rho_s = 0.70,
-# and varw = 1 unit.
-crtpwr.2meanD(n = 100 , d = 0.5, icc = 0.05, rho_c = 0.50, rho_s = 0.70, varw = 1)
+# and vart = 1 unit.
+crtpwr.2meanD(n = 100 , d = 0.5, icc = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
 # 
 # The result, m = 4.683358, suggests 5 clusters per condition should be used.
 

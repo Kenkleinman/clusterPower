@@ -4,7 +4,7 @@
 #' or determine parameters to obtain a target power.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
-#'   \code{cv}, \code{d}, \code{icc}, and \code{varw}  must be passed as \code{NA}.
+#'   \code{cv}, \code{d}, \code{icc}, and \code{vart}  must be passed as \code{NA}.
 #'   Note that \code{alpha}, \code{power}, and \code{cv} have non-\code{NA}
 #'   defaults, so if those are the parameters of interest they must be
 #'   explicitly passed as \code{NA}.
@@ -34,7 +34,7 @@
 #'   the clusters all have the same size.
 #' @param d The difference in condition means.
 #' @param icc The intraclass correlation.
-#' @param varw The within-cluster variation.
+#' @param vart The total variation of the outcome (the sum of within- and between-cluster variation).
 #' @param method The method for calculating variance inflation due to unequal cluster
 #'   sizes. Either a method based on Taylor approximation of relative efficiency 
 #'   ("taylor"), or weighting by cluster size ("weighted")
@@ -45,7 +45,7 @@
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
 #' # of 1 unit,  icc = 0.1 and   a variance of five units.
-#' crtpwr.2mean(n=10 ,d=1, icc=.1, varw=5)
+#' crtpwr.2mean(n=10 ,d=1, icc=.1, vart=5)
 #' # 
 #' # The result, showimg m of greater than 15, suggests 16 clusters per condition should be used.
 #' @references Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation
@@ -62,7 +62,7 @@
 crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
                          n = NA, cv = 0,
                          d = NA, icc = NA,
-                         varw = NA,
+                         vart = NA,
                          method = c("taylor", "weighted"),
                          tol = .Machine$double.eps^0.25){
   
@@ -83,13 +83,13 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
 
   
   # list of needed inputs
-  needlist <- list(alpha, power, m, n, cv, d, icc, varw)
-  neednames <- c("alpha", "power", "m", "n", "cv", "d", "icc", "varw")
+  needlist <- list(alpha, power, m, n, cv, d, icc, vart)
+  neednames <- c("alpha", "power", "m", "n", "cv", "d", "icc", "vart")
   needind <- which(unlist(lapply(needlist, is.na)))
   # check to see that exactly one needed param is NA
   
   if (length(needind) != 1) {
-    neederror = "Exactly one of 'alpha', 'power', 'm', 'n', 'cv', 'd', 'icc' and 'varw' must be NA."
+    neederror = "Exactly one of 'alpha', 'power', 'm', 'n', 'cv', 'd', 'icc' and 'vart' must be NA."
     stop(neederror)
   } 
   
@@ -122,7 +122,7 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
     
     tcrit <- qt(alpha/2, 2*(m - 1), lower.tail = FALSE)
     
-    ncp <- sqrt(m*n/(2*VIF)) * abs(d)/sqrt(varw)
+    ncp <- sqrt(m*n/(2*VIF)) * abs(d)/sqrt(vart)
     
     pt(tcrit, 2*(m - 1), ncp, lower.tail = FALSE) #+ pt(-tcrit, 2*(m - 1), ncp, lower.tail = TRUE)
   })
@@ -174,9 +174,9 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
                    tol = tol)$root
   }
   
-  # calculate varw
-  if (is.na(varw)) {
-    varw <- stats::uniroot(function(varw) eval(pwr) - power,
+  # calculate vart
+  if (is.na(vart)) {
+    vart <- stats::uniroot(function(vart) eval(pwr) - power,
                     interval = c(1e-07, 1e+07),
                     tol = tol, extendInt = "downX")$root
   }
@@ -186,7 +186,7 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
   # method <- paste("Clustered two-sample t-test power calculation: ", target, sep = "")
   # note <- "'m' is the number of clusters in each group and 'n' is the number of individuals in each cluster."
   # structure(list(alpha = alpha, power = power, m = m, n = n, cv = cv, d = d,
-  #                icc = icc, varw = varw, note = note, method = method),
+  #                icc = icc, vart = vart, note = note, method = method),
   #           class = "power.htest")
   
 }
