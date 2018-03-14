@@ -151,6 +151,9 @@ cps.binary = function(nsim = NULL,m = NULL, n = NULL, p.diff = NULL,
       if(is.null(p2)){
         p2 = abs(p1 - p.diff)
       }
+      if(is.null(p.diff)){
+        p.diff = abs(p1 - p2)
+      }
     }
     if(sum(parm1.args) == 3){
       if(is.null(or1)){
@@ -158,6 +161,9 @@ cps.binary = function(nsim = NULL,m = NULL, n = NULL, p.diff = NULL,
       }
       if(is.null(or2)){
         or2 = abs(or1 - or.diff)
+      }
+      if(is.null(or.diff)){
+        or.diff = or1 - or2
       }
       p1 = or1 / (1 + or1)
       p2 = or2 / (1 + or2)
@@ -190,9 +196,6 @@ cps.binary = function(nsim = NULL,m = NULL, n = NULL, p.diff = NULL,
       randint.0 = stats::rnorm(n[1], mean = 0, sd = sqrt(sigma_b[1]))
       randint.1 = stats::rnorm(n[2], mean = 0, sd = sqrt(sigma_b[2]))
       
-      # Create beta
-      beta = log((p1 / (1 - p1)) / (p2 / (1 - p2)))
-      
       # Create non-treatment y-value
       y0.intercept = unlist(lapply(1:n[1], function(x) rep(randint.0[x], length.out = m[x])))
       y0.linpred = y0.intercept + log(p1 / (1 - p1))
@@ -201,7 +204,7 @@ cps.binary = function(nsim = NULL,m = NULL, n = NULL, p.diff = NULL,
 
       # Create treatment y-value
       y1.intercept = unlist(lapply(1:n[2], function(x) rep(randint.1[x], length.out = m[n[1]+x])))
-      y1.linpred = y1.intercept + log(p2 / (1 - p2)) + beta
+      y1.linpred = y1.intercept + log(p2 / (1 - p2))
       y1.prob = expit(y1.linpred)
       y1 = unlist(lapply(y1.prob, function(x) rbinom(1, 1, x)))
       
@@ -254,15 +257,39 @@ cps.binary = function(nsim = NULL,m = NULL, n = NULL, p.diff = NULL,
         }
       }
     }
-    cps.sim.dat = data.frame(estimates = as.vector(unlist(est.vector)), 
+    # Create object containing summary statement
+    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: Binary Outcome")
+    
+    # Store simulation output in data frame
+    cps.sim.dat = data.frame(estimates = as.vector(unlist(est.vector)),
                              stderrs = as.vector(unlist(se.vector)),
                              test.stat = as.vector(unlist(stat.vector)),
                              pvals = as.vector(unlist(pval.vector)))
     cps.sim.dat[, 'sig.vals'] = ifelse(cps.sim.dat[, 'pvals'] < alpha, 1, 0)
-    pval.power = sum(cps.sim.dat[, 'sig.vals']) / length(cps.sim.dat[, 'sig.vals'])
-    power.parms = data.frame(power = round(pval.power, 3), 
-                             lower.95.ci = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3), 
+    
+    # Calculate and store power estimate & confidence intervals
+    pval.power = sum(cps.sim.dat[, 'sig.vals']) / nrow(cps.sim.dat)
+    power.parms = data.frame(power = round(pval.power, 3),
+                             lower.95.ci = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                              upper.95.ci = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
-    complete.output = list("sim.data" = cps.sim.dat, "power" = power.parms)
+    
+    # Create object containing expected difference
+    difference = ifelse(exists('p.diff'), paste0("Prob. = ", p.diff), paste0("OR = ", or.diff))
+    
+    # Create object containing group-specific cluster sizes
+    cluster.sizes = list('Group 1 (Non-Treatment)' = m[1:n[1]], 'Group 2 (Treatment)' = m[(n[1]+1):(n[1]+n[2])])
+    
+    # Create object containing number of clusters
+    n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = n[1]), "Treatment" = c("n.clust" = n[2])))
+    
+    # Create object containing group-specific variance parameters
+    var.parms = t(data.frame('Group.1.Non.Treatment' = c('sigma_b' = sigma_b[1]), 
+                             'Group.2.Treatment' = c('sigma_b' = sigma_b[2])))
+    
+    # Create list containing all output and return
+    complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
+                                     "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
+                                     "difference" = difference, "sim.data" = cps.sim.dat), class = 'crtpwr')
+    
     return(complete.output)
     }
