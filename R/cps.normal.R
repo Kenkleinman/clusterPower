@@ -283,13 +283,16 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
   # Create object containing group-specific cluster sizes
   cluster.sizes = list('Group 1 (Non-Treatment)' = m[1:n[1]], 'Group 2 (Treatment)' = m[(n[1]+1):(n[1]+n[2])])
   
+  # Create object containing number of clusters
+  n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = n[1]), "Treatment" = c("n.clust" = n[2])))
+  
   # Create object containing group-specific variance parameters
   var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
                            'Treatment' = c('ICC' = ICC[2], 'sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
     
   # Create list containing all output and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
-                                   "cluster.sizes" = cluster.sizes, "variance.parms" = var.parms, "sim.data" = cps.sim.dat), 
-                              class = 'crtpwr')
+                                   "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
+                                   "difference" = difference, "sim.data" = cps.sim.dat), class = 'crtpwr')
   return(complete.output)
   }
