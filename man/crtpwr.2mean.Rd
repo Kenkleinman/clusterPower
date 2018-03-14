@@ -5,7 +5,7 @@
 \title{Power calculations for simple cluster randomized trials, continuous outcome}
 \usage{
 crtpwr.2mean(alpha = 0.05, power = 0.8, m = NA, n = NA, cv = 0,
-  d = NA, icc = NA, varw = NA, method = c("taylor", "weighted"),
+  d = NA, icc = NA, vart = NA, method = c("taylor", "weighted"),
   tol = .Machine$double.eps^0.25)
 }
 \arguments{
@@ -26,7 +26,7 @@ the clusters all have the same size.}
 
 \item{icc}{The intraclass correlation.}
 
-\item{varw}{The within-cluster variation.}
+\item{vart}{The total variation of the outcome (the sum of within- and between-cluster variation).}
 
 \item{method}{The method for calculating variance inflation due to unequal cluster
 sizes. Either a method based on Taylor approximation of relative efficiency 

@@ -1,11 +1,11 @@
 # Helper functions for the app
 
 # "safe" versions of functions to catch errors
-crtpwr.2mean.safe <- function(alpha,power,m,n,cv,d,icc,varw,method){
+crtpwr.2mean.safe <- function(alpha,power,m,n,cv,d,icc,vart,method){
   # make safe version
   fun <- safely(crtpwr.2mean, otherwise = NA)
   # store result
-  res <- fun(alpha,power,m,n,cv,d,icc,varw,method)
+  res <- fun(alpha,power,m,n,cv,d,icc,vart,method)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
     res$error = 'None'

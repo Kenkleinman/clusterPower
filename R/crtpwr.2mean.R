@@ -34,7 +34,7 @@
 #'   the clusters all have the same size.
 #' @param d The difference in condition means.
 #' @param icc The intraclass correlation.
-#' @param varw The within-cluster variation.
+#' @param vart The total variation of the outcome (the sum of within- and between-cluster variation).
 #' @param method The method for calculating variance inflation due to unequal cluster
 #'   sizes. Either a method based on Taylor approximation of relative efficiency 
 #'   ("taylor"), or weighting by cluster size ("weighted")
@@ -62,7 +62,7 @@
 crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
                          n = NA, cv = 0,
                          d = NA, icc = NA,
-                         varw = NA,
+                         vart = NA,
                          method = c("taylor", "weighted"),
                          tol = .Machine$double.eps^0.25){
   
@@ -83,13 +83,13 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
 
   
   # list of needed inputs
-  needlist <- list(alpha, power, m, n, cv, d, icc, varw)
-  neednames <- c("alpha", "power", "m", "n", "cv", "d", "icc", "varw")
+  needlist <- list(alpha, power, m, n, cv, d, icc, vart)
+  neednames <- c("alpha", "power", "m", "n", "cv", "d", "icc", "vart")
   needind <- which(unlist(lapply(needlist, is.na)))
   # check to see that exactly one needed param is NA
   
   if (length(needind) != 1) {
-    neederror = "Exactly one of 'alpha', 'power', 'm', 'n', 'cv', 'd', 'icc' and 'varw' must be NA."
+    neederror = "Exactly one of 'alpha', 'power', 'm', 'n', 'cv', 'd', 'icc' and 'vart' must be NA."
     stop(neederror)
   } 
   
@@ -122,7 +122,7 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
     
     tcrit <- qt(alpha/2, 2*(m - 1), lower.tail = FALSE)
     
-    ncp <- sqrt(m*n/(2*VIF)) * abs(d)/sqrt(varw)
+    ncp <- sqrt(m*n/(2*VIF)) * abs(d)/sqrt(vart)
     
     pt(tcrit, 2*(m - 1), ncp, lower.tail = FALSE) #+ pt(-tcrit, 2*(m - 1), ncp, lower.tail = TRUE)
   })
@@ -174,9 +174,9 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
                    tol = tol)$root
   }
   
-  # calculate varw
-  if (is.na(varw)) {
-    varw <- stats::uniroot(function(varw) eval(pwr) - power,
+  # calculate vart
+  if (is.na(vart)) {
+    varw <- stats::uniroot(function(vart) eval(pwr) - power,
                     interval = c(1e-07, 1e+07),
                     tol = tol, extendInt = "downX")$root
   }

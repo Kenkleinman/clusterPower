@@ -4,7 +4,7 @@
 #' or determine parameters to obtain a target power.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
-#'   \code{d}, \code{icc}, \code{varw}, \code{rho_m}  must be passed as \code{NA}.
+#'   \code{d}, \code{icc}, \code{vart}, \code{rho_m}  must be passed as \code{NA}.
 #'   Note that \code{alpha} and \code{power} have non-\code{NA}
 #'   defaults, so if those are the parameters of interest they must be
 #'   explicitly passed as \code{NA}.
@@ -30,7 +30,7 @@
 #' @param n The mean of the cluster sizes.
 #' @param d The difference in condition means.
 #' @param icc The intraclass correlation.
-#' @param varw The within-cluster variation.
+#' @param vart The total variation of the outcome (the sum of within- and between-cluster variation).
 #' @param rho_m The correlation in the outcome between matched clusters. 
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
@@ -39,7 +39,7 @@
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, matching correlation of 0.7, 
 #' # a difference of 1 unit,  icc = 0.1 and a variance of five units.
-#' crtpwr.2meanM(n=10 ,rho_m=0.7,d=1, icc=.1, varw=5)
+#' crtpwr.2meanM(n=10 ,rho_m=0.7,d=1, icc=.1, vart=5)
 #' # 
 #' # The result, showimg m of greater than 11, suggests 12 clusters per condition should be used.
 #' @references Crespi CM. (2016) Improved Designs for Cluster Randomized Trials. Annu Rev Public Health. 
@@ -48,7 +48,7 @@
 
 crtpwr.2meanM <- function(alpha = 0.05, power = 0.80, m = NA,
                           n = NA, d = NA, icc = NA,
-                          varw = NA, rho_m = NA,
+                          vart = NA, rho_m = NA,
                           tol = .Machine$double.eps^0.25){
   
   if(!is.na(m) && m <= 1) {
@@ -56,13 +56,13 @@ crtpwr.2meanM <- function(alpha = 0.05, power = 0.80, m = NA,
   }
   
   # list of needed inputs
-  needlist <- list(alpha, power, m, n, d, icc, varw, rho_m)
-  neednames <- c("alpha", "power", "m", "n", "d", "icc", "varw", "rho_m")
+  needlist <- list(alpha, power, m, n, d, icc, vart, rho_m)
+  neednames <- c("alpha", "power", "m", "n", "d", "icc", "vart", "rho_m")
   needind <- which(unlist(lapply(needlist, is.na)))
   
   # check to see that exactly one needed param is NA
   if (length(needind) != 1) {
-    neederror = "Exactly one of 'alpha', 'power', 'm', 'n', 'd', 'icc', 'varw', and 'rho_m' must be NA."
+    neederror = "Exactly one of 'alpha', 'power', 'm', 'n', 'd', 'icc', 'vart', and 'rho_m' must be NA."
     stop(neederror)
   } 
   
@@ -76,7 +76,7 @@ crtpwr.2meanM <- function(alpha = 0.05, power = 0.80, m = NA,
     
     tcrit <- qt(alpha/2, m - 1, lower.tail = FALSE)
     
-    ncp <- sqrt(m*n/(2*DEFF)) * abs(d)/sqrt(varw)
+    ncp <- sqrt(m*n/(2*DEFF)) * abs(d)/sqrt(vart)
     
     pt(tcrit, m - 1, ncp, lower.tail = FALSE)
   })
@@ -121,9 +121,9 @@ crtpwr.2meanM <- function(alpha = 0.05, power = 0.80, m = NA,
                           tol = tol)$root
   }
   
-  # calculate varw
-  if (is.na(varw)) {
-    varw <- stats::uniroot(function(varw) eval(pwr) - power,
+  # calculate vart
+  if (is.na(vart)) {
+    vart <- stats::uniroot(function(vart) eval(pwr) - power,
                            interval = c(1e-07, 1e+07),
                            tol = tol, extendInt = "downX")$root
   }

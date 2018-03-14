@@ -5,7 +5,7 @@
 \title{Power calculations for simple cluster randomized trials with matching, continuous outcome}
 \usage{
 crtpwr.2meanM(alpha = 0.05, power = 0.8, m = NA, n = NA, d = NA,
-  icc = NA, varw = NA, rho_m = NA, tol = .Machine$double.eps^0.25)
+  icc = NA, vart = NA, rho_m = NA, tol = .Machine$double.eps^0.25)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a
@@ -22,7 +22,7 @@ error.}
 
 \item{icc}{The intraclass correlation.}
 
-\item{varw}{The within-cluster variation.}
+\item{vart}{The total variation of the outcome (the sum of within- and between-cluster variation).}
 
 \item{rho_m}{The correlation in the outcome between matched clusters.}
 
@@ -38,7 +38,7 @@ or determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
-  \code{d}, \code{icc}, \code{varw}, \code{rho_m}  must be passed as \code{NA}.
+  \code{d}, \code{icc}, \code{vart}, \code{rho_m}  must be passed as \code{NA}.
   Note that \code{alpha} and \code{power} have non-\code{NA}
   defaults, so if those are the parameters of interest they must be
   explicitly passed as \code{NA}.
@@ -64,7 +64,7 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 # Find the number of clusters per condition needed for a trial with alpha = .05, 
 # power = 0.8, 10 observations per cluster, matching correlation of 0.7, 
 # a difference of 1 unit,  icc = 0.1 and a variance of five units.
-crtpwr.2meanM(n=10 ,rho_m=0.7,d=1, icc=.1, varw=5)
+crtpwr.2meanM(n=10 ,rho_m=0.7,d=1, icc=.1, vart=5)
 # 
 # The result, showimg m of greater than 11, suggests 12 clusters per condition should be used.
 }
