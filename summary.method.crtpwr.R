@@ -15,4 +15,4 @@ setMethod("summary",
       cat("\n")
     }
 )
-
+setClass('crtpwr')
