@@ -15,11 +15,11 @@ crtpwr.2mean.safe <- function(alpha,power,m,n,cv,d,icc,vart,method){
   res
 }
 
-crtpwr.2meanD.safe <- function(alpha,power,m,n,d,icc,rho_c,rho_s,varw){
+crtpwr.2meanD.safe <- function(alpha,power,m,n,d,icc,rho_c,rho_s,vart){
   # make safe version
   fun <- safely(crtpwr.2meanD, otherwise = NA)
   # store result
-  res <- fun(alpha,power,m,n,d,icc,rho_c,rho_s,varw)
+  res <- fun(alpha,power,m,n,d,icc,rho_c,rho_s,vart)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
     res$error = 'None'
@@ -29,11 +29,11 @@ crtpwr.2meanD.safe <- function(alpha,power,m,n,d,icc,rho_c,rho_s,varw){
   res
 }
 
-crtpwr.2meanM.safe <- function(alpha,power,m,n,d,icc,varw,rho_m){
+crtpwr.2meanM.safe <- function(alpha,power,m,n,d,icc,vart,rho_m){
   # make safe version
   fun <- safely(crtpwr.2meanM, otherwise = NA)
   # store result
-  res <- fun(alpha,power,m,n,d,icc,varw,rho_m)
+  res <- fun(alpha,power,m,n,d,icc,vart,rho_m)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
     res$error = 'None'
