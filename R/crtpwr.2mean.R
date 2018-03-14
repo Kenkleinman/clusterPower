@@ -4,7 +4,7 @@
 #' or determine parameters to obtain a target power.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
-#'   \code{cv}, \code{d}, \code{icc}, and \code{varw}  must be passed as \code{NA}.
+#'   \code{cv}, \code{d}, \code{icc}, and \code{vart}  must be passed as \code{NA}.
 #'   Note that \code{alpha}, \code{power}, and \code{cv} have non-\code{NA}
 #'   defaults, so if those are the parameters of interest they must be
 #'   explicitly passed as \code{NA}.
@@ -45,7 +45,7 @@
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
 #' # of 1 unit,  icc = 0.1 and   a variance of five units.
-#' crtpwr.2mean(n=10 ,d=1, icc=.1, varw=5)
+#' crtpwr.2mean(n=10 ,d=1, icc=.1, vart=5)
 #' # 
 #' # The result, showimg m of greater than 15, suggests 16 clusters per condition should be used.
 #' @references Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation
@@ -176,7 +176,7 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
   
   # calculate vart
   if (is.na(vart)) {
-    varw <- stats::uniroot(function(vart) eval(pwr) - power,
+    vart <- stats::uniroot(function(vart) eval(pwr) - power,
                     interval = c(1e-07, 1e+07),
                     tol = tol, extendInt = "downX")$root
   }
@@ -186,7 +186,7 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, m = NA,
   # method <- paste("Clustered two-sample t-test power calculation: ", target, sep = "")
   # note <- "'m' is the number of clusters in each group and 'n' is the number of individuals in each cluster."
   # structure(list(alpha = alpha, power = power, m = m, n = n, cv = cv, d = d,
-  #                icc = icc, varw = varw, note = note, method = method),
+  #                icc = icc, vart = vart, note = note, method = method),
   #           class = "power.htest")
   
 }
