@@ -74,7 +74,8 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 # of 1 unit,  icc = 0.1 and   a variance of five units.
 crtpwr.2mean(nsubjects=10 ,d=1, icc=.1, vart=5)
 # 
-# The result, showimg nclusters of greater than 15, suggests 16 clusters per condition should be used.
+# The result, showimg nclusters of greater than 15, suggests 16 clusters per 
+# condition should be used.
 }
 \references{
 Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation

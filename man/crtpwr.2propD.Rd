@@ -83,7 +83,8 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 # correlation of 0.7.
 crtpwr.2propD(nsubjects=50 ,p=.5, d=.1, icc=.05, rho_c=.3, rho_s=.7)
 # 
-# The result, showimg nclusters of greater than 32, suggests 33 clusters per condition should be used.
+# The result, showimg nclusters of greater than 32, suggests 33 clusters per 
+# condition should be used.
 
 }
 \references{

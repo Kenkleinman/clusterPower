@@ -33,7 +33,8 @@
 #' # and condition 2 of 0.20, and cvb = 0.10.
 #' crtpwr.2rate(py=10, r1=0.10, r2=0.20, cvb=0.10)
 #' # 
-#' # The result, showimg nclusters of greater than 24, suggests 25 clusters per condition should be used.
+#' # The result, showimg nclusters of greater than 24, suggests 25 clusters per
+#' # condition should be used.
 #' 
 #' @references Donner A, Klar N. Design and Analysis of Cluster Randomization Trials in Health Research. Chichester, UK; 2009.
 #' 

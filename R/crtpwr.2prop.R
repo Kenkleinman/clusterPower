@@ -35,7 +35,8 @@
 #' # in condition 1 of .1 and condition 2 of .2, and icc = 0.1.
 #' crtpwr.2prop(nsubjects=10 ,p1=.1, p2=.2, icc=.1)
 #' # 
-#' # The result, showimg nclusters of greater than 37, suggests 38 clusters per condition should be used.
+#' # The result, showimg nclusters of greater than 37, suggests 38 clusters per 
+#' # condition should be used.
 #' @export
 
 crtpwr.2prop <- function(alpha = 0.05, power = 0.80,

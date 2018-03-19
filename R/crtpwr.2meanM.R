@@ -41,7 +41,8 @@
 #' # a difference of 1 unit,  icc = 0.1 and a variance of five units.
 #' crtpwr.2meanM(nsubjects=10 ,rho_m=0.7,d=1, icc=.1, vart=5)
 #' # 
-#' # The result, showimg nclusters of greater than 11, suggests 12 clusters per condition should be used.
+#' # The result, showimg nclusters of greater than 11, suggests 12 clusters per
+#' # condition should be used.
 #' @references Crespi CM. (2016) Improved Designs for Cluster Randomized Trials. Annu Rev Public Health. 
 #'   37:1-16.
 #' @export

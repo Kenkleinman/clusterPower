@@ -29,10 +29,12 @@
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
 #' # power = 0.80, 80 observations per probability
-#' # in condition 1 of 0.80 and condition 2 of 0.60, within-pair coefficient of variation equal to 0.2.
+#' # in condition 1 of 0.80 and condition 2 of 0.60, within-pair coefficient of 
+#' # variation equal to 0.2.
 #' crtpwr.2propM(nsubjects=80 ,p1=0.80, p2=0.60, cvm = 0.2)
 #' # 
-#' # The result, showimg nclusters of greater than 10, suggests 11 clusters per condition should be used.
+#' # The result, showimg nclusters of greater than 10, suggests 11 clusters per 
+#' # condition should be used.
 #' 
 #' @references Hayes JR, Moulton LH. Cluster Randomized Trials. Boca Raton, FL: CRC Press; 2009.
 #' 

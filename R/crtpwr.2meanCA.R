@@ -43,7 +43,8 @@
 #' # a variance of 5 units, adjusting for 1 covariate, and a between-cluster correlation of 0.7:
 #' crtpwr.2meanCA(nsubjects=10 ,d=1, icc=.1, varw=5, covdf=1, rho_b=.7)
 #' # 
-#' # The result, showimg nclusters of greater than 12, suggests 13 clusters per condition should be used.
+#' # The result, showimg nclusters of greater than 12, suggests 13 clusters per
+#' # condition should be used.
 #' @references Moerbeek M, Teerenstra S. (2016) Power Analysis of Trials with Multilevel Data. 
 #'   Boca Raton: CRC Press; 2016: 84-87
 #' @export
