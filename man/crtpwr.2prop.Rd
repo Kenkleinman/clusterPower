@@ -4,8 +4,8 @@
 \alias{crtpwr.2prop}
 \title{Power calculations for simple cluster randomized trials, binary outcome}
 \usage{
-crtpwr.2prop(alpha = 0.05, power = 0.8, m = NA, n = NA, cv = 0,
-  p1 = NA, p2 = NA, icc = NA, pooled = FALSE, p1inc = TRUE,
+crtpwr.2prop(alpha = 0.05, power = 0.8, nclusters = NA, nsubjects = NA,
+  cv = 0, p1 = NA, p2 = NA, icc = NA, pooled = FALSE, p1inc = TRUE,
   tol = .Machine$double.eps^0.25)
 }
 \arguments{
@@ -15,9 +15,9 @@ Type I error.}
 \item{power}{The power of the test, 1 minus the probability of a Type II
 error.}
 
-\item{m}{The number of clusters per condition. It must be greater than 1.}
+\item{nclusters}{The number of clusters per condition. It must be greater than 1.}
 
-\item{n}{The mean of the cluster sizes.}
+\item{nsubjects}{The mean of the cluster sizes.}
 
 \item{cv}{The coefficient of variation of the cluster sizes. When \code{cv} = 0,
 the clusters all have the same size.}
@@ -60,7 +60,7 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 # Find the number of clusters per condition needed for a trial with alpha = .05, 
 # power = 0.8, 10 observations per cluster, no variation in cluster size, probability
 # in condition 1 of .1 and condition 2 of .2, and icc = 0.1.
-crtpwr.2prop(n=10 ,p1=.1, p2=.2, icc=.1)
+crtpwr.2prop(nsubjects=10 ,p1=.1, p2=.2, icc=.1)
 # 
-# The result, showimg m of greater than 37, suggests 38 clusters per condition should be used.
+# The result, showimg nclusters of greater than 37, suggests 38 clusters per condition should be used.
 }

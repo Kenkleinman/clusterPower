@@ -17,8 +17,8 @@
 #'   Type I error.
 #' @param power The power of the test, 1 minus the probability of a Type II
 #'   error.
-#' @param m The number of clusters per condition. It must be greater than 1.
-#' @param n The mean of the cluster sizes.
+#' @param nclusters The number of clusters per condition. It must be greater than 1.
+#' @param nsubjects The mean of the cluster sizes.
 #' @param cv The coefficient of variation of the cluster sizes. When \code{cv} = 0,
 #'   the clusters all have the same size.
 #' @param p1 The expected proportion in the treatment group.
@@ -33,39 +33,39 @@
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, probability
 #' # in condition 1 of .1 and condition 2 of .2, and icc = 0.1.
-#' crtpwr.2prop(n=10 ,p1=.1, p2=.2, icc=.1)
+#' crtpwr.2prop(nsubjects=10 ,p1=.1, p2=.2, icc=.1)
 #' # 
-#' # The result, showimg m of greater than 37, suggests 38 clusters per condition should be used.
+#' # The result, showimg nclusters of greater than 37, suggests 38 clusters per condition should be used.
 #' @export
 
 crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
-                         m = NA, n = NA, cv = 0,
+                         nclusters = NA, nsubjects = NA, cv = 0,
                          p1 = NA, p2 = NA,
                          icc = NA, pooled = FALSE,
                          p1inc = TRUE,
                          tol = .Machine$double.eps^0.25){
   
-  if(!is.na(m) && m <= 1) {
-    stop("'m' must be greater than 1.")
+  if(!is.na(nclusters) && nclusters <= 1) {
+    stop("'nclusters' must be greater than 1.")
   }
   
-  needlist <- list(alpha, power, m, n, cv, p1, p2, icc)
-  neednames <- c("alpha", "power", "m", "n", "cv", "p1", "p2", "icc")
+  needlist <- list(alpha, power, nclusters, nsubjects, cv, p1, p2, icc)
+  neednames <- c("alpha", "power", "nclusters", "nsubjects", "cv", "p1", "p2", "icc")
   needind <- which(unlist(lapply(needlist, is.na))) # find NA index
   
   if (length(needind) != 1) {
-    stop("Exactly one of 'alpha', 'power', 'm', 'n', 'cv', 'p1', 'p2', or 'icc' must be NA.")
+    stop("Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'cv', 'p1', 'p2', or 'icc' must be NA.")
   }
   
   target <- neednames[needind]
   
   pwr <- quote({
-    DEFF <- 1 + ((cv^2 + 1)*n - 1)*icc
+    DEFF <- 1 + ((cv^2 + 1)*nsubjects - 1)*icc
     if (pooled) {
       p <- (p1+p2)/2
-      sdd <- sqrt(p*(1 - p)*2*DEFF/(m*n))
+      sdd <- sqrt(p*(1 - p)*2*DEFF/(nclusters*nsubjects))
     } else {
-      sdd <- sqrt((p1*(1-p1) + p2*(1-p2))*DEFF/(m*n))
+      sdd <- sqrt((p1*(1-p1) + p2*(1-p2))*DEFF/(nclusters*nsubjects))
     }
     zcrit <- qnorm(alpha/2, lower.tail = FALSE)
     pnorm(abs(p1 - p2)/sdd - zcrit, lower.tail = TRUE)# +
@@ -84,9 +84,9 @@ crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
     power <- eval(pwr)
   }
   
-  # calculate m
-  if (is.na(m)) {
-    m <- stats::uniroot(function(m) eval(pwr) - power,
+  # calculate nclusters
+  if (is.na(nclusters)) {
+    nclusters <- stats::uniroot(function(nclusters) eval(pwr) - power,
                  interval = c(2 + 1e-10, 1e+07),
                  tol = tol)$root
   }
@@ -118,9 +118,9 @@ crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
     }
   }
   
-  # calculate n
-  if (is.na(n)) {
-    n <- stats::uniroot(function(n) eval(pwr) - power,
+  # calculate nsubjects
+  if (is.na(nsubjects)) {
+    nsubjects <- stats::uniroot(function(nsubjects) eval(pwr) - power,
                  interval = c(2 + 1e-10, 1e+07),
                  tol = tol, extendInt = "upX")$root
   }
@@ -143,8 +143,8 @@ crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
   structure(get(target), names = target)
   
   # method <- paste("Clustered two-sample proportion power calculation: ", target, sep = "")
-  # note <- "'m' is the number of clusters in each group and 'n' is the number of individuals in each cluster."
-  # structure(list(m = m, n = n, cv = cv,
+  # note <- "'nclusters' is the number of clusters in each group and 'nsubjects' is the number of individuals in each cluster."
+  # structure(list(nclusters = nclusters, nsubjects = nsubjects, cv = cv,
   #                p1 = p1, p1dec = p1dec, p1inc = p1inc,
   #                p2 = p2, p2dec = p2dec, p2inc = p2inc,
   #                icc = icc, alpha = alpha, power = power,

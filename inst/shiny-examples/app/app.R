@@ -10,13 +10,13 @@ source("helpers.R")
 source("builders.R")
 
 # vectors of names, needed for graphs and target param selection
-names2mean <- c("alpha","power","m","n","cv","d","icc","vart","method")
-names2meanD <- c("alpha","power","m","n","d","icc","rho_c","rho_s","vart")
-names2meanM <- c("alpha","power","m","n","d","icc","vart","rho_m")
-names2prop <- c("alpha","power","m","n","cv","p1","p2","icc","pooled","p1inc")
-names2propD <- c("alpha","power","m","n","p","d","icc","rho_c","rho_s","covdf","pvar_c","pvar_s")
-names2propM <- c("alpha","power","m","n","p1","p2","cvm","p1inc")
-names2rate <- c("alpha","power","m","py","r1","r2","cvb","r1inc")
+names2mean <- c("alpha","power","nclusters","nsubjects","cv","d","icc","vart","method")
+names2meanD <- c("alpha","power","nclusters","nsubjects","d","icc","rho_c","rho_s","vart")
+names2meanM <- c("alpha","power","nclusters","nsubjects","d","icc","vart","rho_m")
+names2prop <- c("alpha","power","nclusters","nsubjects","cv","p1","p2","icc","pooled","p1inc")
+names2propD <- c("alpha","power","nclusters","nsubjects","p","d","icc","rho_c","rho_s","covdf","pvar_c","pvar_s")
+names2propM <- c("alpha","power","nclusters","nsubjects","p1","p2","cvm","p1inc")
+names2rate <- c("alpha","power","nclusters","py","r1","r2","cvb","r1inc")
 
 umass <- "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-weight: bold; color: #ffffff; background-color: #881c1c; border: 3px solid #000000;"
 
@@ -46,14 +46,14 @@ ui <- fluidPage(
                     bsTooltip("d2mean", dtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("m2mean", mtext,
+                    fluidRow(textInput("nclusters2mean", nclusterstext,
                                        value = "", width = "100%")),
-                    bsTooltip("m2mean", mtooltip,
+                    bsTooltip("nclusters2mean", nclusterstooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("n2mean", ntext,
+                    fluidRow(textInput("n2mean", nsubjectstext,
                                        value = "", width = "100%")),
-                    bsTooltip("n2mean", ntooltip,
+                    bsTooltip("n2mean", nsubjectstooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(textInput("icc2mean", icctext,
@@ -111,14 +111,14 @@ ui <- fluidPage(
                     bsTooltip("d2meanD", dDtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("m2meanD", mtext,
+                    fluidRow(textInput("nclusters2meanD", nclusterstext,
                                        value = "", width = "100%")),
-                    bsTooltip("m2meanD", mtooltip,
+                    bsTooltip("nclusters2meanD", nclusterstooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("n2meanD", ntext,
+                    fluidRow(textInput("n2meanD", nsubjectstext,
                                        value = "", width = "100%")),
-                    bsTooltip("n2meanD", ntooltip,
+                    bsTooltip("n2meanD", nsubjectstooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(textInput("icc2meanD", icctext,
@@ -174,14 +174,14 @@ ui <- fluidPage(
                     bsTooltip("d2meanM", dtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("m2meanM", mtext,
+                    fluidRow(textInput("nclusters2meanM", nclusterstext,
                                        value = "", width = "100%")),
-                    bsTooltip("m2meanM", mtooltip,
+                    bsTooltip("nclusters2meanM", nclusterstooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("n2meanM", ntext,
+                    fluidRow(textInput("n2meanM", nsubjectstext,
                                        value = "", width = "100%")),
-                    bsTooltip("n2meanM", ntooltip,
+                    bsTooltip("n2meanM", nsubjectstooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(textInput("icc2meanM", icctext,
@@ -245,14 +245,14 @@ ui <- fluidPage(
                     bsTooltip("pooled2prop", pooledtooltip,
                               'top', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("m2prop", mtext,
+                    fluidRow(textInput("nclusters2prop", nclusterstext,
                                        value = "", width = "100%")),
-                    bsTooltip("m2prop", mtooltip,
+                    bsTooltip("nclusters2prop", nclusterstooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("n2prop", ntext,
+                    fluidRow(textInput("n2prop", nsubjectstext,
                                        value = "", width = "100%")),
-                    bsTooltip("n2prop", ntooltip,
+                    bsTooltip("n2prop", nsubjectstooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(textInput("icc2prop", icctext,
@@ -304,14 +304,14 @@ ui <- fluidPage(
                     bsTooltip("d2propD", dDtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("m2propD", mtext,
+                    fluidRow(textInput("nclusters2propD", nclusterstext,
                                        value = "", width = "100%")),
-                    bsTooltip("m2propD", mtooltip,
+                    bsTooltip("nclusters2propD", nclusterstooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("n2propD", ntext,
+                    fluidRow(textInput("n2propD", nsubjectstext,
                                        value = "", width = "100%")),
-                    bsTooltip("n2propD", ntooltip,
+                    bsTooltip("n2propD", nsubjectstooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(textInput("icc2propD", icctext,
@@ -386,14 +386,14 @@ ui <- fluidPage(
                     bsTooltip("p1inc2propM", p1inctooltip,
                               'top', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("m2propM", mtext,
+                    fluidRow(textInput("nclusters2propM", nclusterstext,
                                        value = "", width = "100%")),
-                    bsTooltip("m2propM", mtooltip,
+                    bsTooltip("nclusters2propM", nclusterstooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("n2propM", ntext,
+                    fluidRow(textInput("n2propM", nsubjectstext,
                                        value = "", width = "100%")),
-                    bsTooltip("n2propM", ntooltip,
+                    bsTooltip("n2propM", nsubjectstooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(textInput("cvm2propM", cvmtext,
@@ -444,9 +444,9 @@ ui <- fluidPage(
                     bsTooltip("r1inc2rate", r1inctooltip,
                               'top', options = list(container = "body")),
                     #----------------------------------------------------------
-                    fluidRow(textInput("m2rate", mtext,
+                    fluidRow(textInput("nclusters2rate", nclusterstext,
                                        value = "", width = "100%")),
-                    bsTooltip("m2rate", mtooltip,
+                    bsTooltip("nclusters2rate", nclusterstooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(textInput("py2rate", pytext,
@@ -490,7 +490,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "power2mean", value = "")
       updateTextInput(session, inputId = "cv2mean", value = "0")
       updateCheckboxGroupInput(session, inputId = "method2mean", selected = "taylor")
-      updateTextInput(session, inputId = "m2mean", value = "")
+      updateTextInput(session, inputId = "nclusters2mean", value = "")
       updateTextInput(session, inputId = "n2mean", value = "")
       updateTextInput(session, inputId = "d2mean", value = "")
       updateTextInput(session, inputId = "icc2mean", value = "")
@@ -508,7 +508,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "cv2mean", value = "")
       updateCheckboxGroupInput(session, inputId = "method2mean",
                                choices = c(Taylor = "taylor", Weighted = "weighted"))
-      updateTextInput(session, inputId = "m2mean", value = "")
+      updateTextInput(session, inputId = "nclusters2mean", value = "")
       updateTextInput(session, inputId = "n2mean", value = "")
       updateTextInput(session, inputId = "d2mean", value = "")
       updateTextInput(session, inputId = "icc2mean", value = "")
@@ -523,8 +523,8 @@ server <- function(input, output, session){
       # convert inputs to numeric vectors
       alpha <- make_sequence(isolate(input$alpha2mean))
       power <- make_sequence(isolate(input$power2mean))
-      m <- make_sequence(isolate(input$m2mean))
-      n <- make_sequence(isolate(input$n2mean))
+      nclusters <- make_sequence(isolate(input$nclusters2mean))
+      nsubjects <- make_sequence(isolate(input$n2mean))
       cv <- make_sequence(isolate(input$cv2mean))
       d <- make_sequence(isolate(input$d2mean))
       icc <- make_sequence(isolate(input$icc2mean))
@@ -549,8 +549,8 @@ server <- function(input, output, session){
       # create a table of input values
       tab <- expand.grid(alpha,
                          power,
-                         m,
-                         n,
+                         nclusters,
+                         nsubjects,
                          cv,
                          d,
                          icc,
@@ -563,7 +563,7 @@ server <- function(input, output, session){
       # validate that only one input is blank
       validate(
         need(length(needind) == 1,
-             "Exactly one of 'alpha', 'power', 'd', 'm', 'n', 'icc', 'vart', and 'cv' must be left blank."
+             "Exactly one of 'alpha', 'power', 'd', 'nclusters', 'nsubjects', 'icc', 'vart', and 'cv' must be left blank."
         )
       )
       names(tab) <- names2mean
@@ -626,7 +626,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "power2meanD", value = "")
       updateTextInput(session, inputId = "rho_c2meanD", value = "")
       updateTextInput(session, inputId = "rho_s2meanD", value = "")
-      updateTextInput(session, inputId = "m2meanD", value = "")
+      updateTextInput(session, inputId = "nclusters2meanD", value = "")
       updateTextInput(session, inputId = "n2meanD", value = "")
       updateTextInput(session, inputId = "d2meanD", value = "")
       updateTextInput(session, inputId = "icc2meanD", value = "")
@@ -643,7 +643,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "power2meanD", value = "")
       updateTextInput(session, inputId = "rho_c2meanD", value = "")
       updateTextInput(session, inputId = "rho_s2meanD", value = "")
-      updateTextInput(session, inputId = "m2meanD", value = "")
+      updateTextInput(session, inputId = "nclusters2meanD", value = "")
       updateTextInput(session, inputId = "n2meanD", value = "")
       updateTextInput(session, inputId = "d2meanD", value = "")
       updateTextInput(session, inputId = "icc2meanD", value = "")
@@ -658,8 +658,8 @@ server <- function(input, output, session){
       # convert inputs to numeric vectors
       alpha <- make_sequence(isolate(input$alpha2meanD))
       power <- make_sequence(isolate(input$power2meanD))
-      m <- make_sequence(isolate(input$m2meanD))
-      n <- make_sequence(isolate(input$n2meanD))
+      nclusters <- make_sequence(isolate(input$nclusters2meanD))
+      nsubjects <- make_sequence(isolate(input$n2meanD))
       rho_c <- make_sequence(isolate(input$rho_c2meanD))
       rho_s <- make_sequence(isolate(input$rho_s2meanD))
       d <- make_sequence(isolate(input$d2meanD))
@@ -684,8 +684,8 @@ server <- function(input, output, session){
       # create a table of input values
       tab <- expand.grid(alpha,
                          power,
-                         m,
-                         n,
+                         nclusters,
+                         nsubjects,
                          d,
                          icc,
                          rho_c,
@@ -698,7 +698,7 @@ server <- function(input, output, session){
       # validate that only one input is blank
       validate(
         need(length(needind) == 1,
-             "Exactly one of 'alpha', 'power', 'd', 'm', 'n', 'icc', 'rho_c', 'rho_s', and 'vart' must be left blank."
+             "Exactly one of 'alpha', 'power', 'd', 'nclusters', 'nsubjects', 'icc', 'rho_c', 'rho_s', and 'vart' must be left blank."
         )
       )
       names(tab) <- names2meanD
@@ -765,7 +765,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "alpha2meanM", value = "0.05")
       updateTextInput(session, inputId = "power2meanM", value = "")
       updateTextInput(session, inputId = "rho_m2meanM", value = "")
-      updateTextInput(session, inputId = "m2meanM", value = "")
+      updateTextInput(session, inputId = "nclusters2meanM", value = "")
       updateTextInput(session, inputId = "n2meanM", value = "")
       updateTextInput(session, inputId = "d2meanM", value = "")
       updateTextInput(session, inputId = "icc2meanM", value = "")
@@ -781,7 +781,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "alpha2meanM", value = "")
       updateTextInput(session, inputId = "power2meanM", value = "")
       updateTextInput(session, inputId = "rho_m2meanM", value = "")
-      updateTextInput(session, inputId = "m2meanM", value = "")
+      updateTextInput(session, inputId = "nclusters2meanM", value = "")
       updateTextInput(session, inputId = "n2meanM", value = "")
       updateTextInput(session, inputId = "d2meanM", value = "")
       updateTextInput(session, inputId = "icc2meanM", value = "")
@@ -796,8 +796,8 @@ server <- function(input, output, session){
       # convert inputs to numeric vectors
       alpha <- make_sequence(isolate(input$alpha2meanM))
       power <- make_sequence(isolate(input$power2meanM))
-      m <- make_sequence(isolate(input$m2meanM))
-      n <- make_sequence(isolate(input$n2meanM))
+      nclusters <- make_sequence(isolate(input$nclusters2meanM))
+      nsubjects <- make_sequence(isolate(input$n2meanM))
       rho_m <- make_sequence(isolate(input$rho_m2meanM))
       d <- make_sequence(isolate(input$d2meanM))
       icc <- make_sequence(isolate(input$icc2meanM))
@@ -821,8 +821,8 @@ server <- function(input, output, session){
       # create a table of input values
       tab <- expand.grid(alpha,
                          power,
-                         m,
-                         n,
+                         nclusters,
+                         nsubjects,
                          d,
                          icc,
                          vart,
@@ -834,7 +834,7 @@ server <- function(input, output, session){
       # validate that only one input is blank
       validate(
         need(length(needind) == 1,
-             "Exactly one of 'alpha', 'power', 'd', 'm', 'n', 'icc', 'rho_m', and 'vart' must be left blank."
+             "Exactly one of 'alpha', 'power', 'd', 'nclusters', 'nsubjects', 'icc', 'rho_m', and 'vart' must be left blank."
         )
       )
       names(tab) <- names2meanM
@@ -901,7 +901,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "alpha2prop", value = "0.05")
       updateTextInput(session, inputId = "power2prop", value = "0.80")
       updateTextInput(session, inputId = "cv2prop", value = "0")
-      updateTextInput(session, inputId = "m2prop", value = "")
+      updateTextInput(session, inputId = "nclusters2prop", value = "")
       updateTextInput(session, inputId = "n2prop", value = "")
       updateTextInput(session, inputId = "icc2prop", value = "")
       updateTextInput(session, inputId = "p12prop", value = "")
@@ -918,7 +918,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "alpha2prop", value = "")
       updateTextInput(session, inputId = "power2prop", value = "")
       updateTextInput(session, inputId = "cv2prop", value = "")
-      updateTextInput(session, inputId = "m2prop", value = "")
+      updateTextInput(session, inputId = "nclusters2prop", value = "")
       updateTextInput(session, inputId = "n2prop", value = "")
       updateTextInput(session, inputId = "icc2prop", value = "")
       updateTextInput(session, inputId = "p12prop", value = "")
@@ -934,8 +934,8 @@ server <- function(input, output, session){
     {
       alpha <- make_sequence(isolate(input$alpha2prop))
       power <- make_sequence(isolate(input$power2prop))
-      m <- make_sequence(isolate(input$m2prop))
-      n <- make_sequence(isolate(input$n2prop))
+      nclusters <- make_sequence(isolate(input$nclusters2prop))
+      nsubjects <- make_sequence(isolate(input$n2prop))
       cv <- make_sequence(isolate(input$cv2prop))
       p1 <- make_sequence(isolate(input$p12prop))
       p2 <- make_sequence(isolate(input$p22prop))
@@ -945,8 +945,8 @@ server <- function(input, output, session){
       
       tab <- expand.grid(alpha,
                          power,
-                         m,
-                         n,
+                         nclusters,
+                         nsubjects,
                          cv,
                          p1,
                          p2,
@@ -974,7 +974,7 @@ server <- function(input, output, session){
       # validate that only one input is blank
       validate(
         need(length(needind) == 1,
-             "Exactly one of 'alpha', 'power', 'p1', 'p2', 'm', 'n', 'icc' or 'cv' must be left blank."
+             "Exactly one of 'alpha', 'power', 'p1', 'p2', 'nclusters', 'nsubjects', 'icc' or 'cv' must be left blank."
         )
       )
       names(tab) <- names2prop
@@ -1038,7 +1038,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "power2propD", value = "")
       updateTextInput(session, inputId = "rho_c2propD", value = "")
       updateTextInput(session, inputId = "rho_s2propD", value = "")
-      updateTextInput(session, inputId = "m2propD", value = "")
+      updateTextInput(session, inputId = "nclusters2propD", value = "")
       updateTextInput(session, inputId = "n2propD", value = "")
       updateTextInput(session, inputId = "p2propD", value = "")
       updateTextInput(session, inputId = "d2propD", value = "")
@@ -1058,7 +1058,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "power2propD", value = "")
       updateTextInput(session, inputId = "rho_c2propD", value = "")
       updateTextInput(session, inputId = "rho_s2propD", value = "")
-      updateTextInput(session, inputId = "m2propD", value = "")
+      updateTextInput(session, inputId = "nclusters2propD", value = "")
       updateTextInput(session, inputId = "n2propD", value = "")
       updateTextInput(session, inputId = "p2propD", value = "")
       updateTextInput(session, inputId = "d2propD", value = "")
@@ -1076,8 +1076,8 @@ server <- function(input, output, session){
       # convert inputs to numeric vectors
       alpha <- make_sequence(isolate(input$alpha2propD))
       power <- make_sequence(isolate(input$power2propD))
-      m <- make_sequence(isolate(input$m2propD))
-      n <- make_sequence(isolate(input$n2propD))
+      nclusters <- make_sequence(isolate(input$nclusters2propD))
+      nsubjects <- make_sequence(isolate(input$n2propD))
       rho_c <- make_sequence(isolate(input$rho_c2propD))
       rho_s <- make_sequence(isolate(input$rho_s2propD))
       p <- make_sequence(isolate(input$p2propD))
@@ -1105,8 +1105,8 @@ server <- function(input, output, session){
       # create a table of input values
       tab <- expand.grid(alpha,
                          power,
-                         m,
-                         n,
+                         nclusters,
+                         nsubjects,
                          p,
                          d,
                          icc,
@@ -1122,7 +1122,7 @@ server <- function(input, output, session){
       # validate that only one input is blank
       validate(
         need(length(needind) == 1,
-             "Exactly one of 'alpha', 'power', 'p', 'd', 'm', 'n', 'icc', 'rho_c', 'rho_s', 'covdf', 'pvar_c', and 'pvar_s' must be left blank."
+             "Exactly one of 'alpha', 'power', 'p', 'd', 'nclusters', 'nsubjects', 'icc', 'rho_c', 'rho_s', 'covdf', 'pvar_c', and 'pvar_s' must be left blank."
         )
       )
       names(tab) <- names2propD
@@ -1188,7 +1188,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "alpha2propM", value = "0.05")
       updateTextInput(session, inputId = "power2propM", value = "0.80")
       updateTextInput(session, inputId = "cvm2propM", value = "")
-      updateTextInput(session, inputId = "m2propM", value = "")
+      updateTextInput(session, inputId = "nclusters2propM", value = "")
       updateTextInput(session, inputId = "n2propM", value = "")
       updateTextInput(session, inputId = "p12propM", value = "")
       updateTextInput(session, inputId = "p22propM", value = "")
@@ -1203,7 +1203,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "alpha2propM", value = "")
       updateTextInput(session, inputId = "power2propM", value = "")
       updateTextInput(session, inputId = "cvm2propM", value = "")
-      updateTextInput(session, inputId = "m2propM", value = "")
+      updateTextInput(session, inputId = "nclusters2propM", value = "")
       updateTextInput(session, inputId = "n2propM", value = "")
       updateTextInput(session, inputId = "p12propM", value = "")
       updateTextInput(session, inputId = "p22propM", value = "")
@@ -1217,8 +1217,8 @@ server <- function(input, output, session){
     {
       alpha <- make_sequence(isolate(input$alpha2propM))
       power <- make_sequence(isolate(input$power2propM))
-      m <- make_sequence(isolate(input$m2propM))
-      n <- make_sequence(isolate(input$n2propM))
+      nclusters <- make_sequence(isolate(input$nclusters2propM))
+      nsubjects <- make_sequence(isolate(input$n2propM))
       p1 <- make_sequence(isolate(input$p12propM))
       p2 <- make_sequence(isolate(input$p22propM))
       cvm <- make_sequence(isolate(input$cvm2propM))
@@ -1226,8 +1226,8 @@ server <- function(input, output, session){
       
       tab <- expand.grid(alpha,
                          power,
-                         m,
-                         n,
+                         nclusters,
+                         nsubjects,
                          p1,
                          p2,
                          cvm,
@@ -1253,7 +1253,7 @@ server <- function(input, output, session){
       # validate that only one input is blank
       validate(
         need(length(needind) == 1,
-             "Exactly one of 'alpha', 'power', 'p1', 'p2', 'm', 'n', or 'cvm' must be left blank."
+             "Exactly one of 'alpha', 'power', 'p1', 'p2', 'nclusters', 'nsubjects', or 'cvm' must be left blank."
         )
       )
       names(tab) <- names2propM
@@ -1315,7 +1315,7 @@ server <- function(input, output, session){
     {
       updateTextInput(session, inputId = "alpha2rate", value = "0.05")
       updateTextInput(session, inputId = "power2rate", value = "0.80")
-      updateTextInput(session, inputId = "m2rate", value = "")
+      updateTextInput(session, inputId = "nclusters2rate", value = "")
       updateTextInput(session, inputId = "py2rate", value = "")
       updateTextInput(session, inputId = "r12rate", value = "")
       updateTextInput(session, inputId = "r22rate", value = "")
@@ -1330,7 +1330,7 @@ server <- function(input, output, session){
     {
       updateTextInput(session, inputId = "alpha2rate", value = "")
       updateTextInput(session, inputId = "power2rate", value = "")
-      updateTextInput(session, inputId = "m2rate", value = "")
+      updateTextInput(session, inputId = "nclusters2rate", value = "")
       updateTextInput(session, inputId = "py2rate", value = "")
       updateTextInput(session, inputId = "r12rate", value = "")
       updateTextInput(session, inputId = "r22rate", value = "")
@@ -1345,7 +1345,7 @@ server <- function(input, output, session){
     {
       alpha <- make_sequence(isolate(input$alpha2rate))
       power <- make_sequence(isolate(input$power2rate))
-      m <- make_sequence(isolate(input$m2rate))
+      nclusters <- make_sequence(isolate(input$nclusters2rate))
       py <- make_sequence(isolate(input$py2rate))
       r1 <- make_sequence(isolate(input$r12rate))
       r2 <- make_sequence(isolate(input$r22rate))
@@ -1354,7 +1354,7 @@ server <- function(input, output, session){
       
       tab <- expand.grid(alpha,
                          power,
-                         m,
+                         nclusters,
                          py,
                          r1,
                          r2,
@@ -1381,7 +1381,7 @@ server <- function(input, output, session){
       # validate that only one input is blank
       validate(
         need(length(needind) == 1,
-             "Exactly one of 'alpha', 'power', 'r1', 'r2', 'm', 'py', or 'cvb' must be left blank."
+             "Exactly one of 'alpha', 'power', 'r1', 'r2', 'nclusters', 'py', or 'cvb' must be left blank."
         )
       )
       names(tab) <- names2rate

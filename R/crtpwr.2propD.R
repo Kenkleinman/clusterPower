@@ -3,7 +3,7 @@
 #' Compute the power of a difference-in-difference cluster randomized trial design with a binary outcome,
 #' or determine parameters to obtain a target power.
 #' 
-#' Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
+#' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
 #'   \code{p}, \code{d}, \code{icc}, \code{rho_c}, and \code{rho_s}  must be passed as \code{NA}.
 #'   Note that \code{alpha} and \code{power} have non-\code{NA}
 #'   defaults, so if those are the parameters of interest they must be
@@ -23,8 +23,8 @@
 #'   Type I error.
 #' @param power The power of the test, 1 minus the probability of a Type II
 #'   error.
-#' @param m The number of clusters per condition. It must be greater than 1.
-#' @param n The mean of the cluster sizes.
+#' @param nclusters The number of clusters per condition. It must be greater than 1.
+#' @param nsubjects The mean of the cluster sizes.
 #' @param p The expected mean proportion at the post-test, averaged across treatment and control arms.
 #' @param d The expected absolute difference.
 #' @param icc The intraclass correlation.
@@ -51,9 +51,9 @@
 #' # power = 0.8, 50 observations per cluster, expected mean post-test proportion of .50,
 #' # expected difference of .1, icc = 0.05, cluster level correlation of 0.3, and subject level 
 #' # correlation of 0.7.
-#' crtpwr.2propD(n=50 ,p=.5, d=.1, icc=.05, rho_c=.3, rho_s=.7)
+#' crtpwr.2propD(nsubjects=50 ,p=.5, d=.1, icc=.05, rho_c=.3, rho_s=.7)
 #' # 
-#' # The result, showimg m of greater than 32, suggests 33 clusters per condition should be used.
+#' # The result, showimg nclusters of greater than 32, suggests 33 clusters per condition should be used.
 #' 
 #' @references Murray D. Design and Analysis of Group-Randomized Trials. New York, NY: Oxford
 #' University Press; 1998.
@@ -61,14 +61,14 @@
 #' @export
 
 crtpwr.2propD <- function(alpha = 0.05, power = 0.80,
-                          m = NA, n = NA,
+                          nclusters = NA, nsubjects = NA,
                           p = NA, d = NA, icc = NA, 
                           rho_c = NA, rho_s = NA,
                           covdf = 0, pvar_c = 0, pvar_s = 0,
                           tol = .Machine$double.eps^0.25){
   
-  if(!is.na(m) && m <= 1) {
-    stop("'m' must be greater than 1.")
+  if(!is.na(nclusters) && nclusters <= 1) {
+    stop("'nclusters' must be greater than 1.")
   }
   
   # check to see that difference is positive
@@ -85,29 +85,29 @@ crtpwr.2propD <- function(alpha = 0.05, power = 0.80,
     }
   }
   
-  needlist <- list(alpha, power, m, n, p, d, icc, rho_c, rho_s, covdf, pvar_s, pvar_c)
-  neednames <- c("alpha", "power", "m", "n", "p", "d", "icc", "rho_c", "rho_s", "covdf", "pvar_s", "pvar_c")
+  needlist <- list(alpha, power, nclusters, nsubjects, p, d, icc, rho_c, rho_s, covdf, pvar_s, pvar_c)
+  neednames <- c("alpha", "power", "nclusters", "nsubjects", "p", "d", "icc", "rho_c", "rho_s", "covdf", "pvar_s", "pvar_c")
   needind <- which(unlist(lapply(needlist, is.na))) # find NA index
   
   if (length(needind) != 1) {
-    stop("Exactly one of 'alpha', 'power', 'm', 'n', 'p', 'd', 'icc', 'rho_c', 'rho_s', 'covdf', 'pvar_s', or 'pvar_c' must be NA.")
+    stop("Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'p', 'd', 'icc', 'rho_c', 'rho_s', 'covdf', 'pvar_s', or 'pvar_c' must be NA.")
   }
   
   target <- neednames[needind]
   
   pwr <- quote({
     
-    tcrit <- qt(alpha/2, 2*(m - 1), lower.tail = FALSE)
+    tcrit <- qt(alpha/2, 2*(nclusters - 1), lower.tail = FALSE)
     
     # variance is given by:
     # between cluster: varb = p*(1-p)*icc
     # within cluster: varw = p*(1-p)*(1 - icc)
-    # 2*2*(p*(1-p)*(1 - icc)*(1 - rho_s) + n*p*(1-p)*icc*(1 - rho_c))/(n*m)
+    # 2*2*(p*(1-p)*(1 - icc)*(1 - rho_s) + nsubjects*p*(1-p)*icc*(1 - rho_c))/(nsubjects*nclusters)
     varb <- p*(1-p)*icc
     varw <- p*(1-p)*(1 - icc)
-    ncp <- d/sqrt(2*2*(varw*(1 - rho_s)*(1 - pvar_s) + n*varb*(1 - rho_c)*(1 - pvar_c))/(n*m))
+    ncp <- d/sqrt(2*2*(varw*(1 - rho_s)*(1 - pvar_s) + nsubjects*varb*(1 - rho_c)*(1 - pvar_c))/(nsubjects*nclusters))
     
-    pt(tcrit, 2*(m - 1) - covdf, ncp, lower.tail = FALSE) 
+    pt(tcrit, 2*(nclusters - 1) - covdf, ncp, lower.tail = FALSE) 
   })
   
   # calculate alpha
@@ -122,16 +122,16 @@ crtpwr.2propD <- function(alpha = 0.05, power = 0.80,
     power <- eval(pwr)
   }
   
-  # calculate m
-  if (is.na(m)) {
-    m <- stats::uniroot(function(m) eval(pwr) - power,
+  # calculate nclusters
+  if (is.na(nclusters)) {
+    nclusters <- stats::uniroot(function(nclusters) eval(pwr) - power,
                         interval = c(2 + covdf + 1e-10, 1e+07),
                         tol = tol, extendInt = "upX")$root
   }
   
-  # calculate n
-  if (is.na(n)) {
-    n <- stats::uniroot(function(n) eval(pwr) - power,
+  # calculate nsubjects
+  if (is.na(nsubjects)) {
+    nsubjects <- stats::uniroot(function(nsubjects) eval(pwr) - power,
                         interval = c(2 + 1e-10, 1e+07),
                         tol = tol, extendInt = "upX")$root
   }
