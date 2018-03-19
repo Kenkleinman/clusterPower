@@ -15,9 +15,9 @@
 #' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param m Number of subjects per cluster; accepts integer (required). Currently in development to
+#' @param nclusters Number of subjects per cluster; accepts integer (required). Currently in development to
 #' accept vectors of treatment-specific cluster numbers and distributional forms. 
-#' @param n Number of clusters per treatment group; accepts single integer (required) or 
+#' @param nsubjects Number of clusters per treatment group; accepts single integer (required) or 
 #' vector of length 2 for unequal number of clusters per treatment group 
 #' @param difference Expected absolute treatment effect; accepts numeric (required).
 #' At least 2 of the following must be specified:
@@ -49,14 +49,14 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' my.normal.sim = cps.normal(nsim = 100, m = 50, n = 30, difference = 30, ICC = 0.2, sigma_w = 100,
+#' my.normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 30, ICC = 0.2, sigma_w = 100,
 #'                     alpha = 0.05, method = 'glmm', quiet = FALSE)
 #' }
 #'
 #' @export
 
 
-cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
+cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, difference = NULL,
                       ICC = NULL, sigma = NULL, sigma_b = NULL,
                       ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL,
                       alpha = 0.05, method = 'glmm', quiet = FALSE){
@@ -74,39 +74,39 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
   
   # Validate NSIM, N, M
-  sim.data.arg.list = list(nsim, n, m, difference)
+  sim.data.arg.list = list(nsim, nclusters, nsubjects, difference)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if(sum(sim.data.args) > 0){
-    stop("NSIM, N, M & DIFFERENCE must all be specified. Please review your input values.")
+    stop("NSIM, NCLUSTERS, NSUBJECTS & DIFFERENCE must all be specified. Please review your input values.")
   }
   min1.warning = " must be an integer greater than or equal to 1"
   if(!is.wholenumber(nsim) || nsim < 1){
     stop(paste0("NSIM", min1.warning))
   }
-  if(!is.wholenumber(n) || n < 1){
-    stop(paste0("N", min1.warning))
+  if(!is.wholenumber(nclusters) || nclusters < 1){
+    stop(paste0("NCLUSTERS", min1.warning))
   }
-  if(!is.wholenumber(m) || m < 1){
-    stop(paste0("M", min1.warning))
+  if(!is.wholenumber(nsubjects) || nsubjects < 1){
+    stop(paste0("NSUBJECTS", min1.warning))
   }
-  if(length(n) > 2){
-    stop("N can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)")
+  if(length(nclusters) > 2){
+    stop("NCLUSTERS can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)")
   }
   
   # Set cluster sizes for treatment arm (if not already specified)
-  if(length(n) == 1){
-    n[2] = n[1]
+  if(length(nclusters) == 1){
+    nclusters[2] = nclusters[1]
   }
   
   # Set sample sizes for each cluster (if not already specified)
-  if(length(m) == 1){
-    m[1:sum(n)] = m
+  if(length(nsubjects) == 1){
+    nsubjects[1:sum(nclusters)] = nsubjects
   } 
-  if(n[1] == n[2] && length(m) == n[1]){
-    m = rep(m, 2)
+  if(nclusters[1] == nclusters[2] && length(nsubjects) == nclusters[1]){
+    nsubjects = rep(nsubjects, 2)
   }
-  if(length(n) == 2 && length(m) != 1 && length(m) != sum(n)){
-    stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for M")
+  if(length(nclusters) == 2 && length(nsubjects) != 1 && length(nsubjects) != sum(nclusters)){
+    stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS")
   }
   
   # Validate DIFFERENCE, ALPHA
@@ -179,21 +179,22 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
     
     # Generate simulated data
     # Create indicators for treatment group & cluster
-    trt = c(rep(0, length.out = sum(m[1:n[1]])), rep(1, length.out = sum(m[(n[1]+1):(n[1]+n[2])])))
-    clust = unlist(lapply(1:sum(n), function(x) rep(x, length.out = m[x])))
+    trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
+            rep(1, length.out = sum(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])))
+    clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
     
     # Generate between-cluster effects for non-treatment and treatment
-    randint.0 = stats::rnorm(n[1], mean = 0, sd = sqrt(sigma_b[1]))
-    randint.1 = stats::rnorm(n[2], mean = 0, sd = sqrt(sigma_b[2]))
+    randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
+    randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
     
     # Create non-treatment y-value
-    y0.bclust = unlist(lapply(1:n[1], function(x) rep(randint.0[x], length.out = m[x])))
-    y0.wclust = unlist(lapply(m[1:n[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[1]))))
+    y0.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
+    y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[1]))))
     y.0 = y0.bclust + y0.wclust
     
     # Create treatment y-value
-    y1.bclust = unlist(lapply(1:n[2], function(x) rep(randint.1[x], length.out = m[n[1]+x])))
-    y1.wclust = unlist(lapply(m[(n[1]+1):(n[1]+n[2])], function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma[2]))))
+    y1.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1]+x])))
+    y1.wclust = unlist(lapply(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])], function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma[2]))))
     y.1 = y1.bclust + y1.wclust
     
     # Create single response vector
@@ -206,7 +207,7 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
     if(method == 'glmm'){
       my.mod = lme4::lmer(y.resp ~ trt + (1|clust), data = sim.dat)
       glmm.values = summary(my.mod)$coefficient
-      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(n) - 2)
+      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(nclusters) - 2)
       est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
       se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
       stat.vector = append(stat.vector, glmm.values['trt', 't value'])
@@ -281,10 +282,11 @@ cps.normal = function(nsim = NULL, m = NULL, n = NULL, difference = NULL,
                            Upper.95.CI = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
   # Create object containing group-specific cluster sizes
-  cluster.sizes = list('Group 1 (Non-Treatment)' = m[1:n[1]], 'Group 2 (Treatment)' = m[(n[1]+1):(n[1]+n[2])])
+  cluster.sizes = list('Group 1 (Non-Treatment)' = nsubjects[1:nclusters[1]], 
+                       'Group 2 (Treatment)' = nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])
   
   # Create object containing number of clusters
-  n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = n[1]), "Treatment" = c("n.clust" = n[2])))
+  n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
   
   # Create object containing group-specific variance parameters
   var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
