@@ -4,8 +4,9 @@
 \alias{crtpwr.2rate}
 \title{Power calculations for simple cluster randomized trials, count outcome}
 \usage{
-crtpwr.2rate(alpha = 0.05, power = 0.8, m = NA, py = NA, r1 = NA,
-  r2 = NA, cvb = NA, r1inc = TRUE, tol = .Machine$double.eps^0.25)
+crtpwr.2rate(alpha = 0.05, power = 0.8, nclusters = NA, py = NA,
+  r1 = NA, r2 = NA, cvb = NA, r1inc = TRUE,
+  tol = .Machine$double.eps^0.25)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a
@@ -14,7 +15,7 @@ Type I error.}
 \item{power}{The power of the test, 1 minus the probability of a Type II
 error.}
 
-\item{m}{The number of clusters per condition. It must be greater than 1.}
+\item{nclusters}{The number of clusters per condition. It must be greater than 1.}
 
 \item{py}{The number of person-years of observation per cluster.}
 
@@ -57,7 +58,8 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 # and condition 2 of 0.20, and cvb = 0.10.
 crtpwr.2rate(py=10, r1=0.10, r2=0.20, cvb=0.10)
 # 
-# The result, showimg m of greater than 24, suggests 25 clusters per condition should be used.
+# The result, showimg nclusters of greater than 24, suggests 25 clusters per
+# condition should be used.
 
 }
 \references{

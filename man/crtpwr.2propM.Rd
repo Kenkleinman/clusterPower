@@ -4,8 +4,9 @@
 \alias{crtpwr.2propM}
 \title{Power calculations for simple cluster randomized trials with matching, binary outcome}
 \usage{
-crtpwr.2propM(alpha = 0.05, power = 0.8, m = NA, n = NA, p1 = NA,
-  p2 = NA, cvm = 0, p1inc = TRUE, tol = .Machine$double.eps^0.25)
+crtpwr.2propM(alpha = 0.05, power = 0.8, nclusters = NA, nsubjects = NA,
+  p1 = NA, p2 = NA, cvm = 0, p1inc = TRUE,
+  tol = .Machine$double.eps^0.25)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a
@@ -14,9 +15,9 @@ Type I error.}
 \item{power}{The power of the test, 1 minus the probability of a Type II
 error.}
 
-\item{m}{The number of clusters per condition. It must be greater than 1.}
+\item{nclusters}{The number of clusters per condition. It must be greater than 1.}
 
-\item{n}{The mean of the cluster sizes.}
+\item{nsubjects}{The mean of the cluster sizes.}
 
 \item{p1}{The expected proportion in the treatment group.}
 
@@ -53,10 +54,12 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
 # power = 0.80, 80 observations per probability
-# in condition 1 of 0.80 and condition 2 of 0.60, within-pair coefficient of variation equal to 0.2.
-crtpwr.2propM(n=80 ,p1=0.80, p2=0.60, cvm = 0.2)
+# in condition 1 of 0.80 and condition 2 of 0.60, within-pair coefficient of 
+# variation equal to 0.2.
+crtpwr.2propM(nsubjects=80 ,p1=0.80, p2=0.60, cvm = 0.2)
 # 
-# The result, showimg m of greater than 10, suggests 11 clusters per condition should be used.
+# The result, showimg nclusters of greater than 10, suggests 11 clusters per 
+# condition should be used.
 
 }
 \references{

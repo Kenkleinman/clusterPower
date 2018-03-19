@@ -4,8 +4,8 @@
 \alias{crtpwr.2meanD}
 \title{Power calculations for difference-in-difference cluster randomized trials, continuous outcome}
 \usage{
-crtpwr.2meanD(alpha = 0.05, power = 0.8, m = NA, n = NA, d = NA,
-  icc = NA, rho_c = NA, rho_s = NA, vart = NA,
+crtpwr.2meanD(alpha = 0.05, power = 0.8, nclusters = NA, nsubjects = NA,
+  d = NA, icc = NA, rho_c = NA, rho_s = NA, vart = NA,
   tol = .Machine$double.eps^0.25)
 }
 \arguments{
@@ -15,9 +15,9 @@ Type I error.}
 \item{power}{The power of the test, 1 minus the probability of a Type II
 error.}
 
-\item{m}{The number of clusters per condition. It must be greater than 1.}
+\item{nclusters}{The number of clusters per condition. It must be greater than 1.}
 
-\item{n}{The mean of the cluster sizes, or a vector of cluster sizes for one arm.}
+\item{nsubjects}{The mean of the cluster sizes, or a vector of cluster sizes for one arm.}
 
 \item{d}{The difference in mean change between conditions (i.e. "difference-in-difference").}
 
@@ -45,14 +45,14 @@ Compute the power of a difference-in-difference cluster randomized trial design 
 or determine parameters to obtain a target power.
 }
 \details{
-Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
+Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
   \code{d}, \code{icc}, \code{rho_c}, \code{rho_s}, and \code{vart}
   must be passed as \code{NA}. Note that \code{alpha} and\code{power}
   have non-\code{NA} defaults, so if those are the parameters of 
   interest they must be explicitly passed as \code{NA}.
   
-If \code{n} is a vector the values, \code{m} will be recalculated
-   using the values in \code{n}.
+If \code{nsubjects} is a vector the values, \code{nclusters} will be recalculated
+   using the values in \code{nsubjects}.
 }
 \section{Note}{
 
@@ -72,11 +72,11 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
-# power = 0.80, n = 100, d = 0.50 units, icc = 0.05, rho_c = 0.50, rho_s = 0.70,
+# power = 0.80, nsubjects = 100, d = 0.50 units, icc = 0.05, rho_c = 0.50, rho_s = 0.70,
 # and vart = 1 unit.
-crtpwr.2meanD(n = 100 , d = 0.5, icc = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
+crtpwr.2meanD(nsubjects = 100 , d = 0.5, icc = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
 # 
-# The result, m = 4.683358, suggests 5 clusters per condition should be used.
+# The result, nclusters = 4.683358, suggests 5 clusters per condition should be used.
 
 }
 \references{

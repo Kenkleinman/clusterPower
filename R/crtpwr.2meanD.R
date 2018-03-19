@@ -3,14 +3,14 @@
 #' Compute the power of a difference-in-difference cluster randomized trial design with a continuous outcome,
 #' or determine parameters to obtain a target power.
 #'
-#' Exactly one of \code{alpha}, \code{power}, \code{m}, \code{n},
+#' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
 #'   \code{d}, \code{icc}, \code{rho_c}, \code{rho_s}, and \code{vart}
 #'   must be passed as \code{NA}. Note that \code{alpha} and\code{power}
 #'   have non-\code{NA} defaults, so if those are the parameters of 
 #'   interest they must be explicitly passed as \code{NA}.
 #'   
-#' If \code{n} is a vector the values, \code{m} will be recalculated
-#'    using the values in \code{n}. 
+#' If \code{nsubjects} is a vector the values, \code{nclusters} will be recalculated
+#'    using the values in \code{nsubjects}. 
 #'
 #' @section Note:
 #'   This function was inspired by work from Stephane Champely (pwr.t.test) and
@@ -27,8 +27,8 @@
 #'   Type I error.
 #' @param power The power of the test, 1 minus the probability of a Type II
 #'   error.
-#' @param m The number of clusters per condition. It must be greater than 1.
-#' @param n The mean of the cluster sizes, or a vector of cluster sizes for one arm.
+#' @param nclusters The number of clusters per condition. It must be greater than 1.
+#' @param nsubjects The mean of the cluster sizes, or a vector of cluster sizes for one arm.
 #' @param d The difference in mean change between conditions (i.e. "difference-in-difference").
 #' @param icc The intraclass correlation.
 #' @param rho_c The correlation between baseline and post-test outcomes at the
@@ -44,11 +44,11 @@
 #' @return The computed argument.
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
-#' # power = 0.80, n = 100, d = 0.50 units, icc = 0.05, rho_c = 0.50, rho_s = 0.70,
+#' # power = 0.80, nsubjects = 100, d = 0.50 units, icc = 0.05, rho_c = 0.50, rho_s = 0.70,
 #' # and vart = 1 unit.
-#' crtpwr.2meanD(n = 100 , d = 0.5, icc = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
+#' crtpwr.2meanD(nsubjects = 100 , d = 0.5, icc = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
 #' # 
-#' # The result, m = 4.683358, suggests 5 clusters per condition should be used.
+#' # The result, nclusters = 4.683358, suggests 5 clusters per condition should be used.
 #' 
 #' @references Rutterford C, Copas A, Eldridge S. (2015) Methods for sample size
 #'   determination in cluster randomized trials. Int J Epidemiol. 44(3):1051-1067.
@@ -58,30 +58,30 @@
 #'   
 #' @export
 
-crtpwr.2meanD <- function(alpha = 0.05, power = 0.80, m = NA,
-                          n = NA, d = NA, icc = NA,
+crtpwr.2meanD <- function(alpha = 0.05, power = 0.80, nclusters = NA,
+                          nsubjects = NA, d = NA, icc = NA,
                           rho_c = NA, rho_s = NA,
                           vart = NA,
                           tol = .Machine$double.eps^0.25){
   
-  # if n is a vector, 
-  if(length(n) > 1){
-    m <- length(n)
+  # if nsubjects is a vector, 
+  if(length(nsubjects) > 1){
+    nclusters <- length(nsubjects)
   }
   
-  if(!is.na(m) && m <= 1) {
-    stop("'m' must be greater than 1.")
+  if(!is.na(nclusters) && nclusters <= 1) {
+    stop("'nclusters' must be greater than 1.")
   }
   
   # list of needed inputs
-  needlist <- list(alpha, power, m, n, d, icc, rho_c, rho_s, vart)
-  neednames <- c("alpha", "power", "m", "n", "d", "icc",
+  needlist <- list(alpha, power, nclusters, nsubjects, d, icc, rho_c, rho_s, vart)
+  neednames <- c("alpha", "power", "nclusters", "nsubjects", "d", "icc",
                  "rho_c", "rho_s", "vart")
   needind <- which(unlist(lapply(needlist, is.na)))
   # check to see that exactly one needed param is NA
   
   if (length(needind) != 1) {
-    neederror = "Exactly one of 'alpha', 'power', 'm', 'n', 'd', 'icc', 'rho_c', 'rho_s', and 'vart' must be NA."
+    neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'd', 'icc', 'rho_c', 'rho_s', and 'vart' must be NA."
     stop(neederror)
   } 
   
@@ -91,17 +91,17 @@ crtpwr.2meanD <- function(alpha = 0.05, power = 0.80, m = NA,
   pwr <- quote({
     
     # variance inflation
-    DEFF <- 1 + (n - 1)*icc
-    r <- (n*icc/DEFF)*rho_c + ((1 - icc)/DEFF)*rho_s
+    DEFF <- 1 + (nsubjects - 1)*icc
+    r <- (nsubjects*icc/DEFF)*rho_c + ((1 - icc)/DEFF)*rho_s
     # VIF <- DEFF*(1 - r^2)
     VIF <- DEFF*2*(1 - r)
 
-    tcrit <- qt(alpha/2, 2*(m - 1), lower.tail = FALSE)
+    tcrit <- qt(alpha/2, 2*(nclusters - 1), lower.tail = FALSE)
     
-    ncp <- sqrt(m*n/(2*VIF)) * abs(d)/sqrt(vart)
+    ncp <- sqrt(nclusters*nsubjects/(2*VIF)) * abs(d)/sqrt(vart)
     
-    pt(tcrit, 2*(m - 1), ncp, lower.tail = FALSE)#+
-    #pt(-tcrit, 2*(m - 1), ncp, lower.tail = TRUE)
+    pt(tcrit, 2*(nclusters - 1), ncp, lower.tail = FALSE)#+
+    #pt(-tcrit, 2*(nclusters - 1), ncp, lower.tail = TRUE)
   })
   
   # calculate alpha
@@ -116,16 +116,16 @@ crtpwr.2meanD <- function(alpha = 0.05, power = 0.80, m = NA,
     power <- eval(pwr)
   }
   
-  # calculate m
-  if (is.na(m)) {
-    m <- stats::uniroot(function(m) eval(pwr) - power,
+  # calculate nclusters
+  if (is.na(nclusters)) {
+    nclusters <- stats::uniroot(function(nclusters) eval(pwr) - power,
                         interval = c(2 + 1e-10, 1e+07),
                         tol = tol, extendInt = "upX")$root
   }
   
-  # calculate n
-  if (is.na(n)) {
-    n <- stats::uniroot(function(n) eval(pwr) - power,
+  # calculate nsubjects
+  if (is.na(nsubjects)) {
+    nsubjects <- stats::uniroot(function(nsubjects) eval(pwr) - power,
                         interval = c(2 + 1e-10, 1e+07),
                         tol = tol, extendInt = "upX")$root
   }

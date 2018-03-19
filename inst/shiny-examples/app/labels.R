@@ -7,11 +7,11 @@ powertext <- 'Power (power)'
 powertooltip <- 'Power of the test. Should be between 0 and 1, preferably close to 1 (e.g. 0.80 or 0.90).'
 powervalidmsg <- 'Power should be between 0 and 1.'
 
-mtext <- 'Clusters per arm (m)'
-mtooltip <- 'The number of clusters per arm.'
+nclusterstext <- 'Clusters per arm (nclusters)'
+nclusterstooltip <- 'The number of clusters per arm.'
 
-ntext <- 'Cluster size (n)'
-ntooltip <- 'The mean sample size per cluster.'
+nsubjectstext <- 'Subjects per cluster (nsubjects)'
+nsubjectstooltip <- 'The mean sample size per cluster.'
 
 p1text <- 'Proportion 1 (p1)'
 p1tooltip <- 'The expected proportion in the treatment group.'
@@ -123,10 +123,10 @@ graph_labels <- c(
   `alpha` = "Level of Significance",
   `power` = "Power",
   `d` = "Difference",
-  `m` = "Mean Clusters Per Arm",
-  `n` = "Mean Cluster Size",
+  `nclusters` = "Mean Clusters Per Arm",
+  `nsubjects` = "Mean Subjects Per Cluster",
   `icc` = "ICC",
-  `varw` = "Within-Cluster Variance",
+  `vart` = "Total Variance",
   `cv` = "Cluster Size CV",
   `rho_c` = "Within-Cluster Correlation",
   `rho_s` = "Within-Subject Correlation",

@@ -1,11 +1,11 @@
 # Helper functions for the app
 
 # "safe" versions of functions to catch errors
-crtpwr.2mean.safe <- function(alpha,power,m,n,cv,d,icc,vart,method){
+crtpwr.2mean.safe <- function(alpha,power,nclusters,nsubjects,cv,d,icc,vart,method){
   # make safe version
   fun <- safely(crtpwr.2mean, otherwise = NA)
   # store result
-  res <- fun(alpha,power,m,n,cv,d,icc,vart,method)
+  res <- fun(alpha,power,nclusters,nsubjects,cv,d,icc,vart,method)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
     res$error = 'None'
@@ -15,11 +15,11 @@ crtpwr.2mean.safe <- function(alpha,power,m,n,cv,d,icc,vart,method){
   res
 }
 
-crtpwr.2meanD.safe <- function(alpha,power,m,n,d,icc,rho_c,rho_s,vart){
+crtpwr.2meanD.safe <- function(alpha,power,nclusters,nsubjects,d,icc,rho_c,rho_s,vart){
   # make safe version
   fun <- safely(crtpwr.2meanD, otherwise = NA)
   # store result
-  res <- fun(alpha,power,m,n,d,icc,rho_c,rho_s,vart)
+  res <- fun(alpha,power,nclusters,nsubjects,d,icc,rho_c,rho_s,vart)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
     res$error = 'None'
@@ -29,11 +29,11 @@ crtpwr.2meanD.safe <- function(alpha,power,m,n,d,icc,rho_c,rho_s,vart){
   res
 }
 
-crtpwr.2meanM.safe <- function(alpha,power,m,n,d,icc,vart,rho_m){
+crtpwr.2meanM.safe <- function(alpha,power,nclusters,nsubjects,d,icc,vart,rho_m){
   # make safe version
   fun <- safely(crtpwr.2meanM, otherwise = NA)
   # store result
-  res <- fun(alpha,power,m,n,d,icc,vart,rho_m)
+  res <- fun(alpha,power,nclusters,nsubjects,d,icc,vart,rho_m)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
     res$error = 'None'
@@ -44,11 +44,11 @@ crtpwr.2meanM.safe <- function(alpha,power,m,n,d,icc,vart,rho_m){
 }
 
 
-crtpwr.2prop.safe <- function(alpha,power,m,n,cv,p1,p2,icc,pooled,p1inc){
+crtpwr.2prop.safe <- function(alpha,power,nclusters,nsubjects,cv,p1,p2,icc,pooled,p1inc){
   # make safe version
   fun <- safely(crtpwr.2prop, otherwise = NA)
   # store result
-  res <- fun(alpha,power,m,n,cv,p1,p2,icc,pooled,p1inc)
+  res <- fun(alpha,power,nclusters,nsubjects,cv,p1,p2,icc,pooled,p1inc)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
     res$error = 'None'
@@ -58,11 +58,11 @@ crtpwr.2prop.safe <- function(alpha,power,m,n,cv,p1,p2,icc,pooled,p1inc){
   res
 }
 
-crtpwr.2propD.safe <- function(alpha,power,m,n,p,d,icc,rho_c,rho_s,covdf,pvar_c,pvar_s){
+crtpwr.2propD.safe <- function(alpha,power,nclusters,nsubjects,p,d,icc,rho_c,rho_s,covdf,pvar_c,pvar_s){
   # make safe version
   fun <- safely(crtpwr.2propD, otherwise = NA)
   # store result
-  res <- fun(alpha,power,m,n,p,d,icc,rho_c,rho_s,covdf,pvar_c,pvar_s)
+  res <- fun(alpha,power,nclusters,nsubjects,p,d,icc,rho_c,rho_s,covdf,pvar_c,pvar_s)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
     res$error = 'None'
@@ -72,11 +72,11 @@ crtpwr.2propD.safe <- function(alpha,power,m,n,p,d,icc,rho_c,rho_s,covdf,pvar_c,
   res
 }
 
-crtpwr.2propM.safe <- function(alpha,power,m,n,p1,p2,cvm,p1inc){
+crtpwr.2propM.safe <- function(alpha,power,nclusters,nsubjects,p1,p2,cvm,p1inc){
   # make safe version
   fun <- safely(crtpwr.2propM, otherwise = NA)
   # store result
-  res <- fun(alpha,power,m,n,p1,p2,cvm,p1inc)
+  res <- fun(alpha,power,nclusters,nsubjects,p1,p2,cvm,p1inc)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
     res$error = 'None'
@@ -86,11 +86,11 @@ crtpwr.2propM.safe <- function(alpha,power,m,n,p1,p2,cvm,p1inc){
   res
 }
 
-crtpwr.2rate.safe <- function(alpha,power,m,py,r1,r2,cvb,r1inc){
+crtpwr.2rate.safe <- function(alpha,power,nclusters,py,r1,r2,cvb,r1inc){
   # make safe version
   fun <- safely(crtpwr.2rate, otherwise = NA)
   # store result
-  res <- fun(alpha,power,m,py,r1,r2,cvb,r1inc)
+  res <- fun(alpha,power,nclusters,py,r1,r2,cvb,r1inc)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
     res$error = 'None'

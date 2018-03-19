@@ -17,7 +17,7 @@
 #'   Type I error.
 #' @param power The power of the test, 1 minus the probability of a Type II
 #'   error.
-#' @param m The number of clusters per condition. It must be greater than 1.
+#' @param nclusters The number of clusters per condition. It must be greater than 1.
 #' @param py The number of person-years of observation per cluster.
 #' @param r1 The expected mean event rate per unit time in the treatment group.
 #' @param r2 The mean event rate per unit time in the control group.
@@ -33,7 +33,8 @@
 #' # and condition 2 of 0.20, and cvb = 0.10.
 #' crtpwr.2rate(py=10, r1=0.10, r2=0.20, cvb=0.10)
 #' # 
-#' # The result, showimg m of greater than 24, suggests 25 clusters per condition should be used.
+#' # The result, showimg nclusters of greater than 24, suggests 25 clusters per
+#' # condition should be used.
 #' 
 #' @references Donner A, Klar N. Design and Analysis of Cluster Randomization Trials in Health Research. Chichester, UK; 2009.
 #' 
@@ -41,21 +42,21 @@
 #' @export
 
 crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
-                         m = NA, py = NA,
+                         nclusters = NA, py = NA,
                          r1 = NA, r2 = NA,
                          cvb = NA, r1inc = TRUE,
                          tol = .Machine$double.eps^0.25){
   
-  if(!is.na(m) && m <= 1) {
-    stop("'m' must be greater than 1.")
+  if(!is.na(nclusters) && nclusters <= 1) {
+    stop("'nclusters' must be greater than 1.")
   }
   
-  needlist <- list(alpha, power, m, py, r1, r2, cvb)
-  neednames <- c("alpha", "power", "m", "py", "r1", "r2", "cvb")
+  needlist <- list(alpha, power, nclusters, py, r1, r2, cvb)
+  neednames <- c("alpha", "power", "nclusters", "py", "r1", "r2", "cvb")
   needind <- which(unlist(lapply(needlist, is.na))) # find NA index
   
   if (length(needind) != 1) {
-    stop("Exactly one of 'alpha', 'power', 'm', 'py', 'r1', 'r2', or 'cvb' must be NA.")
+    stop("Exactly one of 'alpha', 'power', 'nclusters', 'py', 'r1', 'r2', or 'cvb' must be NA.")
   }
   
   target <- neednames[needind]
@@ -64,7 +65,7 @@ crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
     IF <- 1 + cvb^2*(r1^2 + r2^2)*py/(r1 + r2)
     zcrit <- qnorm(alpha/2, lower.tail = FALSE)
     vard <- (r1 + r2)*IF/py
-    pnorm(sqrt((m - 1)*(r1 - r2)^2/vard) - zcrit, lower.tail = TRUE)
+    pnorm(sqrt((nclusters - 1)*(r1 - r2)^2/vard) - zcrit, lower.tail = TRUE)
   })
   
   # calculate alpha
@@ -79,9 +80,9 @@ crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
     power <- eval(pwr)
   }
   
-  # calculate m
-  if (is.na(m)) {
-    m <- stats::uniroot(function(m) eval(pwr) - power,
+  # calculate nclusters
+  if (is.na(nclusters)) {
+    nclusters <- stats::uniroot(function(nclusters) eval(pwr) - power,
                  interval = c(2 + 1e-10, 1e+07),
                  tol = tol)$root
   }
