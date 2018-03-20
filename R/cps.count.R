@@ -16,8 +16,8 @@
 #' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param m Number of subjects per cluster; accepts integer (required). 
-#' @param n Number of clusters per treatment group; accepts integer (required).
+#' @param nsubjects Number of subjects per cluster; accepts integer (required). 
+#' @param nclusters Number of clusters per treatment group; accepts integer (required).
 #' At least 2 of the following 3 arguments must be specified:
 #' @param c1 Expected outcome count in non-treatment group
 #' @param c2 Expected outcome count in treatment group
@@ -47,14 +47,14 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' my.count.sim = cps.count(nsim = 100, n = 50, m = 6, c1 = 100/1000, c2 = 25/1000, sigma_b = 100,
+#' my.count.sim = cps.count(nsim = 100, nsubjects = 50, nclusters = 6, c1 = 100/1000, c2 = 25/1000, sigma_b = 100,
 #'                     family = 'poisson', method = 'glmm', alpha = 0.05, quiet = FALSE)
 #' }
 #'
 #' @export
 
 # Define function
-cps.count = function(nsim = NULL, m = NULL, n = NULL, c1 = NULL, c2 = NULL, 
+cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL, c2 = NULL, 
                      c.diff = NULL, sigma_b = NULL, sigma_b2 = NULL, 
                      family = 'poisson', method = 'glmm', alpha = 0.05, quiet = FALSE){
   # Create vectors to collect iteration-specific values
@@ -68,23 +68,23 @@ cps.count = function(nsim = NULL, m = NULL, n = NULL, c1 = NULL, c2 = NULL,
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
   
   # Validate NSIM, N, M, SIGMA_B, ALPHA
-  sim.data.arg.list = list(nsim, n, m, sigma_b)
+  sim.data.arg.list = list(nsim, nclusters, nsubjects, sigma_b)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if(sum(sim.data.args) > 0){
-    stop("NSIM, N, M & SIGMA_B must all be specified. Please review your input values.")
+    stop("NSIM, NSUBJECTS, NCLUSTERS & SIGMA_B must all be specified. Please review your input values.")
   }
   min1.warning = " must be an integer greater than or equal to 1"
   if(!is.wholenumber(nsim) || nsim < 1){
     stop(paste0("NSIM", min1.warning))
   }
-  if(!is.wholenumber(n) || n < 1){
-    stop(paste0("N", min1.warning))
+  if(!is.wholenumber(nclusters) || nclusters < 1){
+    stop(paste0("NCLUSTERS", min1.warning))
   }
-  if(!is.wholenumber(m) || m < 1){
-    stop(paste0("M", min1.warning))
+  if(!is.wholenumber(nsubjects) || nsubjects < 1){
+    stop(paste0("NSUBJECTS", min1.warning))
   }
-  if(length(n) > 2){
-    stop("N can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)")
+  if(length(nclusters) > 2){
+    stop("NCLUSTERS can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)")
   }
   
   min0.warning = " must be a numeric value greater than 0"
@@ -102,19 +102,19 @@ cps.count = function(nsim = NULL, m = NULL, n = NULL, c1 = NULL, c2 = NULL,
   }
   
   # Set cluster sizes for treatment arm (if not already specified)
-  if(length(n) == 1){
-    n[2] = n[1]
+  if(length(nclusters) == 1){
+    nclusters[2] = nclusters[1]
   }
   
   # Set sample sizes for each cluster (if not already specified)
-  if(length(m) == 1){
-    m[1:sum(n)] = m
+  if(length(nsubjects) == 1){
+    nsubjects[1:sum(nclusters)] = nsubjects
   } 
-  if(n[1] == n[2] && length(m) == n[1]){
-    m = rep(m, 2)
+  if(nclusters[1] == nclusters[2] && length(nsubjects) == nclusters[1]){
+    nsubjects = rep(nsubjects, 2)
   }
-  if(length(n) == 2 && length(m) != 1 && length(m) != sum(n)){
-    stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for M")
+  if(length(nclusters) == 2 && length(nsubjects) != 1 && length(nsubjects) != sum(nclusters)){
+    stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS")
   }
   
   # Validate C1, C2, C.DIFF
@@ -147,31 +147,28 @@ cps.count = function(nsim = NULL, m = NULL, n = NULL, c1 = NULL, c2 = NULL,
   if(is.null(c2)){
     c2 = abs(c1 - c.diff)
   }
-  #if(is.null(c.diff)){
-  #  c.diff = c1 - c2
-  #}
+  if(is.null(c.diff)){
+    c.diff = c1 - c2
+  }
   if(is.null(sigma_b2)){
     sigma_b[2] = sigma_b
   }else{
     sigma_b[2] = sigma_b2
   }
   
-  # Set beta
-  beta = 0.5
-  
   # Create simulation loop
   for(i in 1:nsim){
-    # Generate simulated data
     # Create indicators for treatment group & cluster
-    trt = c(rep(0, length.out = sum(m[1:n[1]])), rep(1, length.out = sum(m[(n[1]+1):(n[1]+n[2])])))
-    clust = unlist(lapply(1:sum(n), function(x) rep(x, length.out = m[x])))
+    trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
+            rep(1, length.out = sum(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])))
+    clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
     
     # Generate between-cluster effects for non-treatment and treatment
-    randint.0 = stats::rnorm(n[1], mean = 0, sd = sqrt(sigma_b[1]))
-    randint.1 = stats::rnorm(n[2], mean = 0, sd = sqrt(sigma_b[2]))
+    randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
+    randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
     
     # Create non-treatment y-value
-    y0.intercept = unlist(lapply(1:n[1], function(x) rep(randint.0[x], length.out = m[x])))
+    y0.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
     y0.linpred = y0.intercept + log(c1)
     y0.prob = exp(y0.linpred)
     if(family == 'poisson'){
@@ -182,7 +179,7 @@ cps.count = function(nsim = NULL, m = NULL, n = NULL, c1 = NULL, c2 = NULL,
     }
       
     # Create treatment y-value
-    y1.intercept = unlist(lapply(1:n[2], function(x) rep(randint.1[x], length.out = m[n[1]+x])))
+    y1.intercept = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1]+x])))
     y1.linpred = y1.intercept + log(c2) + log((c1 / (1 - c1)) / (c2 / (1 - c2)))
     y1.prob = exp(y1.linpred)
     if(family == 'poisson'){
@@ -241,15 +238,43 @@ cps.count = function(nsim = NULL, m = NULL, n = NULL, c1 = NULL, c2 = NULL,
       }
     }
   }
-  cps.sim.dat = data.frame(estimates = as.vector(unlist(est.vector)), 
+  # Create object containing summary statement
+  summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
+                           " Simulations: Count Outcome\nData Simulated from ", 
+                           switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'), 
+                           " distribution")
+  
+  # Store simulation output in data frame
+  cps.sim.dat = data.frame(estimates = as.vector(unlist(est.vector)),
                            stderrs = as.vector(unlist(se.vector)),
                            test.stat = as.vector(unlist(stat.vector)),
                            pvals = as.vector(unlist(pval.vector)))
   cps.sim.dat[, 'sig.vals'] = ifelse(cps.sim.dat[, 'pvals'] < alpha, 1, 0)
-  pval.power = sum(cps.sim.dat[, 'sig.vals']) / length(cps.sim.dat[, 'sig.vals'])
-  power.parms = data.frame(power = round(pval.power, 3), 
-                           lower.95.ci = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3), 
+  
+  # Calculate and store power estimate & confidence intervals
+  pval.power = sum(cps.sim.dat[, 'sig.vals']) / nrow(cps.sim.dat)
+  power.parms = data.frame(power = round(pval.power, 3),
+                           lower.95.ci = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                            upper.95.ci = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
-  complete.output = list("sim.data" = cps.sim.dat, "power" = power.parms)
+  
+  # Create object containing expected difference
+  difference = paste0("Expected Count Difference = ", abs(c.diff))
+  
+  # Create object containing group-specific cluster sizes
+  cluster.sizes = list('Group 1 (Non-Treatment)' = nsubjects[1:nclusters[1]], 
+                       'Group 2 (Treatment)' = nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])
+  
+  # Create object containing number of clusters
+  n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
+  
+  # Create object containing group-specific variance parameters
+  var.parms = t(data.frame('Group.1.Non.Treatment' = c('sigma_b' = sigma_b[1]), 
+                           'Group.2.Treatment' = c('sigma_b' = sigma_b[2])))
+  
+  # Create list containing all output and return
+  complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
+                                   "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
+                                   "difference" = difference, "sim.data" = cps.sim.dat), class = 'crtpwr')
+  
   return(complete.output)
   }
