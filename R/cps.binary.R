@@ -15,8 +15,8 @@
 #' be displayed while the function is running.
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param n Number of subjects per cluster; accepts integer (required). 
-#' @param m Number of clusters per treatment group; accepts integer (required).
+#' @param nsubjects Number of subjects per cluster; accepts integer (required). 
+#' @param nclusters Number of clusters per treatment group; accepts integer (required).
 #' At least 2 of the following 3 arguments must be specified when using expected probabilities:
 #' @param p1 Expected probability of outcome in non-treatment group
 #' @param p2 Expected probability of outcome in treatment group
@@ -38,7 +38,9 @@
 #'   \item{sim.data}{Data frame with columns "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
-#'                   "p.value", "is.signif" (Is p-value less than alpha?)}
+#'                   "p.value", 
+#'                   "converge" (Did simulated model converge?), 
+#'                   sig.val" (Is p-value less than alpha?)}
 #'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
 #'                "upper.95.ci" (Upper 95% confidence interval bound)}
@@ -48,14 +50,14 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' my.binary.sim = cps.binary(nsim = 100, n = 50, m = 6, p1 = 0.4, p2 = 0.2, sigma_b = 100,
+#' my.binary.sim = cps.binary(nsim = 100, nsubjects = 50, nclusters = 6, p1 = 0.4, p2 = 0.2, sigma_b = 100,
 #'                     alpha = 0.05, method = 'glmm', quiet = FALSE)
 #' }
 #'
 #' @export
 
 # Define function
-cps.binary = function(nsim = NULL,m = NULL, n = NULL, p.diff = NULL,
+cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
                         p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
                         sigma_b = NULL, sigma_b2 = NULL, 
                         alpha = 0.05, method = 'glmm', quiet = FALSE){
@@ -64,6 +66,7 @@ cps.binary = function(nsim = NULL,m = NULL, n = NULL, p.diff = NULL,
     se.vector = NULL
     stat.vector = NULL
     pval.vector = NULL
+    converge.vector = NULL
     start.time = Sys.time()
     
     # Define wholenumber function
@@ -73,23 +76,23 @@ cps.binary = function(nsim = NULL,m = NULL, n = NULL, p.diff = NULL,
     expit = function(x)  1 / (1 + exp(-x))
     
     # Validate NSIM, N, M, SIGMA_B, ALPHA
-    sim.data.arg.list = list(nsim, n, m, sigma_b)
+    sim.data.arg.list = list(nsim, nsubjects, nclusters, sigma_b)
     sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
     if(sum(sim.data.args) > 0){
-      stop("NSIM, N, M & SIGMA_B must all be specified. Please review your input values.")
+      stop("NSIM, NSUBJECTS, NCLUSTERS & SIGMA_B must all be specified. Please review your input values.")
     }
     min1.warning = " must be an integer greater than or equal to 1"
     if(!is.wholenumber(nsim) || nsim < 1){
       stop(paste0("NSIM", min1.warning))
     }
-    if(!is.wholenumber(n) || n < 1){
-      stop(paste0("N", min1.warning))
+    if(!is.wholenumber(nsubjects) || nsubjects < 1){
+      stop(paste0("NSUBJECTS", min1.warning))
     }
-    if(!is.wholenumber(m) || m < 1){
-      stop(paste0("M", min1.warning))
+    if(!is.wholenumber(nclusters) || nclusters < 1){
+      stop(paste0("NCLUSTERS", min1.warning))
     }
-    if(length(n) > 2){
-      stop("N can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)")
+    if(length(nclusters) > 2){
+      stop("NCLUSTERS can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)")
     }
     
     min0.warning = " must be a numeric value greater than 0"
@@ -107,19 +110,19 @@ cps.binary = function(nsim = NULL,m = NULL, n = NULL, p.diff = NULL,
     }
     
     # Set cluster sizes for treatment arm (if not already specified)
-    if(length(n) == 1){
-      n[2] = n[1]
+    if(length(nclusters) == 1){
+      nclusters[2] = nclusters[1]
     }
     
     # Set sample sizes for each cluster (if not already specified)
-    if(length(m) == 1){
-      m[1:sum(n)] = m
+    if(length(nsubjects) == 1){
+      nsubjects[1:sum(nclusters)] = nsubjects
     } 
-    if(n[1] == n[2] && length(m) == n[1]){
-      m = rep(m, 2)
+    if(nclusters[1] == nclusters[2] && length(nsubjects) == nclusters[1]){
+      nsubjects = rep(nsubjects, 2)
     }
-    if(length(n) == 2 && length(m) != 1 && length(m) != sum(n)){
-      stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for M")
+    if(length(nclusters) == 2 && length(nsubjects) != 1 && length(nsubjects) != sum(nclusters)){
+      stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS")
     }
     
     # Validate P1, P2, P.DIFF & OR1, OR2, OR.DIFF
@@ -189,21 +192,22 @@ cps.binary = function(nsim = NULL,m = NULL, n = NULL, p.diff = NULL,
     for(i in 1:nsim){
       # Generate simulated data
       # Create indicators for treatment group & cluster
-      trt = c(rep(0, length.out = sum(m[1:n[1]])), rep(1, length.out = sum(m[(n[1]+1):(n[1]+n[2])])))
-      clust = unlist(lapply(1:sum(n), function(x) rep(x, length.out = m[x])))
+      trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
+              rep(1, length.out = sum(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])))
+      clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
       
       # Generate between-cluster effects for non-treatment and treatment
-      randint.0 = stats::rnorm(n[1], mean = 0, sd = sqrt(sigma_b[1]))
-      randint.1 = stats::rnorm(n[2], mean = 0, sd = sqrt(sigma_b[2]))
+      randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
+      randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
       
       # Create non-treatment y-value
-      y0.intercept = unlist(lapply(1:n[1], function(x) rep(randint.0[x], length.out = m[x])))
+      y0.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
       y0.linpred = y0.intercept + log(p1 / (1 - p1))
       y0.prob = expit(y0.linpred)
       y0 = unlist(lapply(y0.prob, function(x) rbinom(1, 1, x)))
 
       # Create treatment y-value
-      y1.intercept = unlist(lapply(1:n[2], function(x) rep(randint.1[x], length.out = m[n[1]+x])))
+      y1.intercept = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1]+x])))
       y1.linpred = y1.intercept + log(p2 / (1 - p2))
       y1.prob = expit(y1.linpred)
       y1 = unlist(lapply(y1.prob, function(x) rbinom(1, 1, x)))
@@ -217,7 +221,8 @@ cps.binary = function(nsim = NULL,m = NULL, n = NULL, p.diff = NULL,
       # Fit GLMM (lmer)
       if(method == 'glmm'){
         my.mod = lme4::glmer(y.resp ~ trt + (1|clust), data = sim.dat, family = binomial(link = 'logit'))
-        #suppressWarnings(lme4::glmer(y.resp ~ trt + (1|clust), data = sim.dat, family = binomial(link = 'logit')))
+        model.converge = try(my.mod)
+        converge.vector = append(converge.vector, is.null(model.converge@optinfo$conv$lme4$messages))
         glmm.values = summary(my.mod)$coefficient
         est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
         se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
@@ -258,17 +263,21 @@ cps.binary = function(nsim = NULL,m = NULL, n = NULL, p.diff = NULL,
       }
     }
     # Create object containing summary statement
-    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: Binary Outcome")
+    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
+                             " Simulations: Binary Outcome\nPower estimates based on ", 
+                             sum(converge.vector==TRUE), " convergent simulation models.")
     
     # Store simulation output in data frame
     cps.sim.dat = data.frame(estimates = as.vector(unlist(est.vector)),
                              stderrs = as.vector(unlist(se.vector)),
                              test.stat = as.vector(unlist(stat.vector)),
-                             pvals = as.vector(unlist(pval.vector)))
+                             pvals = as.vector(unlist(pval.vector)), 
+                             converge = as.vector(unlist(converge.vector)))
     cps.sim.dat[, 'sig.vals'] = ifelse(cps.sim.dat[, 'pvals'] < alpha, 1, 0)
     
     # Calculate and store power estimate & confidence intervals
-    pval.power = sum(cps.sim.dat[, 'sig.vals']) / nrow(cps.sim.dat)
+    pval.data = subset(cps.sim.dat, converge == TRUE)
+    pval.power = sum(pval.data[, 'sig.vals']) / nrow(pval.data)
     power.parms = data.frame(power = round(pval.power, 3),
                              lower.95.ci = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                              upper.95.ci = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
@@ -277,10 +286,11 @@ cps.binary = function(nsim = NULL,m = NULL, n = NULL, p.diff = NULL,
     difference = ifelse(exists('p.diff'), paste0("Prob. = ", p.diff), paste0("OR = ", or.diff))
     
     # Create object containing group-specific cluster sizes
-    cluster.sizes = list('Group 1 (Non-Treatment)' = m[1:n[1]], 'Group 2 (Treatment)' = m[(n[1]+1):(n[1]+n[2])])
+    cluster.sizes = list('Group 1 (Non-Treatment)' = nsubjects[1:nclusters[1]], 
+                         'Group 2 (Treatment)' = nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])
     
     # Create object containing number of clusters
-    n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = n[1]), "Treatment" = c("n.clust" = n[2])))
+    n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
     
     # Create object containing group-specific variance parameters
     var.parms = t(data.frame('Group.1.Non.Treatment' = c('sigma_b' = sigma_b[1]), 
