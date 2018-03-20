@@ -40,7 +40,7 @@
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value", 
 #'                   "converge" (Did simulated model converge?), 
-#'                   sig.val" (Is p-value less than alpha?)}
+#'                   "sig.val" (Is p-value less than alpha?)}
 #'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
 #'                "upper.95.ci" (Upper 95% confidence interval bound)}
