@@ -37,7 +37,8 @@
 #'   \item{sim.data}{Data frame with columns "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
-#'                   "p.value", "is.signif" (Is p-value less than alpha?)}
+#'                   "p.value", 
+#'                   "sig.vals" (Is p-value less than alpha?)}
 #'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
 #'                "upper.95.ci" (Upper 95% confidence interval bound)}
