@@ -295,6 +295,6 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   # Create list containing all output and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                   "difference" = difference, "sim.data" = cps.sim.dat), class = 'crtpwr')
+                                   "input" = difference, "sim.data" = cps.sim.dat), class = 'crtpwr')
   return(complete.output)
   }
