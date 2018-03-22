@@ -31,7 +31,6 @@
 #' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param alpha Significance level. Default = 0.05
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default is FALSE.
 #' 
 #' @return A list with the following components
 #' \describe{
@@ -51,7 +50,7 @@
 #' @examples 
 #' \dontrun{
 #' my.binary.sim = cps.binary(nsim = 100, nsubjects = 50, nclusters = 6, p1 = 0.4, p2 = 0.2, sigma_b = 100,
-#'                     alpha = 0.05, method = 'glmm', quiet = FALSE)
+#'                     alpha = 0.05, method = 'glmm')
 #' }
 #'
 #' @export
@@ -59,8 +58,7 @@
 # Define function
 cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
                         p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
-                        sigma_b = NULL, sigma_b2 = NULL, 
-                        alpha = 0.05, method = 'glmm', quiet = FALSE){
+                        sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = 'glmm'){
     # Create vectors to collect iteration-specific values
     est.vector = NULL
     se.vector = NULL
@@ -68,6 +66,11 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     pval.vector = NULL
     converge.vector = NULL
     start.time = Sys.time()
+    
+    # Create progress bar
+    prog.bar =  progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
+                                 total = nsim, clear = FALSE, width = 100)
+    prog.bar$tick(0)
     
     # Define wholenumber function
     is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
@@ -178,9 +181,9 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       stop("METHOD must be either 'glmm' (Generalized Linear Mixed Model) 
            or 'gee'(Generalized Estimating Equation)")
     }
-    if(!is.logical(quiet)){
-      stop("QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)")
-    }
+    #if(!is.logical(quiet)){
+    #  stop("QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)")
+    #}
     
     # Set between-cluster variances
     if(is.null(sigma_b2)){
@@ -244,25 +247,22 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
         converge.vector = append(converge.vector, TRUE)
       }
       
-      # if(quiet == FALSE){
-      #   if(i == 1){
-      #     avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-      #     time.est = avg.iter.time * (nsim - 1) / 60
-      #     hr.est = time.est %/% 60
-      #     min.est = round(time.est %% 60, 0)
-      #     message(paste0('Begin simulations :: Start Time: ', Sys.time(), ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
-      #   }
-      #   else if(i == nsim){
-      #     message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
-      #   } 
-      #   else if(i %% 10 == 0){
-      #     time.est = avg.iter.time * (nsim - i) / 60 
-      #     hr.est = time.est %/% 60
-      #     min.est = round(time.est %% 60, 0)
-      #     min.est = ifelse(min.est == 0, '<1', min.est)
-      #     message(paste0('Progress: ', i / nsim * 100, '% complete :: Estimated time remaining: ', hr.est, 'Hr:', min.est, 'Min'))
-      #   }
-      # }
+      # Print simulation start message
+      if(length(est.vector) == 1){
+        avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+        time.est = avg.iter.time * (nsim - 1) / 60
+        hr.est = time.est %/% 60
+        min.est = round(time.est %% 60, 0)
+        message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
+                       ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
+      }
+      # Iterate progress bar
+      prog.bar$update(sum(converge.vector == TRUE) / nsim)
+      Sys.sleep(1/100)
+      # Print simulation complete message
+      if(sum(converge.vector == TRUE) == nsim){
+        message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
+      } 
     }
     # Create object containing summary statement
     summary.message = paste0("Monte Carlo Power Estimation based on ", length(converge.vector), 
