@@ -34,15 +34,28 @@
 #' 
 #' @return A list with the following components
 #' \describe{
-#'   \item{sim.data}{Data frame with columns "Estimate" (Estimate of treatment effect for a given simulation), 
+#'   \item{overview}{Character string indicating total number of simulations and number of convergent models}
+#'   \item{nsim}{Number of simulations}
+#'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
+#'                "lower.95.ci" (Lower 95% confidence interval bound), 
+#'                "upper.95.ci" (Upper 95% confidence interval bound)}
+#'   \item{method}{Analytic method used for power estimation}
+#'   \item{alpha}{Significance level}
+#'   \item{cluster.sizes}{Vector containing user-defined cluster sizes}
+#'   \item{n.clusters}{Vector containing user-defined number of clusters}
+#'   \item{variance.parms}{Data frame reporting ICC for Treatment/Non-Treatment groups}
+#'   \item{inputs}{Vector containing expected difference in probabilities based on user inputs}
+#'   \item{model.estimates}{Data frame with columns: 
+#'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value", 
 #'                   "converge" (Did simulated model converge?), 
 #'                   "sig.val" (Is p-value less than alpha?)}
-#'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
-#'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound)}
+#'   \item{sim.data}{List of data frames, each containing: 
+#'                   "y.resp" (Simulated response value), 
+#'                   "trt" (Indicator for treatment group), 
+#'                   "clust" (Indicator for cluster)}
 #' }
 #' 
 #' @author Alexander R. Bogdan
@@ -281,13 +294,13 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     cps.sim.dat = data.frame(estimates = as.vector(unlist(est.vector)),
                              stderrs = as.vector(unlist(se.vector)),
                              test.stat = as.vector(unlist(stat.vector)),
-                             pvals = as.vector(unlist(pval.vector)), 
+                             p.value = as.vector(unlist(pval.vector)), 
                              converge = as.vector(unlist(converge.vector)))
-    cps.sim.dat[, 'sig.vals'] = ifelse(cps.sim.dat[, 'pvals'] < alpha, 1, 0)
+    cps.sim.dat[, 'sig.val'] = ifelse(cps.sim.dat[, 'p.value'] < alpha, 1, 0)
     
     # Calculate and store power estimate & confidence intervals
     pval.data = subset(cps.sim.dat, converge == TRUE)
-    pval.power = sum(pval.data[, 'sig.vals']) / nrow(pval.data)
+    pval.power = sum(pval.data[, 'sig.val']) / nrow(pval.data)
     power.parms = data.frame(power = round(pval.power, 3),
                              lower.95.ci = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                              upper.95.ci = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
