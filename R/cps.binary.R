@@ -59,16 +59,17 @@
 cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
                         p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
                         sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = 'glmm'){
-    # Create vectors to collect iteration-specific values
+    # Create objects to collect iteration-specific values
     est.vector = NULL
     se.vector = NULL
     stat.vector = NULL
     pval.vector = NULL
     converge.vector = NULL
+    simulated.datasets = list()
     start.time = Sys.time()
     
     # Create progress bar
-    prog.bar =  progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
+    prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
                                  total = nsim, clear = FALSE, width = 100)
     prog.bar$tick(0)
     
@@ -219,8 +220,9 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       # Create single response vector
       y = c(y0,y1)
       
-      # Create data frame for simulated dataset
+      # Create and store data frame for simulated dataset
       sim.dat = data.frame(y.resp = y, trt = trt, clust = clust)
+      simulated.datasets = append(simulated.datasets, list(sim.dat))
       
       # Fit GLMM (lmer)
       if(method == 'glmm'){
@@ -262,7 +264,13 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       # Print simulation complete message
       if(sum(converge.vector == TRUE) == nsim){
         message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
-      } 
+      }
+      
+      # Governor to prevent infinite non-convergence loop
+      converge.ratio = sum(converge.vector == FALSE) / sum(converge.vector == TRUE)
+      if(converge.ratio > 4.0 && converge.ratio != Inf){
+        stop("WARNING! The number of non-convergent models exceeds the number of convergent models by a factor of 4. Consider reducing SIGMA_B")
+      }
     }
     # Create object containing summary statement
     summary.message = paste0("Monte Carlo Power Estimation based on ", length(converge.vector), 
@@ -301,7 +309,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     # Create list containing all output and return
     complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                      "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                     "inputs" = difference, "sim.data" = cps.sim.dat), class = 'crtpwr')
+                                     "inputs" = difference, "model.estimates" = cps.sim.dat, "sim.data" = simulated.datasets), 
+                                class = 'crtpwr')
     
     return(complete.output)
     }
