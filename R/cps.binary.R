@@ -170,6 +170,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       }
       p1 = or1 / (1 + or1)
       p2 = or2 / (1 + or2)
+      p.diff = abs(p1 - p2)
     }
     
     # Validate METHOD, QUIET
@@ -189,7 +190,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     }
     
     # Create simulation loop
-    for(i in 1:nsim){
+    while(sum(converge.vector == TRUE) != nsim){
       # Generate simulated data
       # Create indicators for treatment group & cluster
       trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
@@ -240,31 +241,32 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
         se.vector = append(se.vector, gee.values['trt', 'Std.err'])
         stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
         pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+        converge.vector = append(converge.vector, TRUE)
       }
       
-      if(quiet == FALSE){
-        if(i == 1){
-          avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-          time.est = avg.iter.time * (nsim - 1) / 60
-          hr.est = time.est %/% 60
-          min.est = round(time.est %% 60, 0)
-          message(paste0('Begin simulations :: Start Time: ', Sys.time(), ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
-        }
-        else if(i == nsim){
-          message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
-        } 
-        else if(i %% 10 == 0){
-          time.est = avg.iter.time * (nsim - i) / 60 
-          hr.est = time.est %/% 60
-          min.est = round(time.est %% 60, 0)
-          min.est = ifelse(min.est == 0, '<1', min.est)
-          message(paste0('Progress: ', i / nsim * 100, '% complete :: Estimated time remaining: ', hr.est, 'Hr:', min.est, 'Min'))
-        }
-      }
+      # if(quiet == FALSE){
+      #   if(i == 1){
+      #     avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+      #     time.est = avg.iter.time * (nsim - 1) / 60
+      #     hr.est = time.est %/% 60
+      #     min.est = round(time.est %% 60, 0)
+      #     message(paste0('Begin simulations :: Start Time: ', Sys.time(), ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
+      #   }
+      #   else if(i == nsim){
+      #     message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
+      #   } 
+      #   else if(i %% 10 == 0){
+      #     time.est = avg.iter.time * (nsim - i) / 60 
+      #     hr.est = time.est %/% 60
+      #     min.est = round(time.est %% 60, 0)
+      #     min.est = ifelse(min.est == 0, '<1', min.est)
+      #     message(paste0('Progress: ', i / nsim * 100, '% complete :: Estimated time remaining: ', hr.est, 'Hr:', min.est, 'Min'))
+      #   }
+      # }
     }
     # Create object containing summary statement
-    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
-                             " Simulations: Binary Outcome\nPower estimates based on ", 
+    summary.message = paste0("Monte Carlo Power Estimation based on ", length(converge.vector), 
+                             " Simulations: Binary Outcome\nPower estimates calculated from ", 
                              sum(converge.vector==TRUE), " convergent simulation models.")
     
     # Store simulation output in data frame
@@ -299,7 +301,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     # Create list containing all output and return
     complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                      "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                     "difference" = difference, "sim.data" = cps.sim.dat), class = 'crtpwr')
+                                     "inputs" = difference, "sim.data" = cps.sim.dat), class = 'crtpwr')
     
     return(complete.output)
     }
