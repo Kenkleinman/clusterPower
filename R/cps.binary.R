@@ -29,9 +29,10 @@
 #' between cluster variances are assumed to be equal for both groups. Accepts numeric.
 #' If between cluster variances differ between treatment groups, sigma_b2 must also be specified:
 #' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param alpha Significance level. Default = 0.05
-#' 
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
+#'  
 #' @return A list with the following components
 #' \describe{
 #'   \item{overview}{Character string indicating total number of simulations and number of convergent models}
@@ -63,7 +64,7 @@
 #' @examples 
 #' \dontrun{
 #' my.binary.sim = cps.binary(nsim = 100, nsubjects = 50, nclusters = 6, p1 = 0.4, p2 = 0.2, sigma_b = 100,
-#'                     alpha = 0.05, method = 'glmm')
+#'                     alpha = 0.05, method = 'glmm', all.sim.data = FALSE)
 #' }
 #'
 #' @export
@@ -71,7 +72,8 @@
 # Define function
 cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
                         p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
-                        sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = 'glmm'){
+                        sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = 'glmm', 
+                      all.sim.data = FALSE){
     # Create objects to collect iteration-specific values
     est.vector = NULL
     se.vector = NULL
@@ -290,16 +292,16 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
                              " Simulations: Binary Outcome\nPower estimates calculated from ", 
                              sum(converge.vector==TRUE), " convergent simulation models.")
     
-    # Store simulation output in data frame
-    cps.sim.dat = data.frame(estimates = as.vector(unlist(est.vector)),
+    # Store model estimate output in data frame
+    cps.model.est = data.frame(estimates = as.vector(unlist(est.vector)),
                              stderrs = as.vector(unlist(se.vector)),
                              test.stat = as.vector(unlist(stat.vector)),
                              p.value = as.vector(unlist(pval.vector)), 
                              converge = as.vector(unlist(converge.vector)))
-    cps.sim.dat[, 'sig.val'] = ifelse(cps.sim.dat[, 'p.value'] < alpha, 1, 0)
+    cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
     
     # Calculate and store power estimate & confidence intervals
-    pval.data = subset(cps.sim.dat, converge == TRUE)
+    pval.data = subset(cps.model.est, converge == TRUE)
     pval.power = sum(pval.data[, 'sig.val']) / nrow(pval.data)
     power.parms = data.frame(power = round(pval.power, 3),
                              lower.95.ci = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
@@ -319,10 +321,15 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     var.parms = t(data.frame('Group.1.Non.Treatment' = c('sigma_b' = sigma_b[1]), 
                              'Group.2.Treatment' = c('sigma_b' = sigma_b[2])))
     
+    # Check & governor for inclusion of simulated datasets
+    if(all.sim.data == FALSE && (sum(converge.vector == FALSE) < sum(converge.vector == TRUE) * 0.05)){
+      simulated.datasets = NULL
+    }
+    
     # Create list containing all output and return
     complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                      "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                     "inputs" = difference, "model.estimates" = cps.sim.dat, "sim.data" = simulated.datasets), 
+                                     "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets), 
                                 class = 'crtpwr')
     
     return(complete.output)
