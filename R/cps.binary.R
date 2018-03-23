@@ -293,9 +293,9 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
                              sum(converge.vector==TRUE), " convergent simulation models.")
     
     # Store model estimate output in data frame
-    cps.model.est = data.frame(estimates = as.vector(unlist(est.vector)),
-                             stderrs = as.vector(unlist(se.vector)),
-                             test.stat = as.vector(unlist(stat.vector)),
+    cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
+                             Std.Err = as.vector(unlist(se.vector)),
+                             Test.statistic = as.vector(unlist(stat.vector)),
                              p.value = as.vector(unlist(pval.vector)), 
                              converge = as.vector(unlist(converge.vector)))
     cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
