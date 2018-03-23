@@ -15,10 +15,10 @@
 #' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nclusters Number of subjects per cluster; accepts integer (required). Currently in development to
-#' accept vectors of treatment-specific cluster numbers and distributional forms. 
 #' @param nsubjects Number of clusters per treatment group; accepts single integer (required) or 
 #' vector of length 2 for unequal number of clusters per treatment group 
+#' @param nclusters Number of subjects per cluster; accepts integer (required). Currently in development to
+#' accept vectors of treatment-specific cluster numbers and distributional forms.
 #' @param difference Expected absolute treatment effect; accepts numeric (required).
 #' At least 2 of the following must be specified:
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
@@ -36,13 +36,28 @@
 #' 
 #' @return A list with the following components
 #' \describe{
-#'   \item{sim.data}{Data frame with columns "Estimate" (Estimate of treatment effect for a given simulation), 
-#'                   "Std.Err" (Standard error for treatment effect estimate), 
-#'                   "Test.statistic" (t-value (for GLMM) or Wald statistic (for GEE)), 
-#'                   "p.value", "is.signif" (Is p-value less than alpha?)}
+#'   \item{overview}{Character string indicating total number of simulations}
+#'   \item{nsim}{Number of simulations}
 #'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
 #'                "upper.95.ci" (Upper 95% confidence interval bound)}
+#'   \item{method}{Analytic method used for power estimation}
+#'   \item{alpha}{Significance level}
+#'   \item{cluster.sizes}{Vector containing user-defined cluster sizes}
+#'   \item{n.clusters}{Vector containing user-defined number of clusters}
+#'   \item{variance.parms}{Data frame reporting ICC for Treatment/Non-Treatment groups}
+#'   \item{inputs}{Vector containing expected difference between groups based on user inputs}
+#'   \item{model.estimates}{Data frame with columns: 
+#'                   "Estimate" (Estimate of treatment effect for a given simulation), 
+#'                   "Std.Err" (Standard error for treatment effect estimate), 
+#'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
+#'                   "p.value", 
+#'                   "converge" (Did simulated model converge?), 
+#'                   "sig.val" (Is p-value less than alpha?)}
+#'   \item{sim.data}{List of data frames, each containing: 
+#'                   "y.resp" (Simulated response value), 
+#'                   "trt" (Indicator for treatment group), 
+#'                   "clust" (Indicator for cluster)}
 #' }
 #' 
 #' @author Alexander R. Bogdan
@@ -264,14 +279,14 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: Continuous Outcome")
   
   # Store simulation output in data frame
-  cps.model.est = data.frame(estimates = as.vector(unlist(est.vector)),
-                           stderrs = as.vector(unlist(se.vector)),
-                           test.stat = as.vector(unlist(stat.vector)),
-                           pvals = as.vector(unlist(pval.vector)))
-  cps.model.est[, 'sig.vals'] = ifelse(cps.model.est[, 'pvals'] < alpha, 1, 0)
+  cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
+                           Std.err = as.vector(unlist(se.vector)),
+                           Test.statistic = as.vector(unlist(stat.vector)),
+                           p.value = as.vector(unlist(pval.vector)))
+  cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.vals']) / nrow(cps.model.est)
+  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
   power.parms = data.frame(Power = round(pval.power, 3),
                            Lower.95.CI = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                            Upper.95.CI = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
