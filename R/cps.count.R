@@ -28,6 +28,7 @@
 #' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
 #' @alpha Significance level for power estimation, accepts value between 0 - 1; default = 0.05
 #' @param family Distribution from which responses are simulated. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
+#' @param analysis Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'
 #' @param alpha Significance level. Default = 0.05.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.
@@ -35,7 +36,7 @@
 #' 
 #' @return A list with the following components
 #' \describe{
-#'   \item{overview}{Character string indicating total number of simulations and number of convergent models}
+#'   \item{overview}{Character string indicating total number of simulations, distribution of simulated data, and regression family}
 #'   \item{nsim}{Number of simulations}
 #'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
@@ -63,7 +64,8 @@
 #' @examples 
 #' \dontrun{
 #' my.count.sim = cps.count(nsim = 100, nsubjects = 50, nclusters = 6, c1 = 100, c2 = 25, sigma_b = 100,
-#'                     family = 'poisson', method = 'glmm', alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
+#'                     family = 'poisson', analysis = 'poisson', method = 'glmm', alpha = 0.05, 
+#'                     quiet = FALSE, all.sim.data = TRUE)
 #' }
 #'
 #' @export
@@ -71,7 +73,8 @@
 # Define function
 cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL, c2 = NULL, 
                      c.diff = NULL, sigma_b = NULL, sigma_b2 = NULL, family = 'poisson', 
-                     method = 'glmm', alpha = 0.05, quiet = FALSE, all.sim.data = FALSE){
+                     analysis = 'poisson', method = 'glmm', alpha = 0.05, quiet = FALSE, 
+                     all.sim.data = FALSE){
   # Create vectors to collect iteration-specific values
   est.vector = NULL
   se.vector = NULL
@@ -148,10 +151,14 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     stop("At least one of the following terms has be misspecified: C1, C2, C.DIFF")
   }
   
-  # Validate FAMILY, METHOD, QUIET
+  # Validate FAMILY, ANALYSIS, METHOD, QUIET
   if(!is.element(family, c('poisson', 'neg.binom'))){
     stop("FAMILY must be either 'poisson' (Poisson distribution) 
          or 'neg.binom'(Negative binomial distribution)")
+  }
+  if(!is.element(analysis, c('poisson', 'neg.binom'))){
+    stop("ANALYSIS must be either 'poisson' (Poisson regression) 
+         or 'neg.binom'(Negative binomial regression)")
   }
   if(!is.element(method, c('glmm', 'gee'))){
     stop("METHOD must be either 'glmm' (Generalized Linear Mixed Model) 
@@ -221,7 +228,12 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod = lme4::glmer(y.resp ~ trt + (1|clust), data = sim.dat, family = poisson(link = 'log'))
+      if(analysis == 'poisson'){
+        my.mod = lme4::glmer(y.resp ~ trt + (1|clust), data = sim.dat, family = poisson(link = 'log'))
+      }
+      if(analysis == 'neg.binom'){
+        my.mod = lme4::glmer.nb(y.resp ~ trt + (1|clust), data = sim.dat)
+      }
       glmm.values = summary(my.mod)$coefficient
       est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
       se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
@@ -262,7 +274,9 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
                            " Simulations: Count Outcome\nData Simulated from ", 
                            switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'), 
-                           " distribution")
+                           " distribution\nAnalyzed using ", 
+                           switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'), 
+                           " regression")
   
   # Store simulation output in data frame
   cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
