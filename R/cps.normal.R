@@ -32,7 +32,7 @@
 #' @param alpha Significance level. Default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default is FALSE.
-
+#' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE.
 #' 
 #' @return A list with the following components
 #' \describe{
@@ -50,7 +50,7 @@
 #' @examples 
 #' \dontrun{
 #' my.normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 30, ICC = 0.2, sigma_w = 100,
-#'                     alpha = 0.05, method = 'glmm', quiet = FALSE)
+#'                     alpha = 0.05, method = 'glmm', quiet = FALSE, all.sim.data = FALSE)
 #' }
 #'
 #' @export
@@ -59,16 +59,21 @@
 cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, difference = NULL,
                       ICC = NULL, sigma = NULL, sigma_b = NULL,
                       ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL,
-                      alpha = 0.05, method = 'glmm', quiet = FALSE){
+                      alpha = 0.05, method = 'glmm', quiet = FALSE,
+                      all.sim.data = FALSE){
   
   # Create vectors to collect iteration-specific values
   est.vector = NULL
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
+  simulated.datasets = list()
   
-  # Set start.time for progress iterator
+  # Set start.time for progress iterator & initialize progress bar
   start.time = Sys.time()
+  prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
+                                         total = nsim, clear = FALSE, width = 100)
+  prog.bar$tick(0)
   
   # Create wholenumber function
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
@@ -147,36 +152,36 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     stop("QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)")
   }
   
+  ## Create variance parameters
+  # Single set of cluster parameters
+  if(!is.null(c(ICC, sigma)) && is.null(sigma_b)){
+    sigma_b = ICC * sigma / (1 - ICC)
+  }
+  if(!is.null(c(ICC, sigma_b)) && is.null(sigma)){
+    sigma = sigma_b / ICC - sigma_b
+  }
+  if(!is.null(c(sigma, sigma_b)) && is.null(ICC)){
+    ICC = sigma_b / (sigma_b + sigma)
+  }
+  
+  # Second set of cluster parameters
+  if(!is.null(c(ICC2, sigma2)) && is.null(sigma_b2)){
+    sigma_b2 = ICC2 * sigma2 / (1 - ICC2)
+  }
+  if(!is.null(c(ICC2, sigma_b2)) && is.null(sigma2)){
+    sigma2 = sigma_b2 / ICC2 - sigma_b2
+  }
+  if(!is.null(c(sigma2, sigma_b2)) && is.null(ICC2)){
+    ICC2 = sigma_b2 / (sigma_b2 + sigma2)
+  }
+  
+  # Set within/between cluster variance & ICC for treatment group (if not already specified)
+  sigma[2] = ifelse(!is.null(sigma2), sigma2, sigma[1])
+  sigma_b[2] = ifelse(!is.null(sigma_b2), sigma_b2, sigma_b[1])
+  ICC[2] = ifelse(!is.null(ICC2), ICC2, ICC[1])
+  
   # Create simulation loop
   for(i in 1:nsim){
-    ## Create simulated response variable
-    # Single set of cluster parameters
-    if(!is.null(c(ICC, sigma)) && is.null(sigma_b)){
-      sigma_b = ICC * sigma / (1 - ICC)
-    }
-    if(!is.null(c(ICC, sigma_b)) && is.null(sigma)){
-      sigma = sigma_b / ICC - sigma_b
-    }
-    if(!is.null(c(sigma, sigma_b)) && is.null(ICC)){
-      ICC = sigma_b / (sigma_b + sigma)
-    }
-    
-    # Second set of cluster parameters
-    if(!is.null(c(ICC2, sigma2)) && is.null(sigma_b2)){
-      sigma_b2 = ICC2 * sigma2 / (1 - ICC2)
-    }
-    if(!is.null(c(ICC2, sigma_b2)) && is.null(sigma2)){
-      sigma2 = sigma_b2 / ICC2 - sigma_b2
-    }
-    if(!is.null(c(sigma2, sigma_b2)) && is.null(ICC2)){
-      ICC2 = sigma_b2 / (sigma_b2 + sigma2)
-    }
-    
-    # Set within/between cluster variance & ICC for treatment group (if not already specified)
-    sigma[2] = ifelse(!is.null(sigma2), sigma2, sigma[1])
-    sigma_b[2] = ifelse(!is.null(sigma_b2), sigma_b2, sigma_b[1])
-    ICC[2] = ifelse(!is.null(ICC2), ICC2, ICC[1])
-    
     # Generate simulated data
     # Create indicators for treatment group & cluster
     trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
@@ -194,14 +199,18 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     
     # Create treatment y-value
     y1.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1]+x])))
-    y1.wclust = unlist(lapply(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])], function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma[2]))))
+    y1.wclust = unlist(lapply(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])], 
+                              function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma[2]))))
     y.1 = y1.bclust + y1.wclust
     
     # Create single response vector
-    y = c(y.0,y.1)
+    y = c(y.0, y.1)
     
     # Create data frame for simulated dataset
     sim.dat = data.frame(y.resp = y, trt = trt, clust = clust)
+    if(all.sim.data == TRUE){
+      simulated.datasets = append(simulated.datasets, list(sim.dat))
+    }
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
@@ -233,35 +242,21 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
         min.est = round(time.est %% 60, 0)
-        message(paste0('Begin simulations :: Start Time: ', Sys.time(), ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
+        message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
+                       ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
       }
-      else if(i == nsim){
+      
+      # Iterate progress bar
+      prog.bar$update(i / nsim)
+      Sys.sleep(1/100)
+      
+      if(i == nsim){
         total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         hr.est = total.est %/% 3600
         min.est = total.est %/% 60
         sec.est = round(total.est %% 60, 0)
-        message(paste0("Simulations Complete! Time Completed: ", Sys.time(), "\nTotal Runtime: ", hr.est, 'Hr:', min.est, 'Min:', sec.est, 'Sec'))
-      }
-      else if(as.numeric(avg.iter.time) > 10 && i %% 5 == 0){
-        time.est = avg.iter.time * (nsim - i) / 60
-        hr.est = time.est %/% 60
-        min.est = round(time.est %% 60, 0)
-        min.est = ifelse(min.est == 0, '<1', min.est)
-        message(paste0('Progress: ', i / nsim * 100, '% complete :: Estimated time remaining: ', hr.est, 'Hr:', min.est, 'Min'))
-      }
-      else if(as.numeric(avg.iter.time) < 1 && i %% round(nsim/10, 0) == 0){
-        time.est = avg.iter.time * (nsim - i) / 60
-        hr.est = time.est %/% 60
-        min.est = round(time.est %% 60, 0)
-        min.est = ifelse(min.est == 0, '<1', min.est)
-        message(paste0('Progress: ', i / nsim * 100, '% complete :: Estimated time remaining: ', hr.est, 'Hr:', min.est, 'Min'))
-      }
-      else if(i %% 10 == 0){
-        time.est = avg.iter.time * (nsim - i) / 60
-        hr.est = time.est %/% 60
-        min.est = round(time.est %% 60, 0)
-        min.est = ifelse(min.est == 0, '<1', min.est)
-        message(paste0('Progress: ', i / nsim * 100, '% complete :: Estimated time remaining: ', hr.est, 'Hr:', min.est, 'Min'))
+        message(paste0("Simulations Complete! Time Completed: ", Sys.time(), 
+                       "\nTotal Runtime: ", hr.est, 'Hr:', min.est, 'Min:', sec.est, 'Sec'))
       }
     }
   }
@@ -269,14 +264,14 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: Continuous Outcome")
   
   # Store simulation output in data frame
-  cps.sim.dat = data.frame(estimates = as.vector(unlist(est.vector)),
+  cps.model.est = data.frame(estimates = as.vector(unlist(est.vector)),
                            stderrs = as.vector(unlist(se.vector)),
                            test.stat = as.vector(unlist(stat.vector)),
                            pvals = as.vector(unlist(pval.vector)))
-  cps.sim.dat[, 'sig.vals'] = ifelse(cps.sim.dat[, 'pvals'] < alpha, 1, 0)
+  cps.model.est[, 'sig.vals'] = ifelse(cps.model.est[, 'pvals'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.sim.dat[, 'sig.vals']) / nrow(cps.sim.dat)
+  pval.power = sum(cps.model.est[, 'sig.vals']) / nrow(cps.model.est)
   power.parms = data.frame(Power = round(pval.power, 3),
                            Lower.95.CI = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                            Upper.95.CI = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
@@ -291,10 +286,11 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   # Create object containing group-specific variance parameters
   var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
                            'Treatment' = c('ICC' = ICC[2], 'sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
-    
+  
   # Create list containing all output and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                   "input" = difference, "sim.data" = cps.sim.dat), class = 'crtpwr')
+                                   "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets), 
+                              class = 'crtpwr')
   return(complete.output)
   }
