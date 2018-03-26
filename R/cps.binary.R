@@ -46,6 +46,7 @@
 #'   \item{n.clusters}{Vector containing user-defined number of clusters}
 #'   \item{variance.parms}{Data frame reporting ICC for Treatment/Non-Treatment groups}
 #'   \item{inputs}{Vector containing expected difference in probabilities based on user inputs}
+#'   \item{ICC}{Data frame containing two estimates of ICC}
 #'   \item{model.estimates}{Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
@@ -80,6 +81,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     stat.vector = NULL
     pval.vector = NULL
     converge.vector = NULL
+    icc2.vector = NULL
     simulated.datasets = list()
     start.time = Sys.time()
     
@@ -208,6 +210,9 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       sigma_b[2] = sigma_b2
     }
     
+    # Calculate ICC1 (sigma_b / (sigma_b + pi^2/3))
+    icc1 = mean(sapply(1:2, function(x) s[x] / (s[x] + pi^2 / 3)))
+    
     # Create simulation loop
     while(sum(converge.vector == TRUE) != nsim){
       # Generate simulated data
@@ -238,6 +243,10 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       # Create and store data frame for simulated dataset
       sim.dat = data.frame(y.resp = y, trt = trt, clust = clust)
       simulated.datasets = append(simulated.datasets, list(sim.dat))
+      
+      # Calculate ICC2 ([P(Yij = 1, Yih = 1)] - pij * pih) / sqrt(pij(1 - pij) * pih(1 - pih))
+      icc2 = ((mean(randint.0) + p1) * (mean(randint.1) + p2) - p1*p2) / sqrt((p1* (1 - p1)) * p2 * (1 - p2))
+      icc2.vector = append(icc2.vector, icc2)
       
       # Fit GLMM (lmer)
       if(method == 'glmm'){
@@ -317,6 +326,10 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     # Create object containing number of clusters
     n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
     
+    # Create object containing estimated ICC values
+    ICC = t(data.frame('P_h' = c('ICC' = icc1), 
+                       'P_c' = c('ICC' = mean(icc2.vector))))
+    
     # Create object containing group-specific variance parameters
     var.parms = t(data.frame('Group.1.Non.Treatment' = c('sigma_b' = sigma_b[1]), 
                              'Group.2.Treatment' = c('sigma_b' = sigma_b[2])))
@@ -329,8 +342,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     # Create list containing all output and return
     complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                      "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                     "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets), 
-                                class = 'crtpwr')
+                                     "inputs" = difference, "ICC" = ICC, "model.estimates" = cps.model.est, 
+                                     "sim.data" = simulated.datasets), class = 'crtpwr')
     
     return(complete.output)
     }
