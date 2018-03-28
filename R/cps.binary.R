@@ -211,7 +211,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     }
     
     # Calculate ICC1 (sigma_b / (sigma_b + pi^2/3))
-    icc1 = mean(sapply(1:2, function(x) s[x] / (s[x] + pi^2 / 3)))
+    icc1 = mean(sapply(1:2, function(x) sigma_b[x] / (sigma_b[x] + pi^2 / 3)))
     
     # Create simulation loop
     while(sum(converge.vector == TRUE) != nsim){
