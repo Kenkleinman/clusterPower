@@ -46,7 +46,7 @@
 #'   \item{cluster.sizes}{Vector containing user-defined cluster sizes}
 #'   \item{n.clusters}{Vector containing user-defined number of clusters}
 #'   \item{variance.parms}{Data frame reporting ICC for Treatment/Non-Treatment groups}
-#'   \item{inputs}{Vector containing expected difference in probabilities based on user inputs}
+#'   \item{inputs}{Vector containing expected counts and risk ratios based on user inputs}
 #'   \item{model.estimates}{Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
@@ -184,13 +184,13 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     sigma_b[2] = sigma_b2
   }
   
+  # Create indicators for treatment group & cluster
+  trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
+          rep(1, length.out = sum(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])))
+  clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
+  
   # Create simulation loop
   for(i in 1:nsim){
-    # Create indicators for treatment group & cluster
-    trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
-            rep(1, length.out = sum(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])))
-    clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
-    
     # Generate between-cluster effects for non-treatment and treatment
     randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
     randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
@@ -291,8 +291,12 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
                            lower.95.ci = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                            upper.95.ci = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
-  # Create object containing expected difference
-  difference = paste0("Expected Count Difference = ", abs(c.diff))
+  # Create object containing inputs
+  c1.c2.rr = round(exp(log(c1) - log(c2)), 3)
+  c2.c1.rr = round(exp(log(c2) - log(c1)), 3)
+  inputs = t(data.frame('Non.Treatment' = c("count" = c1, "risk.ratio" = c1.c2.rr), 
+                        'Treatment' = c("count" = c2, 'risk.ratio' = c2.c1.rr), 
+                        'Difference' = c("count" = c.diff, 'risk.ratio' = c2.c1.rr - c1.c2.rr)))
   
   # Create object containing group-specific cluster sizes
   cluster.sizes = list('Group 1 (Non-Treatment)' = nsubjects[1:nclusters[1]], 
@@ -308,7 +312,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   # Create list containing all output and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                   "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets), 
+                                   "inputs" = inputs, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets), 
                               class = 'crtpwr')
   
   return(complete.output)
