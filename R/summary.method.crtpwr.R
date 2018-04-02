@@ -10,14 +10,12 @@ setMethod("summary",
       cat("\nVariance Parameters:\n")
       print(object[['variance.parms']])
       cat("\nCluster Sizes:\n")
-      if(length(x[['cluster.sizes']][[1]]) < 10 & length(x[['cluster.sizes']][[1]]) < 10){
-        cat(paste0("  Non-Treatment (n = ", x[['n.clusters']][1], "): ", format(x[['cluster.sizes']][[1]]), "\n"))
-        cat(paste0("  Treatment (n = ", x[['n.clusters']][2], "): ", format(x[['cluster.sizes']][[2]]), "\n"))
+      if(length(object[['cluster.sizes']][[1]]) < 10 & length(object[['cluster.sizes']][[1]]) < 10){
+        cat(paste0("  Non-Treatment (n = ", object[['n.clusters']][1], "): ", format(object[['cluster.sizes']][[1]]), "\n"))
+        cat(paste0("  Treatment (n = ", object[['n.clusters']][2], "): ", format(object[['cluster.sizes']][[2]]), "\n"))
       }else{
-        cat("   Non-Treatment (n =", x[['n.clusters']][1], "):", format(x[['cluster.sizes']][[1]][1:10]), "...\n", sep = " ") 
-        cat("   Treatment (n =", x[['n.clusters']][2], "):", format(x[['cluster.sizes']][[2]][1:10]), "...\n", sep = " ") 
-        #cat(paste0("  Non-Treatment (n = ", x[['n.clusters']][1], "): ", format(x[['cluster.sizes']][[1]][1:10]), " ...\n"))
-        #cat(paste0("  Treatment (n = ", x[['n.clusters']][2], "): ", format(x[['cluster.sizes']][[2]][1:10]), "...\n")) 
+        cat("   Non-Treatment (n =", object[['n.clusters']][1], "):", format(object[['cluster.sizes']][[1]][1:10]), "...\n", sep = " ") 
+        cat("   Treatment (n =", object[['n.clusters']][2], "):", format(object[['cluster.sizes']][[2]][1:10]), "...\n", sep = " ") 
       }
       cat(paste("\nMethod:", switch(object[['method']], glmm = "Generalized Linear Mixed Model", gee = "Generalized Estimating Equation"), "\n"))
       cat("\n")
