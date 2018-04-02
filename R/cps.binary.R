@@ -14,6 +14,11 @@
 #' ; significance level, analytic method, and whether or not progress updates should 
 #' be displayed while the function is running.
 #' 
+#' The following equations are used to estimate intra-cluster correltation coefficients:
+#' P_h: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \pi^{2}/3}}
+#' P_c: \deqn{ICC = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_{j}\pi_{h}}{\sqrt{\pi_{j}(1 - \pi_{j})\pi_{h}(1 - \pi_{h})}}}
+#' P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
+#' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
 #' @param nclusters Number of clusters per treatment group; accepts integer (required).
@@ -63,6 +68,10 @@
 #' 
 #' @author Alexander R. Bogdan
 #' 
+#' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and Advanced Multilevel Modelling. London, 1999: Sage.
+#' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation Coefficient in Cluster Randomized Trials: 
+#' A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. doi: 10.1111/j.1751-5823.2009.00092.x
+#' 
 #' @examples 
 #' \dontrun{
 #' my.binary.sim = cps.binary(nsim = 100, nsubjects = 50, nclusters = 6, p1 = 0.4, p2 = 0.2, sigma_b = 100,
@@ -83,6 +92,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     pval.vector = NULL
     converge.vector = NULL
     icc2.vector = NULL
+    lmer.icc.vector = NULL
     simulated.datasets = list()
     start.time = Sys.time()
     
@@ -253,6 +263,11 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       icc2 = (mean(y0.prob) * mean(y1.prob) - p1*p2) / sqrt((p1 * (1 - p1)) * p2 * (1 - p2))
       icc2.vector = append(icc2.vector, icc2)
       
+      # Calculate LMER.ICC (lmer: sigma_b / (sigma_b + sigma))
+      lmer.mod = lme4::lmer(y.resp ~ trt + (1|clust), data = sim.dat)
+      lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
+      lmer.icc.vector =  append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
+      
       # Fit GLMM (lmer)
       if(method == 'glmm'){
         my.mod = lme4::glmer(y.resp ~ trt + (1|clust), data = sim.dat, family = binomial(link = 'logit'))
@@ -339,7 +354,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     
     # Create object containing estimated ICC values
     ICC = round(t(data.frame('P_h' = c('ICC' = icc1), 
-                             'P_c' = c('ICC' = mean(icc2.vector)))), 3)
+                             'P_c' = c('ICC' = mean(icc2.vector)), 
+                             'lmer' = c('ICC' = mean(lmer.icc.vector)))), 3)
     
     # Create object containing group-specific variance parameters
     var.parms = t(data.frame('Non.Treatment' = c('sigma_b' = sigma_b[1]), 
