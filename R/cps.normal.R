@@ -195,14 +195,14 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   sigma_b[2] = ifelse(!is.null(sigma_b2), sigma_b2, sigma_b[1])
   ICC[2] = ifelse(!is.null(ICC2), ICC2, ICC[1])
   
+  # Create indicators for treatment group & cluster
+  trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
+          rep(1, length.out = sum(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])))
+  clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
+  
   # Create simulation loop
   for(i in 1:nsim){
     # Generate simulated data
-    # Create indicators for treatment group & cluster
-    trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
-            rep(1, length.out = sum(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])))
-    clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
-    
     # Generate between-cluster effects for non-treatment and treatment
     randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
     randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
