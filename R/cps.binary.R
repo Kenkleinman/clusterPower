@@ -11,8 +11,8 @@
 #' cluster, number of clusters per treatment arm, two of the following three terms: 
 #' expected probability of outcome in non-treatment group, expected probability of 
 #' outcome in treatment group, expected difference in probabilities between groups
-#' ; significance level, analytic method, and whether or not progress updates should 
-#' be displayed while the function is running.
+#' ; significance level, analytic method, progress updates, 
+#' and simulated data set output may also be specified.
 #' 
 #' The following equations are used to estimate intra-cluster correltation coefficients:
 #' P_h: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \pi^{2}/3}}
@@ -41,7 +41,7 @@
 #'  
 #' @return A list with the following components
 #' \describe{
-#'   \item{overview}{Character string indicating total number of simulations and number of convergent models}
+#'   \item{overview}{Character string indicating total number of simulations, simulation type, and number of convergent models}
 #'   \item{nsim}{Number of simulations}
 #'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
@@ -50,9 +50,9 @@
 #'   \item{alpha}{Significance level}
 #'   \item{cluster.sizes}{Vector containing user-defined cluster sizes}
 #'   \item{n.clusters}{Vector containing user-defined number of clusters}
-#'   \item{variance.parms}{Data frame reporting ICC for Treatment/Non-Treatment groups}
+#'   \item{variance.parms}{Data frame reporting sigma_b for each group}
 #'   \item{inputs}{Vector containing expected difference in probabilities based on user inputs}
-#'   \item{ICC}{Data frame containing two estimates of ICC}
+#'   \item{ICC}{Data frame containing three estimates of ICC}
 #'   \item{model.estimates}{Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
@@ -61,9 +61,11 @@
 #'                   "converge" (Did simulated model converge?), 
 #'                   "sig.val" (Is p-value less than alpha?)}
 #'   \item{sim.data}{List of data frames, each containing: 
-#'                   "y.resp" (Simulated response value), 
+#'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
 #'                   "clust" (Indicator for cluster)}
+#'   \item{warning.list}{List of warning messages produced by non-convergent models. 
+#'                       Includes model number for cross-referencing against \code{model.estimates}}
 #' }
 #' 
 #' @author Alexander R. Bogdan
@@ -90,10 +92,12 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     se.vector = NULL
     stat.vector = NULL
     pval.vector = NULL
+    converge.ind = NULL
     converge.vector = NULL
     icc2.vector = NULL
     lmer.icc.vector = NULL
     simulated.datasets = list()
+    warning.list = list()
     start.time = Sys.time()
     
     # Create progress bar
@@ -134,6 +138,12 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     if(!is.null(sigma_b2) && sigma_b2 <= 0){
       stop("SIGMA_B2", min0.warning)
     }
+    # Set between-cluster variances
+    if(is.null(sigma_b2)){
+      sigma_b[2] = sigma_b
+    }else{
+      sigma_b[2] = sigma_b2
+    }
     
     if(!is.numeric(alpha) || alpha < 0){
       stop("ALPHA", min0.warning)
@@ -150,6 +160,9 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     if(length(nsubjects) == 1){
       nsubjects[1:sum(nclusters)] = nsubjects
     } 
+    if(length(nsubjects) == 2){
+      nsubjects = c(rep(nsubjects[1], nclusters[1]), rep(nsubjects[2], nclusters[2]))
+    }
     if(nclusters[1] == nclusters[2] && length(nsubjects) == nclusters[1]){
       nsubjects = rep(nsubjects, 2)
     }
@@ -178,7 +191,19 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       stop("At least one of the following terms has be misspecified: OR1, OR2, OR.DIFF")
     }
     
-    # Simulation parameters
+    # Validate METHOD, QUIET, ALL.SIM.DATA
+    if(!is.element(method, c('glmm', 'gee'))){
+      stop("METHOD must be either 'glmm' (Generalized Linear Mixed Model) 
+           or 'gee'(Generalized Estimating Equation)")
+    }
+    if(!is.logical(quiet)){
+      stop("QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)")
+    }
+    if(!is.logical(all.sim.data)){
+      stop("ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output")
+    }
+    
+    # Calculate all simulation parameters (if they do not exist)
     if(sum(parm2.args) == 3){
       if(is.null(p1)){
         p1 = abs(p.diff - p2)
@@ -205,22 +230,6 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       p.diff = abs(p1 - p2)
     }
     
-    # Validate METHOD, QUIET
-    if(!is.element(method, c('glmm', 'gee'))){
-      stop("METHOD must be either 'glmm' (Generalized Linear Mixed Model) 
-           or 'gee'(Generalized Estimating Equation)")
-    }
-    if(!is.logical(quiet)){
-      stop("QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)")
-    }
-    
-    # Set between-cluster variances
-    if(is.null(sigma_b2)){
-      sigma_b[2] = sigma_b
-    }else{
-      sigma_b[2] = sigma_b2
-    }
-    
     # Calculate ICC1 (sigma_b / (sigma_b + pi^2/3))
     icc1 = mean(sapply(1:2, function(x) sigma_b[x] / (sigma_b[x] + pi^2 / 3)))
     
@@ -233,9 +242,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     logit.p1 = log(p1 / (1 - p1))
     logit.p2 = log(p2 / (1 - p2))
     
-    # Create simulation loop
+    ### Create simulation loop
     while(sum(converge.vector == TRUE) != nsim){
-      # Generate simulated data
       # Generate between-cluster effects for non-treatment and treatment
       randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
       randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
@@ -253,26 +261,32 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       y1 = unlist(lapply(y1.prob, function(x) rbinom(1, 1, x)))
       
       # Create single response vector
-      y = c(y0,y1)
+      y = c(y0, y1)
       
       # Create and store data frame for simulated dataset
-      sim.dat = data.frame(y.resp = y, trt = trt, clust = clust)
-      simulated.datasets = append(simulated.datasets, list(sim.dat))
-      
+      sim.dat = data.frame(y = y, trt = trt, clust = clust)
+      if(all.sim.data == TRUE){
+        simulated.datasets = append(simulated.datasets, list(sim.dat))
+      }
       # Calculate ICC2 ([P(Yij = 1, Yih = 1)] - pij * pih) / sqrt(pij(1 - pij) * pih(1 - pih))
       icc2 = (mean(y0.prob) * mean(y1.prob) - p1*p2) / sqrt((p1 * (1 - p1)) * p2 * (1 - p2))
       icc2.vector = append(icc2.vector, icc2)
       
       # Calculate LMER.ICC (lmer: sigma_b / (sigma_b + sigma))
-      lmer.mod = lme4::lmer(y.resp ~ trt + (1|clust), data = sim.dat)
+      lmer.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
       lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
       lmer.icc.vector =  append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
       
       # Fit GLMM (lmer)
       if(method == 'glmm'){
-        my.mod = lme4::glmer(y.resp ~ trt + (1|clust), data = sim.dat, family = binomial(link = 'logit'))
+        my.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat, family = binomial(link = 'logit'))
         model.converge = try(my.mod)
-        converge.vector = append(converge.vector, is.null(model.converge@optinfo$conv$lme4$messages))
+        converge.ind = is.null(model.converge@optinfo$conv$lme4$messages)
+        converge.vector = append(converge.vector, converge.ind)
+        if(converge.ind == FALSE){
+          model.id = paste0("Model ", length(converge.vector))
+          warning.list[model.id] = list(model.converge@optinfo$conv$lme4$messages)
+        }
         glmm.values = summary(my.mod)$coefficient
         est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
         se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
@@ -320,7 +334,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     }
     # Create object containing summary statement
     summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
-                             " Simulations: Binary Outcome\nNote: ", sum(converge.vector==FALSE), 
+                             " Simulations: Simple Design, Binary Outcome\nNote: ", sum(converge.vector==FALSE), 
                              " additional models were fitted to account for non-convergent simulations.")
     
     # Store model estimate output in data frame
@@ -370,7 +384,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                      "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
                                      "inputs" = inputs, "ICC" = ICC, "model.estimates" = cps.model.est, 
-                                     "sim.data" = simulated.datasets), class = 'crtpwr')
+                                     "sim.data" = simulated.datasets, "warning.list" = warning.list), class = 'crtpwr')
     
     return(complete.output)
     }
