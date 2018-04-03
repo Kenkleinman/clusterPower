@@ -10,15 +10,16 @@
 #' Users must specify the desired number of simulations, number of subjects per 
 #' cluster, number of clusters per treatment arm, expected absolute difference 
 #' between treatments, two of the following: ICC, within-cluster variance, or 
-#' between-cluster variance; significance level, analytic method, and whether 
-#' or not progress updates should be displayed while the function is running.
+#' between-cluster variance; significance level, analytic method, progress updates, 
+#' and simulated data set output may also be specified.
 #' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of clusters per treatment group; accepts single integer (required) or 
-#' vector of length 2 for unequal number of clusters per treatment group 
-#' @param nclusters Number of subjects per cluster; accepts integer (required). Currently in development to
-#' accept vectors of treatment-specific cluster numbers and distributional forms.
+#' @param nsubjects Number of subjects per treatment group; accepts either a scalar (equal cluster sizes, both groups), 
+#' a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
+#' (unequal cluster sizes within groups) (required).
+#' @param nclusters Number of clusters per group; accepts single integer or vector of length 2 for unequal number 
+#' of clusters per treatment group (required)
 #' @param difference Expected absolute treatment effect; accepts numeric (required).
 #' At least 2 of the following must be specified:
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
@@ -29,14 +30,15 @@
 #' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
 #' @param sigma_w2 Within-cluster variance for clusters in TREATMENT group
 #' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
-#' @param alpha Significance level. Default = 0.05.
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default is FALSE.
-#' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE.
+#' @param alpha Significance level; default = 0.05.
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
+#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
+#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' 
 #' @return A list with the following components
 #' \describe{
-#'   \item{overview}{Character string indicating total number of simulations}
+#'   \item{overview}{Character string indicating total number of simulations and simulation type}
 #'   \item{nsim}{Number of simulations}
 #'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
@@ -52,7 +54,6 @@
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value", 
-#'                   "converge" (Did simulated model converge?), 
 #'                   "sig.val" (Is p-value less than alpha?)}
 #'   \item{sim.data}{List of data frames, each containing: 
 #'                   "y.resp" (Simulated response value), 
@@ -122,6 +123,9 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   if(length(nsubjects) == 1){
     nsubjects[1:sum(nclusters)] = nsubjects
   } 
+  if(length(nsubjects) == 2){
+    nsubjects = c(rep(nsubjects[1], nclusters[1]), rep(nsubjects[2], nclusters[2]))
+  }
   if(nclusters[1] == nclusters[2] && length(nsubjects) == nclusters[1]){
     nsubjects = rep(nsubjects, 2)
   }
@@ -158,13 +162,16 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     stop("At least one of the following terms has be misspecified: ICC2, sigma2, sigma_b2")
   }
   
-  # Validate METHOD, QUIET
+  # Validate METHOD, QUIET, ALL.SIM.DATA
   if(!is.element(method, c('glmm', 'gee'))){
     stop("METHOD must be either 'glmm' (Generalized Linear Mixed Model)
          or 'gee'(Generalized Estimating Equation)")
   }
   if(!is.logical(quiet)){
     stop("QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)")
+  }
+  if(!is.logical(all.sim.data)){
+    stop("ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output")
   }
   
   ## Create variance parameters
@@ -276,7 +283,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     }
   }
   # Create object containing summary statement
-  summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: Continuous Outcome")
+  summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: Simple Design, Continuous Outcome")
   
   # Store simulation output in data frame
   cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
@@ -292,8 +299,8 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
                            Upper.95.CI = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
   # Create object containing group-specific cluster sizes
-  cluster.sizes = list('Group 1 (Non-Treatment)' = nsubjects[1:nclusters[1]], 
-                       'Group 2 (Treatment)' = nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])
+  cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 
+                       'Treatment' = nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])
   
   # Create object containing number of clusters
   n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
