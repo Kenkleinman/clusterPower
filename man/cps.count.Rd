@@ -4,16 +4,17 @@
 \alias{cps.count}
 \title{Power simulations for cluster-randomized trials: Simple Designs, Count Outcome.}
 \usage{
-cps.count(nsim = NULL, m = NULL, n = NULL, c1 = NULL, c2 = NULL,
-  c.diff = NULL, sigma_b = NULL, sigma_b2 = NULL, family = "poisson",
-  method = "glmm", alpha = 0.05, quiet = FALSE)
+cps.count(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
+  c2 = NULL, c.diff = NULL, sigma_b = NULL, sigma_b2 = NULL,
+  family = "poisson", analysis = "poisson", method = "glmm",
+  alpha = 0.05, quiet = FALSE, all.sim.data = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
 
-\item{m}{Number of subjects per cluster; accepts integer (required).}
+\item{nsubjects}{Number of subjects per cluster; accepts integer (required).}
 
-\item{n}{Number of clusters per treatment group; accepts integer (required).
+\item{nclusters}{Number of clusters per treatment group; accepts integer (required).
 At least 2 of the following 3 arguments must be specified:}
 
 \item{c1}{Expected outcome count in non-treatment group}
@@ -30,11 +31,15 @@ If between cluster variances differ between treatment groups, the following must
 
 \item{family}{Distribution from which responses are simulated. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'}
 
+\item{analysis}{Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'}
+
 \item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'}
 
 \item{alpha}{Significance level. Default = 0.05.}
 
 \item{quiet}{When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.}
+
+\item{all.sim.data}{Option to output list of all simulated datasets. Default = FALSE}
 }
 \description{
 This function utilizes iterative simulations to determine 
@@ -54,8 +59,9 @@ while the function is running.
 }
 \examples{
 \dontrun{
-my.count.sim = cps.count(nsim = 100, n = 50, m = 6, c1 = 100/1000, c2 = 25/1000, sigma_b = 100,
-                    family = 'poisson', method = 'glmm', alpha = 0.05, quiet = FALSE)
+my.count.sim = cps.count(nsim = 100, nsubjects = 50, nclusters = 6, c1 = 100, c2 = 25, sigma_b = 100,
+                    family = 'poisson', analysis = 'poisson', method = 'glmm', alpha = 0.05, 
+                    quiet = FALSE, all.sim.data = TRUE)
 }
 
 }

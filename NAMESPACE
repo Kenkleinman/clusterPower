@@ -2,6 +2,7 @@
 
 export(cps.binary)
 export(cps.count)
+export(cps.did.normal)
 export(cps.normal)
 export(crtpwr.2mean)
 export(crtpwr.2meanCA)

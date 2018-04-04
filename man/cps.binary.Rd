@@ -4,17 +4,18 @@
 \alias{cps.binary}
 \title{Power simulations for cluster-randomized trials: Simple Designs, Binary Outcome.}
 \usage{
-cps.binary(nsim = NULL, m = NULL, n = NULL, p.diff = NULL, p1 = NULL,
-  p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, sigma_b = NULL,
-  sigma_b2 = NULL, alpha = 0.05, method = "glmm", quiet = FALSE)
+cps.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
+  p.diff = NULL, p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL,
+  or.diff = NULL, sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05,
+  method = "glmm", quiet = FALSE, all.sim.data = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
 
-\item{m}{Number of clusters per treatment group; accepts integer (required).
-At least 2 of the following 3 arguments must be specified when using expected probabilities:}
+\item{nsubjects}{Number of subjects per cluster; accepts integer (required).}
 
-\item{n}{Number of subjects per cluster; accepts integer (required).}
+\item{nclusters}{Number of clusters per treatment group; accepts integer (required).
+At least 2 of the following 3 arguments must be specified when using expected probabilities:}
 
 \item{p.diff}{Expected difference in probability of outcome between groups, defined as p.diff = p1 - p2
 At least 2 of the following 3 arguments must be specified when using expected odds ratios:}
@@ -40,6 +41,8 @@ If between cluster variances differ between treatment groups, sigma_b2 must also
 \item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.}
 
 \item{quiet}{When set to FALSE, displays simulation progress and estimated completion time. Default is FALSE.}
+
+\item{all.sim.data}{Option to output list of all simulated datasets. Default = FALSE}
 }
 \description{
 This function utilizes iterative simulations to determine 
@@ -54,15 +57,26 @@ Users must specify the desired number of simulations, number of subjects per
 cluster, number of clusters per treatment arm, two of the following three terms: 
 expected probability of outcome in non-treatment group, expected probability of 
 outcome in treatment group, expected difference in probabilities between groups
-; significance level, analytic method, and whether or not progress updates should 
-be displayed while the function is running.
+; significance level, analytic method, progress updates, 
+and simulated data set output may also be specified.
+
+The following equations are used to estimate intra-cluster correltation coefficients:
+P_h: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \pi^{2}/3}}
+P_c: \deqn{ICC = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_{j}\pi_{h}}{\sqrt{\pi_{j}(1 - \pi_{j})\pi_{h}(1 - \pi_{h})}}}
+P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 }
 \examples{
 \dontrun{
-my.binary.sim = cps.binary(nsim = 100, n = 50, m = 6, p1 = 0.4, p2 = 0.2, sigma_b = 100,
-                    alpha = 0.05, method = 'glmm', quiet = FALSE)
+my.binary.sim = cps.binary(nsim = 100, nsubjects = 50, nclusters = 6, p1 = 0.4, p2 = 0.2, sigma_b = 100,
+                    alpha = 0.05, method = 'glmm', all.sim.data = FALSE)
 }
 
+}
+\references{
+Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and Advanced Multilevel Modelling. London, 1999: Sage.
+
+Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation Coefficient in Cluster Randomized Trials: 
+A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. doi: 10.1111/j.1751-5823.2009.00092.x
 }
 \author{
 Alexander R. Bogdan
