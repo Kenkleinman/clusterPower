@@ -36,7 +36,7 @@
 #' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
 #' @param alpha Significance level. Default = 0.05
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default is FALSE.
+#' @param quiet When set to FALSE, displays simulation start time and completion time. Default is TRUE.
 #' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
 #'  
 #' @return A list with the following components
@@ -86,7 +86,7 @@
 cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
                         p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
                         sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = 'glmm', 
-                      quiet = FALSE, all.sim.data = FALSE){
+                      quiet = TRUE, all.sim.data = FALSE){
     # Create objects to collect iteration-specific values
     est.vector = NULL
     se.vector = NULL
@@ -242,6 +242,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     logit.p1 = log(p1 / (1 - p1))
     logit.p2 = log(p2 / (1 - p2))
     
+    # Set warnings to OFF
+    options(warn = -1)
     ### Create simulation loop
     while(sum(converge.vector == TRUE) != nsim){
       # Generate between-cluster effects for non-treatment and treatment
@@ -317,14 +319,14 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
           message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
                        ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
         }
-        # Iterate progress bar
-        prog.bar$update(sum(converge.vector == TRUE) / nsim)
-        Sys.sleep(1/100)
         # Print simulation complete message
         if(sum(converge.vector == TRUE) == nsim){
           message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
         }
       }
+      # Iterate progress bar
+      prog.bar$update(sum(converge.vector == TRUE) / nsim)
+      Sys.sleep(1/100)
       
       # Governor to prevent infinite non-convergence loop
       converge.ratio = sum(converge.vector == FALSE) / sum(converge.vector == TRUE)
@@ -385,6 +387,5 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
                                      "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
                                      "inputs" = inputs, "ICC" = ICC, "model.estimates" = cps.model.est, 
                                      "sim.data" = simulated.datasets, "warning.list" = warning.list), class = 'crtpwr')
-    
     return(complete.output)
     }
