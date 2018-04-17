@@ -1,5 +1,6 @@
 library(shiny)
 library(shinyBS)
+library(shinycssloaders)
 library(DT)
 library(tidyverse)
 library(stringr)
