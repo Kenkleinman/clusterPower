@@ -132,3 +132,7 @@ make_sequence <- function(x){
     return(temp[!is.na(temp)])
   }
 }
+
+
+# function to add equal sign into facet labels
+label_both_equals <- function(labels) label_both(labels, sep = " = ")

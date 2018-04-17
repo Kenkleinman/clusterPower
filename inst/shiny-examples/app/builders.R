@@ -19,6 +19,8 @@ make_table_and_graph <- function(outcome, paramnames){
                                          choices = c(None = ".", paramnames))),
                     fluidRow(numericInput(paste0("height",outcome), heightlab, value = 400,
                                           min = 100, max = 2000, step = 10)),
+                    fluidRow(numericInput(paste0("width",outcome), widthlab, value = 600,
+                                          min = 100, max = 2000, step = 10)),
                     fluidRow(numericInput(paste0("psize",outcome), psizelab, value = 3,
                                           min = 0.5, max = 4, step = 0.25)),
                     fluidRow(numericInput(paste0("lsize",outcome), lsizelab, value = 1,
@@ -105,7 +107,7 @@ create_graph <- function(dataset, xvar, yvar, groupvar, lsizevar, psizevar, rowv
       labs(x = xvar, y = yvar, group = groupvar, color = groupvar)
     
     facets <- paste(rowvar,"~",colvar)
-    if(facets != ". ~ .") p <- p + facet_grid(facets,labeller = label_both)
+    if(facets != ". ~ .") p <- p + facet_grid(facets,labeller = label_both_equals)
   }
   p
 }

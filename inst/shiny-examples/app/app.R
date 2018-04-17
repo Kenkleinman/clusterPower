@@ -611,6 +611,7 @@ server <- function(input, output, session){
     create_graph(res2mean(), input$x2mean, input$y2mean, input$group2mean,
                  input$lsize2mean, input$psize2mean, input$row2mean, input$col2mean)
   },
+  width = reactive({input$width2mean}),
   height = reactive({input$height2mean})
   )
   
@@ -750,6 +751,7 @@ server <- function(input, output, session){
     create_graph(res2meanD(), input$x2meanD, input$y2meanD, input$group2meanD,
                  input$lsize2meanD, input$psize2meanD, input$row2meanD, input$col2meanD)
   },
+  width = reactive({input$width2meanD}),
   height = reactive({input$height2meanD})
   )
   
@@ -886,6 +888,7 @@ server <- function(input, output, session){
     create_graph(res2meanM(), input$x2meanM, input$y2meanM, input$group2meanM,
                  input$lsize2meanM, input$psize2meanM, input$row2meanM, input$col2meanM)
   },
+  width = reactive({input$width2meanM}),
   height = reactive({input$height2meanM})
   )
   
@@ -1022,6 +1025,7 @@ server <- function(input, output, session){
     create_graph(res2prop(), input$x2prop, input$y2prop, input$group2prop,
                  input$lsize2prop, input$psize2prop, input$row2prop, input$col2prop)
   },
+  width = reactive({input$width2prop}),
   height = reactive({input$height2prop})
   )
   
@@ -1174,6 +1178,7 @@ server <- function(input, output, session){
     create_graph(res2propD(), input$x2propD, input$y2propD, input$group2propD,
                  input$lsize2propD, input$psize2propD, input$row2propD, input$col2propD)
   },
+  width = reactive({input$width2propD}),
   height = reactive({input$height2propD})
   )
   
@@ -1301,6 +1306,7 @@ server <- function(input, output, session){
     create_graph(res2propM(), input$x2propM, input$y2propM, input$group2propM,
                  input$lsize2propM, input$psize2propM, input$row2propM, input$col2propM)
   },
+  width = reactive({input$width2propM}),
   height = reactive({input$height2propM})
   )
   
@@ -1429,6 +1435,7 @@ server <- function(input, output, session){
     create_graph(res2rate(), input$x2rate, input$y2rate, input$group2rate,
                  input$lsize2rate, input$psize2rate, input$row2rate, input$col2rate)
   },
+  width = reactive({input$width2rate}),
   height = reactive({input$height2rate})
   )
   

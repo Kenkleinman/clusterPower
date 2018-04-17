@@ -115,6 +115,7 @@ colorlab <- 'Color by Group'
 rowlab <- 'Facet Row'
 collab <- 'Facet Column'
 heightlab <- 'Plot Height'
+widthlab <- 'Plot Width'
 psizelab <- 'Point Size'
 lsizelab <- 'Line Size'
 
