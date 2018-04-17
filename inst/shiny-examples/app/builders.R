@@ -27,7 +27,7 @@ make_table_and_graph <- function(outcome, paramnames){
                                           min = 0.5, max = 2, step = 0.25))
              ),
              column(10,
-                    plotOutput(paste0("graph",outcome), height = "auto")
+                    withSpinner(plotOutput(paste0("graph",outcome), height = "auto"))
              )
     ) # end tabPanel("Graphs"...
   ) # end tabsetPanel(...
