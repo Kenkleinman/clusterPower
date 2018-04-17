@@ -105,7 +105,7 @@ create_graph <- function(dataset, xvar, yvar, groupvar, lsizevar, psizevar, rowv
       labs(x = xvar, y = yvar, group = groupvar, color = groupvar)
     
     facets <- paste(rowvar,"~",colvar)
-    if(facets != ". ~ .") p <- p + facet_grid(facets)
+    if(facets != ". ~ .") p <- p + facet_grid(facets,labeller = label_both)
   }
   p
 }
