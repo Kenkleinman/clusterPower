@@ -271,7 +271,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
         simulated.datasets = append(simulated.datasets, list(sim.dat))
       }
       # Calculate ICC2 ([P(Yij = 1, Yih = 1)] - pij * pih) / sqrt(pij(1 - pij) * pih(1 - pih))
-      icc2 = (mean(y0.prob) * mean(y1.prob) - p1*p2) / sqrt((p1 * (1 - p1)) * p2 * (1 - p2))
+      #icc2 = (mean(y0.prob) * mean(y1.prob) - p1*p2) / sqrt((p1 * (1 - p1)) * p2 * (1 - p2))
+      icc2 = (mean(y0.prob) - p1) * (mean(y1.prob) - p2) / sqrt((p1 * (1 - p1)) * p2 * (1 - p2))
       icc2.vector = append(icc2.vector, icc2)
       
       # Calculate LMER.ICC (lmer: sigma_b / (sigma_b + sigma))
@@ -372,6 +373,9 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     ICC = round(t(data.frame('P_h' = c('ICC' = icc1), 
                              'P_c' = c('ICC' = mean(icc2.vector)), 
                              'lmer' = c('ICC' = mean(lmer.icc.vector)))), 3)
+    # Create object containing all ICC values
+    icc.list = data.frame('P_c' = icc2.vector, 
+                          'lmer' = lmer.icc.vector)
     
     # Create object containing group-specific variance parameters
     var.parms = t(data.frame('Non.Treatment' = c('sigma_b' = sigma_b[1]), 
@@ -385,7 +389,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     # Create list containing all output and return
     complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                      "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                     "inputs" = inputs, "ICC" = ICC, "model.estimates" = cps.model.est, 
+                                     "inputs" = inputs, "ICC" = ICC, "icc.list" = icc.list, "model.estimates" = cps.model.est, 
                                      "sim.data" = simulated.datasets, "warning.list" = warning.list), class = 'crtpwr')
     return(complete.output)
     }
