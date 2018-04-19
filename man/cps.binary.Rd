@@ -7,7 +7,7 @@
 cps.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
   p.diff = NULL, p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL,
   or.diff = NULL, sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05,
-  method = "glmm", quiet = FALSE, all.sim.data = FALSE)
+  method = "glmm", quiet = TRUE, all.sim.data = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -40,7 +40,7 @@ If between cluster variances differ between treatment groups, sigma_b2 must also
 
 \item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.}
 
-\item{quiet}{When set to FALSE, displays simulation progress and estimated completion time. Default is FALSE.}
+\item{quiet}{When set to FALSE, displays simulation start time and completion time. Default is TRUE.}
 
 \item{all.sim.data}{Option to output list of all simulated datasets. Default = FALSE}
 }
