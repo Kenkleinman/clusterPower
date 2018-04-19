@@ -236,7 +236,8 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
   #   randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b0[1]))
   #   randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b0[2]))
   #   
-  #   # Create non-treatment y-value
+  #   # Create non-treatment y-value (note to KK-- wclust is for closed-cohort AKA repeated measures studies-- 
+  #   # could also be called a between-individuals error)
   #   y0.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
   #   y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma0[1]))))
   #   y0.pre = y0.bclust + y0.wclust + rnorm(nsubjects[1:nclusters[1]])
