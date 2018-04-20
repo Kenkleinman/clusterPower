@@ -22,16 +22,16 @@
 #' @param nclusters Number of clusters per group; accepts single integer or vector of length 2 for unequal number 
 #' of clusters per treatment group (required)
 #' @param difference Expected absolute difference in treatment effect between time points; accepts numeric (required).
-#' The following arguments can accept either a scalar (indicating constant variance between time points) 
-#' or a vector of length 2 (indicating different variances at each time point). 
-#' At least two of the following must be specified for the non-treatment group:
-#' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
-#' @param sigma_w Within-cluster variance; accepts numeric
-#' @param sigma_b Between-cluster variance; accepts numeric
-#' Similarly, at least two of the following must be specified for the treatment group:
-#' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
-#' @param sigma_w2 Within-cluster variance for clusters in TREATMENT group
-#' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
+#' @param sigma Within-cluster variance; accepts numeric scalar (indicating equal within-cluster variances for both 
+#' treatment groups at both time points) or vector of length 4 specifying within-cluster variance for each treatment 
+#' group at each time point
+#' @param sigma_b0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
+#' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
+#' between-cluster variances
+#' @param sigma_b1 Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
+#' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
+#' between-cluster variances. For data simulation, SIGMA_B1 is added to SIGMA_B0, such that if SIGMA_B0 = 5 
+#' and SIGMA_B1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.
 #' @param alpha Significance level. Default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
@@ -51,6 +51,10 @@
 #'   \item{n.clusters}{Vector containing user-defined number of clusters}
 #'   \item{variance.parms}{Data frame reporting ICC for Treatment/Non-Treatment groups at each time point}
 #'   \item{inputs}{Vector containing expected difference between groups based on user inputs}
+#'   \item{differences}{Data frame with columns: 
+#'                   "Period" (Pre/Post-treatment indicator), 
+#'                   "Treatment" (Treatment group indicator), 
+#'                   "Value" (Mean response value)}
 #'   \item{model.estimates}{Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
@@ -84,6 +88,7 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
+  values.vector = cbind(c(0,0,0,0))
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -192,7 +197,7 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
   sigma_b1 = sigma_b1 + sigma_b0
   
   # Create indicators for time, treatment group & cluster
-  period = rep(0:1, each = 2 * sum(nsubjects))
+  period = rep(0:1, each = sum(nsubjects))
   trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
           rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
   clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
@@ -237,12 +242,17 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
 
     # Create data frame for simulated dataset
     sim.dat = data.frame(y = y, trt = trt, clust = clust, period = period)
-
-    # Create data frame for simulated dataset
-    sim.dat = data.frame(y = y, trt = trt, clust = clust, period = period)
     if(all.sim.data == TRUE){
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
+    
+    # Calculate mean values for given simulation
+    require(dplyr)
+    iter.values = sim.dat %>% 
+      group_by(period, trt) %>% 
+      summarise(Value = mean(y)) %>% 
+      .[,3]
+    values.vector = values.vector + iter.values
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
@@ -309,11 +319,8 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
                            Upper.95.CI = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
   # Create object containing treatment & time-specific differences
-  require(dplyr)
-  differences = sim.dat %>% 
-    group_by(period, trt) %>% 
-    summarise(value = mean(y)) %>% 
-    rename(time.point = period, treatment = trt)
+  values.vector = values.vector / nsim
+  differences = data.frame(Period = c(0,0,1,1), Treatment = c(0,1,0,1), Values = round(values.vector, 3))
   
   # Create object containing group-specific cluster sizes
   cluster.sizes = list('Group 1 (Non-Treatment)' = nsubjects[1:nclusters[1]], 
