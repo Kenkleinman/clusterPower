@@ -75,11 +75,9 @@
 #' @export
 
 
-cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, difference = NULL,
-                      ICC = NULL, sigma = NULL, sigma_b = NULL,
-                      ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL,
-                      alpha = 0.05, method = 'glmm', quiet = FALSE,
-                      all.sim.data = FALSE){
+cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, difference = NULL, 
+                          sigma = NULL, sigma_b0 = NULL, sigma_b1 = 0, alpha = 0.05, 
+                          method = 'glmm', quiet = FALSE, all.sim.data = FALSE){
   
   # Create vectors to collect iteration-specific values
   est.vector = NULL
@@ -145,24 +143,29 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
     stop("ALPHA must be a numeric value between 0 - 1")
   }
   
-  # Validate ICC, sigma, sigma_b, ICC2, sigma2, sigma_b2
-  parm1.arg.list = list(ICC, sigma, sigma_b)
-  parm1.args = unlist(lapply(parm1.arg.list, is.null))
-  if(sum(parm1.args) > 1){
-    stop("At least two of the following terms must be specified: ICC, sigma, sigma_b")
+  # Validate sigma, sigma_b0, sigma_b1
+  sigma_b.warning = " must be a scalar (equal between-cluster variance for both treatment groups) or a vector of length 2, 
+         specifying between-cluster variances for each treatment group"
+  if(!is.numeric(sigma) || sigma < 0){
+    stop("All values supplied to SIGMA must be numeric values < 0")
   }
-  if(sum(parm1.args) == 0 && ICC != sigma_b / (sigma_b + sigma)){
-    stop("At least one of the following terms has be misspecified: ICC, sigma, sigma_b")
+  if(!length(sigma) %in% c(1,4)){
+    stop("SIGMA must be a scalar (equal within-cluster variance for both treatment groups at both time points) 
+         or a vector of length 4, specifying within-cluster variances for each treatment group at each time point")
   }
-  parm2.arg.list = list(ICC2, sigma2, sigma_b2)
-  parm2.args = unlist(lapply(parm2.arg.list, is.null))
-  if(sum(parm2.args) > 1 && sum(parm2.args) != 3){
-    stop("At least two of the following terms must be provided to simulate treatment-specific
-         variances: ICC2, sigma2, sigma_b2")
+  if(!is.numeric(sigma_b0) || sigma_b0 < 0){
+    stop("All values supplied to SIGMA_B0 must be numeric values < 0")
   }
-  if(sum(parm2.args) == 0 && ICC2 != sigma_b2 / (sigma_b2 + sigma2)){
-    stop("At least one of the following terms has be misspecified: ICC2, sigma2, sigma_b2")
+  if(!length(sigma_b0) %in% c(1,2)){
+    stop("SIGMA_B0", sigma_b.warning)
   }
+  if(!length(sigma_b1) %in% c(1,2)){
+    stop("SIGMA_B1", sigma_b.warning)
+  }
+  if(!is.numeric(sigma_b1) || sigma_b1 < 0){
+    stop("All values supplied to SIGMA_B1 must be numeric values =< 0")
+  }
+
   
   # Validate METHOD, QUIET, ALL.SIM.DATA
   if(!is.element(method, c('glmm', 'gee'))){
@@ -176,146 +179,65 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
     stop("ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output")
   }
   
-  ## Create variance parameters
-  # Single set of cluster parameters
-  if(!is.null(c(ICC, sigma)) && is.null(sigma_b)){
-    sigma_b = ICC * sigma / (1 - ICC)
+  # Set variance parameters
+  if(length(sigma) == 1){
+    sigma = rep(sigma, 4)
   }
-  if(!is.null(c(ICC, sigma_b)) && is.null(sigma)){
-    sigma = sigma_b / ICC - sigma_b
+  if(length(sigma_b0) == 1){
+    sigma_b0[2] = sigma_b0
   }
-  if(!is.null(c(sigma, sigma_b)) && is.null(ICC)){
-    ICC = sigma_b / (sigma_b + sigma)
+  if(length(sigma_b1) == 1){
+    sigma_b1[2] = sigma_b1
   }
-  
-  # Second set of cluster parameters
-  if(!is.null(c(ICC2, sigma2)) && is.null(sigma_b2)){
-    sigma_b2 = ICC2 * sigma2 / (1 - ICC2)
-  }
-  if(!is.null(c(ICC2, sigma_b2)) && is.null(sigma2)){
-    sigma2 = sigma_b2 / ICC2 - sigma_b2
-  }
-  if(!is.null(c(sigma2, sigma_b2)) && is.null(ICC2)){
-    ICC2 = sigma_b2 / (sigma_b2 + sigma2)
-  }
-  
-  # Set within/between cluster variance & ICC for treatment group (if not already specified)
-  sigma[2] = ifelse(!is.null(sigma2), sigma2, sigma[1])
-  sigma_b[2] = ifelse(!is.null(sigma_b2), sigma_b2, sigma_b[1])
-  ICC[2] = ifelse(!is.null(ICC2), ICC2, ICC[1])
+  sigma_b1 = sigma_b1 + sigma_b0
   
   # Create indicators for time, treatment group & cluster
   period = rep(0:1, each = 2 * sum(nsubjects))
   trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
-          rep(1, length.out = sum(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])))
+          rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
   clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
-  
-  #####################################################
-  ##########     SIMULATION ENGINE          ###########
-  #####################################################
-  
-  # Create simulation parameters
-  # nsubjects = rep(50, 60)
-  # nclusters = c(30, 30)
-  # difference = 3
-  # 
-  # sigma0 = c(10, 10)
-  # sigma1 = c(10, 10)
-  # sigma_b0 = c(15, 15)
-  # sigma_b1 = c(15, 15)
-  # 
-  # # Create indicators for time, treatment group & cluster
-  # period = rep(0:1, each = sum(nsubjects))
-  # trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
-  #         rep(1, length.out = sum(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])))
-  # clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
-  # 
-  #   ### Generate simulated data
-  #   ## TIME == 0
-  #   # Generate between-cluster effects for non-treatment and treatment
-  #   randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b0[1]))
-  #   randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b0[2]))
-  #   
-  #   # Create non-treatment y-value
-  #   y0.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
-  #   y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma0[1]))))
-  #   y0.pre = y0.bclust + y0.wclust + rnorm(nsubjects[1:nclusters[1]])
-  #   
-  #   # Create treatment y-value
-  #   y1.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
-  #   y1.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])], 
-  #                             function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma0[2]))))
-  #   y1.pre = y1.bclust + y1.wclust + rnorm(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
-  #   
-  #   ## TIME == 1
-  #   # Generate between-cluster effects for non-treatment and treatment
-  #   randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b1[1]))
-  #   randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b1[2]))
-  #   
-  #   # Create non-treatment y-value
-  #   y0.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
-  #   y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma1[1]))))
-  #   y0.post = y0.bclust + y0.wclust + rnorm(nsubjects[1:nclusters[1]])
-  #   
-  #   # Create treatment y-value
-  #   y1.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
-  #   y1.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])], 
-  #                             function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma1[2]))))
-  #   y1.post = y1.bclust + y1.wclust + rnorm(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
-  #   
-  #   # Create single response vector
-  #   y = c(y0.pre, y1.pre, y0.post, y1.post)
-  #   
-  #   # Create data frame for simulated dataset
-  #   sim.dat = data.frame(y = y, trt = trt, clust = clust, period = period)
-  #   
-  #   library(dplyr)
-  #   sim.dat %>%
-  #     group_by(period, trt) %>%
-  #     summarise(avg = mean(y))
-  #   
-  # 
-  # #####################################################
-  
-  
+
   # Create simulation loop
   for(i in 1:nsim){
-    ### Generate simulated data
+  ### Generate simulated data
     ## TIME == 0
     # Generate between-cluster effects for non-treatment and treatment
-    randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
-    randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
-    
+    randint.ntrt.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b0[1]))
+    randint.trt.0 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b0[2]))
+
     # Create non-treatment y-value
-    y0.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
-    y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[1]))))
-    y0.pre = y0.bclust + y0.wclust
-    
+    y0.ntrt.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.ntrt.0[x], length.out = nsubjects[x])))
+    y0.ntrt.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[1]))))
+    y0.ntrt.pre = y0.ntrt.bclust + y0.ntrt.wclust + rnorm(nsubjects[1:nclusters[1]])
+
     # Create treatment y-value
-    y1.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1]+x])))
-    y1.wclust = unlist(lapply(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])], 
+    y0.trt.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.trt.0[x], length.out = nsubjects[nclusters[1] + x])))
+    y0.trt.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])],
                               function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[2]))))
-    y1.pre = y1.bclust + y1.wclust
-    
+    y0.trt.pre = y0.trt.bclust + y0.trt.wclust + rnorm(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
+
     ## TIME == 1
     # Generate between-cluster effects for non-treatment and treatment
-    randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b2[1]))
-    randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b2[2]))
-    
+    randint.ntrt.1 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b1[1]))
+    randint.trt.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b1[2]))
+
     # Create non-treatment y-value
-    y0.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
-    y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[1]))))
-    y0.post = y0.bclust + y0.wclust
-    
+    y1.ntrt.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.ntrt.1[x], length.out = nsubjects[x])))
+    y1.ntrt.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[3]))))
+    y1.ntrt.post = y1.ntrt.bclust + y1.ntrt.wclust + rnorm(nsubjects[1:nclusters[1]])
+
     # Create treatment y-value
-    y1.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1]+x])))
-    y1.wclust = unlist(lapply(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])], 
-                              function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma[2]))))
-    y1.post = y1.bclust + y1.wclust
-    
+    y1.trt.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.trt.1[x], length.out = nsubjects[nclusters[1] + x])))
+    y1.trt.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])],
+                              function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma[4]))))
+    y1.trt.post = y1.trt.bclust + y1.trt.wclust + rnorm(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
+
     # Create single response vector
-    y = c(y0.pre, y1.pre, y0.post, y1.post)
-    
+    y = c(y0.ntrt.pre, y0.trt.pre, y1.ntrt.post, y1.trt.post)
+
+    # Create data frame for simulated dataset
+    sim.dat = data.frame(y = y, trt = trt, clust = clust, period = period)
+
     # Create data frame for simulated dataset
     sim.dat = data.frame(y = y, trt = trt, clust = clust, period = period)
     if(all.sim.data == TRUE){
@@ -326,10 +248,10 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
     if(method == 'glmm'){
       my.mod = lme4::lmer(y ~ trt + period + trt:period + (1|clust), data = sim.dat)
       glmm.values = summary(my.mod)$coefficient
-      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(nclusters) - 2)
-      est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt', 't value'])
+      p.val = 2 * stats::pt(-abs(glmm.values['trt:period', 't value']), df = sum(nclusters) - 2)
+      est.vector = append(est.vector, glmm.values['trt:period', 'Estimate'])
+      se.vector = append(se.vector, glmm.values['trt:period', 'Std. Error'])
+      stat.vector = append(stat.vector, glmm.values['trt:period', 't value'])
       pval.vector = append(pval.vector, p.val)
     }
     
@@ -339,10 +261,10 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
       my.mod = geepack::geeglm(y ~ trt + period + trt:period, data = sim.dat,
                                id = clust, corstr = "exchangeable")
       gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+      est.vector = append(est.vector, gee.values['trt:period', 'Estimate'])
+      se.vector = append(se.vector, gee.values['trt:period', 'Std.err'])
+      stat.vector = append(stat.vector, gee.values['trt:period', 'Wald'])
+      pval.vector = append(pval.vector, gee.values['trt:period', 'Pr(>|W|)'])
     }
     
     # Create & update progress bar
@@ -386,6 +308,13 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
                            Lower.95.CI = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                            Upper.95.CI = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
+  # Create object containing treatment & time-specific differences
+  require(dplyr)
+  differences = sim.dat %>% 
+    group_by(period, trt) %>% 
+    summarise(value = mean(y)) %>% 
+    rename(time.point = period, treatment = trt)
+  
   # Create object containing group-specific cluster sizes
   cluster.sizes = list('Group 1 (Non-Treatment)' = nsubjects[1:nclusters[1]], 
                        'Group 2 (Treatment)' = nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])
@@ -394,13 +323,18 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
   n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
   
   # Create object containing group-specific variance parameters
-  var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
-                           'Treatment' = c('ICC' = ICC[2], 'sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
+  # var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
+  #                          'Treatment' = c('ICC' = ICC[2], 'sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
+  var.parms = list("Time.Point.0" = data.frame('Non.Treatment' = c("sigma" = sigma[1], "sigma_b" = sigma_b0[1]), 
+                                                'Treatment' = c("sigma" = sigma[2], "sigma_b" = sigma_b0[2])), 
+                   "Time.Point.1" = data.frame('Non.Treatment' = c("sigma" = sigma[3], "sigma_b" = sigma_b1[1]), 
+                                            'Treatment' = c("sigma" = sigma[4], "sigma_b" = sigma_b1[2])))
   
   # Create list containing all output and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                   "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets), 
+                                   "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets, 
+                                   "differences" = differences),
                               class = 'crtpwr')
   return(complete.output)
   }
