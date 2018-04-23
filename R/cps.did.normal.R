@@ -202,6 +202,8 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
           rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
   clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
 
+  
+  
   # Create simulation loop
   for(i in 1:nsim){
   ### Generate simulated data
