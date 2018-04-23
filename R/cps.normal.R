@@ -204,7 +204,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   
   # Create indicators for treatment group & cluster
   trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
-          rep(1, length.out = sum(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])))
+          rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
   clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
   
   # Create simulation loop
@@ -220,8 +220,8 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     y.0 = y0.bclust + y0.wclust
     
     # Create treatment y-value
-    y1.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1]+x])))
-    y1.wclust = unlist(lapply(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])], 
+    y1.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
+    y1.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])], 
                               function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma[2]))))
     y.1 = y1.bclust + y1.wclust
     

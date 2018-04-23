@@ -197,7 +197,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     
     # Create non-treatment y-value
     y0.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
-    y0.linpred = y0.intercept + log(c1)
+    y0.linpred = y0.intercept + log(c1) 
     y0.prob = exp(y0.linpred)
     if(family == 'poisson'){
       y0 = rpois(length(y0.prob), y0.prob)
@@ -208,7 +208,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
       
     # Create treatment y-value
     y1.intercept = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1]+x])))
-    y1.linpred = y1.intercept + log(c2) + log((c1 / (1 - c1)) / (c2 / (1 - c2)))
+    y1.linpred = y1.intercept + log(c2) #+ log((c1 / (1 - c1)) / (c2 / (1 - c2)))
     y1.prob = exp(y1.linpred)
     if(family == 'poisson'){
       y1 = rpois(length(y1.prob), y1.prob)
