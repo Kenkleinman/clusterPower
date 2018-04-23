@@ -201,80 +201,9 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
   trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
           rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
   clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
-<<<<<<< HEAD
-  
-  #####################################################
-  ##########     SIMULATION ENGINE          ###########
-  #####################################################
-  
-  # Create simulation parameters
-  # nsubjects = rep(50, 60)
-  # nclusters = c(30, 30)
-  # difference = 3
-  # 
-  # sigma0 = c(10, 10)
-  # sigma1 = c(10, 10)
-  # sigma_b0 = c(15, 15)
-  # sigma_b1 = c(15, 15)
-  # 
-  # # Create indicators for time, treatment group & cluster
-  # period = rep(0:1, each = sum(nsubjects))
-  # trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
-  #         rep(1, length.out = sum(nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])))
-  # clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
-  # 
-  #   ### Generate simulated data
-  #   ## TIME == 0
-  #   # Generate between-cluster effects for non-treatment and treatment
-  #   randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b0[1]))
-  #   randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b0[2]))
-  #   
-  #   # Create non-treatment y-value (note to KK-- wclust is for closed-cohort AKA repeated measures studies-- 
-  #   # could also be called a between-individuals error)
-  #   y0.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
-  #   y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma0[1]))))
-  #   y0.pre = y0.bclust + y0.wclust + rnorm(nsubjects[1:nclusters[1]])
-  #   
-  #   # Create treatment y-value
-  #   y1.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
-  #   y1.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])], 
-  #                             function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma0[2]))))
-  #   y1.pre = y1.bclust + y1.wclust + rnorm(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
-  #   
-  #   ## TIME == 1
-  #   # Generate between-cluster effects for non-treatment and treatment
-  #   randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b1[1]))
-  #   randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b1[2]))
-  #   
-  #   # Create non-treatment y-value
-  #   y0.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
-  #   y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma1[1]))))
-  #   y0.post = y0.bclust + y0.wclust + rnorm(nsubjects[1:nclusters[1]])
-  #   
-  #   # Create treatment y-value
-  #   y1.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
-  #   y1.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])], 
-  #                             function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma1[2]))))
-  #   y1.post = y1.bclust + y1.wclust + rnorm(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
-  #   
-  #   # Create single response vector
-  #   y = c(y0.pre, y1.pre, y0.post, y1.post)
-  #   
-  #   # Create data frame for simulated dataset
-  #   sim.dat = data.frame(y = y, trt = trt, clust = clust, period = period)
-  #   
-  #   library(dplyr)
-  #   sim.dat %>%
-  #     group_by(period, trt) %>%
-  #     summarise(avg = mean(y))
-  #   
-  # 
-  # #####################################################
-  
-  
-=======
 
->>>>>>> 5b1ae4e5c392b25ef2e2cd9cbafced982a4bc17f
+  
+  
   # Create simulation loop
   for(i in 1:nsim){
   ### Generate simulated data
