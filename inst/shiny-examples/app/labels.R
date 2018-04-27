@@ -74,7 +74,7 @@ covdftooltip <- "The degrees of freedom used by group-level covariates. A value 
 pvar_ctext <- "Cluster-level proportion of variance explained (pvar_c)"
 pvar_ctooltip <- "The expected cluster-level proportion of variance to be explained by regression adjustment for covariates."
 
-pvar_stext <- "Subeject-level proportion of variance explained (pvar_s)"
+pvar_stext <- "Subject-level proportion of variance explained (pvar_s)"
 pvar_stooltip <- "The expected subject-level proportion of variance to be explained by regression adjustment for covariates."
 
 # -----------------------------------------------------------------------------
