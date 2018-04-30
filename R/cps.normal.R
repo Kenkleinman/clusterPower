@@ -1,4 +1,4 @@
-#' Power simulations for cluster-randomized trials: Simple Designs.
+#' Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.
 #'
 #' This set of functions utilize iterative simulations to determine 
 #' approximate power for cluster-randomized controlled trials. Users 
@@ -46,17 +46,17 @@
 #'   \item{method}{Analytic method used for power estimation}
 #'   \item{alpha}{Significance level}
 #'   \item{cluster.sizes}{Vector containing user-defined cluster sizes}
-#'   \item{n.clusters}{Vector containing user-defined number of clusters}
+#'   \item{n.clusters}{Vector containing user-defined number of clusters in each treatment group}
 #'   \item{variance.parms}{Data frame reporting ICC for Treatment/Non-Treatment groups}
 #'   \item{inputs}{Vector containing expected difference between groups based on user inputs}
 #'   \item{model.estimates}{Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
-#'                   "Std.Err" (Standard error for treatment effect estimate), 
+#'                   "Std.err" (Standard error for treatment effect estimate), 
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value", 
 #'                   "sig.val" (Is p-value less than alpha?)}
 #'   \item{sim.data}{List of data frames, each containing: 
-#'                   "y.resp" (Simulated response value), 
+#'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
 #'                   "clust" (Indicator for cluster)}
 #' }
@@ -65,8 +65,9 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' my.normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 30, ICC = 0.2, sigma_w = 100,
-#'                     alpha = 0.05, method = 'glmm', quiet = FALSE, all.sim.data = FALSE)
+#' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 30,
+#'                         ICC = 0.2, sigma_w = 100, alpha = 0.05, method = 'glmm', 
+#'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
 #'
 #' @export
@@ -94,7 +95,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   # Create wholenumber function
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
   
-  # Validate NSIM, N, M
+  # Validate NSIM, NCLUSTERS, NSUBJECTS
   sim.data.arg.list = list(nsim, nclusters, nsubjects, difference)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if(sum(sim.data.args) > 0){
@@ -111,7 +112,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     stop(paste0("NSUBJECTS", min1.warning))
   }
   if(length(nclusters) > 2){
-    stop("NCLUSTERS can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)")
+    stop("NCLUSTERS can only be a scalar (equal # of clusters per group) or a vector of length 2 (unequal # of clusters per group)")
   }
   
   # Set cluster sizes for treatment arm (if not already specified)
@@ -138,19 +139,18 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   if(!is.numeric(difference) || difference < 0){
     stop("DIFFERENCE", min0.warning)
   }
-  
   if(!is.numeric(alpha) || alpha < 0 || alpha > 1){
     stop("ALPHA must be a numeric value between 0 - 1")
   }
   
-  # Validate ICC, sigma, sigma_b, ICC2, sigma2, sigma_b2
+  # Validate ICC, SIGMA, SIGMA_B, ICC2, SIGMA2, SIGMA_B2
   parm1.arg.list = list(ICC, sigma, sigma_b)
   parm1.args = unlist(lapply(parm1.arg.list, is.null))
   if(sum(parm1.args) > 1){
     stop("At least two of the following terms must be specified: ICC, sigma, sigma_b")
   }
   if(sum(parm1.args) == 0 && ICC != sigma_b / (sigma_b + sigma)){
-    stop("At least one of the following terms has be misspecified: ICC, sigma, sigma_b")
+    stop("At least one of the following terms has been misspecified: ICC, sigma, sigma_b")
   }
   parm2.arg.list = list(ICC2, sigma2, sigma_b2)
   parm2.args = unlist(lapply(parm2.arg.list, is.null))
@@ -159,7 +159,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
          variances: ICC2, sigma2, sigma_b2")
   }
   if(sum(parm2.args) == 0 && ICC2 != sigma_b2 / (sigma_b2 + sigma2)){
-    stop("At least one of the following terms has be misspecified: ICC2, sigma2, sigma_b2")
+    stop("At least one of the following terms has been misspecified: ICC2, sigma2, sigma_b2")
   }
   
   # Validate METHOD, QUIET, ALL.SIM.DATA
@@ -175,7 +175,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   }
   
   ## Create variance parameters
-  # Single set of cluster parameters
+  # SIGMA_B, SIGMA, ICC
   if(!is.null(c(ICC, sigma)) && is.null(sigma_b)){
     sigma_b = ICC * sigma / (1 - ICC)
   }
@@ -185,8 +185,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   if(!is.null(c(sigma, sigma_b)) && is.null(ICC)){
     ICC = sigma_b / (sigma_b + sigma)
   }
-  
-  # Second set of cluster parameters
+  # SIGMA_B2, SIGMA2, ICC2
   if(!is.null(c(ICC2, sigma2)) && is.null(sigma_b2)){
     sigma_b2 = ICC2 * sigma2 / (1 - ICC2)
   }
@@ -197,7 +196,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     ICC2 = sigma_b2 / (sigma_b2 + sigma2)
   }
   
-  # Set within/between cluster variance & ICC for treatment group (if not already specified)
+  # Set within/between cluster variances & ICC for treatment group (if not already specified)
   sigma[2] = ifelse(!is.null(sigma2), sigma2, sigma[1])
   sigma_b[2] = ifelse(!is.null(sigma_b2), sigma_b2, sigma_b[1])
   ICC[2] = ifelse(!is.null(ICC2), ICC2, ICC[1])
@@ -209,7 +208,6 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   
   # Create simulation loop
   for(i in 1:nsim){
-    # Generate simulated data
     # Generate between-cluster effects for non-treatment and treatment
     randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
     randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
@@ -229,14 +227,14 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     y = c(y.0, y.1)
     
     # Create data frame for simulated dataset
-    sim.dat = data.frame(y.resp = y, trt = trt, clust = clust)
+    sim.dat = data.frame(y = y, trt = trt, clust = clust)
     if(all.sim.data == TRUE){
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod = lme4::lmer(y.resp ~ trt + (1|clust), data = sim.dat)
+      my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
       glmm.values = summary(my.mod)$coefficient
       p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(nclusters) - 2)
       est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
@@ -248,7 +246,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     # Fit GEE (geeglm)
     if(method == 'gee'){
       sim.dat = dplyr::arrange(sim.dat, clust)
-      my.mod = geepack::geeglm(y.resp ~ trt, data = sim.dat,
+      my.mod = geepack::geeglm(y ~ trt, data = sim.dat,
                                id = clust, corstr = "exchangeable")
       gee.values = summary(my.mod)$coefficients
       est.vector = append(est.vector, gee.values['trt', 'Estimate'])
@@ -257,7 +255,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
       pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
     }
     
-    # Create & update progress bar
+    # Update simulation progress information
     if(quiet == FALSE){
       if(i == 1){
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
@@ -282,6 +280,8 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
       }
     }
   }
+  
+  ## Output objects
   # Create object containing summary statement
   summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: Simple Design, Continuous Outcome")
   
@@ -295,12 +295,12 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   # Calculate and store power estimate & confidence intervals
   pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
   power.parms = data.frame(Power = round(pval.power, 3),
-                           Lower.95.CI = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                           Upper.95.CI = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
+                           Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
+                           Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
   # Create object containing group-specific cluster sizes
   cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 
-                       'Treatment' = nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])
+                       'Treatment' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
   
   # Create object containing number of clusters
   n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
@@ -309,7 +309,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
                            'Treatment' = c('ICC' = ICC[2], 'sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
   
-  # Create list containing all output and return
+  # Create list containing all output (class 'crtpwr') and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
                                    "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets), 
