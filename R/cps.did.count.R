@@ -30,7 +30,7 @@
 #' between-cluster variances. For data simulation, SIGMA_B1 is added to SIGMA_B0, such that if SIGMA_B0 = 5 
 #' and SIGMA_B1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.
 #' @alpha Significance level for power estimation, accepts value between 0 - 1; default = 0.05
-#' @param family Distribution from which responses are simulated. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
+#' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
 #' @param analysis Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'
 #' @param alpha Significance level. Default = 0.05.
@@ -45,12 +45,17 @@
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
 #'                "upper.95.ci" (Upper 95% confidence interval bound)}
 #'   \item{method}{Analytic method used for power estimation}
+#'   \item{dist.parms}{Data frame containing families for distribution and analysis of simulated data}
 #'   \item{alpha}{Significance level}
 #'   \item{cluster.sizes}{Vector containing user-defined cluster sizes}
 #'   \item{n.clusters}{Vector containing user-defined number of clusters}
 #'   \item{variance.parms}{Data frame reporting between-cluster variances at each time point for 
 #'   each treatment group}
 #'   \item{inputs}{Vector containing expected counts and risk ratios based on user inputs}
+#'   \item{differences}{Data frame with columns: 
+#'                   "Period" (Pre/Post-treatment indicator), 
+#'                   "Treatment" (Treatment group indicator), 
+#'                   "Value" (Mean response value)}
 #'   \item{model.estimates}{Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
@@ -59,17 +64,19 @@
 #'                   "converge" (Did simulated model converge?), 
 #'                   "sig.val" (Is p-value less than alpha?)}
 #'   \item{sim.data}{List of data frames, each containing: 
-#'                   "y.resp" (Simulated response value), 
+#'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
-#'                   "clust" (Indicator for cluster)}
+#'                   "clust" (Indicator for cluster), 
+#'                   "period" (Indicator for time point)}
 #' 
 #' @author Alexander R. Bogdan
 #' 
 #' @examples 
 #' \dontrun{
-#' my.count.sim = cps.count(nsim = 100, nsubjects = 50, nclusters = 6, c1 = 100, c2 = 25, sigma_b0 = c(10, 15),
-#'                     sigma_b1 = c(12, 18), family = 'poisson', analysis = 'poisson', method = 'glmm', alpha = 0.05, 
-#'                     quiet = FALSE, all.sim.data = TRUE)
+#' did.count.sim = cps.did.count(nsim = 100, nsubjects = 50, nclusters = 6, c1 = 100, 
+#'                               c2 = 25, sigma_b0 = c(10, 15), sigma_b1 = c(12, 18), 
+#'                               family = 'poisson', analysis = 'poisson', method = 'glmm', 
+#'                               alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
 #' }
 #'
 #' @export
@@ -79,11 +86,13 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
                      c.diff = NULL, sigma_b0 = NULL, sigma_b1 = 0, family = 'poisson', 
                      analysis = 'poisson', method = 'glmm', alpha = 0.05, quiet = FALSE, 
                      all.sim.data = FALSE){
+  
   # Create vectors to collect iteration-specific values
   est.vector = NULL
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
+  values.vector = cbind(c(0, 0, 0, 0))
   simulated.datasets = list()
   start.time = Sys.time()
   
@@ -95,7 +104,7 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
   # Create wholenumber function
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
   
-  # Validate NSIM, NSUBJECTS, NCLUSTERS, SIGMA_B, ALPHA
+  # Validate NSIM, NSUBJECTS, NCLUSTERS
   sim.data.arg.list = list(nsim, nclusters, nsubjects)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if(sum(sim.data.args) > 0){
@@ -114,19 +123,10 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
   if(length(nclusters) > 2){
     stop("NCLUSTERS can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)")
   }
-  
-  min0.warning = " must be a numeric value greater than 0"
-  if(!is.numeric(alpha) || alpha < 0){
-    stop("ALPHA", min0.warning)
-  } else if(alpha > 1){
-    stop("ALPHA must be a numeric value between 0 - 1")
-  }
-  
   # Set cluster sizes for treatment arm (if not already specified)
   if(length(nclusters) == 1){
     nclusters[2] = nclusters[1]
   }
-  
   # Set sample sizes for each cluster (if not already specified)
   if(length(nsubjects) == 1){
     nsubjects[1:sum(nclusters)] = nsubjects
@@ -145,10 +145,44 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
     stop("At least two of the following terms must be specified: C1, C2, C.DIFF")
   }
   if(sum(parm1.args) == 0 && c.diff != abs(c1 - c2)){
-    stop("At least one of the following terms has be misspecified: C1, C2, C.DIFF")
+    stop("At least one of the following terms has been misspecified: C1, C2, C.DIFF")
+  }
+  # Set C1, C2, C.DIFF (if not already specified)
+  if(is.null(c1)){
+    c1 = abs(c.diff - c2)
+  }
+  if(is.null(c2)){
+    c2 = abs(c1 - c.diff)
+  }
+  if(is.null(c.diff)){
+    c.diff = c1 - c2
   }
   
-  # Validate FAMILY, ANALYSIS, METHOD, QUIET, ALL.SIM.DATA
+  # Validate SIGMA_B0 & SIGMA_B1
+  sigma_b.warning = " must be a scalar (equal between-cluster variance for both treatment groups) or a vector of length 2, 
+  specifying between-cluster variances for each treatment group"
+  if(!is.numeric(sigma_b0) || any(sigma_b0 < 0)){
+    stop("All values supplied to SIGMA_B0 must be numeric values < 0")
+  }
+  if(!length(sigma_b0) %in% c(1,2)){
+    stop("SIGMA_B0", sigma_b.warning)
+  }
+  if(!length(sigma_b1) %in% c(1,2)){
+    stop("SIGMA_B1", sigma_b.warning)
+  }
+  if(!is.numeric(sigma_b1) || any(sigma_b1 < 0)){
+    stop("All values supplied to SIGMA_B1 must be numeric values =< 0")
+  }
+  # Set SIGMA_B0 & SIGMA_B1 (if not already specified)
+  if(length(sigma_b0) == 1){
+    sigma_b0[2] = sigma_b0
+  }
+  if(length(sigma_b1) == 1){
+    sigma_b1[2] = sigma_b1
+  }
+  sigma_b1 = sigma_b1 + sigma_b0
+  
+  # Validate FAMILY, ANALYSIS, ALPHA, METHOD, QUIET, ALL.SIM.DATA
   if(!is.element(family, c('poisson', 'neg.binom'))){
     stop("FAMILY must be either 'poisson' (Poisson distribution) 
          or 'neg.binom'(Negative binomial distribution)")
@@ -156,6 +190,9 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
   if(!is.element(analysis, c('poisson', 'neg.binom'))){
     stop("ANALYSIS must be either 'poisson' (Poisson regression) 
          or 'neg.binom'(Negative binomial regression)")
+  }
+  if(!is.numeric(alpha) || alpha < 0 || alpha > 1){
+    stop("ALPHA must be a numeric value between 0 - 1")
   }
   if(!is.element(method, c('glmm', 'gee'))){
     stop("METHOD must be either 'glmm' (Generalized Linear Mixed Model) 
@@ -168,44 +205,7 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
     stop("ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output")
   }
   
-  # Validate SIGMA_B0 & SIGMA_B1
-  sigma_b.warning = " must be a scalar (equal between-cluster variance for both treatment groups) or a vector of length 2, 
-  specifying between-cluster variances for each treatment group"
-  if(!is.numeric(sigma_b0) || sigma_b0 < 0){
-    stop("All values supplied to SIGMA_B0 must be numeric values < 0")
-  }
-  if(!length(sigma_b0) %in% c(1,2)){
-    stop("SIGMA_B0", sigma_b.warning)
-  }
-  if(!length(sigma_b1) %in% c(1,2)){
-    stop("SIGMA_B1", sigma_b.warning)
-  }
-  if(!is.numeric(sigma_b1) || sigma_b1 < 0){
-    stop("All values supplied to SIGMA_B1 must be numeric values =< 0")
-  }
-  
-  # Set between-cluster variance parameters
-  if(length(sigma_b0) == 1){
-    sigma_b0[2] = sigma_b0
-  }
-  if(length(sigma_b1) == 1){
-    sigma_b1[2] = sigma_b1
-  }
-  sigma_b1 = sigma_b1 + sigma_b0
-  
-  
-  # Simulation parameters
-  if(is.null(c1)){
-    c1 = abs(c.diff - c2)
-  }
-  if(is.null(c2)){
-    c2 = abs(c1 - c.diff)
-  }
-  if(is.null(c.diff)){
-    c.diff = c1 - c2
-  }
-  
-  # Create indicators for time, treatment group & cluster
+  # Create indicators for PERIOD, TRT & CLUSTER
   period = rep(0:1, each = sum(nsubjects))
   trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
           rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
@@ -223,10 +223,10 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
     y0.ntrt.linpred = y0.ntrt.intercept + log(c1) 
     y0.ntrt.prob = exp(y0.ntrt.linpred)
     if(family == 'poisson'){
-      y0.ntrt = rpois(length(y0.ntrt.prob), y0.ntrt.prob)
+      y0.ntrt = stats::rpois(length(y0.ntrt.prob), y0.ntrt.prob)
     }
     if(family == 'neg.binom'){
-      y0.ntrt = rnbinom(length(y0.ntrt.prob), size = 1, mu = y0.ntrt.prob)
+      y0.ntrt = stats::rnbinom(length(y0.ntrt.prob), size = 1, mu = y0.ntrt.prob)
     }
     
     # Create treatment y-value
@@ -234,10 +234,10 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
     y0.trt.linpred = y0.trt.intercept + log(c1)
     y0.trt.prob = exp(y0.trt.linpred)
     if(family == 'poisson'){
-      y0.trt = rpois(length(y0.trt.prob), y0.trt.prob)
+      y0.trt = stats::rpois(length(y0.trt.prob), y0.trt.prob)
     }
     if(family == 'neg.binom'){
-      y0.trt = rnbinom(length(y0.trt.prob), size = 1, mu = y0.trt.prob)
+      y0.trt = stats::rnbinom(length(y0.trt.prob), size = 1, mu = y0.trt.prob)
     }
     
     ## TIME == 1
@@ -250,10 +250,10 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
     y1.ntrt.linpred = y1.ntrt.intercept + log(c1) 
     y1.ntrt.prob = exp(y1.ntrt.linpred)
     if(family == 'poisson'){
-      y1.ntrt = rpois(length(y1.ntrt.prob), y1.ntrt.prob)
+      y1.ntrt = stats::rpois(length(y1.ntrt.prob), y1.ntrt.prob)
     }
     if(family == 'neg.binom'){
-      y1.ntrt = rnbinom(length(y1.ntrt.prob), size = 1, mu = y1.ntrt.prob)
+      y1.ntrt = stats::rnbinom(length(y1.ntrt.prob), size = 1, mu = y1.ntrt.prob)
     }
     
     # Create treatment y-value
@@ -261,10 +261,10 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
     y1.trt.linpred = y1.trt.intercept + log(c2)
     y1.trt.prob = exp(y1.trt.linpred)
     if(family == 'poisson'){
-      y1.trt = rpois(length(y1.trt.prob), y1.trt.prob)
+      y1.trt = stats::rpois(length(y1.trt.prob), y1.trt.prob)
     }
     if(family == 'neg.binom'){
-      y1.trt = rnbinom(length(y1.trt.prob), size = 1, mu = y1.trt.prob)
+      y1.trt = stats::rnbinom(length(y1.trt.prob), size = 1, mu = y1.trt.prob)
     }
     
     # Create single response vector
@@ -275,6 +275,10 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
     if(all.sim.data == TRUE){
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
+    
+    # Calculate mean values for given simulation
+    iter.values = cbind(stats::aggregate(y ~ trt + period, data = sim.dat, mean)[, 3])
+    values.vector = values.vector + iter.values
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
@@ -302,7 +306,7 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
       stat.vector = append(stat.vector, gee.values['trt:period', 'Wald'])
       pval.vector = append(pval.vector, gee.values['trt:period', 'Pr(>|W|)'])
     }
-    
+    # Update progress information
     if(quiet == FALSE){
       if(i == 1){
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
@@ -320,6 +324,8 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
       } 
     }
   }
+  
+  ## Output objects
   # Create object containing summary statement
   summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
                            " Simulations: Difference in Difference Design, Count Outcome\nData Simulated from ", 
@@ -338,8 +344,8 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
   # Calculate and store power estimate & confidence intervals
   pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
   power.parms = data.frame(power = round(pval.power, 3),
-                           lower.95.ci = round(pval.power - abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                           upper.95.ci = round(pval.power + abs(qnorm(alpha/2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
+                           lower.95.ci = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
+                           upper.95.ci = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
   # Create object containing inputs
   c1.c2.rr = round(exp(log(c1) - log(c2)), 3)
@@ -348,9 +354,13 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
                         'Treatment' = c("count" = c2, 'risk.ratio' = c2.c1.rr), 
                         'Difference' = c("count" = c.diff, 'risk.ratio' = c2.c1.rr - c1.c2.rr)))
   
+  # Create object containing treatment & time-specific differences
+  values.vector = values.vector / nsim
+  differences = data.frame(Period = c(0,0,1,1), Treatment = c(0,1,0,1), Values = round(values.vector, 3))
+  
   # Create object containing group-specific cluster sizes
   cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 
-                       'Treatment' = nsubjects[(nclusters[1]+1):(nclusters[1]+nclusters[2])])
+                       'Treatment' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
   
   # Create object containing number of clusters
   n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
@@ -361,10 +371,16 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
                    "Time.Point.1" = data.frame('Non.Treatment' = c("sigma_b" = sigma_b1[1]), 
                                                'Treatment' = c("sigma_b" = sigma_b1[2])))
   
+  # Create object containing METHOD, FAMILY & REGRESSION parameters
+  dist.parms = rbind('Family:' = family, 
+                     'Analysis:' = analysis)
+  colnames(dist.parms) = "Distribution & Analysis Parameters"
+  
   # Create list containing all output and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                   "inputs" = inputs, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets), 
+                                   "dist.parms" = dist.parms, "inputs" = inputs, "differences" = differences, 
+                                   "model.estimates" = cps.model.est, "sim.data" = simulated.datasets), 
                               class = 'crtpwr')
   
   return(complete.output)
