@@ -21,12 +21,14 @@ names2rate <- c("alpha","power","nclusters","py","r1","r2","cvb","r1inc")
 
 umass <- "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-weight: bold; color: #ffffff; background-color: #881c1c; border: 3px solid #000000;"
 
-ui <- fluidPage(
+ui <- function(request){
+  fluidPage(
   HTML("<h3>Simple Two-Arm Designs</h3>
         <p>To use the two-arm calculator, leave the desired quantity blank and enter values for the other quantities.</p>
         <p>You may specify more than one input quantity by separating numbers with spaces or commas.<p>
         <p>You may specify a sequence of values by typing 'X to Y by Z', where 'X' is the starting value, 'Y' is the ending value, and 'Z' is the increment.</p>"),
   HTML("This Beta has minimal documentation; please contact ken.kleinman@gmail.com with any feedback."),
+  column(12, bookmarkButton("Save App State")),
   tabsetPanel(
     #-----------------------------------------------------------------------------------------------------------
     tabPanel("Continuous",
@@ -474,8 +476,8 @@ ui <- fluidPage(
              ) # end column(10,...
     ) # end tabPanel("Count ...
     #-----------------------------------------------------------------------------------------------------------
-  )
-) # end fluidPage
+    ) # end tabsetPanel
+)} # end fluidPage
 
 server <- function(input, output, session){
   
@@ -1443,4 +1445,4 @@ server <- function(input, output, session){
 }
 
 
-shinyApp(ui = ui, server = server)
+shinyApp(ui = ui, server = server, enableBookmarking = "server")
