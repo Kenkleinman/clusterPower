@@ -132,9 +132,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   if(!is.null(sigma_b2) && sigma_b2 <= 0){
     stop("SIGMA_B2", min0.warning)
   }
-  if(!is.numeric(alpha) || alpha < 0){
-    stop("ALPHA", min0.warning)
-  } else if(alpha > 1){
+  if(!is.numeric(alpha) || alpha < 0 || alpha > 1){
     stop("ALPHA must be a numeric value between 0 - 1")
   }
   
