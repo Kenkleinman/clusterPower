@@ -109,7 +109,12 @@ create_graph <- function(dataset, xvar, yvar, groupvar, lsizevar, psizevar, rowv
     # label facets
     # label_both_equals is a custom function in helpers.R
     facets <- paste(rowvar,"~",colvar)
-    if(facets != ". ~ .") p <- p + facet_grid(facets,labeller = label_both_equals)
+    if(facets != ". ~ ."){
+      validate(
+        need(rowvar != colvar, "Row variable and column variable must be different.")
+      )
+      p <- p + facet_grid(facets,labeller = label_both_equals)
+    } 
   }
   p
 }
