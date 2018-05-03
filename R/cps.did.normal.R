@@ -149,14 +149,14 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
   sigma_b.warning = " must be a scalar (equal between-cluster variance for both treatment groups) or a vector of length 2, 
          specifying between-cluster variances for each treatment group"
   if(!is.numeric(sigma) || any(sigma < 0)){
-    stop("All values supplied to SIGMA must be numeric values < 0")
+    stop("All values supplied to SIGMA must be numeric values > 0")
   }
   if(!length(sigma) %in% c(1,4)){
     stop("SIGMA must be a scalar (equal within-cluster variance for both treatment groups at both time points) 
          or a vector of length 4, specifying within-cluster variances for each treatment group at each time point")
   }
   if(!is.numeric(sigma_b0) || any(sigma_b0 < 0)){
-    stop("All values supplied to SIGMA_B0 must be numeric values < 0")
+    stop("All values supplied to SIGMA_B0 must be numeric values > 0")
   }
   if(!length(sigma_b0) %in% c(1,2)){
     stop("SIGMA_B0", sigma_b.warning)
@@ -165,7 +165,7 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
     stop("SIGMA_B1", sigma_b.warning)
   }
   if(!is.numeric(sigma_b1) || any(sigma_b1 < 0)){
-    stop("All values supplied to SIGMA_B1 must be numeric values =< 0")
+    stop("All values supplied to SIGMA_B1 must be numeric values >= 0")
   }
   # Set SIGMA, SIGMA_B0 & SIGMA_B1 (if not already set)
   if(length(sigma) == 1){

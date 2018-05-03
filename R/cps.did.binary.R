@@ -210,7 +210,7 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
   sigma_b.warning = " must be a scalar (equal between-cluster variance for both treatment groups) or a vector of length 2, 
          specifying between-cluster variances for each treatment group"
   if(!is.numeric(sigma_b0) || any(sigma_b0 < 0)){
-    stop("All values supplied to SIGMA_B0 must be numeric values < 0")
+    stop("All values supplied to SIGMA_B0 must be numeric values > 0")
   }
   if(!length(sigma_b0) %in% c(1,2)){
     stop("SIGMA_B0", sigma_b.warning)
@@ -219,7 +219,7 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
     stop("SIGMA_B1", sigma_b.warning)
   }
   if(!is.numeric(sigma_b1) || any(sigma_b1 < 0)){
-    stop("All values supplied to SIGMA_B1 must be numeric values =< 0")
+    stop("All values supplied to SIGMA_B1 must be numeric values >= 0")
   }
   # Set SIGMA_B0 & SIGMA_B1 (if not already specified)
   if(length(sigma_b0) == 1){
