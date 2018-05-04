@@ -13,7 +13,7 @@
 
 
 cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, difference = NULL, 
-                         steps = NULL, sigma = NULL, sigma_b0 = NULL, sigma_b1 = 0, alpha = 0.05, 
+                         steps = NULL, sigma = NULL, sigma_b = NULL, alpha = 0.05, 
                          method = 'glmm', quiet = FALSE, all.sim.data = FALSE){
   
   # Create vectors to collect iteration-specific values
@@ -60,17 +60,34 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   }
   
   # Validate STEPS
-  if(!is.wholenumber(nsubjects) || steps < 1){
-    stop(paste0("STEPS", min1.warning))
+  if(!is.wholenumber(steps) || steps < 0){
+    stop("All values supplied to STEPS must be non-negative integers")
+  }
+  if(length(steps) > 1){
+    if(sum(steps) != nclusters || max(steps) != nclusters){
+      stop("Total number of clusters specified by STEPS must either sum to 
+           NCLUSTERS or increase monotonically such that max(STEPS) == NCLUSTERS")
+    }
   }
   if(length(steps) == 1){
     steps = 1:steps
+    crossover.ind = steps
+    step.increment = nclusters / steps
+    # if(!is.wholenumber(step.increment)){
+    #   step.mod.incrment = nclusters %% steps
+      ###### Come back to this later #####
+    #}
   }
-  step.increment = nclusters / steps
-  ################################################
-  ### NEED TO ADD MORE VALIDATION HERE
-  ################################################
-  
+  # Create indexing vector for when SUM(STEPS) == NCLUSTERS
+  if(sum(steps) == nclusters){
+    step.index = sapply(1:length(steps), function(x) sum(steps[0:x]))
+    crossover.ind = 1:length(steps)
+  }
+  if(max(steps) == nclusters){
+    crossover.ind = 1:length(steps)
+    step.index = steps
+  }
+
   # Validate DIFFERENCE, ALPHA
   min0.warning = " must be a numeric value greater than 0"
   if(!is.numeric(difference) || difference < 0){
@@ -90,30 +107,25 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
     stop("SIGMA must be a scalar (equal within-cluster variance for both treatment and non-treatment groups) 
          or a vector of length 2, specifying unique within-cluster variances for the treatment and non-treament groups.")
   }
-  if(!is.numeric(sigma_b0) || any(sigma_b0 < 0)){
-    stop("All values supplied to SIGMA_B0 must be numeric values > 0")
+  if(!is.numeric(sigma_b) || any(sigma_b < 0)){
+    stop("All values supplied to SIGMA_B must be numeric values >= 0")
   }
-  if(!length(sigma_b0) %in% c(1, 2)){
-    stop("SIGMA_B0", sigma_b.warning)
+  if(!length(sigma_b) %in% c(1, 2)){
+    stop("SIGMA_B", sigma_b.warning)
   }
-  if(!length(sigma_b1) %in% c(1, 2)){
-    stop("SIGMA_B1", sigma_b.warning)
-  }
-  if(!is.numeric(sigma_b1) || any(sigma_b1 < 0)){
-    stop("All values supplied to SIGMA_B1 must be numeric values >= 0")
-  }
-  # Set SIGMA, SIGMA_B0 & SIGMA_B1 (if not already set)
+
+  # Set SIGMA & SIGMA_B (if not already set)
   if(length(sigma) == 1){
     sigma[2] = sigma
   }
-  if(length(sigma_b0) == 1){
-    sigma_b0[2] = sigma_b0
+  if(length(sigma_b) == 1){
+    sigma_b[2] = sigma_b
   }
-  if(length(sigma_b1) == 1){
-    sigma_b1[2] = sigma_b1
+  ### This doesn't feel right or seem intuitive ###
+  if(length(sigma_b) == 2){
+    sigma_b[2] = sigma_b[1] + sigma_b[2]
   }
-  sigma_b1 = sigma_b1 + sigma_b0
-  
+    
   # Validate METHOD, QUIET, ALL.SIM.DATA
   if(!is.element(method, c('glmm', 'gee'))){
     stop("METHOD must be either 'glmm' (Generalized Linear Mixed Model)
@@ -130,11 +142,21 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
   period = NULL
   k = 0
-  for(i in 1:nclusters){
-    if(i %% step.inc != 0 & (i - 1) %% step.inc == 0){
+  if(max(steps) == nclusters || sum(steps) == nclusters){
+    for(i in 1:nclusters){
+      if((i - 1) %in% step.index){
+        k = k + 1
+      }
+      period = append(period, rep(crossover.ind[k], length.out = nsubjects[i]))
+    }
+  }
+  else{
+    for(i in 1:nclusters){
+    if(i %% step.increment != 0 & (i - 1) %% step.increment == 0){
       k = k + 1
     }
-    period = append(period, rep(steps[k], length.out = nsubjects[i]))
+    period = append(period, rep(crossover.ind[k], length.out = nsubjects[i]))
+    }
   }
   d = data.frame(period = period, clust = clust)
   
@@ -156,16 +178,16 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
       # Assign non-treatment effects
       sim.dat['y'] = ifelse(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 0, 
                             rnorm(sum(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 0), 0, sigma[1]) + 
-                              ntrt.clust.effect[i] + 
-                              rnorm(sum(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 0), 0, 1), 
+                              ntrt.cluster.effects[i], 
                             sim.dat[, 'y'])
       # Assign treatment effects
       sim.dat['y'] = ifelse(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 1, 
-                            rnorm(sum(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 1), trt.effect, sigma[2]) + 
-                              trt.clust.effect[i] + 
-                              rnorm(sum(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 1), 0, 1), 
+                            rnorm(sum(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 1), difference, sigma[2]) + 
+                              trt.cluster.effects[i], 
                             sim.dat[, 'y'])
     }
+    # Add subject-specific error effects
+    sim.dat['y'] = sim.dat['y'] + rnorm(nrow(sim.dat), 0, 1) 
     
     # Store simulated data sets if ALL.SIM.DATA == TRUE 
     if(all.sim.data == TRUE){
@@ -247,28 +269,35 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   ##################################
   
   
-  # Create object containing treatment & time-specific differences
-  values.vector = values.vector / nsim
-  differences = data.frame(Period = c(0,0,1,1), Treatment = c(0,1,0,1), Values = round(values.vector, 3))
+  # # Create object containing treatment & time-specific differences
+  # #values.vector = values.vector / nsim
+  # #differences = data.frame(Period = c(0,0,1,1), Treatment = c(0,1,0,1), Values = round(values.vector, 3))
+  # 
+  # # Create object containing group-specific cluster sizes
+  # cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 
+  #                      'Treatment' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
+  # 
+  # # Create object containing number of clusters
+  # n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
+  # 
+  # # Create object containing variance parameters for each group at each time point
+  # var.parms = list("Time.Point.0" = data.frame('Non.Treatment' = c("sigma" = sigma[1], "sigma_b" = sigma_b0[1]), 
+  #                                              'Treatment' = c("sigma" = sigma[2], "sigma_b" = sigma_b0[2])), 
+  #                  "Time.Point.1" = data.frame('Non.Treatment' = c("sigma" = sigma[3], "sigma_b" = sigma_b1[1]), 
+  #                                              'Treatment' = c("sigma" = sigma[4], "sigma_b" = sigma_b1[2])))
+  # 
+  # # Create list containing all output (class 'crtpwr') and return
+  # complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
+  #                                  "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
+  #                                  "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets, 
+  #                                  "differences" = differences),
+  #                             class = 'crtpwr')
   
-  # Create object containing group-specific cluster sizes
-  cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 
-                       'Treatment' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
-  
-  # Create object containing number of clusters
-  n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
-  
-  # Create object containing variance parameters for each group at each time point
-  var.parms = list("Time.Point.0" = data.frame('Non.Treatment' = c("sigma" = sigma[1], "sigma_b" = sigma_b0[1]), 
-                                               'Treatment' = c("sigma" = sigma[2], "sigma_b" = sigma_b0[2])), 
-                   "Time.Point.1" = data.frame('Non.Treatment' = c("sigma" = sigma[3], "sigma_b" = sigma_b1[1]), 
-                                               'Treatment' = c("sigma" = sigma[4], "sigma_b" = sigma_b1[2])))
-  
-  # Create list containing all output (class 'crtpwr') and return
-  complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
-                                   "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                   "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets, 
-                                   "differences" = differences),
+   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
+                                    "model.estimates" = cps.model.est, "sim.data" = simulated.datasets),
                               class = 'crtpwr')
+  
+  
   return(complete.output)
-  }
+}
+cps.sw.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 3, steps = 5, sigma = 10, sigma_b = 20)
