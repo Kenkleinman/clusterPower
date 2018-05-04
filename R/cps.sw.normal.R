@@ -1,16 +1,78 @@
-###############################################################################
-### PROJECT: cps.sw.normal
-### AUTHOR: Alexander R. Bogdan
-### DATE CREATED: 04/30/18
-### DATE LAST MODIFIED: 05/03/18
-### DEV NOTES: 
-## 1) The below code is in ALPHA. The simulation engine and analytic engines are FUNCTIONAL.
-## 2) Revisit validation for STEPS, SIGMA_B0, SIGMA_B1
-## 3) Figure out how to incorporate user-specified cluster corssover at a given time point
-## 4) Figure out how to distribute clusters when NCLUSTER %% STEPS != 0
-## 5) Decide how to change output and reconcile this with SUMMARY & PRINT methods
-###############################################################################
-
+#' Power simulations for cluster-randomized trials: Stepped Wedge Design, Continuous Outcome.
+#'
+#' This set of functions utilize iterative simulations to determine 
+#' approximate power for stepped wedge cluster-randomized controlled trials. Users 
+#' can modify a variety of parameters to suit the simulations to their
+#' desired experimental situation.
+#' 
+#' Runs power simulations for stepped wedge cluster-randomized controlled trials.
+#' 
+#' Users must specify the desired number of simulations, number of subjects per 
+#' cluster, number of clusters per treatment arm, expected absolute difference 
+#' between treatment arms, within-cluster variance, between-cluster variance, 
+#' significance level, analytic method, progress updates, and simulated data 
+#' set output may also be specified.
+#' 
+#' 
+#' @param nsim Number of datasets to simulate; accepts integer (required).
+#' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
+#' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
+#' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
+#' @param difference Expected absolute difference in treatment effect between treatment and non-treatment groups;
+#'  accepts numeric (required).
+#' @param steps Number of crossover steps; accepts positive scalar (indicating the total number of steps; 
+#' clusters per step is obtained by \code{nclusters / steps}) or a vector of non-negative integers corresponding 
+#' either to the number of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the 
+#' cumulative number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).
+#' @param sigma Within-cluster variance; accepts non-negative numeric scalar (indicating equal within-cluster variances for both 
+#' treatment groups) or a vector of length 2 specifying within-cluster variances for the non-treatment and treatment groups, 
+#' respectively (required).
+#' @param sigma_b Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
+#' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
+#' between-cluster variances (required).
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
+#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
+#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' 
+#' @return A list with the following components
+#' \describe{
+#'   \item{overview}{Character string indicating total number of simulations and simulation type}
+#'   \item{nsim}{Number of simulations}
+#'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
+#'                "lower.95.ci" (Lower 95% confidence interval bound), 
+#'                "upper.95.ci" (Upper 95% confidence interval bound)}
+#'   \item{method}{Analytic method used for power estimation}
+#'   \item{alpha}{Significance level}
+#'   \item{cluster.sizes}{Vector containing user-defined cluster sizes}
+#'   \item{n.clusters}{Vector containing user-defined number of clusters}
+#'   \item{variance.parms}{Data frame reporting ICC, within & between cluster variances for Treatment/Non-Treatment groups at each time point}
+#'   \item{inputs}{Vector containing expected difference between groups based on user inputs}
+#'   \item{model.estimates}{Data frame with columns: 
+#'                   "Estimate" (Estimate of treatment effect for a given simulation), 
+#'                   "Std.err" (Standard error for treatment effect estimate), 
+#'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
+#'                   "p.value", 
+#'                   "sig.val" (Is p-value less than alpha?)}
+#'   \item{sim.data}{List of data frames, each containing: 
+#'                   "y" (Simulated response value), 
+#'                   "trt" (Indicator for treatment group),
+#'                   "time.point" (Indicator for step; "t1" = time point 0) 
+#'                   "clust" (Indicator for cluster), 
+#'                   "period" (Indicator for at which step a cluster crosses over)}
+#' }
+#' 
+#' @author Alexander R. Bogdan
+#' 
+#' @examples 
+#' \dontrun{
+#' normal.sw.rct = cps.sw.normal(nsim = 100, nsubjects = 50, nclusters = 30, 
+#'                               difference = 3, steps = 5, sigma = 100, sigma_b = 30, 
+#'                               alpha = 0.05, method = 'glmm', quiet = FALSE, 
+#'                               all.sim.data = FALSE)
+#' }
+#'
+#' @export
 
 cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, difference = NULL, 
                          steps = NULL, sigma = NULL, sigma_b = NULL, alpha = 0.05, 
@@ -64,9 +126,8 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
     stop("All values supplied to STEPS must be non-negative integers")
   }
   if(length(steps) > 1){
-    if(sum(steps) != nclusters || max(steps) != nclusters){
-      stop("Total number of clusters specified by STEPS must either sum to 
-           NCLUSTERS or increase monotonically such that max(STEPS) == NCLUSTERS")
+    if(sum(steps) != nclusters && max(steps) != nclusters){
+      stop("Total number of clusters specified by STEPS must either sum to NCLUSTERS or increase monotonically such that max(STEPS) == NCLUSTERS")
     }
   }
   if(length(steps) == 1){
@@ -76,6 +137,7 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
     # if(!is.wholenumber(step.increment)){
     #   step.mod.incrment = nclusters %% steps
       ###### Come back to this later #####
+     ### Need to figure out how to allocate uneven crossovers
     #}
   }
   # Create indexing vector for when SUM(STEPS) == NCLUSTERS
@@ -113,7 +175,6 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   if(!length(sigma_b) %in% c(1, 2)){
     stop("SIGMA_B", sigma_b.warning)
   }
-
   # Set SIGMA & SIGMA_B (if not already set)
   if(length(sigma) == 1){
     sigma[2] = sigma
@@ -121,7 +182,7 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   if(length(sigma_b) == 1){
     sigma_b[2] = sigma_b
   }
-  ### This doesn't feel right or seem intuitive ###
+  ### This (additive SIGMA_B) doesn't feel right or seem intuitive ###
   if(length(sigma_b) == 2){
     sigma_b[2] = sigma_b[1] + sigma_b[2]
   }
@@ -141,7 +202,8 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   # Create indicators for CLUSTER, STEP (period) & CROSSOVER (trt)
   clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
   period = NULL
-  k = 0
+  k = 0 # iterator
+  # When user specifies number of clusters to cross over at each step
   if(max(steps) == nclusters || sum(steps) == nclusters){
     for(i in 1:nclusters){
       if((i - 1) %in% step.index){
@@ -150,9 +212,10 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
       period = append(period, rep(crossover.ind[k], length.out = nsubjects[i]))
     }
   }
+  # When user supplies scalar for STEP (equal # of clusters per step)
   else{
     for(i in 1:nclusters){
-    if(i %% step.increment != 0 & (i - 1) %% step.increment == 0){
+    if(i %% step.increment != 0 && (i - 1) %% step.increment == 0){
       k = k + 1
     }
     period = append(period, rep(crossover.ind[k], length.out = nsubjects[i]))
@@ -167,26 +230,26 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   sim.dat = tidyr::gather(d, key = 'time.point', value = 'trt', c(colnames(d)[-c(1,2)]))
   sim.dat['y'] = 0
   
-  ### Loop
+  ## Craete simulation & analysis loop
   for (i in 1:nsim){
     # Create vectors of cluster effects
     ntrt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b[1]))
     trt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b[2]))
     
     # Add subject specific effects & cluster effects
-    for(i in 1:nclusters){
-      # Assign non-treatment effects
+    for(j in 1:nclusters){
+      # Assign non-treatment subject & cluster effects 
       sim.dat['y'] = ifelse(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 0, 
                             rnorm(sum(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 0), 0, sigma[1]) + 
                               ntrt.cluster.effects[i], 
                             sim.dat[, 'y'])
-      # Assign treatment effects
+      # Assign treatment subject & cluster effects
       sim.dat['y'] = ifelse(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 1, 
                             rnorm(sum(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 1), difference, sigma[2]) + 
                               trt.cluster.effects[i], 
                             sim.dat[, 'y'])
     }
-    # Add subject-specific error effects
+    # Add subject-specific error terms
     sim.dat['y'] = sim.dat['y'] + rnorm(nrow(sim.dat), 0, 1) 
     
     # Store simulated data sets if ALL.SIM.DATA == TRUE 
@@ -194,13 +257,10 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
     
-    # Calculate mean values for given simulation
-    #iter.values = cbind(stats::aggregate(y ~ trt + period, data = sim.dat, mean)[, 3])
-    #values.vector = values.vector + iter.values
-    
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod = lme4::lmer(y ~ trt + time.point + (1|clust), data = sim.dat)
+      # Note: suppressMessages added to stop "Fixed-effect model matrix is rank deficient so dropping 1 column/coefficient"
+      my.mod = suppressMessages(lme4::lmer(y ~ trt + time.point + (1|clust), data = sim.dat))
       glmm.values = summary(my.mod)$coefficient
       p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(nclusters) - 2) # Degrees of freedom for p-value?
       est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
@@ -262,42 +322,22 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   power.parms = data.frame(Power = round(pval.power, 3),
                            Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                            Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
-  
-  ##################################
-  ### BEGIN WORK FROM HERE DOWN
-  ### Need to reconcile output with SUMMARY method
-  ##################################
-  
-  
-  # # Create object containing treatment & time-specific differences
-  # #values.vector = values.vector / nsim
-  # #differences = data.frame(Period = c(0,0,1,1), Treatment = c(0,1,0,1), Values = round(values.vector, 3))
-  # 
-  # # Create object containing group-specific cluster sizes
-  # cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 
-  #                      'Treatment' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
-  # 
-  # # Create object containing number of clusters
-  # n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
-  # 
-  # # Create object containing variance parameters for each group at each time point
-  # var.parms = list("Time.Point.0" = data.frame('Non.Treatment' = c("sigma" = sigma[1], "sigma_b" = sigma_b0[1]), 
-  #                                              'Treatment' = c("sigma" = sigma[2], "sigma_b" = sigma_b0[2])), 
-  #                  "Time.Point.1" = data.frame('Non.Treatment' = c("sigma" = sigma[3], "sigma_b" = sigma_b1[1]), 
-  #                                              'Treatment' = c("sigma" = sigma[4], "sigma_b" = sigma_b1[2])))
-  # 
-  # # Create list containing all output (class 'crtpwr') and return
-  # complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
-  #                                  "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-  #                                  "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets, 
-  #                                  "differences" = differences),
-  #                             class = 'crtpwr')
-  
-   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
-                                    "model.estimates" = cps.model.est, "sim.data" = simulated.datasets),
+
+  # Create object containing cluster sizes
+  cluster.sizes = nsubjects
+
+  # Create object containing number of clusters
+  n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
+
+  # Create object containing variance parameters for each group at each time point
+  var.parms = t(data.frame('Non.Treatment' = c('sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
+                           'Treatment' = c('sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
+
+  # Create list containing all output (class 'crtpwr') and return
+  complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
+                                   "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms,
+                                   "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets),
                               class = 'crtpwr')
-  
-  
+
   return(complete.output)
 }
-cps.sw.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 3, steps = 5, sigma = 10, sigma_b = 20)
