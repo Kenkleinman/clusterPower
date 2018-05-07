@@ -246,11 +246,10 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
       # Note: suppressMessages added to stop "Fixed-effect model matrix is rank deficient so dropping 1 column/coefficient"
       my.mod = suppressMessages(lme4::glmer(y ~ trt + time.point + (1|clust), data = sim.dat, family = binomial(link = 'logit')))
       glmm.values = summary(my.mod)$coefficient
-      p.val = 2 * stats::pt(-abs(glmm.values['trt', 'z value']), df = sum(nclusters) - 2) # Degrees of freedom for p-value?
       est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
       se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt', 'Pr(>|z|)'])
-      pval.vector = append(pval.vector, p.val)
+      stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
+      pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
     }
     
     # Fit GEE (geeglm)
