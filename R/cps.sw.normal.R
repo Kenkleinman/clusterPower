@@ -131,16 +131,12 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
     }
   }
   if(length(steps) == 1){
-    steps = 1:steps
-    crossover.ind = steps
+    crossover.ind = 1:steps
     step.increment = nclusters / steps
-    # if(!is.wholenumber(step.increment)){
-    #   step.mod.incrment = nclusters %% steps
-      ###### Come back to this later #####
-     ### Need to figure out how to allocate uneven crossovers
-    #}
+    step.index = seq(from = step.increment, to = nclusters, by = step.increment)
+    ### Need to figure out how to allocate clusters when nclusters %% steps != 0
   }
-  # Create indexing vector for when SUM(STEPS) == NCLUSTERS
+  # Create indexing vector for when SUM(STEPS) == NCLUSTERS & MAX(STEPS) == NCLUSTERS
   if(sum(steps) == nclusters){
     step.index = sapply(1:length(steps), function(x) sum(steps[0:x]))
     crossover.ind = 1:length(steps)
@@ -179,12 +175,12 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   if(length(sigma) == 1){
     sigma[2] = sigma
   }
-  if(length(sigma_b) == 1){
-    sigma_b[2] = sigma_b
-  }
   ### This (additive SIGMA_B) doesn't feel right or seem intuitive ###
   if(length(sigma_b) == 2){
     sigma_b[2] = sigma_b[1] + sigma_b[2]
+  }
+  if(length(sigma_b) == 1){
+    sigma_b[2] = sigma_b
   }
     
   # Validate METHOD, QUIET, ALL.SIM.DATA
@@ -200,31 +196,19 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   }
   
   # Create indicators for CLUSTER, STEP (period) & CROSSOVER (trt)
-  clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
+  clust = unlist(lapply(1:nclusters, function(x) rep(x, length.out = nsubjects[x])))
   period = NULL
-  k = 0 # iterator
-  # When user specifies number of clusters to cross over at each step
-  if(max(steps) == nclusters || sum(steps) == nclusters){
-    for(i in 1:nclusters){
-      if((i - 1) %in% step.index){
-        k = k + 1
-      }
-      period = append(period, rep(crossover.ind[k], length.out = nsubjects[i]))
-    }
-  }
-  # When user supplies scalar for STEP (equal # of clusters per step)
-  else{
-    for(i in 1:nclusters){
-    if(i %% step.increment != 0 && (i - 1) %% step.increment == 0){
+  k = 1 # iterator
+  for(i in 1:nclusters){
+    if((i - 1) %in% step.index){
       k = k + 1
     }
     period = append(period, rep(crossover.ind[k], length.out = nsubjects[i]))
-    }
   }
   d = data.frame(period = period, clust = clust)
   
   # Create crossover indicators and melt output columns into single column
-  for(j in 1:(length(steps) + 1)){
+  for(j in 1:(length(crossover.ind) + 1)){
     d[[paste0("t", j)]] = ifelse(j > d[, 'period'], 1, 0)
   }
   sim.dat = tidyr::gather(d, key = 'time.point', value = 'trt', c(colnames(d)[-c(1,2)]))
@@ -239,14 +223,14 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
     # Add subject specific effects & cluster effects
     for(j in 1:nclusters){
       # Assign non-treatment subject & cluster effects 
-      sim.dat['y'] = ifelse(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 0, 
-                            rnorm(sum(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 0), 0, sigma[1]) + 
-                              ntrt.cluster.effects[i], 
+      sim.dat['y'] = ifelse(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0, 
+                            rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0), 0, sigma[1]) + 
+                              ntrt.cluster.effects[j], 
                             sim.dat[, 'y'])
       # Assign treatment subject & cluster effects
-      sim.dat['y'] = ifelse(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 1, 
-                            rnorm(sum(sim.dat[, 'clust'] == i & sim.dat[, 'trt'] == 1), difference, sigma[2]) + 
-                              trt.cluster.effects[i], 
+      sim.dat['y'] = ifelse(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1, 
+                            rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1), difference, sigma[2]) + 
+                              trt.cluster.effects[j], 
                             sim.dat[, 'y'])
     }
     # Add subject-specific error terms
