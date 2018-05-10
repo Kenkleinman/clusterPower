@@ -230,17 +230,17 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
     for(j in 1:nclusters){
       # Assign non-treatment subject & cluster effects 
       sim.dat['y'] = ifelse(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0, 
-                            rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0), 0, sigma[1]) + 
+                            stats::rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0), 0, sqrt(sigma[1])) + 
                               ntrt.cluster.effects[j], 
                             sim.dat[, 'y'])
       # Assign treatment subject & cluster effects
       sim.dat['y'] = ifelse(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1, 
-                            rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1), difference, sigma[2]) + 
+                            stats::rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1), difference, sqrt(sigma[2])) + 
                               trt.cluster.effects[j], 
                             sim.dat[, 'y'])
     }
     # Add subject-specific error terms
-    sim.dat['y'] = sim.dat['y'] + rnorm(nrow(sim.dat), 0, 1)
+    sim.dat['y'] = sim.dat['y'] + stats::rnorm(nrow(sim.dat), 0, 1)
     
     # Calculate mean values for each group at each time point, for a given simulation
     iter.values = cbind(stats::aggregate(y ~ trt + time.point, data = sim.dat, mean)[, 3])
