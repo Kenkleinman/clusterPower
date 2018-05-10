@@ -20,10 +20,11 @@
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
 #' @param difference Expected absolute difference in treatment effect between treatment and non-treatment groups;
 #'  accepts numeric (required).
-#' @param steps Number of crossover steps; accepts positive scalar (indicating the total number of steps; 
-#' clusters per step is obtained by \code{nclusters / steps}) or a vector of non-negative integers corresponding 
-#' either to the number of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the 
-#' cumulative number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).
+#' @param steps Number of crossover steps; a baseline step (all clusters in non-treatment group) is assumed. 
+#' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 
+#' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
+#' of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the cumulative 
+#' number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).
 #' @param sigma Within-cluster variance; accepts non-negative numeric scalar (indicating equal within-cluster variances for both 
 #' treatment groups) or a vector of length 2 specifying within-cluster variances for the non-treatment and treatment groups, 
 #' respectively (required).
@@ -180,7 +181,7 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   if(length(sigma) == 1){
     sigma[2] = sigma
   }
-  ### This (additive SIGMA_B) doesn't feel right or seem intuitive ###
+  # Note: If user-defined, SIGMA_B[2] is additive
   if(length(sigma_b) == 2){
     sigma_b[2] = sigma_b[1] + sigma_b[2]
   }

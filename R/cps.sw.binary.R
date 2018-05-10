@@ -20,10 +20,11 @@
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
 #' @param p.ntrt Expected probability of outcome in non-treatment group. Accepts scalar between 0 - 1 (required).
 #' @param p.trt Expected probability of outcome in treatment group. Accepts scalar between 0 - 1 (required).
-#' @param steps Number of crossover steps; accepts positive scalar (indicating the total number of steps; 
-#' clusters per step is obtained by \code{nclusters / steps}) or a vector of non-negative integers corresponding 
-#' either to the number of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the 
-#' cumulative number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).
+#' @param steps Number of crossover steps; a baseline step (all clusters in non-treatment group) is assumed. 
+#' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 
+#' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
+#' of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the cumulative 
+#' number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).
 #' @param sigma_b Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
 #' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances (required).
@@ -171,7 +172,7 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
     stop("SIGMA_B", sigma_b.warning)
   }
   # Set SIGMA_B (if not already set)
-  ### This (additive SIGMA_B) doesn't feel right or seem intuitive ###
+  # Note: If user-defined, SIGMA_B[2] is additive
   if(length(sigma_b) == 2){
     sigma_b[2] = sigma_b[1] + sigma_b[2]
   }
