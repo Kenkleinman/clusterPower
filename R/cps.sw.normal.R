@@ -5,7 +5,7 @@
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
 #' 
-#' Runs power simulations for stepped wedge cluster-randomized controlled trials.
+#' Runs power simulations for stepped wedge cluster-randomized controlled trials with continuous outcome.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
 #' cluster, number of clusters per treatment arm, expected absolute difference 
@@ -30,6 +30,7 @@
 #' @param sigma_b Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
 #' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances (required).
+#' @param alpha Significance level. Default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
@@ -48,6 +49,7 @@
 #'   \item{n.clusters}{Vector containing user-defined number of clusters}
 #'   \item{variance.parms}{Data frame reporting ICC, within & between cluster variances for Treatment/Non-Treatment groups at each time point}
 #'   \item{inputs}{Vector containing expected difference between groups based on user inputs}
+#'   \item{means}{Data frame containing mean response values for each treatment group at each time point}
 #'   \item{model.estimates}{Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.err" (Standard error for treatment effect estimate), 
@@ -145,6 +147,9 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
     crossover.ind = 1:length(steps)
     step.index = steps
   }
+  
+  # Create vector to store group means at each time point
+  values.vector = cbind(c(rep(0, length(step.index) * 2)))
 
   # Validate DIFFERENCE, ALPHA
   min0.warning = " must be a numeric value greater than 0"
@@ -212,6 +217,7 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
     d[[paste0("t", j)]] = ifelse(j > d[, 'period'], 1, 0)
   }
   sim.dat = tidyr::gather(d, key = 'time.point', value = 'trt', c(colnames(d)[-c(1,2)]))
+  #sim.dat['time.point'] = as.numeric(gsub("t", "", sim.dat[, 'time.point']))
   sim.dat['y'] = 0
   
   ## Craete simulation & analysis loop
@@ -234,19 +240,27 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
                             sim.dat[, 'y'])
     }
     # Add subject-specific error terms
-    sim.dat['y'] = sim.dat['y'] + rnorm(nrow(sim.dat), 0, 1) 
+    sim.dat['y'] = sim.dat['y'] + rnorm(nrow(sim.dat), 0, 1)
+    
+    # Calculate mean values for each group at each time point, for a given simulation
+    iter.values = cbind(stats::aggregate(y ~ trt + time.point, data = sim.dat, mean)[, 3])
+    values.vector = values.vector + iter.values
     
     # Store simulated data sets if ALL.SIM.DATA == TRUE 
     if(all.sim.data == TRUE){
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
     
+    ###################################################################
+    ### DEV NOTE: Hussey & Hughes (2007) does not specify degrees of freedom for significance testing
+    ###           GLMM DF = NCLUSTERS[Total # of clusters] - length(STEP.INDEX)[# of steps] - 2[# of treatment groups]
+    ###################################################################
+    
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      # Note: suppressMessages added to stop "Fixed-effect model matrix is rank deficient so dropping 1 column/coefficient"
-      my.mod = suppressMessages(lme4::lmer(y ~ trt + time.point + (1|clust), data = sim.dat))
+      my.mod = lme4::lmer(y ~ trt + time.point + (1|clust), data = sim.dat)
       glmm.values = summary(my.mod)$coefficient
-      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(nclusters) - 2) # Degrees of freedom for p-value?
+      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = nclusters - length(step.index) - 2)
       est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
       se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
       stat.vector = append(stat.vector, glmm.values['trt', 't value'])
@@ -307,6 +321,12 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
                            Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                            Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
 
+  # Create object containing treatment & time-specific differences
+  values.vector = values.vector / nsim
+  group.means = data.frame(Time.point = c(0, rep(1:(length(step.index) - 1), each = 2), length(step.index)), 
+                           Treatment = c(0, rep(c(0, 1), length.out = (length(step.index) - 1) * 2), 1), 
+                           Mean = round(values.vector, 3))
+  
   # Create object containing cluster sizes
   cluster.sizes = nsubjects
 
@@ -320,7 +340,7 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   # Create list containing all output (class 'crtpwr') and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms,
-                                   "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets),
+                                   "inputs" = difference, "means" = group.means, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets),
                               class = 'crtpwr')
 
   return(complete.output)
