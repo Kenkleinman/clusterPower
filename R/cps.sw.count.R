@@ -18,8 +18,8 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
 #' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
-#' @param difference Expected absolute difference in probability of outcome between treatment and non-treatment groups;
-#'  accepts numeric between 0 - 1 (required).
+#' @param c.ntrt Expected outcome count in non-treatment group. Accepts scalar between 0 - 1 (required).
+#' @param c.trt Expected outcome count in treatment group. Accepts scalar between 0 - 1 (required).
 #' @param steps Number of crossover steps; accepts positive scalar (indicating the total number of steps; 
 #' clusters per step is obtained by \code{nclusters / steps}) or a vector of non-negative integers corresponding 
 #' either to the number of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the 
@@ -29,6 +29,7 @@
 #' between-cluster variances (required).
 #' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
 #' @param analysis Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
+#' @param alpha Significance level. Default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
@@ -47,6 +48,7 @@
 #'   \item{n.clusters}{Vector containing user-defined number of clusters}
 #'   \item{variance.parms}{Data frame reporting ICC, within & between cluster variances for Treatment/Non-Treatment groups at each time point}
 #'   \item{inputs}{Vector containing expected difference between groups based on user inputs}
+#'   \item{means}{Data frame containing mean response values for each treatment group at each time point}
 #'   \item{model.estimates}{Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.err" (Standard error for treatment effect estimate), 
@@ -66,9 +68,9 @@
 #' @examples 
 #' \dontrun{
 #' count.sw.rct = cps.sw.count(nsim = 100, nsubjects = 50, nclusters = 30, 
-#'                               c.ntrt = 30, c.trt = 50, steps = 5, sigma_b = 30, 
-#'                               alpha = 0.05, family = 'poisson', method = 'glmm', 
-#'                               quiet = FALSE, all.sim.data = FALSE)
+#'                               c.ntrt = 3, c.trt = 5, steps = 5, sigma_b = 20, 
+#'                               alpha = 0.05, family = 'poisson', analysis = 'poisson', 
+#'                               method = 'glmm', quiet = FALSE, all.sim.data = FALSE)
 #' }
 #'
 #' @export
@@ -153,6 +155,9 @@ cps.sw.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c.ntrt 
     crossover.ind = 1:length(steps)
     step.index = steps
   }
+  
+  # Create vector to store group means at each time point
+  values.vector = cbind(c(rep(0, length(step.index) * 2)))
   
   # Validate SIGMA_B
   sigma_b.warning = " must be a scalar (equal between-cluster variance for both treatment and non-treatment groups) 
@@ -261,10 +266,19 @@ cps.sw.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c.ntrt 
       }
     }
     
+    # Calculate mean values for each group at each time point, for a given simulation
+    iter.values = cbind(stats::aggregate(y ~ trt + time.point, data = sim.dat, mean)[, 3])
+    values.vector = values.vector + iter.values
+    
     # Store simulated data sets if ALL.SIM.DATA == TRUE 
     if(all.sim.data == TRUE){
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
+    
+    #########################################################################
+    ### DEV NOTE: Majority of models do not converge (huge test statistics).
+    ###           Consider using glmerControl().                            
+    #########################################################################
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
@@ -336,6 +350,12 @@ cps.sw.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c.ntrt 
                            Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                            Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
+  # Create object containing treatment & time-specific differences
+  values.vector = values.vector / nsim
+  group.means = data.frame(Time.point = c(0, rep(1:(length(step.index) - 1), each = 2), length(step.index)), 
+                           Treatment = c(0, rep(c(0, 1), length.out = (length(step.index) - 1) * 2), 1), 
+                           Mean = round(values.vector, 3))
+  
   # Create object containing expected treatment and non-treatment probabilities
   exp.counts = data.frame("Expected.Counts" = c("Non.Treatment" = c.ntrt, "Treatment" = c.trt))
   
@@ -352,7 +372,7 @@ cps.sw.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c.ntrt 
   # Create list containing all output (class 'crtpwr') and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms,
-                                   "inputs" = exp.counts, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets),
+                                   "inputs" = exp.counts, "means" = group.means, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets),
                               class = 'crtpwr')
   
   return(complete.output)
