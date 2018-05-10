@@ -18,8 +18,8 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
 #' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
-#' @param difference Expected absolute difference in probability of outcome between treatment and non-treatment groups;
-#'  accepts numeric between 0 - 1 (required).
+#' @param p.ntrt Expected probability of outcome in non-treatment group. Accepts scalar between 0 - 1 (required).
+#' @param p.trt Expected probability of outcome in treatment group. Accepts scalar between 0 - 1 (required).
 #' @param steps Number of crossover steps; accepts positive scalar (indicating the total number of steps; 
 #' clusters per step is obtained by \code{nclusters / steps}) or a vector of non-negative integers corresponding 
 #' either to the number of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the 
@@ -27,6 +27,7 @@
 #' @param sigma_b Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
 #' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances (required).
+#' @param alpha Significance level. Default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
@@ -45,6 +46,7 @@
 #'   \item{n.clusters}{Vector containing user-defined number of clusters}
 #'   \item{variance.parms}{Data frame reporting ICC, within & between cluster variances for Treatment/Non-Treatment groups at each time point}
 #'   \item{inputs}{Vector containing expected difference between groups based on user inputs}
+#'   \item{means}{Data frame containing mean response values for each treatment group at each time point}
 #'   \item{model.estimates}{Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.err" (Standard error for treatment effect estimate), 
@@ -63,10 +65,10 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' binary.sw.rct = cps.sw.normal(nsim = 100, nsubjects = 50, nclusters = 30, 
-#'                               difference = 0.3, steps = 5, sigma_b = 30, 
-#'                               alpha = 0.05, method = 'glmm', quiet = FALSE, 
-#'                               all.sim.data = FALSE)
+#' binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 50, nclusters = 30, 
+#'                               p.ntrt = 0.1, p.trt = 0.2, steps = 5, 
+#'                               sigma_b = 30, alpha = 0.05, method = 'glmm', 
+#'                               quiet = FALSE, all.sim.data = FALSE)
 #' }
 #'
 #' @export
@@ -80,6 +82,7 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
+  lmer.icc.vector = NULL
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -155,6 +158,9 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
     step.index = steps
   }
   
+  # Create vector to store group means at each time point
+  values.vector = cbind(c(rep(0, length(step.index) * 2)))
+  
   # Validate SIGMA_B
   sigma_b.warning = " must be a scalar (equal between-cluster variance for both treatment and non-treatment groups) 
   or a vector of length 2, specifying unique between-cluster variances for the treatment and non-treatment groups."
@@ -187,6 +193,9 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
   if(!is.logical(all.sim.data)){
     stop("ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output")
   }
+  
+  # Calculate ICC1 (sigma_b / (sigma_b + pi^2/3))
+  icc1 = mean(sapply(1:2, function(x) sigma_b[x] / (sigma_b[x] + pi^2 / 3)))
   
   # Create indicators for CLUSTER, STEP (period) & CROSSOVER (trt)
   clust = unlist(lapply(1:nclusters, function(x) rep(x, length.out = nsubjects[x])))
@@ -235,6 +244,15 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
                                          rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1)))),
                             sim.dat[, 'y'])
     }
+    
+    # Calculate LMER.ICC (lmer: sigma_b / (sigma_b + sigma))
+    lmer.mod = lme4::lmer(y ~ trt + time.point + (1|clust), data = sim.dat)
+    lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
+    lmer.icc.vector =  append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
+    
+    # Calculate mean values for each group at each time point, for a given simulation
+    iter.values = cbind(stats::aggregate(y ~ trt + time.point, data = sim.dat, mean)[, 3])
+    values.vector = values.vector + iter.values
     
     # Store simulated data sets if ALL.SIM.DATA == TRUE 
     if(all.sim.data == TRUE){
@@ -306,6 +324,12 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
                            Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                            Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
+  # Create object containing treatment & time-specific differences
+  values.vector = values.vector / nsim
+  group.means = data.frame(Time.point = c(0, rep(1:(length(step.index) - 1), each = 2), length(step.index)), 
+                           Treatment = c(0, rep(c(0, 1), length.out = (length(step.index) - 1) * 2), 1), 
+                           Values = round(values.vector, 3))
+  
   # Create object containing expected treatment and non-treatment probabilities
   group.probs = data.frame("Outcome.Probabilities" = c("Non.Treatment" = p.ntrt, "Treatment" = p.trt))
   
@@ -315,6 +339,10 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
   # Create object containing number of clusters
   n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
   
+  # Create object containing estimated ICC values
+  ICC = round(t(data.frame('P_h' = c('ICC' = icc1), 
+                           'lmer' = c('ICC' = mean(lmer.icc.vector)))), 3)
+  
   # Create object containing variance parameters for each group at each time point
   var.parms = t(data.frame('Non.Treatment' = c('sigma_b' = sigma_b[1]), 
                            'Treatment' = c('sigma_b' = sigma_b[2])))
@@ -322,7 +350,7 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
   # Create list containing all output (class 'crtpwr') and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms,
-                                   "inputs" = group.probs, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets),
+                                   "inputs" = group.probs, "means" = group.means, "icc" = ICC, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets),
                               class = 'crtpwr')
   
   return(complete.output)
