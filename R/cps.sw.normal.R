@@ -51,6 +51,7 @@
 #'   \item{variance.parms}{Data frame reporting ICC, within & between cluster variances for Treatment/Non-Treatment groups at each time point}
 #'   \item{inputs}{Vector containing expected difference between groups based on user inputs}
 #'   \item{means}{Data frame containing mean response values for each treatment group at each time point}
+#'   \item{crossover.matrix}{Matrix showing cluster crossover at each time point}
 #'   \item{model.estimates}{Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.err" (Standard error for treatment effect estimate), 
@@ -337,11 +338,16 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   # Create object containing variance parameters for each group at each time point
   var.parms = t(data.frame('Non.Treatment' = c('sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
                            'Treatment' = c('sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
+  
+  # Create crossover matrix output object
+  crossover.mat = apply(as.matrix(c(0, step.index)), 1, 
+                        function(x) c(rep(1, length.out = x), rep(0, length.out = nclusters - x)))
 
   # Create list containing all output (class 'crtpwr') and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms,
-                                   "inputs" = difference, "means" = group.means, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets),
+                                   "inputs" = difference, "means" = group.means, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets, 
+                                   "crossover.matrix" = crossover.mat),
                               class = 'crtpwr')
 
   return(complete.output)
