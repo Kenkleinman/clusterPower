@@ -334,6 +334,10 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
                            switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'), 
                            " regression")
   
+  # Create method object
+  long.method = switch(method, glmm = 'Generalized Linear Mixed Model', 
+                       gee = 'Generalized Estimating Equation')
+  
   # Store simulation output in data frame
   cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
                              Std.err = as.vector(unlist(se.vector)),
@@ -371,13 +375,13 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
                    "Time.Point.1" = data.frame('Non.Treatment' = c("sigma_b" = sigma_b1[1]), 
                                                'Treatment' = c("sigma_b" = sigma_b1[2])))
   
-  # Create object containing METHOD, FAMILY & REGRESSION parameters
+  # Create object containing FAMILY & REGRESSION parameters
   dist.parms = rbind('Family:' = family, 
                      'Analysis:' = analysis)
   colnames(dist.parms) = "Distribution & Analysis Parameters"
   
   # Create list containing all output and return
-  complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
+  complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
                                    "dist.parms" = dist.parms, "inputs" = inputs, "differences" = differences, 
                                    "model.estimates" = cps.model.est, "sim.data" = simulated.datasets), 

@@ -17,7 +17,7 @@ setMethod("summary",
         cat("   Non-Treatment (n =", object[['n.clusters']][1], "):", format(object[['cluster.sizes']][[1]][1:10]), "...\n", sep = " ") 
         cat("   Treatment (n =", object[['n.clusters']][2], "):", format(object[['cluster.sizes']][[2]][1:10]), "...\n", sep = " ") 
       }
-      cat(paste("\nMethod:", switch(object[['method']], glmm = "Generalized Linear Mixed Model", gee = "Generalized Estimating Equation"), "\n"))
+      cat(paste("\nMethod:", object[['method']], "\n"))
       cat("\n")
     }
 )

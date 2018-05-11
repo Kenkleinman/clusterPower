@@ -310,6 +310,10 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   # Create object containing summary statement
   summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: Stepped Wedge Design, Continuous Outcome")
   
+  # Create method object
+  long.method = switch(method, glmm = 'Generalized Linear Mixed Model', 
+                       gee = 'Generalized Estimating Equation')
+  
   # Store simulation output in data frame
   cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
                              Std.err = as.vector(unlist(se.vector)),
@@ -344,7 +348,7 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
                         function(x) c(rep(1, length.out = x), rep(0, length.out = nclusters - x)))
 
   # Create list containing all output (class 'crtpwr') and return
-  complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
+  complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms,
                                    "inputs" = difference, "means" = group.means, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets, 
                                    "crossover.matrix" = crossover.mat),

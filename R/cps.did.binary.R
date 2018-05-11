@@ -383,6 +383,10 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
                            " Simulations: Difference in Difference Design, Binary Outcome\nNote: ", sum(converge.vector==FALSE), 
                            " additional models were fitted to account for non-convergent simulations.")
   
+  # Create method object
+  long.method = switch(method, glmm = 'Generalized Linear Mixed Model', 
+                       gee = 'Generalized Estimating Equation')
+  
   # Store model estimate output in data frame
   cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
                              Std.err = as.vector(unlist(se.vector)),
@@ -436,7 +440,7 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
   }
   
   # Create list containing all output (class 'crtpwr') and return
-  complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
+  complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
                                    "inputs" = inputs, "differences" = differences, "ICC" = ICC, "icc.list" = icc.list, 
                                    "model.estimates" = cps.model.est, "sim.data" = simulated.datasets, "warning.list" = warning.list), 

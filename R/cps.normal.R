@@ -285,6 +285,10 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   # Create object containing summary statement
   summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: Simple Design, Continuous Outcome")
   
+  # Create method object
+  long.method = switch(method, glmm = 'Generalized Linear Mixed Model', 
+                       gee = 'Generalized Estimating Equation')
+  
   # Store simulation output in data frame
   cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
                            Std.err = as.vector(unlist(se.vector)),
@@ -310,7 +314,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
                            'Treatment' = c('ICC' = ICC[2], 'sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
   
   # Create list containing all output (class 'crtpwr') and return
-  complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = method, "alpha" = alpha,
+  complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
                                    "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets), 
                               class = 'crtpwr')
