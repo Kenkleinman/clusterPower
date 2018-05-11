@@ -376,9 +376,9 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
                                                'Treatment' = c("sigma_b" = sigma_b1[2])))
   
   # Create object containing FAMILY & REGRESSION parameters
-  dist.parms = rbind('Family:' = family, 
-                     'Analysis:' = analysis)
-  colnames(dist.parms) = "Distribution & Analysis Parameters"
+  dist.parms = rbind('Family:' = paste0(switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'), ' distribution'), 
+                     'Analysis:' = paste0(switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'), ' distribution'))
+  colnames(dist.parms) = "Data Simuation & Analysis Parameters"
   
   # Create list containing all output and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, "alpha" = alpha,
