@@ -2,7 +2,7 @@
 % Please edit documentation in R/cps.normal.R
 \name{cps.normal}
 \alias{cps.normal}
-\title{Power simulations for cluster-randomized trials: Simple Designs.}
+\title{Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.}
 \usage{
 cps.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
   difference = NULL, ICC = NULL, sigma = NULL, sigma_b = NULL,
@@ -62,8 +62,9 @@ and simulated data set output may also be specified.
 }
 \examples{
 \dontrun{
-my.normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 30, ICC = 0.2, sigma_w = 100,
-                    alpha = 0.05, method = 'glmm', quiet = FALSE, all.sim.data = FALSE)
+normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 30,
+                        ICC = 0.2, sigma_w = 100, alpha = 0.05, method = 'glmm', 
+                        quiet = FALSE, all.sim.data = FALSE)
 }
 
 }

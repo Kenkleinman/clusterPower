@@ -2,8 +2,13 @@
 
 export(cps.binary)
 export(cps.count)
+export(cps.did.binary)
+export(cps.did.count)
 export(cps.did.normal)
 export(cps.normal)
+export(cps.sw.binary)
+export(cps.sw.count)
+export(cps.sw.normal)
 export(crtpwr.2mean)
 export(crtpwr.2meanCA)
 export(crtpwr.2meanD)

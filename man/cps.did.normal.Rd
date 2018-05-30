@@ -5,34 +5,33 @@
 \title{Power simulations for cluster-randomized trials: Difference in Difference Design, Continuous Outcome.}
 \usage{
 cps.did.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  difference = NULL, ICC = NULL, sigma = NULL, sigma_b = NULL,
-  ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL, alpha = 0.05,
-  method = "glmm", quiet = FALSE, all.sim.data = FALSE)
+  difference = NULL, sigma = NULL, sigma_b0 = NULL, sigma_b1 = 0,
+  alpha = 0.05, method = "glmm", quiet = FALSE, all.sim.data = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
 
 \item{nsubjects}{Number of subjects per treatment group; accepts either a scalar (equal cluster sizes, both groups), 
 a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
-(unequal cluster sizes within groups) (required).
-accept vectors of treatment-specific cluster numbers and distributional forms.}
+(unequal cluster sizes within groups) (required).}
 
-\item{nclusters}{Number of clusters per group; accepts single integer or vector of length 2 for unequal number 
+\item{nclusters}{Number of clusters per group; accepts integer scalar or vector of length 2 for unequal number 
 of clusters per treatment group (required)}
 
-\item{difference}{Expected absolute difference in treatment effect between time points; accepts numeric (required).
-The following arguments can accept either a scalar (indicating constant variance between time points) 
-or a vector of length 2 (indicating different variances at each time point). 
-At least two of the following must be specified for the non-treatment group:}
+\item{difference}{Expected absolute difference in treatment effect between time points; accepts numeric (required).}
 
-\item{ICC}{Intra-cluster correlation coefficient; accepts a value between 0 - 1}
+\item{sigma}{Within-cluster variance; accepts numeric scalar (indicating equal within-cluster variances for both 
+treatment groups at both time points) or vector of length 4 specifying within-cluster variance for each treatment 
+group at each time point.}
 
-\item{sigma_b}{Between-cluster variance; accepts numeric
-Similarly, at least two of the following must be specified for the treatment group:}
+\item{sigma_b0}{Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
+between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
+between-cluster variances}
 
-\item{ICC2}{Intra-cluster correlation coefficient for clusters in TREATMENT group}
-
-\item{sigma_b2}{Between-cluster variance for clusters in TREATMENT group}
+\item{sigma_b1}{Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
+between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
+between-cluster variances. For data simulation, SIGMA_B1 is added to SIGMA_B0, such that if SIGMA_B0 = 5 
+and SIGMA_B1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.}
 
 \item{alpha}{Significance level. Default = 0.05.}
 
@@ -42,10 +41,6 @@ Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); defa
 \item{quiet}{When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.}
 
 \item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
-
-\item{sigma_w}{Within-cluster variance; accepts numeric}
-
-\item{sigma_w2}{Within-cluster variance for clusters in TREATMENT group}
 }
 \description{
 This set of functions utilize iterative simulations to determine 
@@ -64,8 +59,9 @@ and simulated data set output may also be specified.
 }
 \examples{
 \dontrun{
-my.did.rct = cps.did.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 3, ICC = 0.2, sigma = 100,
-                    alpha = 0.05, method = 'glmm', quiet = FALSE, all.sim.data = FALSE)
+normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 50, nclusters = 30, 
+                                difference = 3, ICC = 0.2, sigma = 100, alpha = 0.05, 
+                                method = 'glmm', quiet = FALSE, all.sim.data = FALSE)
 }
 
 }
