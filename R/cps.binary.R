@@ -284,7 +284,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       
       # Fit GLMM (lmer)
       if(method == 'glmm'){
-        my.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat, family = binomial(link = 'logit'))
+        my.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat, family = stats::binomial(link = 'logit'))
         model.converge = try(my.mod)
         converge.ind = is.null(model.converge@optinfo$conv$lme4$messages)
         converge.vector = append(converge.vector, converge.ind)
@@ -302,7 +302,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       if(method == 'gee'){
         sim.dat = dplyr::arrange(sim.dat, clust)
         my.mod = geepack::geeglm(y ~ trt, data = sim.dat,
-                                 family = binomial(link = 'logit'), 
+                                 family = stats::binomial(link = 'logit'), 
                                  id = clust, corstr = "exchangeable")
         gee.values = summary(my.mod)$coefficients
         est.vector = append(est.vector, gee.values['trt', 'Estimate'])

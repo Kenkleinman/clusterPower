@@ -283,7 +283,7 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
     # Fit GLMM (lmer)
     if(method == 'glmm'){
       if(analysis == 'poisson'){
-        my.mod = lme4::glmer(y ~ trt + period + trt:period + (1|clust), data = sim.dat, family = poisson(link = 'log'))
+        my.mod = lme4::glmer(y ~ trt + period + trt:period + (1|clust), data = sim.dat, family = stats::poisson(link = 'log'))
       }
       if(analysis == 'neg.binom'){
         my.mod = lme4::glmer.nb(y ~ trt + period + trt:period + (1|clust), data = sim.dat)
@@ -298,7 +298,7 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
     if(method == 'gee'){
       sim.dat = dplyr::arrange(sim.dat, clust)
       my.mod = geepack::geeglm(y ~ trt + period + trt:period, data = sim.dat,
-                               family = poisson(link = 'log'), 
+                               family = stats::poisson(link = 'log'), 
                                id = clust, corstr = "exchangeable")
       gee.values = summary(my.mod)$coefficients
       est.vector = append(est.vector, gee.values['trt:period', 'Estimate'])

@@ -233,17 +233,17 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
     for(j in 1:nclusters){
       # Assign non-treatment subject & cluster effects 
       sim.dat['y'] = ifelse(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0, 
-                            rbinom(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0), 1, 
+                            stats::rbinom(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0), 1, 
                                    expit(logit.p.ntrt + 
                                          ntrt.cluster.effects[j] + 
-                                         rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0)))),
+                                         stats::rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0)))),
                             sim.dat[, 'y'])
       # Assign treatment subject & cluster effects
       sim.dat['y'] = ifelse(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1, 
-                            rbinom(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1), 1, 
+                            stats::rbinom(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1), 1, 
                                    expit(logit.p.trt + 
                                          trt.cluster.effects[j] + 
-                                         rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1)))),
+                                         stats::rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1)))),
                             sim.dat[, 'y'])
     }
     
@@ -263,7 +263,7 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod = lme4::glmer(y ~ trt + time.point + (1|clust), data = sim.dat, family = binomial(link = 'logit'))
+      my.mod = lme4::glmer(y ~ trt + time.point + (1|clust), data = sim.dat, family = stats::binomial(link = 'logit'))
       glmm.values = summary(my.mod)$coefficient
       est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
       se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
@@ -275,7 +275,7 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
     if(method == 'gee'){
       sim.dat = dplyr::arrange(sim.dat, clust)
       my.mod = geepack::geeglm(y ~ trt + time.point, data = sim.dat,
-                               family = binomial(link = 'logit'), 
+                               family = stats::binomial(link = 'logit'), 
                                id = clust, corstr = "exchangeable")
       gee.values = summary(my.mod)$coefficients
       est.vector = append(est.vector, gee.values['trt', 'Estimate'])
