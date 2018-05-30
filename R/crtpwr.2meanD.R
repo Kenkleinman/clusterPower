@@ -93,7 +93,8 @@ crtpwr.2meanD <- function(alpha = 0.05, power = 0.80, nclusters = NA,
     # variance inflation
     DEFF <- 1 + (nsubjects - 1)*icc
     r <- (nsubjects*icc/DEFF)*rho_c + ((1 - icc)/DEFF)*rho_s
-    VIF <- DEFF*(1 - r^2)
+    # VIF <- DEFF*(1 - r^2)
+    VIF <- DEFF*2*(1 - r)
 
     tcrit <- qt(alpha/2, 2*(nclusters - 1), lower.tail = FALSE)
     
