@@ -43,8 +43,6 @@ and SIGMA_B1 = 2, the between-cluster variance at time == 1 equals 7. Default = 
 \item{quiet}{When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.}
 
 \item{all.sim.data}{Option to output list of all simulated datasets. Default = FALSE}
-
-\item{alpha}{Significance level. Default = 0.05.}
 }
 \description{
 This function utilizes iterative simulations to determine 

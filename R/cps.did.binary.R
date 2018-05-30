@@ -396,7 +396,8 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
-  pval.data = subset(cps.model.est, converge == TRUE)
+  # pval.data = subset(cps.model.est, converge == TRUE)
+  pval.data = cps.model.est[cps.model.est$converge == TRUE,]
   pval.power = sum(pval.data[, 'sig.val']) / nrow(pval.data)
   power.parms = data.frame(power = round(pval.power, 3),
                            lower.95.ci = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
