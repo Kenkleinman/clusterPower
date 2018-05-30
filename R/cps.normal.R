@@ -23,12 +23,12 @@
 #' @param difference Expected absolute treatment effect; accepts numeric (required).
 #' At least 2 of the following must be specified:
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
-#' @param sigma_w Within-cluster variance; accepts numeric
+#' @param sigma Within-cluster variance; accepts numeric
 #' @param sigma_b Between-cluster variance; accepts numeric
 #' If clusters differ between treatment groups, at least 2 of the following 
 #' must be specified:
 #' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
-#' @param sigma_w2 Within-cluster variance for clusters in TREATMENT group
+#' @param sigma2 Within-cluster variance for clusters in TREATMENT group
 #' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
 #' @param alpha Significance level; default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
@@ -66,7 +66,7 @@
 #' @examples 
 #' \dontrun{
 #' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 30,
-#'                         ICC = 0.2, sigma_w = 100, alpha = 0.05, method = 'glmm', 
+#'                         ICC = 0.2, sigma = 100, alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
 #'

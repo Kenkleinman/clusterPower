@@ -24,11 +24,15 @@ At least 2 of the following must be specified:}
 
 \item{ICC}{Intra-cluster correlation coefficient; accepts a value between 0 - 1}
 
+\item{sigma}{Within-cluster variance; accepts numeric}
+
 \item{sigma_b}{Between-cluster variance; accepts numeric
 If clusters differ between treatment groups, at least 2 of the following 
 must be specified:}
 
 \item{ICC2}{Intra-cluster correlation coefficient for clusters in TREATMENT group}
+
+\item{sigma2}{Within-cluster variance for clusters in TREATMENT group}
 
 \item{sigma_b2}{Between-cluster variance for clusters in TREATMENT group}
 
@@ -40,10 +44,6 @@ Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); defa
 \item{quiet}{When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.}
 
 \item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
-
-\item{sigma_w}{Within-cluster variance; accepts numeric}
-
-\item{sigma_w2}{Within-cluster variance for clusters in TREATMENT group}
 }
 \description{
 This set of functions utilize iterative simulations to determine 
@@ -63,7 +63,7 @@ and simulated data set output may also be specified.
 \examples{
 \dontrun{
 normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 30,
-                        ICC = 0.2, sigma_w = 100, alpha = 0.05, method = 'glmm', 
+                        ICC = 0.2, sigma = 100, alpha = 0.05, method = 'glmm', 
                         quiet = FALSE, all.sim.data = FALSE)
 }
 
