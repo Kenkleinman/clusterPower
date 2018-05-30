@@ -38,11 +38,13 @@ and SIGMA_B1 = 2, the between-cluster variance at time == 1 equals 7. Default = 
 
 \item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'}
 
-\item{alpha}{Significance level. Default = 0.05.}
+\item{alpha}{Significance level for power estimation, accepts value between 0 - 1; default = 0.05}
 
 \item{quiet}{When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.}
 
 \item{all.sim.data}{Option to output list of all simulated datasets. Default = FALSE}
+
+\item{alpha}{Significance level. Default = 0.05.}
 }
 \description{
 This function utilizes iterative simulations to determine 

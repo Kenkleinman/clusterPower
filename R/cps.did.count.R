@@ -29,7 +29,7 @@
 #' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances. For data simulation, SIGMA_B1 is added to SIGMA_B0, such that if SIGMA_B0 = 5 
 #' and SIGMA_B1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.
-#' @alpha Significance level for power estimation, accepts value between 0 - 1; default = 0.05
+#' @param alpha Significance level for power estimation, accepts value between 0 - 1; default = 0.05
 #' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
 #' @param analysis Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'
@@ -38,12 +38,11 @@
 #' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
 #' 
 #' @return A list with the following components
-#' \describe{
 #'   \item{overview}{Character string indicating total number of simulations, distribution of simulated data, and regression family}
 #'   \item{nsim}{Number of simulations}
-#'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
-#'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound)}
+#'   \item{power}{Data frame with columns 'Power' (Estimated statistical power), 
+#'                'lower.95.ci' (Lower 95% confidence interval bound), 
+#'                'upper.95.ci' (Upper 95% confidence interval bound)}
 #'   \item{method}{Analytic method used for power estimation}
 #'   \item{dist.parms}{Data frame containing families for distribution and analysis of simulated data}
 #'   \item{alpha}{Significance level}
@@ -53,21 +52,21 @@
 #'   each treatment group}
 #'   \item{inputs}{Vector containing expected counts and risk ratios based on user inputs}
 #'   \item{differences}{Data frame with columns: 
-#'                   "Period" (Pre/Post-treatment indicator), 
-#'                   "Treatment" (Treatment group indicator), 
-#'                   "Value" (Mean response value)}
+#'                   'Period' (Pre/Post-treatment indicator), 
+#'                   'Treatment' (Treatment group indicator), 
+#'                   'Value' (Mean response value)}
 #'   \item{model.estimates}{Data frame with columns: 
-#'                   "Estimate" (Estimate of treatment effect for a given simulation), 
-#'                   "Std.Err" (Standard error for treatment effect estimate), 
-#'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
-#'                   "p.value", 
-#'                   "converge" (Did simulated model converge?), 
-#'                   "sig.val" (Is p-value less than alpha?)}
+#'                   'Estimate' (Estimate of treatment effect for a given simulation), 
+#'                   'Std.Err' (Standard error for treatment effect estimate), 
+#'                   'Test.statistic' (z-value (for GLMM) or Wald statistic (for GEE)), 
+#'                   'p.value', 
+#'                   'converge' (Did simulated model converge?), 
+#'                   'sig.val' (Is p-value less than alpha?)}
 #'   \item{sim.data}{List of data frames, each containing: 
-#'                   "y" (Simulated response value), 
-#'                   "trt" (Indicator for treatment group), 
-#'                   "clust" (Indicator for cluster), 
-#'                   "period" (Indicator for time point)}
+#'                   'y' (Simulated response value), 
+#'                   'trt' (Indicator for treatment group), 
+#'                   'clust' (Indicator for cluster), 
+#'                   'period' (Indicator for time point)}
 #' 
 #' @author Alexander R. Bogdan
 #' 
