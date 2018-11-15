@@ -68,15 +68,6 @@ pooledtooltip <- 'Select to indicate if pooled variance is desired.'
 ptext <- "Expected mean proportion (p)"
 ptooltip <- "The expected mean proportion at the post-test, averaged across treatment and control arms."
 
-covdftext <- "Covariate degrees of freedom (covdf)"
-covdftooltip <- "The degrees of freedom used by group-level covariates. A value of 0 means no regression adjustment using covariates."
-
-pvar_ctext <- "Cluster-level proportion of variance explained (pvar_c)"
-pvar_ctooltip <- "The expected cluster-level proportion of variance to be explained by regression adjustment for covariates."
-
-pvar_stext <- "Subject-level proportion of variance explained (pvar_s)"
-pvar_stooltip <- "The expected subject-level proportion of variance to be explained by regression adjustment for covariates."
-
 # -----------------------------------------------------------------------------
 # specific to 2propM:
 cvmtext <- "Within-pair Outcome CV (cvm)"

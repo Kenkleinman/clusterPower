@@ -58,11 +58,11 @@ crtpwr.2prop.safe <- function(alpha,power,nclusters,nsubjects,cv,p1,p2,icc,poole
   res
 }
 
-crtpwr.2propD.safe <- function(alpha,power,nclusters,nsubjects,p,d,icc,rho_c,rho_s,covdf,pvar_c,pvar_s){
+crtpwr.2propD.safe <- function(alpha,power,nclusters,nsubjects,p,d,icc,rho_c,rho_s){
   # make safe version
   fun <- safely(crtpwr.2propD, otherwise = NA)
   # store result
-  res <- fun(alpha,power,nclusters,nsubjects,p,d,icc,rho_c,rho_s,covdf,pvar_c,pvar_s)
+  res <- fun(alpha,power,nclusters,nsubjects,p,d,icc,rho_c,rho_s)
   # if res$error NULL, set to NA, otherwise set to message
   if(is.null(res$error)){
     res$error = 'None'

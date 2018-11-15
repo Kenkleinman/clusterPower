@@ -4,9 +4,9 @@
 \alias{crtpwr.2propD}
 \title{Power calculations for  difference-in-difference cluster randomized trials, binary outcome}
 \usage{
-crtpwr.2propD(alpha = 0.05, power = 0.8, nclusters = NA, nsubjects = NA,
-  p = NA, d = NA, icc = NA, rho_c = NA, rho_s = NA, covdf = 0,
-  pvar_c = 0, pvar_s = 0, tol = .Machine$double.eps^0.25)
+crtpwr.2propD(alpha = 0.05, power = 0.8, nclusters = NA,
+  nsubjects = NA, p = NA, d = NA, icc = NA, rho_c = NA,
+  rho_s = NA, tol = .Machine$double.eps^0.25)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a
@@ -34,17 +34,6 @@ subject level. This should be used for a cohort design or a mixture of cohort
 and cross-sectional designs. In a purely cross-sectional design (baseline subjects
 are completely different from post-test subjects), this value should be 0.}
 
-\item{covdf}{The degrees of freedom used by group-level covariates. A value of 0 means no regression 
-adjustment using covariates.}
-
-\item{pvar_c}{The expected cluster-level proportion of variance to be explained by regression
-adjustment for covariates. If covariate adjustment isn't used or its effects not known, this value should
-be 0.}
-
-\item{pvar_s}{The expected subject-level proportion of variance to be explained by regression
-adjustment for covariates. If covariate adjustment isn't used or its effects not known, this value should
-be 0.}
-
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}
 }
@@ -57,7 +46,7 @@ or determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-  \code{p}, \code{d}, \code{icc}, \code{rho_c}, and \code{rho_s}  must be passed as \code{NA}.
+  \code{p}, \code{d}, \code{icc}, \code{rho_c}, and \code{rho_s} must be passed as \code{NA}.
   Note that \code{alpha} and \code{power} have non-\code{NA}
   defaults, so if those are the parameters of interest they must be
   explicitly passed as \code{NA}.
