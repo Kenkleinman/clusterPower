@@ -245,8 +245,9 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
     stop("ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output")
   }
   
-  # Calculate ICC1 (sigma_b / (sigma_b + pi^2/3))
-  icc1 = mean(sapply(1:2, function(x) sigma_b[x] / (sigma_b[x] + pi^2 / 3)))
+  # Calculate ICC1 at baseline (_0) and tx period (_1) (sigma_b / (sigma_b + pi^2/3))
+  icc1_0 = mean(sapply(1:2, function(x) sigma_b0[x] / (sigma_b0[x] + pi^2 / 3)))
+  icc1_1 = mean(sapply(1:2, function(x) sigma_b1[x] / (sigma_b1[x] + pi^2 / 3)))
   
   # Create indicators for PERIOD, TRT & CLUSTER
   period = rep(0:1, each = sum(nsubjects))
@@ -320,6 +321,10 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
     lmer.mod = lme4::lmer(y ~ trt + period + trt:period + (1|clust), data = sim.dat)
     lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
     lmer.icc.vector =  append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
+    
+    ## Note to KK, JM: what sigma_b is Alex using here?  the one based on the baseline?
+    ## The one based on the TX period?  Or the one based on the model that assumes no
+    ## additional variance in the tx period?  KK's money is on option 3
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
@@ -422,7 +427,8 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
   n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
   
   # Create object containing estimated ICC values
-  ICC = round(t(data.frame('P_h' = c('ICC' = icc1), 
+  ICC = round(t(data.frame('P_h_0' = c('ICC' = icc1_0), 
+                           'P_h_1' = c('ICC' = icc1_1),
                            'P_c' = c('ICC' = mean(icc2.vector)), 
                            'lmer' = c('ICC' = mean(lmer.icc.vector)))), 3)
   # Create object containing all ICC values
