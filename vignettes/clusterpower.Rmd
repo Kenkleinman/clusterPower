@@ -1,0 +1,81 @@
+---
+title: "clusterPower"
+author: "Alexandria C. Brown, Jon Moyer, Ken Kleinman"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+bibliography: bibliography.bib
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The clusterPower package calculates power using analytical and simulation approaches for a wide range of cluster-randomized trial designs:
+
+1. Simple two-arm comparison designs
+2. Difference in difference designs
+3. Individually randomized group treatment trials
+4. Stepped wedge designs
+5. Multi-arm trial designs 
+
+Cluster-randomized trials are a common clinical trial design, often even a required design for study validity. Investigators may choose cluster randomization design for convenience, for practical reasons, or from statistical necessity. In cluster-randomized trials, subjects that are administratively grouped together are all randomized to the same study treatment. For example, all the patients of each clinic involved in a trial may be grouped within the same treatment or control arm. In this case, the clinic "cluster" is randomized to the treatment arm, which determines the treatment group of each participant therein.
+
+All trials must have accurate power and sample size calculations for practical, economic, and ethical reasons. For cluster-randomized trials, power calculations are complex, relying on approximations, and/or on more assumptions than simpler designs, and closed-form solutions may not exist.  While some routines are available, they are often crude approximations, and few are available in free software or in webapps for people without highly technical statistical training. Neither comprehensive nor free power and sample size software for cluster-randomized trials has not been produced.  
+
+This document introduces you to clusterPower's basic set of tools, and shows you how to implement them with your trial design.
+
+-----------------------
+
+# Simple two-arm comparison designs
+
+(what eqn are we using here?)
+
+-----------------------
+
+# Difference in difference designs
+In this design, all clusters are observed in a baseline period, then some clusters are randomized to a treatment. The design accomidates pre-existing differences between the arms and provides increased power. The difference in differences trial can be modeled as:
+
+\begin{equation}
+x_{itj}= \beta_{0}+x_{itj}\beta_{1}+p_{itj}\beta_{2}+x_{itj}p_{itj}\beta_{3}+b_{i}+e_{ij}
+\end{equation}
+
+where $t$ indexes period (baseline or intervention) and $x_{itj}=1$ if cluster $i$ is in the treatment group and $p_{itj}=1$ if time $t$ is in the intervention period, and $0$ otherwise. Notably, $\beta_{3}$ is the difference in period effect in the treatment group relative to the non-treatment group.
+
+-----------------------
+
+# Individually randomized group treatment trials
+
+The individually randomized group treatment trial can be modeled as:
+
+\begin{equation}
+x_{ij}= \beta_{0}+x_{ij}\beta_{1}+x_{ij}b_{i1}+e_{ij}
+\end{equation}
+
+i.e., exactly as the parallel group two arm trial with different between-cluster variances per arm, except that the between-group variance in one arm is 0, because there are no groups at all.  
+
+-----------------------
+
+# Stepped wedge designs
+
+In an SWT, participants in the treatment arm begin the intervention in groups at different times. Clusters typically switch from control to intervention only, with the intervention continued until the end of the study. 
+
+(eqn?) [see @hussey2007design].
+
+
+-----------------------
+
+# Multi-arm trial designs 
+
+Frequently investigators need to design three-arm trials, or four-arm trials—the latter case is especially common in the case of factorial designs used to assess potential interaction or synergy between two treatments.  
+
+(eqn?)
+
+-----------------------
+# References
