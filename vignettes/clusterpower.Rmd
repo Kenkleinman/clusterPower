@@ -35,7 +35,11 @@ This document introduces you to clusterPower's basic set of tools, and shows you
 
 # Simple two-arm comparison designs
 
-(what eqn are we using here?)
+\begin{equation}
+x_{itj}= \beta_{0}+x_{ij}\beta_{1}+b_{i}+e_{ij}
+\end{equation}
+
+where i indicates a cluster, j indicates a subject within the cluster, and xij=1 if subject ij is in the treatment group and 0 if not.  The error term eij is assumed to be distributed normal with mean = 0 and variance 2, while bi, uncorrelated with eij, is assumed to be normal with mean 0 and variance b2.  
 
 -----------------------
 
@@ -43,7 +47,7 @@ This document introduces you to clusterPower's basic set of tools, and shows you
 In this design, all clusters are observed in a baseline period, then some clusters are randomized to a treatment. The design accomidates pre-existing differences between the arms and provides increased power. The difference in differences trial can be modeled as:
 
 \begin{equation}
-x_{itj}= \beta_{0}+x_{itj}\beta_{1}+p_{itj}\beta_{2}+x_{itj}p_{itj}\beta_{3}+b_{i}+e_{ij}
+y_{itj}= \beta_{0}+x_{itj}\beta_{1}+p_{itj}\beta_{2}+x_{itj}p_{itj}\beta_{3}+b_{i}+e_{ij}
 \end{equation}
 
 where $t$ indexes period (baseline or intervention) and $x_{itj}=1$ if cluster $i$ is in the treatment group and $p_{itj}=1$ if time $t$ is in the intervention period, and $0$ otherwise. Notably, $\beta_{3}$ is the difference in period effect in the treatment group relative to the non-treatment group.
@@ -55,7 +59,7 @@ where $t$ indexes period (baseline or intervention) and $x_{itj}=1$ if cluster $
 The individually randomized group treatment trial can be modeled as:
 
 \begin{equation}
-x_{ij}= \beta_{0}+x_{ij}\beta_{1}+x_{ij}b_{i1}+e_{ij}
+y_{ij}= \beta_{0}+x_{ij}\beta_{1}+x_{ij}b_{i1}+e_{ij}
 \end{equation}
 
 i.e., exactly as the parallel group two arm trial with different between-cluster variances per arm, except that the between-group variance in one arm is 0, because there are no groups at all.  
