@@ -27,9 +27,46 @@ The clusterPower package calculates power using analytical and simulation approa
 
 Cluster-randomized trials are a common clinical trial design, often even a required design for study validity. Investigators may choose cluster randomization design for convenience, for practical reasons, or from statistical necessity. In cluster-randomized trials, subjects that are administratively grouped together are all randomized to the same study treatment. For example, all the patients of each clinic involved in a trial may be grouped within the same treatment or control arm. In this case, the clinic "cluster" is randomized to the treatment arm, which determines the treatment group of each participant therein.
 
-All trials must have accurate power and sample size calculations for practical, economic, and ethical reasons. For cluster-randomized trials, power calculations are complex, relying on approximations, and/or on more assumptions than simpler designs, and closed-form solutions may not exist.  While some routines are available, they are often crude approximations, and few are available in free software or in webapps for people without highly technical statistical training. Neither comprehensive nor free power and sample size software for cluster-randomized trials has not been produced.  
+"Statistical power" is usually defined as the probability of rejecting the null hypothesis given that some particular alternative hypothesis is true. All trials must have accurate power and sample size calculations for practical, economic, and ethical reasons---it is ethically unjustifiable to randomize more subjects than necessary to yield sufficient power, and equally unjustifiable to expose subjects to the potential for harm in an underpowered trial. 
 
-This document introduces you to clusterPower's basic set of tools, and shows you how to implement them with your trial design.
+However, for cluster-randomized trials, power calculations are complex, relying on approximations, and/or on more assumptions than simpler designs and closed-form solutions may not exist. Many available routines are crude approximations, and few are available in free software or in webapps for people without highly technical statistical training. This document introduces you to clusterPower's basic set of tools, and shows you how to implement them with your trial design.
+
+------------------------
+# Outcome types
+
+This package is focused on calculating effect and sample size-related parameters for cluster randomized trials in which two or more interventions are compared with respect to continuous, binary, or categorical (poisson-distributed) outcomes. Incidence rate and time-to-event outcome variables are also potential outcome structures which may influence how effective sample size or cluster number is calculated. See @GAO201541 for more details on methodological approaches for different outcome types.
+
+
+# Analytic vs. simulation approaches
+
+This package has options to implement either analytic or simulation-based power estimation methods.
+Analytic solutions to power and sample size relationships exist in certain settings, including cases of equal cluster sizes and normally-distributed outcomes. As an example, for a two-arm study with a normal outcome:
+
+\begin{equation}
+W=P(t_{d,f,\lambda}<t_{d,f}^{-1}(\frac{\alpha}{2}))+P(t_{df,\lambda}>t_{d,f}^{-1}(\frac{1-\alpha}{2}))
+\end{equation}
+
+where $df=2(N-1)$, $\lambda=d/[2(1+(N-1)\rho))/MN]^{\frac{1}{2}}$, $d=(\mu_{1}-\mu_{2})/\sigma$, $\mu_{g}$ is the arm $g$ mean, $M$ is the number of study participants per cluster, and $N$ is the number of clusters in each arm. Furthermore, $t_{k,\lambda}$ is a variate from the noncentral $t$ distribution with $k$ degrees of freedom and noncentrality parameter $\lambda$, so $t_{k}^{-1}(a)$ is the $a$th quantile from the central $t$ distribution with $k$ degrees of freedom. The intracluster correlation coefficient (ICC) is the correlation between two subjects within any cluster, denoted $\rho$ in the above equation. In general, as the number of clusters $N$ increases, the analytic power approximation becomes more accurate. The approximation worsens slightly as $M$ increases and the ICC $\rho$ decreases.
+
+(check definition of $M$, also shown as "cluster sizes")
+
+When clusters differ in size or the study outcome is non-normal, power can instead be estimated by simulation. The procedure entails simulating data under the alternative, evaluate whether the null hypothesis was rejected, and repeat, thereby the proportion of rejections observed is the estimate of power. As opposed to the analytic approach shown in the previous paragraph, a basic algorithm for assessing power for a normal outcome across two arms using a $K$-fold simulation approach is as follows:
+\begin{list}
+1. Sample cluster sizes $M_{i}$
+2. Sample random effects $b_{i}$
+3. For each cluster $i$:
+  a. Sample, from a normal distribution, residual error $e_{ij}$.
+  b. Calculate $Y_{ij}=\beta_{0}+\beta_{1}I(G_{ij}=1)+...+b_{i}+e_{ij}$.
+4. Perform data analysis, record whether null hypothesis was rejected.
+5. Repeat previous steps $K$ times.
+\end(list)
+Power is estimated by $\sum r_{k}/K$, where $r_{k}=1$ is the null was rejected in iteration $k$. The confidence interval (CI) for the simulated power approximation can be calculated based on the properties of the binomial distribution. The approach can be modified to accomidate poisson or dichotomous outcomes, and to adjust for differing cluster sizes. For more details, see @gatsonis2017methods.
+  
+# ICC and variance approaches
+  The equation for the ICC is $\sigma_{b}^2/(\sigma_{b}^2+\sigma^2), where... (do we need this much detail?)
+
+ 
+
 
 -----------------------
 
@@ -39,7 +76,7 @@ This document introduces you to clusterPower's basic set of tools, and shows you
 x_{itj}= \beta_{0}+x_{ij}\beta_{1}+b_{i}+e_{ij}
 \end{equation}
 
-where i indicates a cluster, j indicates a subject within the cluster, and xij=1 if subject ij is in the treatment group and 0 if not.  The error term eij is assumed to be distributed normal with mean = 0 and variance 2, while bi, uncorrelated with eij, is assumed to be normal with mean 0 and variance b2.  
+where $i$ indicates a cluster, $j$ indicates a subject within the cluster, and $x_{ij}=1$ if subject $ij$ is in the treatment group and 0 if not.  The error term $e_{ij}$ is assumed to be distributed normal with mean = 0 and variance 2, while $b_{i}$, uncorrelated with $e_{ij}$, is assumed to be normal with mean 0 and variance $b_{2}$.  
 
 -----------------------
 
