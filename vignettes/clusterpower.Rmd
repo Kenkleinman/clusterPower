@@ -31,13 +31,16 @@ Cluster-randomized trials are a common clinical trial design, often even a requi
 
 However, for cluster-randomized trials, power calculations are complex, relying on approximations, and/or on more assumptions than simpler designs and closed-form solutions may not exist. Many available routines are crude approximations, and few are available in free software or in webapps for people without highly technical statistical training. This document introduces you to clusterPower's basic set of tools, and shows you how to implement them with your trial design.
 
+#### ICC considerations
+  Investigators should proceed cautiously when transferring intracluster correlation coefficient (ICC) from previous studies. This statistic, commonly denoted as $\rho$, is---in general terms---a metric for assessing the impact of clustering in cluster randomized trials. The ICC represents the proportion of total variability due to cluster-level variability, in other words, the similarity of individuals within a clusters for the outcome. The equation for the ICC is $\sigma_{b}^2/(\sigma_{b}^2+\sigma^2) for normal outcomes, but different methods may be used to determine the ICC. In fact, the definition of ICC may vary depending on the setting and data structure, the model adopted, and the type of outcome. Notably, extrapolating sample size or power esimates using the ICC for observed dichotomous outcomes may be particularly fraught (@eldridge2009intra and @@gatsonis2017methods). Make sure you understand how previous investigators determined their ICC values before attempting to apply this measure in clusterPower.
+
 ------------------------
-# Outcome types
+### Outcome types
 
 This package is focused on calculating effect and sample size-related parameters for cluster randomized trials in which two or more interventions are compared with respect to continuous, binary, or categorical (poisson-distributed) outcomes. Incidence rate and time-to-event outcome variables are also potential outcome structures which may influence how effective sample size or cluster number is calculated. See @GAO201541 for more details on methodological approaches for different outcome types.
 
 
-# Analytic vs. simulation approaches
+### Analytic vs. simulation approaches
 
 This package has options to implement either analytic or simulation-based power estimation methods.
 Analytic solutions to power and sample size relationships exist in certain settings, including cases of equal cluster sizes and normally-distributed outcomes. As an example, for a two-arm study with a normal outcome:
@@ -51,26 +54,22 @@ where $df=2(N-1)$, $\lambda=d/[2(1+(N-1)\rho))/MN]^{\frac{1}{2}}$, $d=(\mu_{1}-\
 (check definition of $M$, also shown as "cluster sizes")
 
 When clusters differ in size or the study outcome is non-normal, power can instead be estimated by simulation. The procedure entails simulating data under the alternative, evaluate whether the null hypothesis was rejected, and repeat, thereby the proportion of rejections observed is the estimate of power. As opposed to the analytic approach shown in the previous paragraph, a basic algorithm for assessing power for a normal outcome across two arms using a $K$-fold simulation approach is as follows:
-\begin{list}
+
 1. Sample cluster sizes $M_{i}$
 2. Sample random effects $b_{i}$
 3. For each cluster $i$:
-  a. Sample, from a normal distribution, residual error $e_{ij}$.
-  b. Calculate $Y_{ij}=\beta_{0}+\beta_{1}I(G_{ij}=1)+...+b_{i}+e_{ij}$.
+  + Sample, from a normal distribution, residual error $e_{ij}$.
+  + Calculate $Y_{ij}=\beta_{0}+\beta_{1}I(G_{ij}=1)+...+b_{i}+e_{ij}$.
 4. Perform data analysis, record whether null hypothesis was rejected.
 5. Repeat previous steps $K$ times.
-\end(list)
-Power is estimated by $\sum r_{k}/K$, where $r_{k}=1$ is the null was rejected in iteration $k$. The confidence interval (CI) for the simulated power approximation can be calculated based on the properties of the binomial distribution. The approach can be modified to accomidate poisson or dichotomous outcomes, and to adjust for differing cluster sizes. For more details, see @gatsonis2017methods.
+
+Power is estimated by $\sum r_{k}/K$, where $r_{k}=1$ if the null was rejected in iteration $k$. The confidence interval (CI) for the simulated power approximation is calculated based on binomial distribution properties. The approach can be modified to accomidate poisson or dichotomous outcomes, and to adjust for differing cluster sizes, which poses an advantage of resampling methodology over some analytical approaches.
   
-# ICC and variance approaches
-  The equation for the ICC is $\sigma_{b}^2/(\sigma_{b}^2+\sigma^2), where... (do we need this much detail?)
 
  
-
-
 -----------------------
 
-# Simple two-arm comparison designs
+## Simple two-arm comparison designs
 
 \begin{equation}
 x_{itj}= \beta_{0}+x_{ij}\beta_{1}+b_{i}+e_{ij}
@@ -80,7 +79,7 @@ where $i$ indicates a cluster, $j$ indicates a subject within the cluster, and $
 
 -----------------------
 
-# Difference in difference designs
+## Difference in difference designs
 In this design, all clusters are observed in a baseline period, then some clusters are randomized to a treatment. The design accomidates pre-existing differences between the arms and provides increased power. The difference in differences trial can be modeled as:
 
 \begin{equation}
@@ -91,7 +90,7 @@ where $t$ indexes period (baseline or intervention) and $x_{itj}=1$ if cluster $
 
 -----------------------
 
-# Individually randomized group treatment trials
+## Individually randomized group treatment trials
 
 The individually randomized group treatment trial can be modeled as:
 
@@ -103,7 +102,7 @@ i.e., exactly as the parallel group two arm trial with different between-cluster
 
 -----------------------
 
-# Stepped wedge designs
+## Stepped wedge designs
 
 In an SWT, participants in the treatment arm begin the intervention in groups at different times. Clusters typically switch from control to intervention only, with the intervention continued until the end of the study. 
 
@@ -112,11 +111,11 @@ In an SWT, participants in the treatment arm begin the intervention in groups at
 
 -----------------------
 
-# Multi-arm trial designs 
+## Multi-arm trial designs 
 
 Frequently investigators need to design three-arm trials, or four-arm trials—the latter case is especially common in the case of factorial designs used to assess potential interaction or synergy between two treatments.  
 
 (eqn?)
 
 -----------------------
-# References
+## References

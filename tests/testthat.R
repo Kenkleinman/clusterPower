@@ -30,7 +30,6 @@ test_that("continuous case matches CRTSize", {
 })
 
 # compare simulation and analytic methods for continuous outcomes
-
 test_that("simulation and analytic methods give similar power estimations", {
   sim.power <- cps.normal(nsim = 100, nsubjects = 150, nclusters = 5, difference = .4804988,
                        ICC = 0.05, sigma = 1, alpha = 0.05, method = 'glmm', 
