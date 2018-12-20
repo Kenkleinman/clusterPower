@@ -106,7 +106,7 @@ i.e., exactly as the parallel group two arm trial with different between-cluster
 
 In an SWT, participants in the treatment arm begin the intervention in groups at different times. Clusters typically switch from control to intervention only, with the intervention continued until the end of the study. 
 
-(eqn?) [see @hussey2007design].
+(eqn) [see @hussey2007design].
 
 
 -----------------------

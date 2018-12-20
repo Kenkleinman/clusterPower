@@ -52,6 +52,8 @@ context("Simple, binary outcome accuracy")
 # NOTE: does not match NIH reference value. Seems to consistently underestimate the nclusters needed 
 # by 1. NIH estimates nclusters using a t-distribution. Do we need them to match more closely?
 
+# Ken says add user option to use t or normal distribution.
+
 test_that("binary case matches reference value from NIH calculator", {
   expect_equal(ceiling(as.numeric(crtpwr.2prop(alpha = 0.05, power = 0.8, 
                                                nclusters = NA, nsubjects = 150, cv = 0, 
@@ -74,6 +76,8 @@ test_that("binary case matches CRTSize::n4props", {
 # says "if sigma_b2 is not specified, between cluster variances are
 # assumed to be equal for both groups"). I'm probably not 
 # understanding something. --- ASK KEN ABOUT THIS
+
+# Ken says: Should be a test for sigma b2=NA and if Sigb2=NA val set to sigma b.
 
 test_that("simulation and analytic methods give similar power estimations for binary outcomes", {
   sim.power <- cps.binary(nsim = 100, nsubjects = 150, nclusters = 12, p1 = 0.1,
@@ -101,6 +105,7 @@ test_that("incidence rate outcomes matches CRTSize::n4incidence", {
 })
 
 # compare simulation and analytic methods for poisson outcomes
+# test .7-.9 in increments of .25
 # NOTE: c1 & c2 (treatment) are outcome counts while r1 (treatment) & r2 are outcome rates
 test_that("simulation and analytic methods give similar power estimations for poisson outcomes", {
   sim.power <- cps.count(nsim = 100, nsubjects = 120, nclusters = 4, c1 = 20,
