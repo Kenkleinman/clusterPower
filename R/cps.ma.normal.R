@@ -1,4 +1,4 @@
-#' Power simulations for cluster-randomized trials: Multi-Arm Designs, Continuous Outcome.
+#' Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.
 #'
 #' This set of functions utilize iterative simulations to determine 
 #' approximate power for cluster-randomized controlled trials. Users 
@@ -6,7 +6,6 @@
 #' desired experimental situation.
 #' 
 #' Runs the power simulation.
-#' nsim, n, m, t, difference, ICC, sigma, sigma_2, sigma_b, alpha, method, quiet
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
 #' cluster, number of clusters per treatment arm, expected absolute difference 
@@ -28,33 +27,9 @@
 #' @param sigma_b Between-cluster variance; accepts numeric
 #' If clusters differ between treatment groups, at least 2 of the following 
 #' must be specified:
-#' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group 1
-#' @param sigma2 Within-cluster variance for clusters in TREATMENT group 1
-#' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group 1
-#' @param ICC3 Intra-cluster correlation coefficient for clusters in TREATMENT group 2
-#' @param sigma3 Within-cluster variance for clusters in TREATMENT group 2
-#' @param sigma_b3 Between-cluster variance for clusters in TREATMENT group 2
-#' @param ICC4 Intra-cluster correlation coefficient for clusters in TREATMENT group 3
-#' @param sigma4 Within-cluster variance for clusters in TREATMENT group 3
-#' @param sigma_b4 Between-cluster variance for clusters in TREATMENT group 3
-#' @param ICC5 Intra-cluster correlation coefficient for clusters in TREATMENT group 4
-#' @param sigma5 Within-cluster variance for clusters in TREATMENT group 4
-#' @param sigma_b5 Between-cluster variance for clusters in TREATMENT group 4
-#' @param ICC6 Intra-cluster correlation coefficient for clusters in TREATMENT group 5
-#' @param sigma6 Within-cluster variance for clusters in TREATMENT group 5
-#' @param sigma_b6 Between-cluster variance for clusters in TREATMENT group 5
-#' @param ICC7 Intra-cluster correlation coefficient for clusters in TREATMENT group 6
-#' @param sigma7 Within-cluster variance for clusters in TREATMENT group 6
-#' @param sigma_b7 Between-cluster variance for clusters in TREATMENT group 6
-#' @param ICC8 Intra-cluster correlation coefficient for clusters in TREATMENT group 7
-#' @param sigma8 Within-cluster variance for clusters in TREATMENT group 7
-#' @param sigma_b8 Between-cluster variance for clusters in TREATMENT group 7
-#' @param ICC9 Intra-cluster correlation coefficient for clusters in TREATMENT group 8
-#' @param sigma9 Within-cluster variance for clusters in TREATMENT group 8
-#' @param sigma_b9 Between-cluster variance for clusters in TREATMENT group 8
-#' @param ICC10 Intra-cluster correlation coefficient for clusters in TREATMENT group 9
-#' @param sigma10 Within-cluster variance for clusters in TREATMENT group 9
-#' @param sigma_b10 Between-cluster variance for clusters in TREATMENT group 9
+#' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
+#' @param sigma2 Within-cluster variance for clusters in TREATMENT group
+#' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
 #' @param alpha Significance level; default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
@@ -90,28 +65,30 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' ma.normal.sim = cps.ma.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 30,
+#' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 30,
 #'                         ICC = 0.2, sigma = 100, alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
 #'
 #' @export
+#' 
+#' @param nsim Number of datasets to simulate; accepts integer (required).
+#' @param narms Number of arms including the control group (required).
+#' @param nsubjects Number of subjects per treatment group; accepts a list of length \code{narms} 
+#' containing vectors of length \code{nclusters} (required).
+#' @param nclusters Number of clusters per group; accepts a vector with one entry each per arm (required)
+#' @param means Expected absolute treatment effect for each arm; accepts a vector of length \code{narms} (required).
+#' @param sigma Within-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param sigma_b Between-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param alpha Significance level; default = 0.05.
+#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
+#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 
-
-cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, difference = NULL,
+cps.ma.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, difference = NULL,
                       ICC = NULL, sigma = NULL, sigma_b = NULL,
-                      ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL,
-                      ICC3 = NULL, sigma3 = NULL, sigma_b3 = NULL,
-                      ICC4 = NULL, sigma4 = NULL, sigma_b4 = NULL,
-                      ICC5 = NULL, sigma5 = NULL, sigma_b5 = NULL,
-                      ICC6 = NULL, sigma6 = NULL, sigma_b6 = NULL,
-                      ICC7 = NULL, sigma7 = NULL, sigma_b7 = NULL,
-                      ICC8 = NULL, sigma8 = NULL, sigma_b8 = NULL,
-                      ICC9 = NULL, sigma9 = NULL, sigma_b9 = NULL,
-                      ICC10 = NULL, sigma10 = NULL, sigma_b10 = NULL,
-                      alpha = 0.05, method = 'glmm', quiet = FALSE,
+                      alpha = 0.05, quiet = FALSE,
                       all.sim.data = FALSE){
-  
+
   # Create vectors to collect iteration-specific values
   est.vector = NULL
   se.vector = NULL
@@ -139,7 +116,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     stop(paste0("NSIM", min1.warning))
   }
   if(!is.wholenumber(nclusters) || nclusters < 1){
-    stop(paste0("NCLUSTERS", min1.warning))
+    stop(paste0("NCLUSTERS", min1.warning))  
   }
   if(!is.wholenumber(nsubjects) || nsubjects < 1){
     stop(paste0("NSUBJECTS", min1.warning))
@@ -176,30 +153,11 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     stop("ALPHA must be a numeric value between 0 - 1")
   }
   
-  # Validate ICC, SIGMA, SIGMA_B, ICC2, SIGMA2, SIGMA_B2
-  parm1.arg.list = list(ICC, sigma, sigma_b)
-  parm1.args = unlist(lapply(parm1.arg.list, is.null))
-  if(sum(parm1.args) > 1){
-    stop("At least two of the following terms must be specified: ICC, sigma, sigma_b")
-  }
-  if(sum(parm1.args) == 0 && ICC != sigma_b / (sigma_b + sigma)){
-    stop("At least one of the following terms has been misspecified: ICC, sigma, sigma_b")
-  }
-  parm2.arg.list = list(ICC2, sigma2, sigma_b2)
-  parm2.args = unlist(lapply(parm2.arg.list, is.null))
-  if(sum(parm2.args) > 1 && sum(parm2.args) != 3){
-    stop("At least two of the following terms must be provided to simulate treatment-specific
-         variances: ICC2, sigma2, sigma_b2")
-  }
-  if(sum(parm2.args) == 0 && ICC2 != sigma_b2 / (sigma_b2 + sigma2)){
-    stop("At least one of the following terms has been misspecified: ICC2, sigma2, sigma_b2")
-  }
+  # Validate SIGMA, SIGMA_B
   
-  # Validate METHOD, QUIET, ALL.SIM.DATA
-  if(!is.element(method, c('glmm', 'gee'))){
-    stop("METHOD must be either 'glmm' (Generalized Linear Mixed Model)
-         or 'gee'(Generalized Estimating Equation)")
-  }
+  
+  
+  # Validate QUIET, ALL.SIM.DATA
   if(!is.logical(quiet)){
     stop("QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)")
   }
@@ -207,54 +165,10 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     stop("ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output")
   }
   
-  ## Create variance parameters
-  # SIGMA_B, SIGMA, ICC
-  if(!is.null(c(ICC, sigma)) && is.null(sigma_b)){
-    sigma_b = ICC * sigma / (1 - ICC)
-  }
-  if(!is.null(c(ICC, sigma_b)) && is.null(sigma)){
-    sigma = sigma_b / ICC - sigma_b
-  }
-  if(!is.null(c(sigma, sigma_b)) && is.null(ICC)){
-    ICC = sigma_b / (sigma_b + sigma)
-  }
-  # SIGMA_B2, SIGMA2, ICC2
-  if(!is.null(c(ICC2, sigma2)) && is.null(sigma_b2)){
-    sigma_b2 = ICC2 * sigma2 / (1 - ICC2)
-  }
-  if(!is.null(c(ICC2, sigma_b2)) && is.null(sigma2)){
-    sigma2 = sigma_b2 / ICC2 - sigma_b2
-  }
-  if(!is.null(c(sigma2, sigma_b2)) && is.null(ICC2)){
-    ICC2 = sigma_b2 / (sigma_b2 + sigma2)
-  }
-  # SIGMA_B3, SIGMA3, ICC3
-  if(!is.null(c(ICC3, sigma3)) && is.null(sigma_b3)){
-    sigma_b3 = ICC3 * sigma3 / (1 - ICC3)
-  }
-  if(!is.null(c(ICC3, sigma_b3)) && is.null(sigma3)){
-    sigma3 = sigma_b3 / ICC3 - sigma_b3
-  }
-  if(!is.null(c(sigma3, sigma_b3)) && is.null(ICC3)){
-    ICC3 = sigma_b3 / (sigma_b3 + sigma3)
-  }
-  # SIGMA_B4, SIGMA4, ICC4
-  if(!is.null(c(ICC4, sigma4)) && is.null(sigma_b4)){
-    sigma_b4 = ICC4 * sigma4 / (1 - ICC4)
-  }
-  if(!is.null(c(ICC4, sigma_b4)) && is.null(sigma4)){
-    sigma4 = sigma_b4 / ICC4 - sigma_b4
-  }
-  if(!is.null(c(sigma4, sigma_b4)) && is.null(ICC4)){
-    ICC4 = sigma_b4 / (sigma_b4 + sigma4)
-  }
-  
-  # Set within/between cluster variances & ICC for treatment group (if not already specified)
-  sigma[2] = ifelse(!is.null(sigma2), sigma2, sigma[1])
-  sigma_b[2] = ifelse(!is.null(sigma_b2), sigma_b2, sigma_b[1])
-  ICC[2] = ifelse(!is.null(ICC2), ICC2, ICC[1])
-  
   # Create indicators for treatment group & cluster
+  
+  # Loop over nsubjects to create y arm cluster dataframe
+  
   trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
           rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
   clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
@@ -262,19 +176,18 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   # Create simulation loop
   for(i in 1:nsim){
     # Generate between-cluster effects for non-treatment and treatment
-    randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
-    randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
+    randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s), 
+                                                      nc = nclusters, s = sigma_b, 
+                                                      mu = means)
     
-    # Create non-treatment y-value
-    y0.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
-    y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[1]))))
+    # Create y-value
+    y.bclust = vector(mode = "list", length = narms)
+    y.wclust = vector(mode = "list", length = narms)
+    for (j in 1:narms){
+      y.bclust[j] = sapply(1:nclusters[j], function(x) rep(randint[[j]][x], length.out = nsubjects[[j]][x]))
+      y.wclust[j] = lapply(nsubjects[1:nclusters[j]], function(x) stats::rnorm(x, mean = randint[j], sd = sqrt(sigma[j])))
+    }
     y.0 = y0.bclust + y0.wclust
-    
-    # Create treatment y-value
-    y1.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
-    y1.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])], 
-                              function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma[2]))))
-    y.1 = y1.bclust + y1.wclust
     
     # Create single response vector
     y = c(y.0, y.1)
