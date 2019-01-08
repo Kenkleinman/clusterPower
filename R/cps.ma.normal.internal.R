@@ -12,12 +12,15 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 # 3. input validation
 # 4. make validateVariance fxn in "validation" file
 # 5. make validate nsubjects fxn in validation file
-# 6. make a wrapper function that takes ICC or sigma/sigma_b, also format output
+# 6. make a wrapper function that takes ICC or sigma/sigma_b, nclusters?, narms?, formats output
 # 7. make a seperate function for taking ICC, sigma, sigma_b
-# 8. rename this fxn
 # 9. write some usage examples
 # 10. debug
 # 11. testthat tests
+# 12. add output element with the pairwise arm comparison p-values.  
+# 13. Make sure man page notes that the responsibility for correcting for multiple testing lies with the user.
+# 14. Must be able to set the seed on the simulation methods.
+# 15. set.seed() option in the wrapper
 
 
 #' Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.
@@ -57,17 +60,9 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' 
 #' @return A list with the following components
 #' \describe{
-#'   \item{overview}{Character string indicating total number of simulations and simulation type}
-#'   \item{nsim}{Number of simulations}
 #'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
 #'                "upper.95.ci" (Upper 95% confidence interval bound)}
-#'   \item{method}{Analytic method used for power estimation}
-#'   \item{alpha}{Significance level}
-#'   \item{cluster.sizes}{Vector containing user-defined cluster sizes}
-#'   \item{n.clusters}{Vector containing user-defined number of clusters in each treatment group}
-#'   \item{variance.parms}{Data frame reporting ICC for Treatment/Non-Treatment groups}
-#'   \item{inputs}{Vector containing expected difference between groups based on user inputs}
 #'   \item{model.estimates}{Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.err" (Standard error for treatment effect estimate), 
@@ -80,7 +75,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #'                   "clust" (Indicator for cluster)}
 #' }
 #' 
-#' #' @examples 
+#' @examples 
 #' \dontrun{
 #' 
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
@@ -95,9 +90,10 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' }
 #' 
 #' @export
+
 cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
                       means = NULL, sigma = NULL, sigma_b = NULL,
-                      alpha = 0.05, method = 'glmm',
+                      alpha = 0.05,
                       all.sim.data = FALSE){
 
   # Create vectors to collect iteration-specific values
