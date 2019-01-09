@@ -89,7 +89,8 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' normal.ma.rct <- cps.ma.normal.internal(nsim = 100, nsubjects = nsubjects.example, 
 #'                                        means = means.example, sigma = sigma.example, 
 #'                                        sigma_b = sigma_b.example, alpha = 0.05, 
-#'                                        method = 'glmm', all.sim.data = FALSE)
+#'                                        quiet = FALSE, method = 'glmm', 
+#'                                        all.sim.data = FALSE)
 #' }
 #' 
 #' @export
@@ -168,16 +169,54 @@ cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
     sim.dat[["y"]] = unlist(y)
     
     # Fit GLMM (lmer)
-    my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
-    glmm.values = summary(my.mod)$coefficient
-    p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(nclusters) - 2)
-    est.vector[i] = glmm.values['trt', 'Estimate']
-    se.vector[i] = glmm.values['trt', 'Std. Error']
-    stat.vector[i] = glmm.values['trt', 't value']
-    pval.vector[i] = p.val
-    simulated.datasets[[i]] = sim.dat
+    if(method == 'glmm'){
+      my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
+      glmm.values = summary(my.mod)$coefficient
+      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(nclusters) - 2)
+      est.vector[i] = glmm.values['trt', 'Estimate']
+      se.vector[i] = glmm.values['trt', 'Std. Error']
+      stat.vector[i] = glmm.values['trt', 't value']
+      pval.vector[i] = p.val
+      simulated.datasets[[i]] = sim.dat
   }
   
+    # FIXME: Not set up for multi-arm RCT yet
+  # Fit GEE (geeglm)
+  #if(method == 'gee'){
+  #  sim.dat = dplyr::arrange(sim.dat, clust)
+  #  my.mod = geepack::geeglm(y ~ trt, data = sim.dat,
+  #                           id = clust, corstr = "exchangeable")
+  #  gee.values = summary(my.mod)$coefficients
+  #  est.vector = append(est.vector, gee.values['trt', 'Estimate'])
+  #  se.vector = append(se.vector, gee.values['trt', 'Std.err'])
+  #  stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
+  #  pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+  #}
+  
+  # Update simulation progress information
+  if(quiet == FALSE){
+    if(i == 1){
+      avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+      time.est = avg.iter.time * (nsim - 1) / 60
+      hr.est = time.est %/% 60
+      min.est = round(time.est %% 60, 0)
+      message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
+                     ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
+    }
+    
+    # Iterate progress bar
+    prog.bar$update(i / nsim)
+    Sys.sleep(1/100)
+    
+    if(i == nsim){
+      total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+      hr.est = total.est %/% 3600
+      min.est = total.est %/% 60
+      sec.est = round(total.est %% 60, 0)
+      message(paste0("Simulations Complete! Time Completed: ", Sys.time(), 
+                     "\nTotal Runtime: ", hr.est, 'Hr:', min.est, 'Min:', sec.est, 'Sec'))
+    }
+  }
     
   ## Output objects
     
