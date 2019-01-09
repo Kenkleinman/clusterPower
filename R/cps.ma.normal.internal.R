@@ -56,6 +56,9 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' @param sigma Within-cluster variance; accepts a vector of length \code{narms} (required).
 #' @param sigma_b Between-cluster variance; accepts a vector of length \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
+#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' 
 #' @return A list with the following components
