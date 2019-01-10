@@ -72,7 +72,7 @@ Power is estimated by $\sum r_{k}/K$, where $r_{k}=1$ if the null was rejected i
 ## Simple two-arm comparison designs
 
 \begin{equation}
-x_{itj}= \beta_{0}+x_{ij}\beta_{1}+b_{i}+e_{ij}
+y_{itj}= \beta_{0}+x_{ij}\beta_{1}+b_{i}+e_{ij}
 \end{equation}
 
 where $i$ indicates a cluster, $j$ indicates a subject within the cluster, and $x_{ij}=1$ if subject $ij$ is in the treatment group and 0 if not.  The error term $e_{ij}$ is assumed to be distributed normal with mean = 0 and variance 2, while $b_{i}$, uncorrelated with $e_{ij}$, is assumed to be normal with mean 0 and variance $b_{2}$.  
@@ -113,9 +113,12 @@ In an SWT, participants in the treatment arm begin the intervention in groups at
 
 ## Multi-arm trial designs 
 
-Frequently investigators need to design three-arm trials, or four-arm trials—the latter case is especially common in the case of factorial designs used to assess potential interaction or synergy between two treatments.  
+Frequently investigators need to design trials with three, four, or more arms. For a thourough discussion of the benefits of using mutli-arm approaches, see @parmar2014more and @o2014scientists. Consider the following linear model, where $k$ represents the treatment arm $k=1...k-1$:
 
-(eqn?)
+\begin{equation}
+y^{-1}(\mu_{ij})= \beta_{0}+x_{1ij}\beta_{1}+x_{2ij}\beta_{2}+...x_{(k-1)ij}\beta_{(k-1)}+b_{i}+e_{ij}
+\end{equation}
+
 
 -----------------------
 ## References
