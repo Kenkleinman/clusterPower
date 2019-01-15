@@ -7,7 +7,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 
 
 ##FIXME: TO DO
-# 1. update the return values
+# 11. testthat tests
 # 2. update the example/ man text
 # 3. input validation
 # 4. make validateVariance fxn in "validation" file
@@ -15,10 +15,8 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 # 6. make a wrapper function that takes ICC or sigma/sigma_b, nclusters?, narms?, formats output
 # 7. make a seperate function for taking ICC, sigma, sigma_b
 # 9. write some usage examples
-# 10. debug
-# 11. testthat tests
-# 12. add output element with the pairwise arm comparison p-values.  
-# 13. Make sure man page notes that the responsibility for correcting for multiple testing lies with the user.
+# 13. Make sure man page for the wrapper also notes that the responsibility 
+# for correcting for multiple testing lies with the user.
 # 14. Must be able to set the seed on the simulation methods.
 # 15. set.seed() option in the wrapper
 
@@ -38,16 +36,9 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' between-cluster variance; significance level, analytic method, progress updates, 
 #' and simulated data set output may also be specified.
 #' 
-#' # Return enough data to save the simulated datasets
-#' # FIXME: update this
 #' 
 #' @author Alexandria C. Sakrejda
 #' @author Alexander R. Bogdan
-#' 
-#' @examples # FIXME: update this too
-#' \dontrun{
-#' Put usage example here
-#' }
 #'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
@@ -63,20 +54,15 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' 
 #' @return A list with the following components
 #' \describe{
-#'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
-#'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound)}
-#'   \item{model.estimates}{Data frame with columns: 
-#'                   "Estimate" (Estimate of treatment effect for a given simulation), 
-#'                   "Std.err" (Standard error for treatment effect estimate), 
-#'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
-#'                   "p.value", 
-#'                   "sig.val" (Is p-value less than alpha?)}
+#'   \item{model.values}{List of length(nsim) containing gee- or glmm-fitted the model summaries.
+#'   Note: the responsibility for correcting for multiple testing lies with the user.}
 #'   \item{sim.data}{List of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
 #'                   "clust" (Indicator for cluster)}
 #' }
+#' 
+#' 
 #' 
 #' @examples 
 #' \dontrun{
@@ -98,6 +84,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
                       means = NULL, sigma = NULL, sigma_b = NULL,
                       alpha = 0.05,
+                      quiet = FALSE, method = 'glmm', 
                       all.sim.data = FALSE){
 
   # Create vectors to collect iteration-specific values
@@ -131,6 +118,12 @@ cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
     stop("ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output")
   }
   
+  # Set start.time for progress iterator & initialize progress bar
+  start.time = Sys.time()
+  prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
+                                         total = nsim, clear = FALSE, width = 100)
+  prog.bar$tick(0)
+  
   # Create indicators for treatment group & cluster
   trt = list()
   for (arm in 1:length(nsubjects)){
@@ -147,11 +140,15 @@ cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
     }
   }
   
-  # Create a container for the simulated.dataset output
-  sim.dat = data.frame(y = NA, trt = unlist(trt), clust = unlist(clust))
+  # Create a container for the simulated.dataset and glmm output
+  sim.dat = vector(mode = "list", length = nsim)
+  model.values <- list()
   
   # Create simulation loop
   for(i in 1:nsim){
+    print("begin loop")
+    print(i)
+    sim.dat[[i]] = data.frame(y = NA, trt = as.factor(unlist(trt)), clust = as.factor(unlist(clust)))
     # Generate between-cluster effects for non-treatment and treatment
     randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s)), 
                                                       nc = nclusters, s = sigma_b, 
@@ -162,37 +159,32 @@ cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
     y = vector(mode = "list", length = narms)
     for (j in 1:narms){
       y.bclust[[j]] = sapply(1:nclusters[j], function(x) rep(randint[[j]][x], length.out = nsubjects[[j]][x]))
-      y.wclust[[j]] = lapply(nsubjects[1:nclusters[j]], function(x) stats:: rnorm(x, mean = randint[j], sd = sqrt(sigma[j])))
-      y[[j]] = y.bclust[[j]] + y.wclust[[j]]
+      y.wclust[[j]] = lapply(nsubjects[[j]], function(x) stats:: rnorm(x, mean = randint[[j]], sd = sqrt(sigma[j])))
+      y[[j]] = unlist(y.bclust[[j]]) + unlist(y.wclust[[j]])
     }
     # Create data frame for simulated dataset
-    sim.dat[["y"]] = unlist(y)
+    sim.dat[[i]][["y"]] = unlist(y)
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
-      glmm.values = summary(my.mod)$coefficient
-      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(nclusters) - 2)
-      est.vector[i] = glmm.values['trt', 'Estimate']
-      se.vector[i] = glmm.values['trt', 'Std. Error']
-      stat.vector[i] = glmm.values['trt', 't value']
-      pval.vector[i] = p.val
-      simulated.datasets[[i]] = sim.dat
-  }
+      my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat[[i]])
+      model.values[[i]] = summary(my.mod)
+      simulated.datasets[[i]] = sim.dat[[i]]
+      }
   
-    # FIXME: Not set up for multi-arm RCT yet
   # Fit GEE (geeglm)
-  #if(method == 'gee'){
-  #  sim.dat = dplyr::arrange(sim.dat, clust)
-  #  my.mod = geepack::geeglm(y ~ trt, data = sim.dat,
-  #                           id = clust, corstr = "exchangeable")
-  #  gee.values = summary(my.mod)$coefficients
-  #  est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-  #  se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-  #  stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-  #  pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
-  #}
-  
+  if(method == 'gee'){
+    data.holder = dplyr::arrange(sim.dat[[i]], clust)
+    my.mod = geepack::geeglm(y ~ trt, data = data.holder,
+                             id = clust, corstr = "exchangeable")
+    model.values[[i]] = summary(my.mod)
+ }
+    # stop the function early if fits are singular
+  fail <- rep(0, nsim)
+  if(exists("my.mod@optinfo$conv$lme4$messages")==TRUE){
+    if(my.mod@optinfo$conv$lme4$messages=="singular fit"){fail[i] <- 1}
+    if(sum(fail)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+  }
   # Update simulation progress information
   if(quiet == FALSE){
     if(i == 1){
@@ -217,26 +209,14 @@ cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
                      "\nTotal Runtime: ", hr.est, 'Hr:', min.est, 'Min:', sec.est, 'Sec'))
     }
   }
-    
+  } 
+  
   ## Output objects
-    
-  # Store simulation output in data frame
-  cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
-                             Std.err = as.vector(unlist(se.vector)),
-                             Test.statistic = as.vector(unlist(stat.vector)),
-                             p.value = as.vector(unlist(pval.vector)))
-  cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
-  
-  # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(Power = round(pval.power, 3),
-                           Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                           Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
-  
-  # Create list containing all output (class 'crtpwr') and return
-  complete.output = list("power" = power.parms,
-                         "pval.power" = pval.power,
-                         "model.estimates" = cps.model.est, 
-                         "sim.data" = simulated.datasets)
+  if(all.sim.data == TRUE){
+    complete.output = list("estimates" = model.values,
+                          "sim.data" = simulated.datasets)
+  } else {
+    complete.output = model.values
+  }
   return(complete.output)
 }
