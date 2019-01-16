@@ -197,3 +197,23 @@ test_that("DID binary simulation and analytic methods give similar power estimat
 # Multi-arm normal/binary/count
 
 # NOTE: most of these don't exist yet.
+
+
+
+###########################################
+######## VALIDATION FXNS TESTS ############
+###########################################
+
+testthat::context("createMissingVarianceParam: calculate ICC, sigma, 
+                  or sigma_b based on user providing 2 of those values")
+
+# compare to a reference value 
+testthat::test_that("createMissingVarianceParam returns ICC", {
+  testthat::expect_equal(createMissingVarianceParam(sigma = c(1, 1, 0.9), 
+                                                       sigma_b = c(0.1, 0.15, 0.1)), 
+                            c(0.09090909, 0.13043478, 0.10000000))})
+
+testthat::test_that("createMissingVarianceParam fails when fewer than 2 params provided", {
+  testthat::show_failure(createMissingVarianceParam(sigma = c(1, 1, 0.9)))})
+
+  

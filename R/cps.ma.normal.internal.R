@@ -88,35 +88,13 @@ cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
                       all.sim.data = FALSE){
 
   # Create vectors to collect iteration-specific values
-  est.vector = vector(mode = "numeric", length = nsim)
-  se.vector = vector(mode = "numeric", length = nsim)
-  stat.vector = vector(mode = "numeric", length = nsim)
-  pval.vector = vector(mode = "numeric", length = nsim)
   simulated.datasets = list()
   
   # Create NCLUSTERS, NARMS, from NSUBJECTS
   narms = length(nsubjects)
   nclusters = sapply(nsubjects, length)
   
-  # FIXME: Validate NSIM, NSUBJECTS
-  min1.warning = " must be an integer greater than or equal to 1"
-  if(!is.wholenumber(nsim) || nsim < 1){
-    stop(paste0("NSIM", min1.warning))
-  }
-
-  # FIXME: Validate MEANS, ALPHA
-  if(!is.numeric(alpha) || alpha < 0 || alpha > 1){
-    stop("ALPHA must be a numeric value between 0 - 1")
-  }
-  
-  # Validate SIGMA, SIGMA_B
-  validateVariance(sigma)
-  validateVariance(sigma_b)
-  
-  # Validate ALL.SIM.DATA
-  if(!is.logical(all.sim.data)){
-    stop("ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output")
-  }
+  # validation goes here
   
   # Set start.time for progress iterator & initialize progress bar
   start.time = Sys.time()
