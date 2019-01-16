@@ -10,11 +10,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 # 1. update the return values
 # 2. update the example/ man text
 # 3. input validation
-# 4. make validateVariance fxn in "validation" file
 # 5. make validate nsubjects fxn in validation file
-# 6. make a wrapper function that takes ICC or sigma/sigma_b, also format output
-# 7. make a seperate function for taking ICC, sigma, sigma_b
-# 8. rename this fxn
 # 9. write some usage examples
 # 10. debug
 # 11. testthat tests
@@ -88,18 +84,60 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' sigma.example <- c(1, 1, 0.9)
 #' sigma_b.example <- c(0.1, 0.15, 0.1)
 #' 
-#' normal.ma.rct <- cps.ma.normal.internal(nsim = 100, nsubjects = nsubjects.example, 
-#'                                        means = means.example, sigma = sigma.example, 
-#'                                        sigma_b = sigma_b.example, alpha = 0.05, 
-#'                                        method = 'glmm', all.sim.data = FALSE)
+#' multi.cps.normal <- cps.ma.normal(nsim = 2, nsubjects = nsubjects.example, 
+#'                        means = means.example, sigma = sigma.example, 
+#'                        sigma_b = sigma_b.example, alpha = 0.05,
+#'                        quiet = FALSE, ICC=NULL, method = 'glmm', 
+#'                        all.sim.data = FALSE)
 #' }
 #' 
 #' @export
-cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
-                      means = NULL, sigma = NULL, sigma_b = NULL,
-                      alpha = 0.05, method = 'glmm',
-                      all.sim.data = FALSE){
+#' 
+ cps.ma.normal <- function(nsim = 1000, nsubjects = NA, 
+                           narms = NA, nclusters = NA,
+                        means = NA, sigma = NA, 
+                        sigma_b = NA, alpha = 0.05,
+                        quiet = FALSE, ICC=NULL, method = 'glmm', 
+                        all.sim.data = FALSE){
 
+  # supplies sigma or sigma_b if user supplies ICC
+  if (exists("sigma", mode = "object")==FALSE){
+    sigma <- createMissingVarianceParam(sigma = sigma, 
+                                        sigma_b = sigma_b, ICC = ICC)
+  }
+  if (exists("sigma_b", mode = "object")==FALSE){
+    sigma_b <- createMissingVarianceParam(sigma = sigma, 
+                                        sigma_b = sigma_b, ICC = ICC)
+  }
+   
+   # creates nsubjects structure if nclusters and nsubjects are scalar
+   if (length(nclusters)==1){
+     nclusters <- rep(nclusters, narms)
+   }
+   if (length(nsubjects)==1){
+     nsubjects.scalar <- nsubjects
+     nsubjects <- list()
+     for (i in 1:narms){
+       nsubjects[[i]] <- rep(nsubjects.scalar, nclusters[i])
+     }
+   }
+  
+   # run the simulations 
+   cps.out <- cps.ma.normal.internal(nsim = nsim, nsubjects = nsubjects, 
+                      means = means, sigma = sigma, 
+                      sigma_b = sigma_b, alpha = alpha, 
+                      quiet = quiet, method = method, 
+                      all.sim.data = all.sim.data)
+   
+ }
+   
+   
+   
+   
+   
+   
+   
+  
   # Create vectors to collect iteration-specific values
   est.vector = vector(mode = "numeric", length = nsim)
   se.vector = vector(mode = "numeric", length = nsim)
