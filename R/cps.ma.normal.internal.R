@@ -119,6 +119,9 @@ cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
     }
   }
   
+  # This container keeps track of how many models failed to converge
+  fail <- rep(NA, nsim)
+  
   # Create a container for the simulated.dataset and glmm output
   sim.dat = vector(mode = "list", length = nsim)
   model.values <- list()
@@ -160,11 +163,9 @@ cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
     model.values[[i]] = summary(my.mod)
  }
     # stop the function early if fits are singular
-  fail <- rep(0, nsim)
-  if(exists("my.mod@optinfo$conv$lme4$messages")==TRUE){
-    if(my.mod@optinfo$conv$lme4$messages=="singular fit"){fail[i] <- 1}
-    if(sum(fail)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
-  }
+  fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
+  if(sum(fail, na.rm = TRUE)>=(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+  
   # Update simulation progress information
   if(quiet == FALSE){
     if(i == 1){
@@ -194,7 +195,8 @@ cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
   ## Output objects
   if(all.sim.data == TRUE){
     complete.output = list("estimates" = model.values,
-                          "sim.data" = simulated.datasets)
+                          "sim.data" = simulated.datasets,
+                          "failed.to.converge"= fail)
   } else {
     complete.output = model.values
   }
