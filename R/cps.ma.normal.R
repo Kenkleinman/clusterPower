@@ -88,7 +88,8 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #'                        means = means.example, sigma = sigma.example, 
 #'                        sigma_b = sigma_b.example, alpha = 0.05,
 #'                        quiet = FALSE, ICC=NULL, method = 'glmm', 
-#'                        all.sim.data = FALSE)
+#'                        all.sim.data = FALSE,
+#'                        seed = NULL)
 #' }
 #' 
 #' @export
@@ -98,7 +99,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
                         means = NA, sigma = NA, 
                         sigma_b = NA, alpha = 0.05,
                         quiet = FALSE, ICC=NULL, method = 'glmm', 
-                        all.sim.data = FALSE){
+                        all.sim.data = FALSE, seed = 123){
 
   # supplies sigma or sigma_b if user supplies ICC
   if (exists("sigma", mode = "object")==FALSE){
@@ -127,96 +128,37 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
                       means = means, sigma = sigma, 
                       sigma_b = sigma_b, alpha = alpha, 
                       quiet = quiet, method = method, 
-                      all.sim.data = all.sim.data)
+                      all.sim.data = all.sim.data,
+                      seed = seed)
    
  }
    
+ # Organize the output
+ Estimates = matrix(NA, nrow = narms*nsim, ncol = narms)
+ std.error = matrix(NA, nrow = narms*nsim, ncol = narms)
+ t.val = matrix(NA, nrow = narms*nsim, ncol = narms)
+ p.val = matrix(NA, nrow = narms*nsim, ncol = narms)
+ 
+ for (i in 1:nsim){
+   Estimates[i,] <- normal.ma.rct$estimates[[i]]$coefficients[,1]
+   std.error[i,] <- normal.ma.rct$estimates[[i]]$coefficients[,2]
+   t.val[i,] <- normal.ma.rct$estimates[[i]]$coefficients[,3]
+   p.val[i,] = 2 * stats::pt(-abs(normal.ma.rct$estimates[[i]]$coefficients[,3]), 
+                             df = sum(nclusters) - 2)
+ }
+ 
+ # Calculate and store power estimate & confidence intervals
+ pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
+ power.parms = data.frame(Power = round(pval.power, 3),
+                          Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
+                                                sqrt((pval.power * (1 - pval.power)) / nsim), 3),
+                          Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
+                                                sqrt((pval.power * (1 - pval.power)) / nsim), 3))
+ 
    
    
    
    
-   
-   
-  
-  # Create vectors to collect iteration-specific values
-  est.vector = vector(mode = "numeric", length = nsim)
-  se.vector = vector(mode = "numeric", length = nsim)
-  stat.vector = vector(mode = "numeric", length = nsim)
-  pval.vector = vector(mode = "numeric", length = nsim)
-  simulated.datasets = list()
-  
-  # Create NCLUSTERS, NARMS, from NSUBJECTS
-  narms = length(nsubjects)
-  nclusters = sapply(nsubjects, length)
-  
-  # FIXME: Validate NSIM, NSUBJECTS
-  min1.warning = " must be an integer greater than or equal to 1"
-  if(!is.wholenumber(nsim) || nsim < 1){
-    stop(paste0("NSIM", min1.warning))
-  }
-
-  # FIXME: Validate MEANS, ALPHA
-  if(!is.numeric(alpha) || alpha < 0 || alpha > 1){
-    stop("ALPHA must be a numeric value between 0 - 1")
-  }
-  
-  # Validate SIGMA, SIGMA_B
-  validateVariance(sigma)
-  validateVariance(sigma_b)
-  
-  # Validate ALL.SIM.DATA
-  if(!is.logical(all.sim.data)){
-    stop("ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output")
-  }
-  
-  # Create indicators for treatment group & cluster
-  trt = list()
-  for (arm in 1:length(nsubjects)){
-    trt[[arm]] = list()
-    for (cluster in 1:length(nsubjects[[arm]])){
-      trt[[arm]][[cluster]] = rep(arm, nsubjects[[arm]][[cluster]])
-    }
-  }
-  clust = list()
-  for (arm in 1:length(nsubjects)){
-  clust[[arm]] = list()
-    for (cluster in 1:length(nsubjects[[arm]])){
-    clust[[arm]][[cluster]] = rep(cluster, nsubjects[[arm]][[cluster]])
-    }
-  }
-  
-  # Create a container for the simulated.dataset output
-  sim.dat = data.frame(y = NA, trt = unlist(trt), clust = unlist(clust))
-  
-  # Create simulation loop
-  for(i in 1:nsim){
-    # Generate between-cluster effects for non-treatment and treatment
-    randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s)), 
-                                                      nc = nclusters, s = sigma_b, 
-                                                      mu = means)
-    # Create y-value
-    y.bclust = vector(mode = "list", length = narms)
-    y.wclust = vector(mode = "list", length = narms)
-    y = vector(mode = "list", length = narms)
-    for (j in 1:narms){
-      y.bclust[[j]] = sapply(1:nclusters[j], function(x) rep(randint[[j]][x], length.out = nsubjects[[j]][x]))
-      y.wclust[[j]] = lapply(nsubjects[1:nclusters[j]], function(x) stats:: rnorm(x, mean = randint[j], sd = sqrt(sigma[j])))
-      y[[j]] = y.bclust[[j]] + y.wclust[[j]]
-    }
-    # Create data frame for simulated dataset
-    sim.dat[["y"]] = unlist(y)
-    
-    # Fit GLMM (lmer)
-    my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
-    glmm.values = summary(my.mod)$coefficient
-    p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(nclusters) - 2)
-    est.vector[i] = glmm.values['trt', 'Estimate']
-    se.vector[i] = glmm.values['trt', 'Std. Error']
-    stat.vector[i] = glmm.values['trt', 't value']
-    pval.vector[i] = p.val
-    simulated.datasets[[i]] = sim.dat
-  }
-  
     
   ## Output objects
     

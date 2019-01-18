@@ -76,7 +76,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #'                                        means = means.example, sigma = sigma.example, 
 #'                                        sigma_b = sigma_b.example, alpha = 0.05, 
 #'                                        quiet = FALSE, method = 'glmm', 
-#'                                        all.sim.data = FALSE)
+#'                                        all.sim.data = FALSE, seed = 123)
 #' }
 #' 
 #' @export
@@ -85,7 +85,8 @@ cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
                       means = NULL, sigma = NULL, sigma_b = NULL,
                       alpha = 0.05,
                       quiet = FALSE, method = 'glmm', 
-                      all.sim.data = FALSE){
+                      all.sim.data = FALSE, 
+                      seed=NULL){
 
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
@@ -122,10 +123,11 @@ cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
   sim.dat = vector(mode = "list", length = nsim)
   model.values <- list()
   
+  # option for reproducibility
+  set.seed(seed=seed)
+  
   # Create simulation loop
   for(i in 1:nsim){
-    print("begin loop")
-    print(i)
     sim.dat[[i]] = data.frame(y = NA, trt = as.factor(unlist(trt)), clust = as.factor(unlist(clust)))
     # Generate between-cluster effects for non-treatment and treatment
     randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s)), 
