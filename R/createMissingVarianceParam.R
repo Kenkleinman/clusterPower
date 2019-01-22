@@ -31,8 +31,8 @@
 createMissingVarianceParam <- function(ICC = NULL, 
                                        sigma = NULL,
                                        sigma_b = NULL){
-  parm1.arg.list = list(ICC, sigma, sigma_b)
-  parm1.args = unlist(lapply(parm1.arg.list, is.null))
+  parm1.arg.list <-  list(ICC, sigma, sigma_b)
+  parm1.args <-  unlist(lapply(parm1.arg.list, is.null))
   if(sum(parm1.args) > 1){
     stop("At least two of the following terms must be specified: ICC, sigma, sigma_b")
   }

@@ -12,13 +12,9 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 # 3. input validation
 # 4. make validateVariance fxn in "validation" file
 # 5. make validate nsubjects fxn in validation file
-# 6. make a wrapper function that takes ICC or sigma/sigma_b, nclusters?, narms?, formats output
-# 7. make a seperate function for taking ICC, sigma, sigma_b
 # 9. write some usage examples
 # 13. Make sure man page for the wrapper also notes that the responsibility 
 # for correcting for multiple testing lies with the user.
-# 14. Must be able to set the seed on the simulation methods.
-# 15. set.seed() option in the wrapper
 
 
 #' Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.
@@ -51,6 +47,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param seed Option to set.seed. Default is NULL.
 #' 
 #' @return A list with the following components
 #' \describe{
@@ -60,6 +57,8 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
 #'                   "clust" (Indicator for cluster)}
+#'   \item{failed.to.converge}{A vector of length \code{nsim} consisting of 1 and 0. 
+#         When a model fails to converge, failed.to.converge==1, otherwise 0.}
 #' }
 #' 
 #' 
@@ -81,7 +80,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' 
 #' @export
 
-cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
+cps.ma.normal.internal <-  function(nsim = 1000, nsubjects = NULL,
                       means = NULL, sigma = NULL, sigma_b = NULL,
                       alpha = 0.05,
                       quiet = FALSE, method = 'glmm', 
@@ -164,7 +163,7 @@ cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
  }
     # stop the function early if fits are singular
   fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
-  if(sum(fail, na.rm = TRUE)>=(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+  if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
   
   # Update simulation progress information
   if(quiet == FALSE){
@@ -194,11 +193,12 @@ cps.ma.normal.internal = function(nsim = NULL, nsubjects = NULL,
   
   ## Output objects
   if(all.sim.data == TRUE){
-    complete.output = list("estimates" = model.values,
+    complete.output.internal <-  list("estimates" = model.values,
                           "sim.data" = simulated.datasets,
                           "failed.to.converge"= fail)
   } else {
-    complete.output = model.values
+    complete.output.internal <-  list("estimates" = model.values,
+                                    "failed.to.converge" =  paste((sum(fail)/nsim)*100, "% did not converge", sep=""))
   }
-  return(complete.output)
+  return(complete.output.internal)
 }

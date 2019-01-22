@@ -14,6 +14,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 # 9. write some usage examples
 # 10. debug
 # 11. testthat tests
+#user must supply either
 
 
 #' Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.
@@ -50,6 +51,11 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' @param sigma_b Between-cluster variance; accepts a vector of length \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
+#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
+#' @param seed Option to set.seed. Default is NULL.
+#' 
 #' 
 #' @return A list with the following components
 #' \describe{
@@ -94,23 +100,32 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' 
 #' @export
 #' 
- cps.ma.normal <- function(nsim = 1000, nsubjects = NA, 
-                           narms = NA, nclusters = NA,
-                        means = NA, sigma = NA, 
-                        sigma_b = NA, alpha = 0.05,
+ 
+cps.ma.normal <- function(nsim = 1000, nsubjects = NULL, 
+                           narms = NULL, nclusters = NULL,
+                        means = NULL, sigma = NULL, 
+                        sigma_b = NULL, alpha = 0.05,
                         quiet = FALSE, ICC=NULL, method = 'glmm', 
                         all.sim.data = FALSE, seed = 123){
 
   # supplies sigma or sigma_b if user supplies ICC
+  if (exists("ICC", mode = "object")==TRUE){
   if (exists("sigma", mode = "object")==FALSE){
-    sigma <- createMissingVarianceParam(sigma = sigma, 
-                                        sigma_b = sigma_b, ICC = ICC)
+    sigma <- createMissingVarianceParam(sigma_b = sigma_b, ICC = ICC)
   }
   if (exists("sigma_b", mode = "object")==FALSE){
-    sigma_b <- createMissingVarianceParam(sigma = sigma, 
-                                        sigma_b = sigma_b, ICC = ICC)
+    sigma_b <- createMissingVarianceParam(sigma = sigma, ICC = ICC)
+  }
   }
    
+  # create narms and nclusters if not supplied by the user
+  if (exists("narms", mode = "object")==FALSE){
+    narms <- length(nsubjects)
+  }
+  if (exists("nclusters", mode = "object")==FALSE){
+    nclusters <- length(unlist(nsubjects))
+  }
+  
    # creates nsubjects structure if nclusters and nsubjects are scalar
    if (length(nclusters)==1){
      nclusters <- rep(nclusters, narms)
@@ -124,61 +139,77 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
    }
   
    # run the simulations 
-   cps.out <- cps.ma.normal.internal(nsim = nsim, nsubjects = nsubjects, 
+   normal.ma.rct <- cps.ma.normal.internal(nsim = nsim, nsubjects = nsubjects, 
                       means = means, sigma = sigma, 
                       sigma_b = sigma_b, alpha = alpha, 
                       quiet = quiet, method = method, 
                       all.sim.data = all.sim.data,
                       seed = seed)
    
- }
-   
+   models <- normal.ma.rct[[1]]
+
  # Organize the output
- Estimates = matrix(NA, nrow = narms*nsim, ncol = narms)
- std.error = matrix(NA, nrow = narms*nsim, ncol = narms)
- t.val = matrix(NA, nrow = narms*nsim, ncol = narms)
- p.val = matrix(NA, nrow = narms*nsim, ncol = narms)
+ Estimates = matrix(NA, nrow = nsim, ncol = narms)
+ std.error = matrix(NA, nrow = nsim, ncol = narms)
+ t.val = matrix(NA, nrow = nsim, ncol = narms)
+ p.val = matrix(NA, nrow = nsim, ncol = narms)
  
  for (i in 1:nsim){
-   Estimates[i,] <- normal.ma.rct$estimates[[i]]$coefficients[,1]
-   std.error[i,] <- normal.ma.rct$estimates[[i]]$coefficients[,2]
-   t.val[i,] <- normal.ma.rct$estimates[[i]]$coefficients[,3]
-   p.val[i,] = 2 * stats::pt(-abs(normal.ma.rct$estimates[[i]]$coefficients[,3]), 
+   Estimates[i,] <- models[[i]][[10]][,1]
+   std.error[i,] <- models[[i]][[10]][,2]
+   t.val[i,] <- models[[i]][[10]][,3]
+   p.val[i,] <- 2 * stats::pt(-abs(models[[i]][[10]][,3]), 
                              df = sum(nclusters) - 2)
  }
  
+ # Organize the row/col names for the output
+ keep.names <- rownames(models[[1]][[10]])
+ keep.names[grepl(keep.names, pattern = "(Intercept)")==TRUE] <- "intercept"
+ 
+ names.Est <- rep(NA, length(narms))
+ names.st.err <- rep(NA, length(narms))
+ names.tval <- rep(NA, length(narms))
+ names.pval <- rep(NA, length(narms))
+ names.power <- rep(NA, length(narms))
+ 
+ for (i in 1:length(keep.names)){
+   names.Est[i] <- paste(keep.names[i], ".Estimate", sep="")
+   names.st.err[i] <- paste(keep.names[i], ".Std.Err", sep="")
+   names.tval[i] <- paste(keep.names[i], ".tval", sep="")
+   names.pval[i] <- paste(keep.names[i], ".pval", sep="")
+   names.power[i] <- paste(keep.names[i], ".power", sep="")
+ }
+ colnames(Estimates) <- names.Est
+ colnames(std.error) <- names.st.err
+ colnames(t.val) <- names.tval
+ colnames(p.val) <- names.pval
+ 
  # Calculate and store power estimate & confidence intervals
- pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
- power.parms = data.frame(Power = round(pval.power, 3),
+ sig.val <-  ifelse(p.val < alpha, 1, 0)
+ pval.power <- apply (sig.val, 2, FUN=function(x) {sum(x, na.rm=TRUE)/nsim})
+ power.parms <-  data.frame(Power = round(pval.power, 3),
                           Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
                                                 sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                           Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
                                                 sqrt((pval.power * (1 - pval.power)) / nsim), 3))
+ rownames(power.parms) <- names.power
+ power.parms$pvalue <- pval.power
  
-   
-   
-   
-   
-    
   ## Output objects
     
   # Store simulation output in data frame
-  cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
-                             Std.err = as.vector(unlist(se.vector)),
-                             Test.statistic = as.vector(unlist(stat.vector)),
-                             p.value = as.vector(unlist(pval.vector)))
-  cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
-  
-  # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(Power = round(pval.power, 3),
-                           Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                           Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
-  
+ ma.model.est <-  data.frame(Estimates, std.error, t.val, p.val)
+ 
   # Create list containing all output (class 'crtpwr') and return
-  complete.output = list("power" = power.parms,
-                         "pval.power" = pval.power,
-                         "model.estimates" = cps.model.est, 
-                         "sim.data" = simulated.datasets)
+ if(all.sim.data == TRUE){
+ complete.output <-  list("power" <-  power.parms,
+                         "model.estimates" <- ma.model.est, 
+                         "sim.data" <-  normal.ma.rct[[2]], 
+                         "failed.to.converge" <-  normal.ma.rct[[3]])
+ } else {
+ complete.output <-  list("power" <-  power.parms,
+                            "model.estimates" <- ma.model.est,
+                          "proportion.failed.to.converge" <- normal.ma.rct[[2]])
+ }
   return(complete.output)
 }
