@@ -11,7 +11,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 # 2. update the example/ man text
 # 3. input validation
 # 4. make validateVariance fxn in "validation" file
-# 5. make validate nsubjects fxn in validation file
+# 5. make validatestr.nsubjects fxn in validation file
 # 9. write some usage examples
 # 13. Make sure man page for the wrapper also notes that the responsibility 
 # for correcting for multiple testing lies with the user.
@@ -37,7 +37,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' @author Alexander R. Bogdan
 #'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
+#' @paramstr.nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
 #' @param means Expected absolute treatment effect for each arm; accepts a vector of length \code{narms} (required).
 #' @param sigma Within-cluster variance; accepts a vector of length \code{narms} (required).
@@ -48,6 +48,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param seed Option to set.seed. Default is NULL.
+#' @param singular.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge
 #' 
 #' @return A list with the following components
 #' \describe{
@@ -66,12 +67,12 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' @examples 
 #' \dontrun{
 #' 
-#' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+#'str.nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' means.example <- c(30, 21, 53)
 #' sigma.example <- c(1, 1, 0.9)
 #' sigma_b.example <- c(0.1, 0.15, 0.1)
 #' 
-#' normal.ma.rct <- cps.ma.normal.internal(nsim = 100, nsubjects = nsubjects.example, 
+#' normal.ma.rct <- cps.ma.normal.internal(nsim = 100,str.nsubjects =str.nsubjects.example, 
 #'                                        means = means.example, sigma = sigma.example, 
 #'                                        sigma_b = sigma_b.example, alpha = 0.05, 
 #'                                        quiet = FALSE, method = 'glmm', 
@@ -80,19 +81,21 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' 
 #' @export
 
-cps.ma.normal.internal <-  function(nsim = 1000, nsubjects = NULL,
+cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                       means = NULL, sigma = NULL, sigma_b = NULL,
                       alpha = 0.05,
                       quiet = FALSE, method = 'glmm', 
                       all.sim.data = FALSE, 
-                      seed=NULL){
+                      seed=NULL,
+                      singular.fit.override = FALSE){
 
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
   
-  # Create NCLUSTERS, NARMS, from NSUBJECTS
-  narms = length(nsubjects)
-  nclusters = sapply(nsubjects, length)
+  
+  # Create NCLUSTERS, NARMS, from str.nsubjects
+  narms = length(str.nsubjects)
+  nclusters = sapply(str.nsubjects, length)
   
   # validation goes here
   
@@ -102,57 +105,62 @@ cps.ma.normal.internal <-  function(nsim = 1000, nsubjects = NULL,
                                          total = nsim, clear = FALSE, width = 100)
   prog.bar$tick(0)
   
-  # Create indicators for treatment group & cluster
-  trt = list()
-  for (arm in 1:length(nsubjects)){
-    trt[[arm]] = list()
-    for (cluster in 1:length(nsubjects[[arm]])){
-      trt[[arm]][[cluster]] = rep(arm, nsubjects[[arm]][[cluster]])
-    }
-  }
-  clust = list()
-  for (arm in 1:length(nsubjects)){
-  clust[[arm]] = list()
-    for (cluster in 1:length(nsubjects[[arm]])){
-    clust[[arm]][[cluster]] = rep(cluster, nsubjects[[arm]][[cluster]])
-    }
-  }
-  
   # This container keeps track of how many models failed to converge
   fail <- rep(NA, nsim)
   
-  # Create a container for the simulated.dataset and glmm output
+  # Create a container for the simulated.dataset and model output
   sim.dat = vector(mode = "list", length = nsim)
   model.values <- list()
   
   # option for reproducibility
   set.seed(seed=seed)
   
+  # Create indicators for treatment group & cluster for the sim.data output
+  trt = list()
+  for (arm in 1:length(str.nsubjects)){
+    trt[[arm]] = list()
+    for (cluster in 1:length(str.nsubjects[[arm]])){
+      trt[[arm]][[cluster]] = rep(arm, str.nsubjects[[arm]][[cluster]])
+    }
+  }
+  clust = list()
+  for(i in 1:sum(nclusters)){
+    clust[[i]] <- lapply(seq(1, sum(nclusters))[i], 
+                         function (x) {rep.int(x, unlist(str.nsubjects)[i])})
+  }
+  
   # Create simulation loop
   for(i in 1:nsim){
-    sim.dat[[i]] = data.frame(y = NA, trt = as.factor(unlist(trt)), clust = as.factor(unlist(clust)))
+    sim.dat[[i]] = data.frame(y = NA, trt = as.factor(unlist(trt)), 
+                              clust = as.factor(unlist(clust)))
     # Generate between-cluster effects for non-treatment and treatment
     randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s)), 
                                                       nc = nclusters, s = sigma_b, 
                                                       mu = means)
     # Create y-value
-    y.bclust = vector(mode = "list", length = narms)
-    y.wclust = vector(mode = "list", length = narms)
-    y = vector(mode = "list", length = narms)
+    y.bclust <-  vector(mode = "numeric", length = narms)
+    y.wclust <-  vector(mode = "list", length = narms)
+    y <-  vector(mode = "numeric", length = narms)
+    y.bclust <-  sapply(1:sum(nclusters), 
+                      function(x) rep(randint[x], length.out = unlist(str.nsubjects)[x]))
     for (j in 1:narms){
-      y.bclust[[j]] = sapply(1:nclusters[j], function(x) rep(randint[[j]][x], length.out = nsubjects[[j]][x]))
-      y.wclust[[j]] = lapply(nsubjects[[j]], function(x) stats:: rnorm(x, mean = randint[[j]], sd = sqrt(sigma[j])))
-      y[[j]] = unlist(y.bclust[[j]]) + unlist(y.wclust[[j]])
+      y.wclust[[j]] <-  lapply(str.nsubjects[[j]], function(x) stats:: rnorm(x, mean = randint[[j]], sd = sqrt(sigma[j])))
     }
+    
     # Create data frame for simulated dataset
-    sim.dat[[i]][["y"]] = unlist(y)
+    sim.dat[[i]][["y"]] <-  as.vector(unlist(y.bclust) + unlist(y.wclust))
+    simulated.datasets[[i]] <-  sim.dat[[i]]
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
       my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat[[i]])
       model.values[[i]] = summary(my.mod)
-      simulated.datasets[[i]] = sim.dat[[i]]
+      # option to stop the function early if fits are singular
+      fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
+      if (singular.fit.override==FALSE){
+        if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
       }
+    }
   
   # Fit GEE (geeglm)
   if(method == 'gee'){
@@ -161,10 +169,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, nsubjects = NULL,
                              id = clust, corstr = "exchangeable")
     model.values[[i]] = summary(my.mod)
  }
-    # stop the function early if fits are singular
-  fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
-  if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
-  
+
   # Update simulation progress information
   if(quiet == FALSE){
     if(i == 1){

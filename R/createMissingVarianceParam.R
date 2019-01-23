@@ -38,15 +38,15 @@ createMissingVarianceParam <- function(ICC = NULL,
   }
   if(!is.null(c(ICC, sigma)) && is.null(sigma_b)){
     sigma_b = ICC * sigma / (1 - ICC)
-    return(c("sigma_b", sigma_b))
+    return(sigma_b)
   }
   if(!is.null(c(ICC, sigma_b)) && is.null(sigma)){
     sigma = sigma_b / ICC - sigma_b
-    return(c("sigma", sigma))
+    return(sigma)
   }
   if(!is.null(c(sigma, sigma_b)) && is.null(ICC)){
     ICC = sigma_b / (sigma_b + sigma)
-    return(c("ICC", ICC))
+    return(ICC)
   }
   if(sum(parm1.args) == 0 && ICC != sigma_b / (sigma_b + sigma)){
     stop("At least one of the following terms has been misspecified: ICC, sigma, sigma_b")
