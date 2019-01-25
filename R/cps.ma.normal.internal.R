@@ -111,6 +111,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   # Create a container for the simulated.dataset and model output
   sim.dat = vector(mode = "list", length = nsim)
   model.values <- list()
+  model.compare <- list()
   
   # option for reproducibility
   set.seed(seed=seed)
@@ -153,8 +154,8 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat[[i]])
-      model.values[[i]] = summary(my.mod)
+      my.mod <-  lme4::lmer(y ~ trt + (1|clust), data = sim.dat[[i]])
+      model.values[[i]] <-  summary(my.mod)
       # option to stop the function early if fits are singular
       fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
       if (singular.fit.override==FALSE){
@@ -168,7 +169,11 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     my.mod = geepack::geeglm(y ~ trt, data = data.holder,
                              id = clust, corstr = "exchangeable")
     model.values[[i]] = summary(my.mod)
- }
+  }
+    
+  # get the overall p-values (>Chisq)
+  null.mod <- update.formula(my.mod, y ~ (1|clust))
+  model.compare[[i]] <- anova(my.mod, null.mod)
 
   # Update simulation progress information
   if(quiet == FALSE){
@@ -199,10 +204,12 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   ## Output objects
   if(all.sim.data == TRUE){
     complete.output.internal <-  list("estimates" = model.values,
-                          "sim.data" = simulated.datasets,
-                          "failed.to.converge"= fail)
+                                      "model.comparisons" = model.compare,
+                                      "sim.data" = simulated.datasets,
+                                      "failed.to.converge"= fail)
   } else {
     complete.output.internal <-  list("estimates" = model.values,
+                                      "model.comparisons" = model.compare,
                                     "failed.to.converge" =  paste((sum(fail)/nsim)*100, "% did not converge", sep=""))
   }
   return(complete.output.internal)

@@ -173,7 +173,8 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                            sigma_b = sigma_b, alpha = alpha, 
                                            quiet = quiet, method = method, 
                                            all.sim.data = all.sim.data,
-                                           seed = seed)
+                                           seed = seed,
+                                           singular.fit.override = singular.fit.override)
    
    models <- normal.ma.rct[[1]]
    
@@ -192,7 +193,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                df = sum(nclusters) - 2)
    }
  
- # Organize the row/col names for the output
+ # Organize the row/col names for the model estimates output
    keep.names <- rownames(models[[1]][[10]])
    keep.names[grepl(keep.names, pattern = "(Intercept)")==TRUE] <- "intercept"
  
@@ -213,6 +214,13 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    colnames(std.error) <- names.st.err
    colnames(t.val) <- names.tval
    colnames(p.val) <- names.pval
+   
+   # Organize the LRT output
+   LRT.holder <- matrix(unlist(normal.ma.rct[[2]]), ncol=4, nrow=nsim, 
+                     byrow=TRUE, 
+                     dimnames = list(seq(1:nsim), 
+                            c("Df", "Sum Sq", "Mean Sq", "F value")))
+   
  
  # Calculate and store power estimate & confidence intervals
    sig.val <-  ifelse(p.val < alpha, 1, 0)
@@ -223,7 +231,6 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                             Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
                                                   sqrt((pval.power * (1 - pval.power)) / nsim), 3))
    rownames(power.parms) <- names.power
-   power.parms$pvalue <- pval.power
     
   # Store simulation output in data frame
    ma.model.est <-  data.frame(Estimates, std.error, t.val, p.val)
@@ -234,12 +241,14 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    if(all.sim.data == TRUE){
      complete.output <-  list("power" <-  power.parms,
                               "model.estimates" <- ma.model.est, 
-                              "sim.data" <-  normal.ma.rct[[2]], 
-                              "failed.to.converge" <-  normal.ma.rct[[3]])
+                              "overall.sig" <- LRT.holder,
+                              "sim.data" <-  normal.ma.rct[[3]], 
+                              "failed.to.converge" <-  normal.ma.rct[[4]])
    } else {
      complete.output <-  list("power" <-  power.parms,
                               "model.estimates" <- ma.model.est,
-                              "proportion.failed.to.converge" <- normal.ma.rct[[2]])
+                              "overall.sig" <- LRT.holder,
+                              "proportion.failed.to.converge" <- normal.ma.rct[[3]])
    }
    return(complete.output)
  }
@@ -280,6 +289,11 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
      colnames(Wald) <- names.wald
      colnames(Pr) <- names.pval
      
+     # Organize the LRT output
+     LRT.holder <- matrix(unlist(normal.ma.rct[[2]]), ncol=3, nrow=nsim, 
+                          byrow=TRUE, 
+                          dimnames = list(seq(1:nsim), c("Df", "X2", "P(>|Chi|)")))
+     
      # Calculate and store power estimate & confidence intervals
      sig.val <-  ifelse(Pr < alpha, 1, 0)
      pval.power <- apply (sig.val, 2, FUN=function(x) {sum(x, na.rm=TRUE)/nsim})
@@ -300,11 +314,14 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
      if(all.sim.data == TRUE){
        complete.output <-  list("power" <-  power.parms,
                                 "model.estimates" <- ma.model.est, 
-                                "sim.data" <-  normal.ma.rct[[2]])
+                                "overall.sig" <- LRT.holder,
+                                "sim.data" <-  normal.ma.rct[[3]])
      } else {
        complete.output <-  list("power" <-  power.parms,
-                                "model.estimates" <- ma.model.est)
+                                "model.estimates" <- ma.model.est,
+                                "overall.sig" <- LRT.holder)
      }
      return(complete.output)
    }
 }
+
