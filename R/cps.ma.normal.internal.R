@@ -135,22 +135,20 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                                       nc = nclusters, s = sigma_b, 
                                                       mu = means)
     # Create y-value
-    y.bclust <-  vector(mode = "numeric", length = narms)
+    y.bclust <-  vector(mode = "numeric", length = length(unlist(str.nsubjects)))
     y.wclust <-  vector(mode = "list", length = narms)
-    y <-  vector(mode = "numeric", length = narms)
     y.bclust <-  sapply(1:sum(nclusters), 
-                      function(x) rep(randint[x], length.out = unlist(str.nsubjects)[x]))
+                      function(x) rep(unlist(randint)[x], length.out = unlist(str.nsubjects)[x]))
     for (j in 1:narms){
-      y.wclust[[j]] <-  lapply(str.nsubjects[[j]], function(x) stats:: rnorm(x, mean = randint[[j]], sd = sqrt(sigma[j])))
+      y.wclust[[j]] <-  lapply(str.nsubjects[[j]], function(x) stats:: rnorm(x, mean = means[[j]], sd = sqrt(sigma[j])))
     }
     
     # Create data frame for simulated dataset
     sim.dat[[i]][["y"]] <-  as.vector(unlist(y.bclust) + unlist(y.wclust))
-    simulated.datasets[[i]] <-  sim.dat[[i]]
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod <-  lme4::lmer(y ~ trt + (1|clust), data = sim.dat[[i]])
+      my.mod <-  lmerTest::lmer(y ~ trt + (1|clust), data = sim.dat[[i]])
       model.values[[i]] <-  summary(my.mod)
       # option to stop the function early if fits are singular
       fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
@@ -201,7 +199,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   if(all.sim.data == TRUE){
     complete.output.internal <-  list("estimates" = model.values,
                                       "model.comparisons" = model.compare,
-                                      "sim.data" = simulated.datasets,
+                                      "sim.data" = sim.dat,
                                       "failed.to.converge"= fail)
   } else {
     complete.output.internal <-  list("estimates" = model.values,

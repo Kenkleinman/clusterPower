@@ -179,14 +179,12 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    for (i in 1:nsim){
      Estimates[i,] <- models[[i]][[10]][,1]
      std.error[i,] <- models[[i]][[10]][,2]
-     t.val[i,] <- models[[i]][[10]][,3]
-     p.val[i,] <- 2 * stats::pt(-abs(models[[i]][[10]][,3]), 
-                               df = sum(nclusters) - 2)
+     t.val[i,] <- models[[i]][[10]][,4]
+     p.val[i,] <- models[[i]][[10]][,5]
    }
  
  # Organize the row/col names for the model estimates output
    keep.names <- rownames(models[[1]][[10]])
-   keep.names[grepl(keep.names, pattern = "(Intercept)")==TRUE] <- "intercept"
  
    names.Est <- rep(NA, narms)
    names.st.err <- rep(NA, narms)
@@ -225,19 +223,20 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     
   # Store simulation output in data frame
    ma.model.est <-  data.frame(Estimates, std.error, t.val, p.val)
+   ma.model.est <- ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))] 
    
    ## Output objects for GLMM
 
    # Create list containing all output (class 'crtpwr') and return
    if(all.sim.data == TRUE){
-     complete.output <-  list("power" <-  power.parms,
-                              "model.estimates" <- ma.model.est, 
+     complete.output <-  list("power" <-  power.parms[2,],
+                              "model.estimates" <-  ma.model.est, 
                               "overall.sig" <- LRT.holder,
                               "sim.data" <-  normal.ma.rct[[3]], 
                               "failed.to.converge" <-  normal.ma.rct[[4]])
    } else {
-     complete.output <-  list("power" <-  power.parms,
-                              "model.estimates" <- ma.model.est,
+     complete.output <-  list("power" <-  power.parms[2,],
+                              "model.estimates" <-  ma.model.est,
                               "overall.sig" <- LRT.holder,
                               "proportion.failed.to.converge" <- normal.ma.rct[[3]])
    }
@@ -260,7 +259,6 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
      
      # Organize the row/col names for the output
      keep.names <- rownames(models[[1]]$coefficients)
-     keep.names[grepl(keep.names, pattern = "(Intercept)")==TRUE] <- "intercept"
      
      names.Est <- rep(NA, length(narms))
      names.st.err <- rep(NA, length(narms))
@@ -294,22 +292,22 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                 Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
                                                       sqrt((pval.power * (1 - pval.power)) / nsim), 3))
      rownames(power.parms) <- names.power
-     power.parms$pvalue <- pval.power
      
      # Store GEE simulation output in data frame
      ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)
+     ma.model.est <- ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))] 
    
    ## Output objects for GEE
    
      # Create list containing all output (class 'crtpwr') and return
      if(all.sim.data == TRUE){
-       complete.output <-  list("power" <-  power.parms,
-                                "model.estimates" <- ma.model.est, 
+       complete.output <-  list("power" <-  power.parms[2,],
+                                "model.estimates" <-  ma.model.est, 
                                 "overall.sig" <- LRT.holder,
                                 "sim.data" <-  normal.ma.rct[[3]])
      } else {
-       complete.output <-  list("power" <-  power.parms,
-                                "model.estimates" <- ma.model.est,
+       complete.output <-  list("power" <-  power.parms[2,],
+                                "model.estimates" <-  ma.model.est,
                                 "overall.sig" <- LRT.holder)
      }
      return(complete.output)
