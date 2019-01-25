@@ -8,13 +8,9 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 
 ##FIXME: TO DO
 # 11. testthat tests
-# 2. update the example/ man text
 # 3. input validation
 # 4. make validateVariance fxn in "validation" file
 # 5. make validatestr.nsubjects fxn in validation file
-# 9. write some usage examples
-# 13. Make sure man page for the wrapper also notes that the responsibility 
-# for correcting for multiple testing lies with the user.
 
 
 #' Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.
@@ -27,8 +23,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' Runs the power simulation.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, expected absolute difference 
-#' between treatments, two of the following: ICC, within-cluster variance, or 
+#' cluster, number of clusters per treatment arm, group means, two of the following: ICC, within-cluster variance, or 
 #' between-cluster variance; significance level, analytic method, progress updates, 
 #' and simulated data set output may also be specified.
 #' 
@@ -37,7 +32,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' @author Alexander R. Bogdan
 #'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @paramstr.nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
+#' @param str.nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
 #' @param means Expected absolute treatment effect for each arm; accepts a vector of length \code{narms} (required).
 #' @param sigma Within-cluster variance; accepts a vector of length \code{narms} (required).
@@ -54,6 +49,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' \describe{
 #'   \item{model.values}{List of length(nsim) containing gee- or glmm-fitted the model summaries.
 #'   Note: the responsibility for correcting for multiple testing lies with the user.}
+#'   \item{model.comparisons} Compares fitted model to a model for H0 using ML (anova).
 #'   \item{sim.data}{List of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
@@ -67,12 +63,12 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' @examples 
 #' \dontrun{
 #' 
-#'str.nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+#' str.nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' means.example <- c(30, 21, 53)
 #' sigma.example <- c(1, 1, 0.9)
 #' sigma_b.example <- c(0.1, 0.15, 0.1)
 #' 
-#' normal.ma.rct <- cps.ma.normal.internal(nsim = 100,str.nsubjects =str.nsubjects.example, 
+#' normal.ma.rct <- cps.ma.normal.internal(nsim = 1000, str.nsubjects = str.nsubjects.example, 
 #'                                        means = means.example, sigma = sigma.example, 
 #'                                        sigma_b = sigma_b.example, alpha = 0.05, 
 #'                                        quiet = FALSE, method = 'glmm', 

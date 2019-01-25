@@ -25,24 +25,15 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
 #' 
-#' Runs the power simulation.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, expected absolute difference 
-#' between treatments, two of the following: ICC, within-cluster variance, or 
+#' cluster, number of clusters per treatment arm, group means, two of the following: ICC, within-cluster variance, or 
 #' between-cluster variance; significance level, analytic method, progress updates, 
-#' and simulated data set output may also be specified.
-#' 
-#' # Return enough data to save the simulated datasets
-#' # FIXME: update this
+#' and simulated data set output may also be specified. This function validates the user's input 
+#' and passes the necessary arguments to \code{cps.ma.normal.internal()}.
 #' 
 #' @author Alexandria C. Sakrejda
 #' @author Alexander R. Bogdan
-#' 
-#' @examples # FIXME: update this too
-#' \dontrun{
-#' Put usage example here
-#' }
 #'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
