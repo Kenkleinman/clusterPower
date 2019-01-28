@@ -43,7 +43,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param singular.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge
+#' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge
 #' 
 #' @return A list with the following components
 #' \describe{
@@ -83,7 +83,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                       quiet = FALSE, method = 'glmm', 
                       all.sim.data = FALSE, 
                       seed=NULL,
-                      singular.fit.override = FALSE){
+                      poor.fit.override = FALSE){
 
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
@@ -152,7 +152,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       model.values[[i]] <-  summary(my.mod)
       # option to stop the function early if fits are singular
       fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
-      if (singular.fit.override==FALSE){
+      if (poor.fit.override==FALSE){
         if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
       }
     }
@@ -168,6 +168,20 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   # get the overall p-values (>Chisq)
   null.mod <- update.formula(my.mod, y ~ (1|clust))
   model.compare[[i]] <- anova(my.mod, null.mod)
+  
+  # stop the loop if power is <0.5
+  if (poor.fit.override==FALSE){
+    if (i > 50 & (i %% 10==0)){
+    temp.power.checker <- matrix(unlist(model.compare[1:i]), ncol=6, nrow=i, 
+                                 byrow=TRUE)
+    sig.val.temp <-  ifelse(temp.power.checker[,6][1:i] < alpha, 1, 0)
+    pval.power.temp <- sum(sig.val.temp)/i
+    if (pval.power.temp < 0.5){
+      stop(paste("Calculated power is < ", pval.power.temp, ", auto stop at simulation ", 
+                 i, ". Set poor.fit.override==TRUE to ignore this error.", sep = ""))
+    }
+    }
+  }
 
   # Update simulation progress information
   if(quiet == FALSE){

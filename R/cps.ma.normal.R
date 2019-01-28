@@ -47,7 +47,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param singular.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge; default = FALSE 
+#' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge; default = FALSE 
 #'  
 #' 
 #' 
@@ -97,7 +97,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #'                        quiet = FALSE, ICC=NULL, method = 'glmm', 
 #'                        all.sim.data = FALSE,
 #'                        seed = NULL, 
-#'                        singular.fit.override = FALSE)
+#'                        poor.fit.override = FALSE)
 #' }
 #' 
 #' @export
@@ -109,7 +109,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                         sigma_b = NULL, alpha = 0.05,
                         quiet = FALSE, ICC=NULL, method = 'glmm', 
                         all.sim.data = FALSE, seed = 123, 
-                        singular.fit.override = FALSE){
+                        poor.fit.override = FALSE){
 
   # input object validation steps
   if (exists("nsubjects", mode = "any")==FALSE){
@@ -147,6 +147,20 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     str.nsubjects <- nsubjects
   }
   
+  # allows for means, sigma, sigma_b, and ICC to be entered as scalar
+  if (length(sigma)==1){
+    sigma <- rep(sigma, narms)
+  }
+  if (length(sigma_b)==1){
+    sigma_b <- rep(sigma_b, narms)
+  }
+  if (length(ICC)==1){
+    ICC <- rep(ICC, narms)
+  }
+  if (length(means)==1){
+    means <- rep(means, narms)
+  }
+  
   # supplies sigma or sigma_b if user supplies ICC
   if (exists("ICC", mode = "numeric")==TRUE){
   if (exists("sigma", mode = "numeric")==FALSE){
@@ -165,7 +179,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                            quiet = quiet, method = method, 
                                            all.sim.data = all.sim.data,
                                            seed = seed,
-                                           singular.fit.override = singular.fit.override)
+                                           poor.fit.override = poor.fit.override)
    
    models <- normal.ma.rct[[1]]
    
@@ -205,10 +219,13 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    colnames(p.val) <- names.pval
    
    # Organize the LRT output
-   LRT.holder <- matrix(unlist(normal.ma.rct[[2]]), ncol=4, nrow=nsim, 
-                     byrow=TRUE, 
-                     dimnames = list(seq(1:nsim), 
-                            c("Df", "Sum Sq", "Mean Sq", "F value")))
+   LRT.holder <- matrix(unlist(normal.ma.rct[[2]]), ncol=6, nrow=nsim, 
+                        byrow=TRUE, 
+                        dimnames = list(seq(1:nsim), 
+                                        c("Sum Sq", "Mean Sq", "NumDF", "DenDF", "F value", "P(>F)")))
+   
+   # Proportion of times P(>F)
+   LRT.holder.abbrev <- sum(LRT.holder[6])/nsim
    
  
  # Calculate and store power estimate & confidence intervals
@@ -236,8 +253,8 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                               "failed.to.converge" <-  normal.ma.rct[[4]])
    } else {
      complete.output <-  list("power" <-  power.parms[2,],
-                              "model.estimates" <-  ma.model.est,
-                              "overall.sig" <- LRT.holder,
+                              "overall.sig" <-  paste("Proportion of F-test rejections = ", 
+                                                      LRT.holder.abbrev, sep=""),
                               "proportion.failed.to.converge" <- normal.ma.rct[[3]])
    }
    return(complete.output)
@@ -281,7 +298,11 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
      # Organize the LRT output
      LRT.holder <- matrix(unlist(normal.ma.rct[[2]]), ncol=3, nrow=nsim, 
                           byrow=TRUE, 
-                          dimnames = list(seq(1:nsim), c("Df", "X2", "P(>|Chi|)")))
+                          dimnames = list(seq(1:nsim), 
+                                          c("Df", "X2", "P(>|Chi|)")))
+     
+     # Proportion of times P(>F)
+     LRT.holder.abbrev <- sum(LRT.holder[3])/nsim
      
      # Calculate and store power estimate & confidence intervals
      sig.val <-  ifelse(Pr < alpha, 1, 0)
@@ -307,8 +328,8 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                 "sim.data" <-  normal.ma.rct[[3]])
      } else {
        complete.output <-  list("power" <-  power.parms[2,],
-                                "model.estimates" <-  ma.model.est,
-                                "overall.sig" <- LRT.holder)
+                                "overall.sig" <- paste("Proportion of F-test rejections = ", 
+                                                       round(LRT.holder.abbrev, 3), sep=""))
      }
      return(complete.output)
    }
