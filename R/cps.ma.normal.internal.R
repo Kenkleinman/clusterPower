@@ -133,14 +133,15 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     # Generate between-cluster effects for non-treatment and treatment
     randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s)), 
                                                       nc = nclusters, s = sigma_b, 
-                                                      mu = means)
+                                                      mu = means[1])
     # Create y-value
     y.bclust <-  vector(mode = "numeric", length = length(unlist(str.nsubjects)))
     y.wclust <-  vector(mode = "list", length = narms)
     y.bclust <-  sapply(1:sum(nclusters), 
                       function(x) rep(unlist(randint)[x], length.out = unlist(str.nsubjects)[x]))
     for (j in 1:narms){
-      y.wclust[[j]] <-  lapply(str.nsubjects[[j]], function(x) stats:: rnorm(x, mean = means[[j]], sd = sqrt(sigma[j])))
+      y.wclust[[j]] <-  lapply(str.nsubjects[[j]], function(x) stats:: rnorm(x, mean = means[[j]], 
+                                                                             sd = sqrt(sigma[j])))
     }
     
     # Create data frame for simulated dataset
