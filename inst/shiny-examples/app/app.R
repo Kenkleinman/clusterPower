@@ -14,6 +14,7 @@ source("builders.R")
 names2mean <- c("alpha","power","nclusters","nsubjects","cv","d","icc","vart","method")
 names2meanD <- c("alpha","power","nclusters","nsubjects","d","icc","rho_c","rho_s","vart")
 names2meanM <- c("alpha","power","nclusters","nsubjects","d","icc","vart","rho_m")
+namesnmean <- c("alpha","power","narms","nclusters","nsubjects","vara","varc","vare")
 names2prop <- c("alpha","power","nclusters","nsubjects","cv","p1","p2","icc","pooled","p1inc")
 names2propD <- c("alpha","power","nclusters","nsubjects","p","d","icc","rho_c","rho_s")
 names2propM <- c("alpha","power","nclusters","nsubjects","p1","p2","cvm","p1inc")
@@ -216,6 +217,65 @@ ui <- function(request){
                     make_table_and_graph("2meanM", names2meanM)
              ) # end column(10,...
     ), # end tabPanel("Continuous Matched ...
+    #-----------------------------------------------------------------------------------------------------------
+    tabPanel("Continuous Multiarm",
+             column(2,
+                    #----------------------------------------------------------
+                    fluidRow(textInput("alphanmean", alphatext,
+                                       value = "0.05", width = "100%")),
+                    bsTooltip("alphanmean", alphatooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("powernmean", powertext,
+                                       value = "", width = "100%")),
+                    bsTooltip("powernmean", powertooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("narmsnmean", narmstext,
+                                       value = "", width = "100%")),
+                    bsTooltip("narmsnmean", narmstooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("nclustersnmean", nclusterstext,
+                                       value = "", width = "100%")),
+                    bsTooltip("nclustersnmean", nclusterstooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("nnmean", nsubjectstext,
+                                       value = "", width = "100%")),
+                    bsTooltip("nnmean", nsubjectstooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("varanmean", varatext,
+                                       value = "", width = "100%")),
+                    bsTooltip("varanmean", varatooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("varcnmean", varctext,
+                                       value = "", width = "100%")),
+                    bsTooltip("varcnmean", varctooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("varenmean", varetext,
+                                       value = "", width = "100%")),
+                    bsTooltip("varenmean", varetooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(
+                      column(6, style='padding:0px;', actionButton("defaultnmean", defaulttext, width = "100%")),
+                      column(6, style='padding:0px;', actionButton("clearnmean", clearalltext, width = "100%"))
+                    ),
+                    fluidRow(
+                      column(12, style='padding: 0px;', actionButton("calcnmean", calctext, width = "100%",
+                                                                     style = umass)),
+                      fluidRow(column(12, credittext))
+                      
+                    )
+             ),
+             column(10,
+                    make_table_and_graph("nmean", namesnmean)
+             ) # end column(10,...
+    ), # end tabPanel("Continuous ...
     #-----------------------------------------------------------------------------------------------------------
     tabPanel("Binary",
              column(2,
@@ -743,7 +803,6 @@ server <- function(input, output, session){
   height = reactive({input$height2meanD})
   )
   
-  
   #----------------------------------------------------------------------------
   # Two means: Matching
   #----------------------------------------------------------------------------
@@ -878,6 +937,138 @@ server <- function(input, output, session){
   },
   width = reactive({input$width2meanM}),
   height = reactive({input$height2meanM})
+  )
+  
+  #----------------------------------------------------------------------------
+  # Multi-Arm (nmean)
+  #----------------------------------------------------------------------------
+  
+  # reset nmean inputs to default values
+  observeEvent(
+    input$defaultnmean,
+    {
+      updateTextInput(session, inputId = "alphanmean", value = "0.05")
+      updateTextInput(session, inputId = "powernmean", value = "")
+      updateTextInput(session, inputId = "narmnmean", value = "")
+      updateTextInput(session, inputId = "nclustersnmean", value = "")
+      updateTextInput(session, inputId = "nnmean", value = "")
+      updateTextInput(session, inputId = "varanmean", value = "")
+      updateTextInput(session, inputId = "varcnmean", value = "")
+      updateTextInput(session, inputId = "varenmean", value = "")
+    }
+  ) # end observeEvent(input$defaultnmean ...
+  
+  
+  # clear nmean inputs 
+  observeEvent(
+    input$clearnmean,
+    {
+      updateTextInput(session, inputId = "alphanmean", value = "")
+      updateTextInput(session, inputId = "powernmean", value = "")
+      updateTextInput(session, inputId = "narmnmean", value = "")
+      updateTextInput(session, inputId = "nclustersnmean", value = "")
+      updateTextInput(session, inputId = "nnmean", value = "")
+      updateTextInput(session, inputId = "varanmean", value = "")
+      updateTextInput(session, inputId = "varcnmean", value = "")
+      updateTextInput(session, inputId = "varenmean", value = "")
+    }
+  ) # end observeEvent(input$clearnmean ...
+  
+  # create nmean data
+  resnmean <- eventReactive(
+    input$calcnmean,
+    {
+      # convert inputs to numeric vectors
+      alpha <- make_sequence(isolate(input$alphanmean))
+      power <- make_sequence(isolate(input$powernmean))
+      narms <- make_sequence(isolate(input$narmsnmean))
+      nclusters <- make_sequence(isolate(input$nclustersnmean))
+      nsubjects <- make_sequence(isolate(input$nnmean))
+      vara <- make_sequence(isolate(input$varanmean))
+      varc <- make_sequence(isolate(input$varcnmean))
+      vare <- make_sequence(isolate(input$varenmean))
+      
+      if(!is.na(power)){
+        validate(
+          need(power >= 0 & power <= 1,
+               powervalidmsg)
+        )
+      }
+      
+      if(!is.na(alpha)){
+        validate(
+          need(alpha >= 0 & alpha <= 1,
+               alphavalidmsg)
+        )
+      }
+      
+      
+      # create a table of input values
+      tab <- expand.grid(alpha,
+                         power,
+                         narms,
+                         nclusters,
+                         nsubjects,
+                         vara,
+                         varc,
+                         vare,
+                         stringsAsFactors = FALSE)
+      
+      # record the column index of the target parameter
+      needind <- which(is.na(tab[1,]))
+      # validate that only one input is blank
+      validate(
+        need(length(needind) == 1,
+             "Exactly one of 'alpha', 'power', 'narms', 'nclusters', 'nsubjects', 'vara', 'varc', and 'vare' must be left blank."
+        )
+      )
+      names(tab) <- namesnmean
+      target <- namesnmean[needind]
+      
+      # apply function over table of input values
+      temp <-pmap_df(tab, crtpwr.nmean.safe)
+      
+      tab[[target]] <- signif(temp$result, 4)
+      tab$error <- map_chr(temp$error, shorten_error, target = target)
+      
+      # make a column to store target variable for use in graphing
+      tab$target <- target
+      
+      # convert all input values to factors for ggplot
+      mutate_if(tab, !(names(tab) %in% c(target,"error","target")), factor)
+    })
+  
+  # create nmean output table
+  output$tablenmean <- DT::renderDataTable(
+    resnmean()[,1:10],
+    server = FALSE,
+    extensions = 'Buttons',
+    filter = 'top',
+    options = list(
+      # create the button
+      dom = 'fBrtlip',
+      buttons = list(list(extend = 'csv', filename = paste('data-nmean-', Sys.time(), sep=''), text = 'Download')),
+      #autoWidth = TRUE,
+      columnDefs = list(list(className = 'dt-center', targets = '_all'),
+                        list(width = '700px', targets = 10)),
+      lengthMenu = list(c(10, 25, 100, -1), list('10','25','100','All')),
+      pageLength = 10
+    )
+  )
+  
+  # update graph UI
+  observeEvent(resnmean(),
+               {
+                 update_graph_ui(session, resnmean(), "nmean", namesnmean)
+               })
+  
+  # create nmean graph
+  output$graphnmean <- renderPlot({
+    create_graph(resnmean(), input$xnmean, input$ynmean, input$groupnmean,
+                 input$lsizenmean, input$psizenmean, input$rownmean, input$colnmean)
+  },
+  width = reactive({input$widthnmean}),
+  height = reactive({input$heightnmean})
   )
   
   

@@ -29,6 +29,20 @@ crtpwr.2meanD.safe <- function(alpha,power,nclusters,nsubjects,d,icc,rho_c,rho_s
   res
 }
 
+crtpwr.2meanD.ltf.safe <- function(alpha,power,nclusters,nsubjects,d,icc,rho_c,rho_s,vart,ltf.0,ltf.1,replace){
+  # make safe version
+  fun <- safely(crtpwr.2meanD.ltf, otherwise = NA)
+  # store result
+  res <- fun(alpha,power,nclusters,nsubjects,d,icc,rho_c,rho_s,vart,ltf.0,ltf.1,replace)
+  # if res$error NULL, set to NA, otherwise set to message
+  if(is.null(res$error)){
+    res$error = 'None'
+  } else {
+    res$error <- res$error$message
+  }
+  res
+}
+
 crtpwr.2meanM.safe <- function(alpha,power,nclusters,nsubjects,d,icc,vart,rho_m){
   # make safe version
   fun <- safely(crtpwr.2meanM, otherwise = NA)
@@ -43,6 +57,19 @@ crtpwr.2meanM.safe <- function(alpha,power,nclusters,nsubjects,d,icc,vart,rho_m)
   res
 }
 
+crtpwr.nmean.safe <- function(alpha,power,narms,nclusters,nsubjects,vara,varc,vare){
+  # make safe version
+  fun <- safely(crtpwr.nmean, otherwise = NA)
+  # store result
+  res <- fun(alpha,power,narms,nclusters,nsubjects,vara,varc,vare)
+  # if res$error NULL, set to NA, otherwise set to message
+  if(is.null(res$error)){
+    res$error = 'None'
+  } else {
+    res$error <- res$error$message
+  }
+  res
+}
 
 crtpwr.2prop.safe <- function(alpha,power,nclusters,nsubjects,cv,p1,p2,icc,pooled,p1inc){
   # make safe version

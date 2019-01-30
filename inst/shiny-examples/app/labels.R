@@ -50,10 +50,36 @@ rho_ctooltip <- 'The correlation between baseline and post-test outcomes at the 
 rho_stext <- 'Within subject correlation (rho_s)'
 rho_stooltip <- 'The correlation between baseline and post-test outcomes at the subject level. For a purely cross-sectional design, this value should be 0.'
 
-#
-#
+# -----------------------------------------------------------------------------
+# specific to 2meanDltf:
+ltf_0text <- 'Control LTF rate (ltf_0)'
+ltf_0tooltip <- 'Proportion of controls lost to follow-up.'
+
+ltf_1text <- 'Treatment LTF rate (ltf_1)'
+ltf_1tooltip <- 'Proportion of treatment lost to follow-up.'
+
+replacetext <- 'Replace? (replace)'
+replacetooltip <- 'Replace individuals who are lost to follow-up.'
+
+
+# -----------------------------------------------------------------------------
+# specific to 2meanM:
 rho_mtext <- 'Matching correlation (rho_m)'
 rho_mtooltip <- 'The correlation in outcome used between matched clusters.'
+
+# -----------------------------------------------------------------------------
+# specific to nmean:
+narmstext <- 'Number of arms (narms)'
+narmstooltip <- 'Total number of arms (conditions) in the trial. Must be greater than 2'
+
+varatext <- 'Between-arm variance (vara)'
+varatooltip <- 'Variance between the arm means.'
+
+varctext <- 'Between-cluster variance (varc)'
+varctooltip <- 'Variance between the cluster means.'
+
+varetext <- 'Within-cluster variance (vare)'
+varetooltip <- 'Variance within clusters, i.e. residual error.'
 
 
 
