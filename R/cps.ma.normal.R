@@ -254,7 +254,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    } else {
      complete.output <-  list("power" <-  power.parms[2,],
                               "overall.sig" <-  paste("Proportion of F-test rejections = ", 
-                                                      LRT.holder.abbrev, sep=""),
+                                                      round(LRT.holder.abbrev, 3), sep=""),
                               "proportion.failed.to.converge" <- normal.ma.rct[[3]])
    }
    return(complete.output)
