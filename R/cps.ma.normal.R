@@ -1,34 +1,21 @@
-# Validation functions
-validateVariance <- function(x){
-  warning("FIXME: not actually validating variance yet")
-}
-
 
 ##FIXME: TO DO
-# 1. update the return values
-# 2. update the example/ man text
-# 3. input validation
-# 5. make validate nsubjects fxn in validation file
-# 9. write some usage examples
-# 10. debug
 # 11. testthat tests
-#user must supply either nsubjects or narms and nclusters
-# 12. format gee output
 
 
-#' Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.
+#' Power simulations for cluster-randomized trials: Multi-Arm Designs, Continuous Outcome.
 #'
 #' This set of functions utilize iterative simulations to determine 
-#' approximate power for cluster-randomized controlled trials. Users 
+#' approximate power for multi-arm cluster-randomized controlled trials. Users 
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
 #' 
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
 #' cluster, number of clusters per treatment arm, group means, two of the following: ICC, within-cluster variance, or 
-#' between-cluster variance; significance level, analytic method, progress updates, 
+#' between-cluster variance. Significance level, analytic method, progress updates, poor/singular fit override,
 #' and simulated data set output may also be specified. This function validates the user's input 
-#' and passes the necessary arguments to \code{cps.ma.normal.internal()}.
+#' and passes the necessary arguments to \code{cps.ma.normal.internal()}, which performs the simulations.
 #' 
 #' @author Alexandria C. Sakrejda
 #' @author Alexander R. Bogdan
@@ -45,29 +32,22 @@ validateVariance <- function(x){
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge; default = FALSE 
+#' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge or 
+#' power<0.5 after 50 iterations; default = FALSE 
 #'  
-#' 
 #' 
 #' @return A list with the following components
 #' \describe{
-#'   \item{overview}{Character string indicating total number of simulations and simulation type}
-#'   \item{nsim}{Number of simulations}
 #'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
 #'                "upper.95.ci" (Upper 95% confidence interval bound)}
-#'   \item{method}{Analytic method used for power estimation}
-#'   \item{alpha}{Significance level}
-#'   \item{cluster.sizes}{Vector containing user-defined cluster sizes}
-#'   \item{n.clusters}{Vector containing user-defined number of clusters in each treatment group}
-#'   \item{variance.parms}{Data frame reporting ICC for Treatment/Non-Treatment groups}
-#'   \item{inputs}{Vector containing expected difference between groups based on user inputs}
 #'   \item{model.estimates}{Data frame with columns corresponding to each arm with the suffixes as 
 #'   follows: 
 #'                   ".Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
 #'                   ".tval" (for GLMM) | ".wald" (for GEE), 
 #'                   ".pval"
+#'   \item{overall.power}{Overall power of model compared to H0.}
 #'   \item{sim.data}{List of \code{nsim} data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
@@ -116,7 +96,6 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   if(!is.wholenumber(nsim) || nsim < 1 || length(nsim)>1){
     stop("nsim must be a positive integer of length 1.")
   }
-  
   if (exists("nsubjects", mode = "any")==FALSE){
     stop("nsubjects must be specified. See ?cps.ma.normal for help.")
   }
@@ -128,6 +107,11 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
 
+  validateVariance(difference=means, alpha=alpha, ICC=ICC, sigma=sigma, 
+                   sigma_b=sigma_b, ICC2=ICC, sigma2=sigma, 
+                   sigma_b2=sigma_b, method=method, quiet=quiet, 
+                   all.sim.data=all.sim.data)
+  
   # create narms and nclusters if not provided directly by user
   if (exists("nsubjects", mode = "list")==TRUE){
     # create narms and nclusters if not supplied by the user
@@ -266,12 +250,12 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    if(all.sim.data == TRUE){
      complete.output <-  list("power" <-  power.parms[-1,],
                               "model.estimates" <-  ma.model.est, 
-                              "overall.sig" <- LRT.holder,
+                              "overall.power" <- LRT.holder,
                               "sim.data" <-  normal.ma.rct[[3]], 
                               "failed.to.converge" <-  normal.ma.rct[[4]])
    } else {
      complete.output <-  list("power" <-  power.parms[-1,],
-                              "overall.sig" <-  paste("Proportion of F-test rejections = ", 
+                              "overall.power" <-  paste("Proportion of F-test rejections = ", 
                                                       round(LRT.holder.abbrev, 3), sep=""),
                               "proportion.failed.to.converge" <- normal.ma.rct[[3]])
    }
@@ -342,11 +326,11 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
      if(all.sim.data == TRUE){
        complete.output <-  list("power" <-  power.parms[-1,],
                                 "model.estimates" <-  ma.model.est, 
-                                "overall.sig" <- LRT.holder,
+                                "overall.power" <- LRT.holder,
                                 "sim.data" <-  normal.ma.rct[[3]])
      } else {
        complete.output <-  list("power" <-  power.parms[-1,],
-                                "overall.sig" <- paste("Proportion of F-test rejections = ", 
+                                "overall.power" <- paste("Proportion of F-test rejections = ", 
                                                        round(LRT.holder.abbrev, 3), sep=""))
      }
      return(complete.output)
