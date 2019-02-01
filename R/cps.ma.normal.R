@@ -3,8 +3,6 @@ validateVariance <- function(x){
   warning("FIXME: not actually validating variance yet")
 }
 
-is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
-
 
 ##FIXME: TO DO
 # 1. update the return values
@@ -110,8 +108,15 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                         quiet = FALSE, ICC=NULL, method = 'glmm', 
                         all.sim.data = FALSE, seed = 123, 
                         poor.fit.override = FALSE){
-
-  # input object validation steps
+  
+  # Create wholenumber function
+  is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
+  
+  # input validation steps
+  if(!is.wholenumber(nsim) || nsim < 1 || length(nsim)>1){
+    stop("nsim must be a positive integer of length 1.")
+  }
+  
   if (exists("nsubjects", mode = "any")==FALSE){
     stop("nsubjects must be specified. See ?cps.ma.normal for help.")
   }
@@ -122,7 +127,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
       exists("narms", mode = "numeric")==FALSE){
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
-  
+
   # create narms and nclusters if not provided directly by user
   if (exists("nsubjects", mode = "list")==TRUE){
     # create narms and nclusters if not supplied by the user
@@ -138,6 +143,14 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   }
   if(length(nclusters)>1 & length(nsubjects)==1){
     narms <- length(nclusters)
+  }
+  # nclusters must be whole numbers
+  if (sum(is.wholenumber(nclusters)==FALSE)!=0 || nclusters < 1){
+    stop("nclusters must be postive integer values.")
+  }
+  # nsubjects must be whole numbers
+  if (sum(is.wholenumber(unlist(nsubjects))==FALSE)!=0 || nsubjects < 1){
+    stop("nsubjects must be positive integer values.")
   }
 
   # Create nsubjects structure from narms and nclusters when nsubjects is scalar
@@ -160,7 +173,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   if (length(means)==1){
     means <- rep(means, narms)
   }
-  
+
   # supplies sigma or sigma_b if user supplies ICC
   if (exists("ICC", mode = "numeric")==TRUE){
   if (exists("sigma", mode = "numeric")==FALSE){
@@ -169,6 +182,11 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   if (exists("sigma_b", mode = "numeric")==FALSE){
     sigma_b <- createMissingVarianceParam(sigma = sigma, ICC = ICC)
   }
+  }
+  
+  if (length(sigma)!=narms){
+    stop("Length of variance parameters (sigma, sigma_b, ICC) 
+         must equal narms, or be provided as a scalar if sigma for all arms are equal.")
   }
 
    # run the simulations 
@@ -246,13 +264,13 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
 
    # Create list containing all output (class 'crtpwr') and return
    if(all.sim.data == TRUE){
-     complete.output <-  list("power" <-  power.parms[2,],
+     complete.output <-  list("power" <-  power.parms[-1,],
                               "model.estimates" <-  ma.model.est, 
                               "overall.sig" <- LRT.holder,
                               "sim.data" <-  normal.ma.rct[[3]], 
                               "failed.to.converge" <-  normal.ma.rct[[4]])
    } else {
-     complete.output <-  list("power" <-  power.parms[2,],
+     complete.output <-  list("power" <-  power.parms[-1,],
                               "overall.sig" <-  paste("Proportion of F-test rejections = ", 
                                                       round(LRT.holder.abbrev, 3), sep=""),
                               "proportion.failed.to.converge" <- normal.ma.rct[[3]])
@@ -322,12 +340,12 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    
      # Create list containing all output (class 'crtpwr') and return
      if(all.sim.data == TRUE){
-       complete.output <-  list("power" <-  power.parms[2,],
+       complete.output <-  list("power" <-  power.parms[-1,],
                                 "model.estimates" <-  ma.model.est, 
                                 "overall.sig" <- LRT.holder,
                                 "sim.data" <-  normal.ma.rct[[3]])
      } else {
-       complete.output <-  list("power" <-  power.parms[2,],
+       complete.output <-  list("power" <-  power.parms[-1,],
                                 "overall.sig" <- paste("Proportion of F-test rejections = ", 
                                                        round(LRT.holder.abbrev, 3), sep=""))
      }
