@@ -1,39 +1,23 @@
-# Validation functions
-validateVariance <- function(x){
-  warning("FIXME: not actually validating variance yet")
-}
-
-is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
-
 
 ##FIXME: TO DO
-# 1. update the return values
-# 2. update the example/ man text
-# 3. input validation
-# 5. make validate nsubjects fxn in validation file
-# 9. write some usage examples
-# 10. debug
 # 11. testthat tests
-#user must supply either nsubjects or narms and nclusters
-# 12. format gee output
 
 
-#' Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.
+#' Power simulations for cluster-randomized trials: Multi-Arm Designs, Continuous Outcome.
 #'
 #' This set of functions utilize iterative simulations to determine 
-#' approximate power for cluster-randomized controlled trials. Users 
+#' approximate power for multi-arm cluster-randomized controlled trials. Users 
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
 #' 
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
 #' cluster, number of clusters per treatment arm, group means, two of the following: ICC, within-cluster variance, or 
-#' between-cluster variance; significance level, analytic method, progress updates, 
+#' between-cluster variance. Significance level, analytic method, progress updates, poor/singular fit override,
 #' and simulated data set output may also be specified. This function validates the user's input 
-#' and passes the necessary arguments to \code{cps.ma.normal.internal()}.
+#' and passes the necessary arguments to \code{cps.ma.normal.internal}, which performs the simulations.
 #' 
-#' @author Alexandria C. Sakrejda
-#' @author Alexander R. Bogdan
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
@@ -47,29 +31,24 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge; default = FALSE 
+#' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge or 
+#' power<0.5 after 50 iterations; default = FALSE 
 #'  
-#' 
 #' 
 #' @return A list with the following components
 #' \describe{
-#'   \item{overview}{Character string indicating total number of simulations and simulation type}
-#'   \item{nsim}{Number of simulations}
 #'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
 #'                "upper.95.ci" (Upper 95% confidence interval bound)}
-#'   \item{method}{Analytic method used for power estimation}
-#'   \item{alpha}{Significance level}
-#'   \item{cluster.sizes}{Vector containing user-defined cluster sizes}
-#'   \item{n.clusters}{Vector containing user-defined number of clusters in each treatment group}
-#'   \item{variance.parms}{Data frame reporting ICC for Treatment/Non-Treatment groups}
-#'   \item{inputs}{Vector containing expected difference between groups based on user inputs}
-#'   \item{model.estimates}{Data frame with columns corresponding to each arm with the suffixes as 
-#'   follows: 
+#'   \item{model.estimates}{Produced only when all.sim.data=TRUE, data frame with columns corresponding 
+#'   to each arm with the suffixes as follows: 
 #'                   ".Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
 #'                   ".tval" (for GLMM) | ".wald" (for GEE), 
 #'                   ".pval"
+#'   \item{overall.power}{Produced only when all.sim.data=TRUE, table of F-test (when method="glmm") or 
+#'   chi^{2} (when method="gee") significance test results.
+#'   \item{overall.power2}{Overall power of model compared to H0.}
 #'   \item{sim.data}{List of \code{nsim} data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
@@ -110,8 +89,24 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                         quiet = FALSE, ICC=NULL, method = 'glmm', 
                         all.sim.data = FALSE, seed = 123, 
                         poor.fit.override = FALSE){
-
-  # input object validation steps
+  
+  # Create wholenumber function
+  is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
+  
+  # create proportion of F-test rejections fxn
+  prop_H0_rejection <- function (alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev){
+    print(paste("Proportion of F-test rejections = ", 
+        round(LRT.holder.abbrev, 3), ", CI:",
+        round(LRT.holder.abbrev - abs(stats::qnorm(alpha / 2)) * 
+                sqrt((LRT.holder.abbrev * (1 - LRT.holder.abbrev)) / nsim), 3), ", ", 
+        round(LRT.holder.abbrev + abs(stats::qnorm(alpha / 2)) * 
+                sqrt((LRT.holder.abbrev * (1 - LRT.holder.abbrev)) / nsim), 3), ".", sep=""))
+  }
+  
+  # input validation steps
+  if(!is.wholenumber(nsim) || nsim < 1 || length(nsim)>1){
+    stop("nsim must be a positive integer of length 1.")
+  }
   if (exists("nsubjects", mode = "any")==FALSE){
     stop("nsubjects must be specified. See ?cps.ma.normal for help.")
   }
@@ -122,6 +117,11 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
       exists("narms", mode = "numeric")==FALSE){
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
+
+  validateVariance(difference=means, alpha=alpha, ICC=ICC, sigma=sigma, 
+                   sigma_b=sigma_b, ICC2=ICC, sigma2=sigma, 
+                   sigma_b2=sigma_b, method=method, quiet=quiet, 
+                   all.sim.data=all.sim.data, poor.fit.override=poor.fit.override)
   
   # create narms and nclusters if not provided directly by user
   if (exists("nsubjects", mode = "list")==TRUE){
@@ -138,6 +138,14 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   }
   if(length(nclusters)>1 & length(nsubjects)==1){
     narms <- length(nclusters)
+  }
+  # nclusters must be whole numbers
+  if (sum(is.wholenumber(nclusters)==FALSE)!=0 || nclusters < 1){
+    stop("nclusters must be postive integer values.")
+  }
+  # nsubjects must be whole numbers
+  if (sum(is.wholenumber(unlist(nsubjects))==FALSE)!=0 || nsubjects < 1){
+    stop("nsubjects must be positive integer values.")
   }
 
   # Create nsubjects structure from narms and nclusters when nsubjects is scalar
@@ -160,7 +168,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   if (length(means)==1){
     means <- rep(means, narms)
   }
-  
+
   # supplies sigma or sigma_b if user supplies ICC
   if (exists("ICC", mode = "numeric")==TRUE){
   if (exists("sigma", mode = "numeric")==FALSE){
@@ -169,6 +177,11 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   if (exists("sigma_b", mode = "numeric")==FALSE){
     sigma_b <- createMissingVarianceParam(sigma = sigma, ICC = ICC)
   }
+  }
+  
+  if (length(sigma)!=narms){
+    stop("Length of variance parameters (sigma, sigma_b, ICC) 
+         must equal narms, or be provided as a scalar if sigma for all arms are equal.")
   }
 
    # run the simulations 
@@ -225,7 +238,8 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                         c("Sum Sq", "Mean Sq", "NumDF", "DenDF", "F value", "P(>F)")))
    
    # Proportion of times P(>F)
-   LRT.holder.abbrev <- sum(LRT.holder[6])/nsim
+   sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
+   LRT.holder.abbrev <- sum(sig.LRT)/nsim
    
  
  # Calculate and store power estimate & confidence intervals
@@ -246,15 +260,15 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
 
    # Create list containing all output (class 'crtpwr') and return
    if(all.sim.data == TRUE){
-     complete.output <-  list("power" <-  power.parms[2,],
+     complete.output <-  list("power" <-  power.parms[-1,],
                               "model.estimates" <-  ma.model.est, 
-                              "overall.sig" <- LRT.holder,
+                              "overall.power" <- LRT.holder,
+                              "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
                               "sim.data" <-  normal.ma.rct[[3]], 
                               "failed.to.converge" <-  normal.ma.rct[[4]])
    } else {
-     complete.output <-  list("power" <-  power.parms[2,],
-                              "overall.sig" <-  paste("Proportion of F-test rejections = ", 
-                                                      round(LRT.holder.abbrev, 3), sep=""),
+     complete.output <-  list("power" <-  power.parms[-1,],
+                              "overall.power" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
                               "proportion.failed.to.converge" <- normal.ma.rct[[3]])
    }
    return(complete.output)
@@ -302,7 +316,8 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                           c("Df", "X2", "P(>|Chi|)")))
      
      # Proportion of times P(>F)
-     LRT.holder.abbrev <- sum(LRT.holder[3])/nsim
+     sig.LRT <-  ifelse(LRT.holder[,3] < alpha, 1, 0)
+     LRT.holder.abbrev <- sum(sig.LRT)/nsim
      
      # Calculate and store power estimate & confidence intervals
      sig.val <-  ifelse(Pr < alpha, 1, 0)
@@ -322,14 +337,14 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    
      # Create list containing all output (class 'crtpwr') and return
      if(all.sim.data == TRUE){
-       complete.output <-  list("power" <-  power.parms[2,],
+       complete.output <-  list("power" <-  power.parms[-1,],
                                 "model.estimates" <-  ma.model.est, 
-                                "overall.sig" <- LRT.holder,
+                                "overall.power" <- LRT.holder,
+                                "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
                                 "sim.data" <-  normal.ma.rct[[3]])
      } else {
-       complete.output <-  list("power" <-  power.parms[2,],
-                                "overall.sig" <- paste("Proportion of F-test rejections = ", 
-                                                       round(LRT.holder.abbrev, 3), sep=""))
+       complete.output <-  list("power" <-  power.parms[-1,],
+                                "overall.power" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev))
      }
      return(complete.output)
    }

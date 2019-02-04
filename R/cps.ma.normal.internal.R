@@ -1,17 +1,3 @@
-# Validation functions
-validateVariance <- function(x){
-  warning("FIXME: not actually validating variance yet")
-}
-
-is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
-
-
-##FIXME: TO DO
-# 11. testthat tests
-# 3. input validation
-# 4. make validateVariance fxn in "validation" file
-# 5. make validatestr.nsubjects fxn in validation file
-
 
 #' Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.
 #'
@@ -28,8 +14,7 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' and simulated data set output may also be specified.
 #' 
 #' 
-#' @author Alexandria C. Sakrejda
-#' @author Alexander R. Bogdan
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param str.nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
@@ -65,8 +50,8 @@ is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) <
 #' 
 #' str.nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' means.example <- c(30, 21, 53)
-#' sigma.example <- c(1, 1, 0.9)
-#' sigma_b.example <- c(0.1, 0.15, 0.1)
+#' sigma.example <- c(100, 110, 100)
+#' sigma_b.example <- c(25, 25, 120)
 #' 
 #' normal.ma.rct <- cps.ma.normal.internal(nsim = 1000, str.nsubjects = str.nsubjects.example, 
 #'                                        means = means.example, sigma = sigma.example, 

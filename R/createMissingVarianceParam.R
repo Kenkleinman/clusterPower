@@ -1,4 +1,4 @@
-#' Power simulations for cluster-randomized trials: calculating and validating ICC, 
+#' Power simulations for cluster-randomized trials: calculating ICC, 
 #' sigma, and sigma_b inputs
 #'
 #' Usually called from within a function, createMissingVarianceParam takes 2 of 3 
@@ -6,8 +6,8 @@
 #' an error if one of the inputs is missing or not specified properly. Note that 
 #' it is required that the user specify at least 2 of the arguments.
 #' 
-#' @author Alexandria C. Sakrejda
-
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' 
 #' @param sigma Within-cluster variance; accepts a vector of length \code{narms}.
 #' @param sigma_b Between-cluster variance; accepts a vector of length \code{narms}.
 #' @param ICC Intra-cluster correlation coefficient; accepts a vector of length \code{narms}
