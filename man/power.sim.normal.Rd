@@ -18,7 +18,8 @@ power.sim.binomial(n.sim = 10, effect.size, alpha = 0.05, n.clusters,
 
 power.sim.poisson(n.sim = 10, effect.size, alpha = 0.05, n.clusters,
   n.periods, cluster.size, btw.clust.var, period.effect, period.var,
-  estimation.function, at.risk.params, permute = FALSE, verbose = FALSE)
+  estimation.function, at.risk.params, permute = FALSE,
+  verbose = FALSE)
 
 make.base.data(n.obs, n.clusters, cluster.size, n.periods)
 }

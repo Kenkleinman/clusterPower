@@ -4,9 +4,9 @@
 \alias{crtpwr.2meanD}
 \title{Power calculations for difference-in-difference cluster randomized trials, continuous outcome}
 \usage{
-crtpwr.2meanD(alpha = 0.05, power = 0.8, nclusters = NA, nsubjects = NA,
-  d = NA, icc = NA, rho_c = NA, rho_s = NA, vart = NA,
-  tol = .Machine$double.eps^0.25)
+crtpwr.2meanD(alpha = 0.05, power = 0.8, nclusters = NA,
+  nsubjects = NA, d = NA, icc = NA, rho_c = NA, rho_s = NA,
+  vart = NA, tol = .Machine$double.eps^0.25)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a

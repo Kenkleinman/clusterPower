@@ -6,7 +6,8 @@
 \usage{
 cps.sw.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
   p.ntrt = NULL, p.trt = NULL, steps = NULL, sigma_b = NULL,
-  alpha = 0.05, method = "glmm", quiet = FALSE, all.sim.data = FALSE)
+  alpha = 0.05, method = "glmm", quiet = FALSE,
+  all.sim.data = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}

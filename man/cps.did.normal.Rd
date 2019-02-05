@@ -6,7 +6,8 @@
 \usage{
 cps.did.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
   difference = NULL, sigma = NULL, sigma_b0 = NULL, sigma_b1 = 0,
-  alpha = 0.05, method = "glmm", quiet = FALSE, all.sim.data = FALSE)
+  alpha = 0.05, method = "glmm", quiet = FALSE,
+  all.sim.data = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -59,9 +60,10 @@ and simulated data set output may also be specified.
 }
 \examples{
 \dontrun{
-normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 50, nclusters = 30, 
-                                difference = 3, ICC = 0.2, sigma = 100, alpha = 0.05, 
-                                method = 'glmm', quiet = FALSE, all.sim.data = FALSE)
+normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 150, nclusters = 6, 
+                                difference = .48, sigma = 1, alpha = 0.05, 
+                                sigma_b0 = .1, method = 'glmm', quiet = FALSE, 
+                                all.sim.data = FALSE)
 }
 
 }

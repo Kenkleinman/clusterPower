@@ -13,7 +13,8 @@ fixed.effect.cluster.level(dat, incl.period.effect, outcome.type, alpha)
 
 random.effect(dat, incl.period.effect, outcome.type, alpha)
 
-weighted.crossover.cluster.level(dat, incl.period.effect, outcome.type, alpha)
+weighted.crossover.cluster.level(dat, incl.period.effect, outcome.type,
+  alpha)
 }
 \arguments{
 \item{dat}{observed data as a data.frame with columns named, "y", "trt" and
