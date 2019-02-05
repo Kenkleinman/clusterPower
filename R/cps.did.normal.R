@@ -71,9 +71,10 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 50, nclusters = 30, 
-#'                                 difference = 3, ICC = 0.2, sigma = 100, alpha = 0.05, 
-#'                                 method = 'glmm', quiet = FALSE, all.sim.data = FALSE)
+#' normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 150, nclusters = 6, 
+#'                                 difference = .48, sigma = 1, alpha = 0.05, 
+#'                                 sigma_b0 = .1, method = 'glmm', quiet = FALSE, 
+#'                                 all.sim.data = FALSE)
 #' }
 #'
 #' @export
