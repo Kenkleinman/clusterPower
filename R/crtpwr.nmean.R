@@ -12,9 +12,9 @@
 #' Assuming a balanced design, the between-arm variance \eqn{\sigma_a^2} (corresponding to
 #'   the function argument \code{vara}) can be estimated using the formula: 
 #'   
-#'   \deqn{\sigma_a^2 = \sum\limits_{i=1}^{a}(\mu_i - \mu)^2/(a-1)}
+#'   \deqn{\sigma_a^2 = \sum\limits_{i=1}^{n_a}(\mu_i - \mu)^2/(n_a-1)}
 #'   
-#'   where \eqn{a} is the number of arms, \eqn{\mu_i} is the estimate of the \eqn{i}-th arm
+#'   where \eqn{n_a} is the number of arms, \eqn{\mu_i} is the estimate of the \eqn{i}-th arm
 #'   mean, and \eqn{\bar{\mu}} is the estimate of the overall mean of the outcome. This 
 #'   variance can be computed in R using the \code{var} function and a vector of arm means.
 #'   For example, suppose the estimated means for a four arm trial were 40, 50, 50, and 55. Then the
