@@ -4,10 +4,11 @@
 \alias{cps.count}
 \title{Power simulations for cluster-randomized trials: Simple Designs, Count Outcome.}
 \usage{
-cps.count(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
-  c2 = NULL, c.diff = NULL, sigma_b = NULL, sigma_b2 = NULL,
-  family = "poisson", analysis = "poisson", method = "glmm",
-  alpha = 0.05, quiet = FALSE, all.sim.data = FALSE)
+cps.count(nsim = NULL, nsubjects = NULL, nclusters = NULL,
+  c1 = NULL, c2 = NULL, c.diff = NULL, sigma_b = NULL,
+  sigma_b2 = NULL, family = "poisson", analysis = "poisson",
+  method = "glmm", alpha = 0.05, quiet = FALSE,
+  all.sim.data = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
