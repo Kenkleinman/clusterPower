@@ -49,14 +49,14 @@
 #' 
 #' str.nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' probs.example <- c(0.30, 0.21, 0.53)
-#' sigma.example <- c(100, 110, 100)
 #' sigma_b.example <- c(25, 25, 120)
 #' 
-#' normal.ma.rct <- cps.ma.normal.internal(nsim = 1000, str.nsubjects = str.nsubjects.example, 
-#'                                        probs = probs.example, 
-#'                                        sigma_b = sigma_b.example, alpha = 0.05, 
-#'                                        quiet = FALSE, method = 'glmm', 
-#'                                        all.sim.data = FALSE, seed = 123)
+#' bin.ma.rct <- cps.ma.binary.internal(nsim = 10, str.nsubjects = str.nsubjects.example, 
+#'                                  probs = probs.example,
+#'                                  sigma_b = sigma_b.example, alpha = 0.05, 
+#'                                 quiet = FALSE, method = 'gee', 
+#'                                 all.sim.data = FALSE, seed = 123)
+
 #' }
 #' 
 #' @export
@@ -127,7 +127,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                      mu = 0)
     
     for (j in 1:length(logit.p)){
-      randint[[j]] <- clusterPower::expit(logit.p[i]+ randint[[i]])
+      randint[[j]] <- clusterPower::expit(logit.p[j]+ randint[[j]])
     }
     
     # Create y-value
@@ -136,9 +136,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                         function(x) rep(unlist(randint)[x], length.out = unlist(str.nsubjects)[x]))
   
     # Put y into the simulated dataset
-    sim.dat[[i]][["y"]] <-  as.factor(sapply(unlist(y.intercept), function(x) stats::rbinom(1, 1, x)))
-    
-    print(sim.dat)
+    sim.dat[[i]][["y"]] <-  sapply(unlist(y.intercept), function(x) stats::rbinom(1, 1, x))
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
@@ -147,22 +145,22 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       # option to stop the function early if fits are singular
       fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
       if (poor.fit.override==FALSE){
-        if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+        if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations
+                                                    are singular fit: check model specifications")}
       }
     }
     
     # Fit GEE (geeglm)
     if(method == 'gee'){
-      data.holder = dplyr::arrange(sim.dat[[i]], clust)
-      my.mod = geepack::geeglm(y ~ trt, data = sim.dat,
+      my.mod = geepack::geeglm(y ~ trt, data = sim.dat[[i]],
                                family = stats::binomial(link = 'logit'), 
                                id = clust, corstr = "exchangeable")
-      model.values[[i]] = summary(my.mod)
+      model.values[[i]] <-  summary(my.mod)
     }
     
     # get the overall p-values (>Chisq)
     null.mod <- update.formula(my.mod, y ~ (1|clust))
-    model.compare[[i]] <- anova(my.mod, null.mod)
+    model.compare[[i]] <- anova(my.mod, null.mod, test="LRT")
     
     # stop the loop if power is <0.5
     if (poor.fit.override==FALSE){
@@ -181,10 +179,10 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     # Update simulation progress information
     if(quiet == FALSE){
       if(i == 1){
-        avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-        time.est = avg.iter.time * (nsim - 1) / 60
-        hr.est = time.est %/% 60
-        min.est = round(time.est %% 60, 0)
+        avg.iter.time <-  as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+        time.est <-  avg.iter.time * (nsim - 1) / 60
+        hr.est <-  time.est %/% 60
+        min.est <-  round(time.est %% 60, 0)
         message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
                        ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
       }
@@ -194,10 +192,10 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       Sys.sleep(1/100)
       
       if(i == nsim){
-        total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-        hr.est = total.est %/% 3600
-        min.est = total.est %/% 60
-        sec.est = round(total.est %% 60, 0)
+        total.est <-  as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+        hr.est <-  total.est %/% 3600
+        min.est <-  total.est %/% 60
+        sec.est <-  round(total.est %% 60, 0)
         message(paste0("Simulations Complete! Time Completed: ", Sys.time(), 
                        "\nTotal Runtime: ", hr.est, 'Hr:', min.est, 'Min:', sec.est, 'Sec'))
       }

@@ -133,7 +133,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
       nclusters <- vapply(nsubjects, length, 0)
     }
   }
-  if(length(nclusters)==1 & exists("nsubjects", mode = "list")==FALSE){
+  if(length(nclusters)==1 & (exists("nsubjects", mode = "list")==FALSE)){
     nclusters <- rep(nclusters, narms)
   }
   if(length(nclusters)>1 & length(nsubjects)==1){
@@ -144,7 +144,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     stop("nclusters must be postive integer values.")
   }
   # nsubjects must be whole numbers
-  if (sum(is.wholenumber(unlist(nsubjects))==FALSE)!=0 || nsubjects < 1){
+  if (sum(is.wholenumber(unlist(nsubjects))==FALSE)!=0 || unlist(nsubjects) < 1){
     stop("nsubjects must be positive integer values.")
   }
 
