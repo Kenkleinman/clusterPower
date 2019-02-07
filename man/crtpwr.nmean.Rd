@@ -78,10 +78,11 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 # determine estimates of the between-arm variance, the between-cluster 
 # variance, and the within-cluster variance. The observed means of each arm
 # in the pilot study were 74, 80, and 86, so the  between-arm variance is 36.
-# The within-cluster and between-cluster standard deviations were observed
-# to be 8 and 3, respectively. This means the within-cluster and between-
-# cluster variances are 64 and 9, respectively. These values are entered
-# into the function as follows:
+# As discussed in the "Details" section above, this can be calculated using
+# the command var(c(74,80,86)). The within-cluster and between-cluster
+# standard deviations were observed to be 8 and 3, respectively. This means
+# the within-cluster and between-cluster variances are 64 and 9, respectively.
+# These values are entered into the function as follows:
 
 crtpwr.nmean(narms=4,nclusters=5,vara=36,varc=9,vare=64)
 # 
