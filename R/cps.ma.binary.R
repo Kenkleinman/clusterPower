@@ -23,7 +23,7 @@
 #' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
 #' @param probs Expected absolute treatment effect probabilities for each arm; accepts a scalar or a vector of length \code{narms} (required).
-#' @param sigma_b Between-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param sigma_b_sqrd Between-cluster variance; accepts a vector of length \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
@@ -31,9 +31,14 @@
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge or 
-#' power<0.5 after 50 iterations; default = FALSE 
+#' power<0.5 after 50 iterations; default = FALSE.
+#' @param overall.power Logical value indicating whether the user would like to return the overall p-value. 
+#' The default is FALSE. This option uses \code{pbkrtest::PBmodcomp}, which can take a long time and 
+#' provides an approximation based on parametric bootstrapping. There is no reliable alternative method for 
+#' binomial outcomes, so proceed with caution if you choose to obtain estimates for overall power.
+#' @param cores a string ("all") or scalar numeric value indicating the number of cores to be used for 
+#' parallel computing. When this option is set to NULL, no parallel computing is used. Default = NULL.
 #'  
-#' 
 #' @return A list with the following components
 #' \describe{
 #'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
@@ -66,11 +71,11 @@
 #' 
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' probs.example <- c(0.30, 0.21, 0.53)
-#' sigma_b.example <- c(25, 25, 120)
+#' sigma_b_sqrd.example <- c(25, 25, 120)
 #' 
 #' bin.ma.rct <- cps.ma.binary(nsim = 10, nsubjects = nsubjects.example, 
 #'                                      probs = probs.example,
-#'                                      sigma_b = sigma_b.example, alpha = 0.05,
+#'                                      sigma_b_sqrd = sigma_b_sqrd.example, alpha = 0.05,
 #'                                      quiet = FALSE, method = 'gee', 
 #'                                      all.sim.data = FALSE, seed = 123)
 #'}
@@ -80,25 +85,27 @@
 
 cps.ma.binary <- function(nsim = 1000, nsubjects = NULL, 
                           narms = NULL, nclusters = NULL,
-                          probs = NULL, sigma_b = NULL, 
+                          probs = NULL, sigma_b_sqrd = NULL, 
                           alpha = 0.05,
                           quiet = FALSE, ICC=NULL, method = 'glmm', 
                           all.sim.data = FALSE, seed = 123, 
+                          cores=NULL,
+                          overall.power=FALSE,
                           poor.fit.override = FALSE){
 
   # Create wholenumber function
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
-print("pass 1")  
+ 
   # create proportion of F-test rejections fxn
-  prop_H0_rejection <- function (alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev){
-    print(paste("Proportion of F-test rejections = ", 
+  prop_H0_rejection <- function (alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev, test="F"){
+    print(paste("Proportion of ", test, "significance-test rejections = ", 
                 round(LRT.holder.abbrev, 3), ", CI:",
                 round(LRT.holder.abbrev - abs(stats::qnorm(alpha / 2)) * 
                         sqrt((LRT.holder.abbrev * (1 - LRT.holder.abbrev)) / nsim), 3), ", ", 
                 round(LRT.holder.abbrev + abs(stats::qnorm(alpha / 2)) * 
                         sqrt((LRT.holder.abbrev * (1 - LRT.holder.abbrev)) / nsim), 3), ".", sep=""))
   }
-  print("pass 2")    
+   
   # input validation steps
   if(!is.wholenumber(nsim) || nsim < 1 || length(nsim)>1){
     stop("nsim must be a positive integer of length 1.")
@@ -113,7 +120,7 @@ print("pass 1")
       exists("narms", mode = "numeric")==FALSE){
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
-  print("pass 3")  
+  
   # create narms and nclusters if not provided directly by user
   if (exists("nsubjects", mode = "list")==TRUE){
     # create narms and nclusters if not supplied by the user
@@ -124,57 +131,59 @@ print("pass 1")
       nclusters <- vapply(nsubjects, length, 0)
     }
   }
-  print("pass 4")  
+ 
   if(length(nclusters)==1 & (exists("nsubjects", mode = "list")==FALSE)){
     nclusters <- rep(nclusters, narms)
   }
   if(length(nclusters)>1 & length(nsubjects)==1){
     narms <- length(nclusters)
   }
-  print("pass 5")  
+ 
   # nclusters must be whole numbers
   if (sum(is.wholenumber(nclusters)==FALSE)!=0 || nclusters < 1){
     stop("nclusters must be postive integer values.")
   }
-  print("pass 5.5")  
+ 
   # nsubjects must be whole numbers
   if (sum(is.wholenumber(unlist(nsubjects))==FALSE)!=0 || unlist(nsubjects) < 1){
     stop("nsubjects must be positive integer values.")
   }
-  print("pass 6")  
+
   # Create nsubjects structure from narms and nclusters when nsubjects is scalar
   if (length(nsubjects)==1){
     str.nsubjects <- lapply(nclusters, function(x) rep(nsubjects, x))
   } else {
     str.nsubjects <- nsubjects
   }
-  print("pass 7")    
-  # allows for probs, sigma_b to be entered as scalar
-  if (length(sigma_b)==1){
-    sigma_b <- rep(sigma_b, narms)
+ 
+  # allows for probs, sigma_b_sqrd to be entered as scalar
+  if (length(sigma_b_sqrd)==1){
+    sigma_b_sqrd <- rep(sigma_b_sqrd, narms)
   }
   if (length(probs)==1){
     probs <- rep(probs, narms)
   }
-  print("pass 8")    
-  if (length(sigma_b)!=narms){
-    stop("Length of variance parameters sigma_b
+   
+  if (length(sigma_b_sqrd)!=narms){
+    stop("Length of variance parameters sigma_b_sqrd
          must equal narms, or be provided as a scalar 
-         if sigma_b for all arms are equal.")
+         if sigma_b_sqrd for all arms are equal.")
   }
   
   # run the simulations 
   binary.ma.rct <- cps.ma.binary.internal(nsim = nsim, 
                                           str.nsubjects = str.nsubjects, 
                                           probs = probs,
-                                          sigma_b = sigma_b, alpha = alpha, 
+                                          sigma_b_sqrd = sigma_b_sqrd, alpha = alpha, 
                                           quiet = quiet, method = method, 
                                           all.sim.data = all.sim.data,
                                           seed = seed,
+                                          cores = cores,
+                                          overall.power=FALSE,
                                           poor.fit.override = poor.fit.override)
   
   models <- binary.ma.rct[[1]]
-  
+  print("pass 1")
   #Organize output for GLMM
   if(method=="glmm"){
     Estimates = matrix(NA, nrow = nsim, ncol = narms)
@@ -211,15 +220,16 @@ print("pass 1")
     colnames(p.val) <- names.pval
     
     # Organize the LRT output
-    LRT.holder <- matrix(unlist(binary.ma.rct[[2]]), ncol=4, nrow=nsim, 
+    LRT.holder <- matrix(binary.ma.rct[[2]][[1]][[1]][[3]], ncol=2, nrow=nsim, 
                          byrow=TRUE, 
                          dimnames = list(seq(1:nsim), 
-                                         c("Df", "Sum Sq", "Mean Sq", "F value", "P(>F)")))
+                                         rownames(bin.ma.rct[[2]][[1]][[1]])))
     
     # Proportion of times P(>F)
-    sig.LRT <-  ifelse(LRT.holder[,5] < alpha, 1, 0)
+    sig.LRT <-  ifelse(LRT.holder[,1] < alpha, 1, 0)
     LRT.holder.abbrev <- sum(sig.LRT)/nsim
-    
+    sig.PBtest <-  ifelse(LRT.holder[,2] < alpha, 1, 0)
+    PBtest.holder.abbrev <- sum(sig.PBtest)/nsim
     
     # Calculate and store power estimate & confidence intervals
     sig.val <-  ifelse(p.val < alpha, 1, 0)
@@ -242,12 +252,20 @@ print("pass 1")
       complete.output <-  list("power" <-  power.parms[-1,],
                                "model.estimates" <-  ma.model.est, 
                                "overall.power" <- LRT.holder,
-                               "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
+                               "overall.power2" <- paste(prop_H0_rejection(alpha=alpha, nsim=nsim, 
+                                                                     LRT.holder.abbrev=LRT.holder.abbrev, test="LRT"),
+                                                         "; ", prop_H0_rejection(alpha=alpha, nsim=nsim, 
+                                                                                 LRT.holder.abbrev=PBtest.holder.abbrev, test="Bootstrap"),
+                                                         sep=""),
                                "sim.data" <-  binary.ma.rct[[3]], 
                                "failed.to.converge" <-  binary.ma.rct[[4]])
     } else {
       complete.output <-  list("power" <-  power.parms[-1,],
-                               "overall.power" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
+                               "overall.power" <- paste(prop_H0_rejection(alpha=alpha, nsim=nsim, 
+                                                                    LRT.holder.abbrev=LRT.holder.abbrev, test="LRT"), 
+                                                        "; ", prop_H0_rejection(alpha=alpha, nsim=nsim, 
+                                                                                LRT.holder.abbrev=PBtest.holder.abbrev, test="Bootstrap"),
+                                                        sep=""),
                                "proportion.failed.to.converge" <- binary.ma.rct[[3]])
     }
     return(complete.output)

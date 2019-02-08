@@ -27,8 +27,7 @@
 #' 
 #' @return A vector of length \code{narms} 
 #' \describe{
-#'   \item{missing.arg}{The argument that the user did not specify is returned as a character 
-#'   vector with the first item being the name of the returned values.}
+#'   \item{missing.arg}{The argument that the user did not specify.}
 #' }
 #' 
 #' @examples 
@@ -41,9 +40,9 @@
 #' @export
 
 
-validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma, 
-                             sigma_b=sigma_b, ICC2=ICC, sigma2=sigma, 
-                             sigma_b2=sigma_b, method=method, quiet=quiet, 
+validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sqrd, 
+                             sigma_b=sigma_b_sqrd, ICC2=ICC, sigma2=sigma_sqrd, 
+                             sigma_b2=sigma_b_sqrd, method=method, quiet=quiet, 
                              all.sim.data=all.sim.data, 
                              poor.fit.override=poor.fit.override){
   # Validate DIFFERENCE, ALPHA

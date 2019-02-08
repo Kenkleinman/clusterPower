@@ -20,7 +20,7 @@
 #' @param str.nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
 #' @param means Expected probability of outcome for each arm; accepts a vector of length \code{narms} (required).
-#' @param sigma_b Between-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param sigma_b_sqrd Between-cluster variance; accepts a vector of length \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
@@ -28,6 +28,12 @@
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param seed Option to set.seed. Default is NULL.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge
+#' @param overall.power Logical value indicating whether the user would like to return the overall p-value. 
+#' The default is FALSE. This option uses \code{pbkrtest::PBmodcomp}, which can take a long time and 
+#' provides an approximation based on parametric bootstrapping. There is no reliable alternative method for 
+#' binomial outcomes, so proceed with caution if you choose to obtain estimates for overall power.
+#' @param cores a string or numeric value indicating the number of cores to be used for parallel computing. 
+#' When this option is set to NULL, no parallel computing is used.
 #' 
 #' @return A list with the following components
 #' \describe{
@@ -49,11 +55,11 @@
 #' 
 #' str.nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' probs.example <- c(0.30, 0.21, 0.53)
-#' sigma_b.example <- c(25, 25, 120)
+#' sigma_b_sqrd.example <- c(25, 25, 120)
 #' 
 #' bin.ma.rct <- cps.ma.binary.internal(nsim = 10, str.nsubjects = str.nsubjects.example, 
 #'                                  probs = probs.example,
-#'                                  sigma_b = sigma_b.example, alpha = 0.05, 
+#'                                  sigma_b_sqrd = sigma_b_sqrd.example, alpha = 0.05, 
 #'                                 quiet = FALSE, method = 'gee', 
 #'                                 all.sim.data = FALSE, seed = 123)
 
@@ -62,12 +68,14 @@
 #' @export
 
 cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
-                                    probs = NULL, sigma_b = NULL,
+                                    probs = NULL, sigma_b_sqrd = NULL,
                                     alpha = 0.05,
                                     quiet = FALSE, method = 'glmm', 
                                     all.sim.data = FALSE, 
                                     seed=NULL,
-                                    poor.fit.override = FALSE){
+                                    poor.fit.override = FALSE,
+                                    overall.power=FALSE,
+                                    cores=NULL){
   
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
@@ -117,13 +125,23 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   }
   logit.p <- unlist(logit.p)
   
+  #setup for parallel computing
+  if (!exists("cores", mode = "NULL")){
+    ## Do computations with multiple processors:
+    ## Number of cores:
+    if (cores=="all"){nc <- parallel::detectCores()} else {nc <- cores}
+    ## Create clusters
+    cl <- parallel::makeCluster(rep("localhost", nc))
+  }
+  
   # Create simulation loop
-  for(i in 1:nsim){
+  require(foreach)
+  foreach::foreach(i=1:nsim) %do% {
     sim.dat[[i]] = data.frame(y = NA, trt = as.factor(unlist(trt1)), 
                               clust = as.factor(unlist(clust1)))
     # Generate between-cluster effects for non-treatment and treatment 
     randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s)), 
-                     nc = nclusters, s = sigma_b, 
+                     nc = nclusters, s = sigma_b_sqrd, 
                      mu = 0)
     
     for (j in 1:length(logit.p)){
@@ -137,10 +155,12 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   
     # Put y into the simulated dataset
     sim.dat[[i]][["y"]] <-  sapply(unlist(y.intercept), function(x) stats::rbinom(1, 1, x))
-    
+  #end simulated dataset construction
+  
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod <-  lme4::glmer(y ~ trt + (1|clust), data = sim.dat[[i]], family = stats::binomial(link = 'logit'))
+      my.mod <-  lme4::glmer(y ~ trt + (1|clust), data = sim.dat[[i]], 
+                             family = stats::binomial(link = 'logit'))
       model.values[[i]] <-  summary(my.mod)
       # option to stop the function early if fits are singular
       fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
@@ -158,24 +178,26 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       model.values[[i]] <-  summary(my.mod)
     }
     
-    # get the overall p-values (>Chisq)
-    null.mod <- update.formula(my.mod, y ~ (1|clust))
-    model.compare[[i]] <- anova(my.mod, null.mod, test="LRT")
-    
-    # stop the loop if power is <0.5
-    if (poor.fit.override==FALSE){
-      if (i > 50 & (i %% 10==0)){
-        temp.power.checker <- matrix(unlist(model.compare[1:i]), ncol=6, nrow=i, 
-                                     byrow=TRUE)
-        sig.val.temp <-  ifelse(temp.power.checker[,6][1:i] < alpha, 1, 0)
-        pval.power.temp <- sum(sig.val.temp)/i
-        if (pval.power.temp < 0.5){
-          stop(paste("Calculated power is < ", pval.power.temp, ", auto stop at simulation ", 
-                     i, ". Set poor.fit.override==TRUE to ignore this error.", sep = ""))
+    if (overall.power==TRUE){
+      # get the overall p-values (>Chisq)
+      #null.mod <- update.formula(my.mod, y ~ (1|clust))
+      null.mod <- lme4::glmer(y ~ (1|clust), data = sim.dat[[i]], 
+                  family = stats::binomial(link = 'logit'))
+      model.compare[[i]] <- pbkrtest::PBmodcomp(my.mod, null.mod, cl=cl, nsim=100) #anova(my.mod, null.mod, test="LRT")
+      # stop the loop if power is <0.5
+      if (poor.fit.override==FALSE){
+        if (i > 50 & (i %% 10==0)){
+          temp.power.checker <- matrix(unlist(model.compare[1:i]), ncol=6, nrow=i, 
+                                       byrow=TRUE)
+          sig.val.temp <-  ifelse(temp.power.checker[,6][1:i] < alpha, 1, 0)
+          pval.power.temp <- sum(sig.val.temp)/i
+          if (pval.power.temp < 0.5){
+            stop(paste("Calculated power is < ", pval.power.temp, ", auto stop at simulation ", 
+                       i, ". Set poor.fit.override==TRUE to ignore this error.", sep = ""))
+          }
         }
       }
     }
-    
     # Update simulation progress information
     if(quiet == FALSE){
       if(i == 1){
@@ -201,6 +223,12 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       }
     }
   } 
+  # end of large simulation loop
+  
+  # turn off parallel computing
+  if (!exists("cores", mode = "NULL")){
+    parallel::stopCluster(cl)
+  }
   
   ## Output objects
   if(all.sim.data == TRUE){
