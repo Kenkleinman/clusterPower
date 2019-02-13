@@ -1,13 +1,25 @@
 #' Power calculations for multi-arm cluster randomized trials, continuous outcome
 #'
-#' Compute the power of a multi-arm cluster randomized trial with a continuous outcome,
-#' or determine parameters to obtain a target power.
+#' Compute the power of the overall F-test for a multi-arm cluster randomized trial with a continuous
+#' outcome, or determine parameters to obtain a target power.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{narms}, \code{nclusters},
 #'   \code{nsubjects}, \code{vara}, \code{varc}, and \code{vare}  must be passed as \code{NA}.
 #'   Note that \code{alpha} and \code{power} have non-\code{NA}
 #'   defaults, so if those are the parameters of interest they must be
 #'   explicitly passed as \code{NA}.
+#'   
+#' Assuming a balanced design, the between-arm variance \eqn{\sigma_a^2} (corresponding to
+#'   the function argument \code{vara}) can be estimated using the formula: 
+#'   
+#'   \deqn{\sigma_a^2 = \sum\limits_{i=1}^{n_a}(\mu_i - \mu)^2/(n_a-1)}
+#'   
+#'   where \eqn{n_a} is the number of arms, \eqn{\mu_i} is the estimate of the \eqn{i}-th arm
+#'   mean, and \eqn{\mu} is the estimate of the overall mean of the outcome. This 
+#'   variance can be computed in R using the \code{var} function and a vector of arm means.
+#'   For example, suppose the estimated means for a three-arm trial were 74, 80, and 86 Then the
+#'   estimate of the between-arm variance could be computed with \code{var(c(74,80,86))}, 
+#'   yielding a value of 36.
 #'
 #' @section Note:
 #'   This function was inspired by work from Stephane Champely (pwr.t.test),
@@ -33,13 +45,23 @@
 #'   at least four significant digits.
 #' @return The computed argument.
 #' @examples 
-#' # Find the number of clusters per condition needed for a 4-arm trial with alpha = .05, 
-#' # power = 0.8, 10 observations per cluster, between-arm variance of 50,
-#' # between-cluster variance of 10, and within-cluster variance of 60. 
-#' crtpwr.nmean(narms=4,nsubjects=10,vara=50,varc=10,vare=60)
+#' # Suppose we are planning a multi-arm trial composed of a control arm and 
+#' # two treatment arms. It is known that each arm will contain 5 clusters. We
+#' # wish to know the minimum number of subjects per cluster necessary to
+#' # attain 80% power at a 5% level of significance. A pilot study was used to
+#' # determine estimates of the between-arm variance, the between-cluster 
+#' # variance, and the within-cluster variance. The observed means of each arm
+#' # in the pilot study were 74, 80, and 86, so the  between-arm variance is 36.
+#' # As discussed in the "Details" section above, this can be calculated using
+#' # the command var(c(74,80,86)). The within-cluster and between-cluster
+#' # standard deviations were observed to be 8 and 3, respectively. This means
+#' # the within-cluster and between-cluster variances are 64 and 9, respectively.
+#' # These values are entered into the function as follows:
+#' 
+#' crtpwr.nmean(narms=4,nclusters=5,vara=36,varc=9,vare=64)
 #' # 
-#' # The result, showimg nclusters of greater than 5, suggests 6 clusters per 
-#' # condition should be used.
+#' # The result, showing nsubjects of greater than 32, suggests 33 subjects per 
+#' # cluster should be used.
 #' @references Murray DM. Design and Analysis of Group-Randomized Trials. New York,
 #'   NY: Oxford University Press; 1998.
 #' @export
