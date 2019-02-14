@@ -23,7 +23,7 @@
 #' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
 #' @param probs Expected absolute treatment effect probabilities for each arm; accepts a scalar or a vector of length \code{narms} (required).
-#' @param sigma_b_sqrd Between-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
@@ -48,7 +48,7 @@
 #'   to each arm with the suffixes as follows: 
 #'                   ".Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
-#'                   ".tval" (for GLMM) | ".wald" (for GEE), 
+#'                   ".zval" (for GLMM) | ".wald" (for GEE), 
 #'                   ".pval"
 #'   \item{overall.power}{Produced only when all.sim.data=TRUE, table of F-test (when method="glmm") or 
 #'   chi^{2} (when method="gee") significance test results.
@@ -71,11 +71,11 @@
 #' 
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' probs.example <- c(0.30, 0.21, 0.53)
-#' sigma_b_sqrd.example <- c(25, 25, 120)
+#' sigma_b_sq.example <- c(25, 25, 120)
 #' 
 #' bin.ma.rct <- cps.ma.binary(nsim = 10, nsubjects = nsubjects.example, 
 #'                                      probs = probs.example,
-#'                                      sigma_b_sqrd = sigma_b_sqrd.example, alpha = 0.05,
+#'                                      sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
 #'                                      quiet = FALSE, method = 'gee', 
 #'                                      all.sim.data = FALSE, seed = 123)
 #'}
@@ -85,7 +85,7 @@
 
 cps.ma.binary <- function(nsim = 1000, nsubjects = NULL, 
                           narms = NULL, nclusters = NULL,
-                          probs = NULL, sigma_b_sqrd = NULL, 
+                          probs = NULL, sigma_b_sq = NULL, 
                           alpha = 0.05,
                           quiet = FALSE, ICC=NULL, method = 'glmm', 
                           all.sim.data = FALSE, seed = 123, 
@@ -98,7 +98,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
  
   # create proportion of F-test rejections fxn
   prop_H0_rejection <- function (alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev, test="F"){
-    print(paste("Proportion of ", test, "significance-test rejections = ", 
+    print(paste("Proportion of ", test, " significance-test rejections = ", 
                 round(LRT.holder.abbrev, 3), ", CI:",
                 round(LRT.holder.abbrev - abs(stats::qnorm(alpha / 2)) * 
                         sqrt((LRT.holder.abbrev * (1 - LRT.holder.abbrev)) / nsim), 3), ", ", 
@@ -156,34 +156,33 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     str.nsubjects <- nsubjects
   }
  
-  # allows for probs, sigma_b_sqrd to be entered as scalar
-  if (length(sigma_b_sqrd)==1){
-    sigma_b_sqrd <- rep(sigma_b_sqrd, narms)
+  # allows for probs, sigma_b_sq to be entered as scalar
+  if (length(sigma_b_sq)==1){
+    sigma_b_sq <- rep(sigma_b_sq, narms)
   }
   if (length(probs)==1){
     probs <- rep(probs, narms)
   }
    
-  if (length(sigma_b_sqrd)!=narms){
-    stop("Length of variance parameters sigma_b_sqrd
+  if (length(sigma_b_sq)!=narms){
+    stop("Length of variance parameters sigma_b_sq
          must equal narms, or be provided as a scalar 
-         if sigma_b_sqrd for all arms are equal.")
+         if sigma_b_sq for all arms are equal.")
   }
   
   # run the simulations 
   binary.ma.rct <- cps.ma.binary.internal(nsim = nsim, 
                                           str.nsubjects = str.nsubjects, 
                                           probs = probs,
-                                          sigma_b_sqrd = sigma_b_sqrd, alpha = alpha, 
+                                          sigma_b_sq = sigma_b_sq, alpha = alpha, 
                                           quiet = quiet, method = method, 
                                           all.sim.data = all.sim.data,
                                           seed = seed,
                                           cores = cores,
-                                          overall.power=FALSE,
                                           poor.fit.override = poor.fit.override)
   
   models <- binary.ma.rct[[1]]
-  print("pass 1")
+
   #Organize output for GLMM
   if(method=="glmm"){
     Estimates = matrix(NA, nrow = nsim, ncol = narms)
@@ -203,33 +202,31 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     
     names.Est <- rep(NA, narms)
     names.st.err <- rep(NA, narms)
-    names.tval <- rep(NA, narms)
+    names.zval <- rep(NA, narms)
     names.pval <- rep(NA, narms)
     names.power <- rep(NA, narms)
     
     for (i in 1:length(keep.names)){
       names.Est[i] <- paste(keep.names[i], ".Estimate", sep="")
       names.st.err[i] <- paste(keep.names[i], ".Std.Err", sep="")
-      names.tval[i] <- paste(keep.names[i], ".tval", sep="")
+      names.zval[i] <- paste(keep.names[i], ".zval", sep="")
       names.pval[i] <- paste(keep.names[i], ".pval", sep="")
       names.power[i] <- paste(keep.names[i], ".power", sep="")
     }
     colnames(Estimates) <- names.Est
     colnames(std.error) <- names.st.err
-    colnames(t.val) <- names.tval
+    colnames(z.val) <- names.zval
     colnames(p.val) <- names.pval
     
     # Organize the LRT output
-    LRT.holder <- matrix(binary.ma.rct[[2]][[1]][[1]][[3]], ncol=2, nrow=nsim, 
+    LRT.holder <- matrix(unlist(binary.ma.rct[[2]]), ncol=3, nrow=nsim, 
                          byrow=TRUE, 
                          dimnames = list(seq(1:nsim), 
-                                         rownames(bin.ma.rct[[2]][[1]][[1]])))
+                                         colnames(bin.ma.rct[[2]][[1]])))
     
     # Proportion of times P(>F)
-    sig.LRT <-  ifelse(LRT.holder[,1] < alpha, 1, 0)
+    sig.LRT <-  ifelse(LRT.holder[,3] < alpha, 1, 0)
     LRT.holder.abbrev <- sum(sig.LRT)/nsim
-    sig.PBtest <-  ifelse(LRT.holder[,2] < alpha, 1, 0)
-    PBtest.holder.abbrev <- sum(sig.PBtest)/nsim
     
     # Calculate and store power estimate & confidence intervals
     sig.val <-  ifelse(p.val < alpha, 1, 0)
@@ -242,7 +239,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     rownames(power.parms) <- names.power
     
     # Store simulation output in data frame
-    ma.model.est <-  data.frame(Estimates, std.error, t.val, p.val)
+    ma.model.est <-  data.frame(Estimates, std.error, z.val, p.val)
     ma.model.est <- ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))] 
     
     ## Output objects for GLMM
@@ -252,20 +249,14 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
       complete.output <-  list("power" <-  power.parms[-1,],
                                "model.estimates" <-  ma.model.est, 
                                "overall.power" <- LRT.holder,
-                               "overall.power2" <- paste(prop_H0_rejection(alpha=alpha, nsim=nsim, 
-                                                                     LRT.holder.abbrev=LRT.holder.abbrev, test="LRT"),
-                                                         "; ", prop_H0_rejection(alpha=alpha, nsim=nsim, 
-                                                                                 LRT.holder.abbrev=PBtest.holder.abbrev, test="Bootstrap"),
-                                                         sep=""),
+                               "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, 
+                                                                     LRT.holder.abbrev=LRT.holder.abbrev, test="Wald"),
                                "sim.data" <-  binary.ma.rct[[3]], 
                                "failed.to.converge" <-  binary.ma.rct[[4]])
     } else {
       complete.output <-  list("power" <-  power.parms[-1,],
-                               "overall.power" <- paste(prop_H0_rejection(alpha=alpha, nsim=nsim, 
-                                                                    LRT.holder.abbrev=LRT.holder.abbrev, test="LRT"), 
-                                                        "; ", prop_H0_rejection(alpha=alpha, nsim=nsim, 
-                                                                                LRT.holder.abbrev=PBtest.holder.abbrev, test="Bootstrap"),
-                                                        sep=""),
+                               "overall.power" <- prop_H0_rejection(alpha=alpha, nsim=nsim, 
+                                                                    LRT.holder.abbrev=LRT.holder.abbrev, test="Wald"),
                                "proportion.failed.to.converge" <- binary.ma.rct[[3]])
     }
     return(complete.output)

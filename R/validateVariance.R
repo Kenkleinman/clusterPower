@@ -40,8 +40,8 @@
 #' @export
 
 
-validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sqrd, 
-                             sigma_b=sigma_b_sqrd, ICC2=ICC, sigma2=sigma_sqrd, 
+validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sq, 
+                             sigma_b=sigma_b_sqrd, ICC2=ICC, sigma2=sigma_sq, 
                              sigma_b2=sigma_b_sqrd, method=method, quiet=quiet, 
                              all.sim.data=all.sim.data, 
                              poor.fit.override=poor.fit.override){

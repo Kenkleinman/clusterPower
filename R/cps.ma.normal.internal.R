@@ -20,8 +20,8 @@
 #' @param str.nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
 #' @param means Expected absolute treatment effect for each arm; accepts a vector of length \code{narms} (required).
-#' @param sigma_sqrd Within-cluster variance; accepts a vector of length \code{narms} (required).
-#' @param sigma_b_sqrd Between-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param sigma_sq Within-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
@@ -52,12 +52,12 @@
 #' 
 #' str.nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' means.example <- c(30, 21, 53)
-#' sigma_sqrd.example <- c(100, 110, 100)
-#' sigma_b_sqrd.example <- c(25, 25, 120)
+#' sigma_sq.example <- c(100, 110, 100)
+#' sigma_b_sq.example <- c(25, 25, 120)
 #' 
 #' normal.ma.rct <- cps.ma.normal.internal(nsim = 1000, str.nsubjects = str.nsubjects.example, 
-#'                                        means = means.example, sigma_sqrd = sigma_sqrd.example, 
-#'                                        sigma_b_sqrd = sigma_b_sqrd.example, alpha = 0.05, 
+#'                                        means = means.example, sigma_sq = sigma_sq.example, 
+#'                                        sigma_b_sq = sigma_b_sq.example, alpha = 0.05, 
 #'                                        quiet = FALSE, method = 'glmm', 
 #'                                        all.sim.data = FALSE, seed = 123)
 #' }
@@ -65,7 +65,7 @@
 #' @export
 
 cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
-                      means = NULL, sigma_sqrd = NULL, sigma_b_sqrd = NULL,
+                      means = NULL, sigma_sq = NULL, sigma_b_sq = NULL,
                       alpha = 0.05,
                       quiet = FALSE, method = 'glmm', 
                       all.sim.data = FALSE, 
@@ -130,7 +130,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                               clust = as.factor(unlist(clust)))
     # Generate between-cluster effects for non-treatment and treatment
     randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s)), 
-                                                      nc = nclusters, s = sigma_b_sqrd, 
+                                                      nc = nclusters, s = sigma_b_sq, 
                                                       mu = 0)
     # Create y-value
     y.bclust <-  vector(mode = "numeric", length = length(unlist(str.nsubjects)))
@@ -139,7 +139,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                       function(x) rep(unlist(randint)[x], length.out = unlist(str.nsubjects)[x]))
     for (j in 1:narms){
       y.wclust[[j]] <-  lapply(str.nsubjects[[j]], function(x) stats:: rnorm(x, mean = means[j], 
-                                                                             sd = sqrt(sigma_sqrd[j])))
+                                                                             sd = sqrt(sigma_sq[j])))
     }
     
     # Create data frame for simulated dataset

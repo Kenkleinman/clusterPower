@@ -23,8 +23,8 @@
 #' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
 #' @param means Expected absolute treatment effect for each arm; accepts a vector of length \code{narms} (required).
-#' @param sigma_sqrd Within-cluster variance; accepts a vector of length \code{narms} (required).
-#' @param sigma_b_sqrd Between-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param sigma_sq Within-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
@@ -69,12 +69,12 @@
 #' 
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' means.example <- c(30, 21, 53)
-#' sigma_sqrd.example <- c(1, 1, 0.9)
-#' sigma_b_sqrd.example <- c(0.1, 0.15, 0.1)
+#' sigma_sq.example <- c(1, 1, 0.9)
+#' sigma_b_sq.example <- c(0.1, 0.15, 0.1)
 #' 
 #' multi.cps.normal <- cps.ma.normal(nsim = 2, nsubjects = nsubjects.example, 
-#'                        means = means.example, sigma_sqrd = sigma_sqrd.example, 
-#'                        sigma_b_sqrd = sigma_b_sqrd.example, alpha = 0.05,
+#'                        means = means.example, sigma_sq = sigma_sq.example, 
+#'                        sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
 #'                        quiet = FALSE, ICC=NULL, method = 'glmm', 
 #'                        all.sim.data = FALSE,
 #'                        seed = NULL, 
@@ -86,8 +86,8 @@
  
 cps.ma.normal <- function(nsim = 1000, nsubjects = NULL, 
                            narms = NULL, nclusters = NULL,
-                        means = NULL, sigma_sqrd = NULL, 
-                        sigma_b_sqrd = NULL, alpha = 0.05,
+                        means = NULL, sigma_sq = NULL, 
+                        sigma_b_sq = NULL, alpha = 0.05,
                         quiet = FALSE, ICC=NULL, method = 'glmm', 
                         all.sim.data = FALSE, seed = 123, 
                         cores=NULL,
@@ -121,9 +121,9 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
 
-  validateVariance(difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sqrd, 
-                   sigma_b=sigma_b_sqrd, ICC2=ICC, sigma2=sigma_sqrd, 
-                   sigma_b2=sigma_b_sqrd, method=method, quiet=quiet, 
+  validateVariance(difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sq, 
+                   sigma_b=sigma_b_sq, ICC2=ICC, sigma2=sigma_sq, 
+                   sigma_b2=sigma_b_sq, method=method, quiet=quiet, 
                    all.sim.data=all.sim.data, poor.fit.override=poor.fit.override)
   
   # create narms and nclusters if not provided directly by user
@@ -158,12 +158,12 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     str.nsubjects <- nsubjects
   }
   
-  # allows for means, sigma_sqrd, sigma_b_sqrd, and ICC to be entered as scalar
-  if (length(sigma_sqrd)==1){
-    sigma_sqrd <- rep(sigma_sqrd, narms)
+  # allows for means, sigma_sq, sigma_b_sq, and ICC to be entered as scalar
+  if (length(sigma_sq)==1){
+    sigma_sq <- rep(sigma_sq, narms)
   }
-  if (length(sigma_b_sqrd)==1){
-    sigma_b_sqrd <- rep(sigma_b_sqrd, narms)
+  if (length(sigma_b_sq)==1){
+    sigma_b_sq <- rep(sigma_b_sq, narms)
   }
   if (length(ICC)==1){
     ICC <- rep(ICC, narms)
@@ -172,26 +172,26 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     means <- rep(means, narms)
   }
 
-  # supplies sigma_sqrd or sigma_b_sqrd if user supplies ICC
+  # supplies sigma_sq or sigma_b_sq if user supplies ICC
   if (exists("ICC", mode = "numeric")==TRUE){
-  if (exists("sigma_sqrd", mode = "numeric")==FALSE){
-    sigma_sqrd <- createMissingVarianceParam(sigma_b_sqrd = sigma_b_sqrd, ICC = ICC)
+  if (exists("sigma_sq", mode = "numeric")==FALSE){
+    sigma_sq <- createMissingVarianceParam(sigma_b_sq = sigma_b_sq, ICC = ICC)
   }
-  if (exists("sigma_b_sqrd", mode = "numeric")==FALSE){
-    sigma_b_sqrd <- createMissingVarianceParam(sigma_sqrd = sigma_sqrd, ICC = ICC)
+  if (exists("sigma_b_sq", mode = "numeric")==FALSE){
+    sigma_b_sq <- createMissingVarianceParam(sigma_sq = sigma_sq, ICC = ICC)
   }
   }
   
-  if (length(sigma_sqrd)!=narms){
-    stop("Length of variance parameters (sigma_sqrd, sigma_b_sqrd, ICC) 
-         must equal narms, or be provided as a scalar if sigma_sqrd for all arms are equal.")
+  if (length(sigma_sq)!=narms){
+    stop("Length of variance parameters (sigma_sq, sigma_b_sq, ICC) 
+         must equal narms, or be provided as a scalar if sigma_sq for all arms are equal.")
   }
 
    # run the simulations 
    normal.ma.rct <- cps.ma.normal.internal(nsim = nsim, 
                                            str.nsubjects = str.nsubjects, 
-                                           means = means, sigma_sqrd = sigma_sqrd, 
-                                           sigma_b_sqrd = sigma_b_sqrd, alpha = alpha, 
+                                           means = means, sigma_sq = sigma_sq, 
+                                           sigma_b_sq = sigma_b_sq, alpha = alpha, 
                                            quiet = quiet, method = method, 
                                            all.sim.data = all.sim.data,
                                            seed = seed,
