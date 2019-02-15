@@ -41,8 +41,8 @@
 
 
 validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sq, 
-                             sigma_b=sigma_b_sqrd, ICC2=ICC, sigma2=sigma_sq, 
-                             sigma_b2=sigma_b_sqrd, method=method, quiet=quiet, 
+                             sigma_b=sigma_b_sq, ICC2=ICC, sigma2=sigma_sq, 
+                             sigma_b2=sigma_b_sq, method=method, quiet=quiet, 
                              all.sim.data=all.sim.data, 
                              poor.fit.override=poor.fit.override){
   # Validate DIFFERENCE, ALPHA

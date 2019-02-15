@@ -159,7 +159,8 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                              family = stats::binomial(link = 'logit'))
       model.values[[i]] <-  summary(my.mod)
       # option to stop the function early if fits are singular
-      fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
+      fail[i] <- ifelse(any( grepl("fail", my.mod@optinfo$conv$lme4$messages) )==TRUE |
+                          any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0)
       if (poor.fit.override==FALSE){
         if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations
                                                     are singular fit: check model specifications")}
