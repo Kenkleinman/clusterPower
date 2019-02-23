@@ -58,9 +58,9 @@
 #' # the within-cluster and between-cluster variances are 64 and 9, respectively.
 #' # These values are entered into the function as follows:
 #' 
-#' crtpwr.nmean(narms=4,nclusters=5,vara=36,varc=9,vare=64)
+#' crtpwr.nmean(narms=3,nclusters=5,vara=36,varc=9,vare=64)
 #' # 
-#' # The result, showing nsubjects of greater than 32, suggests 33 subjects per 
+#' # The result, showing nsubjects of greater than 20, suggests 21 subjects per 
 #' # cluster should be used.
 #' @references Murray DM. Design and Analysis of Group-Randomized Trials. New York,
 #'   NY: Oxford University Press; 1998.
@@ -71,9 +71,9 @@ crtpwr.nmean <- function(alpha = 0.05, power = 0.80,
                          vara = NA, varc = NA, vare = NA, 
                          tol = .Machine$double.eps^0.25){
   
-  if(!is.na(narms) && narms <= 2) {
-    stop("'narms' must be greater than 2.")
-  }
+  # if(!is.na(narms) && narms <= 2) {
+  #   stop("'narms' must be greater than 2.")
+  # }
   
   if(!is.na(nclusters) && nclusters <= 1) {
     stop("'nclusters' must be greater than 1.")
@@ -120,7 +120,7 @@ crtpwr.nmean <- function(alpha = 0.05, power = 0.80,
   # calculate narms
   if (is.na(narms)) {
     narms <- stats::uniroot(function(narms) eval(pwr) - power,
-                                interval = c(3 + 1e-10, 1e+07),
+                                interval = c(2 + 1e-10, 1e+07),
                                 tol = tol, extendInt = "upX")$root
   }
   

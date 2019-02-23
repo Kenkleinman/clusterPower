@@ -84,9 +84,9 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 # the within-cluster and between-cluster variances are 64 and 9, respectively.
 # These values are entered into the function as follows:
 
-crtpwr.nmean(narms=4,nclusters=5,vara=36,varc=9,vare=64)
+crtpwr.nmean(narms=3,nclusters=5,vara=36,varc=9,vare=64)
 # 
-# The result, showing nsubjects of greater than 32, suggests 33 subjects per 
+# The result, showing nsubjects of greater than 20, suggests 21 subjects per 
 # cluster should be used.
 }
 \references{
