@@ -128,7 +128,6 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     if (cores=="all"){nc <- parallel::detectCores()} else {nc <- cores}
     ## Create clusters
     cl <- parallel::makeCluster(rep("localhost", nc))
-  }
   
   # Create simulation loop
   require(foreach)
@@ -204,7 +203,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         }
       }
     }
-    
+  } # end of foreach call
 
     # Update simulation progress information
     if(quiet == FALSE){
@@ -237,6 +236,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   if (!exists("cores", mode = "NULL")){
     parallel::stopCluster(cl)
   }
+
   
   ## Output objects
   if(all.sim.data == TRUE){

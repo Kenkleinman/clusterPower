@@ -31,6 +31,7 @@
 createMissingVarianceParam <- function(ICC = NULL, 
                                        sigma_sq = NULL,
                                        sigma_b_sq = NULL){
+  
   parm1.arg.list <-  list(ICC, sigma_sq, sigma_b_sq)
   parm1.args <-  unlist(lapply(parm1.arg.list, is.null))
   if(sum(parm1.args) > 1){

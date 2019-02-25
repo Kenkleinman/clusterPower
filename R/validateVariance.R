@@ -10,11 +10,9 @@
 #' @param ICC Intra-cluster correlation coefficient; accepts a vector of length \code{narms}
 #' with values between 0 - 1.
 #' @param difference Expected absolute treatment effect; accepts numeric.
-#' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
 #' @param sigma Within-cluster variance; accepts numeric
 #' @param sigma_b Between-cluster variance; accepts numeric
-#' If clusters differ between treatment groups, at least 2 of the following 
-#' must be specified:
+#' @param probs Outcome probabilities per arm. Accepts a numeric vector or a scalar if all arms are equal.
 #' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
 #' @param sigma2 Within-cluster variance for clusters in TREATMENT group
 #' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
@@ -23,11 +21,11 @@
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet Logical. When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Logical. Option to output list of all simulated datasets; default = FALSE.
-#' 
+#' @param cores Integer number of cores the user would like to use for parallel computing or the string "all". 
 #' 
 #' @return A vector of length \code{narms} 
 #' \describe{
-#'   \item{missing.arg}{The argument that the user did not specify.}
+#'   \item{errors}{Stops function execution if validation fails for any component.}
 #' }
 #' 
 #' @examples 
@@ -41,10 +39,12 @@
 
 
 validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sq, 
-                             sigma_b=sigma_b_sq, ICC2=ICC, sigma2=sigma_sq, 
-                             sigma_b2=sigma_b_sq, method=method, quiet=quiet, 
+                             sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
+                             sigma_b2=NA, method=method, quiet=quiet, 
                              all.sim.data=all.sim.data, 
-                             poor.fit.override=poor.fit.override){
+                             poor.fit.override=poor.fit.override, 
+                             cores=NA,
+                             probs=NA){
   # Validate DIFFERENCE, ALPHA
   min0.warning = " must be a numeric value greater than 0"
   if(!is.numeric(difference) || difference < 0){
@@ -63,14 +63,23 @@ validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma
   if(sum(parm1.args) == 0 && ICC != sigma_b / (sigma_b + sigma)){
     stop("At least one of the following terms has been misspecified: ICC, sigma, sigma_b")
   }
-  parm2.arg.list = list(ICC2, sigma2, sigma_b2)
-  parm2.args = unlist(lapply(parm2.arg.list, is.null))
-  if(sum(parm2.args) > 1 && sum(parm2.args) != 3){
-    stop("At least two of the following terms must be provided to simulate treatment-specific
-         variances: ICC2, sigma2, sigma_b2")
+  
+  if (!is.na(probs)){
+    if(is.numeric(probs)==FALSE){
+      stop("'probs' must be a numeric scalar or vector.")
+    }
   }
-  if(sum(parm2.args) == 0 && ICC2 != sigma_b2 / (sigma_b2 + sigma2)){
-    stop("At least one of the following terms has been misspecified: ICC2, sigma2, sigma_b2")
+  
+  if (!is.na(ICC2) | !is.na(sigma2) | !is.na(sigma_b2)){
+    parm2.arg.list = list(ICC2, sigma2, sigma_b2)
+    parm2.args = unlist(lapply(parm2.arg.list, is.null))
+    if(sum(parm2.args) > 1 && sum(parm2.args) != 3){
+      stop("At least two of the following terms must be provided to simulate treatment-specific
+           variances: ICC2, sigma2, sigma_b2")
+    }
+    if(sum(parm2.args) == 0 && ICC2 != sigma_b2 / (sigma_b2 + sigma2)){
+      stop("At least one of the following terms has been misspecified: ICC2, sigma2, sigma_b2")
+    }
   }
 
   # Validate METHOD, QUIET, ALL.SIM.DATA
@@ -88,4 +97,15 @@ validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma
     stop("poor.fit.override must be either FALSE (Stop simulations if estimated power is <0.5 or 
          more than 25% of fits do not converge) or TRUE (Continue simulations).")
   }
+  if (!is.na(cores)){
+    if(!is.integer(cores) & cores!="all"){
+      stop("cores must be an integer, or 'all'.")
+    }
+    if (is.integer(cores)==TRUE){
+      if (cores>parallel::detectCores()){
+        stop("'cores' exceeds the number of available cores.")
+      }
+    }
+  }
 }
+

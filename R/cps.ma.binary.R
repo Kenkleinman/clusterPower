@@ -10,12 +10,18 @@
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
 #' 
-#' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, group probs, two of the following: ICC, within-cluster variance, or 
+#' cluster, number of clusters per treatment arm, group probabilities, two of the following: ICC, within-cluster variance, or 
 #' between-cluster variance. Significance level, analytic method, progress updates, poor/singular fit override,
 #' and simulated data set output may also be specified. This function validates the user's input 
 #' and passes the necessary arguments to \code{cps.ma.normal.internal}, which performs the simulations.
+#' 
+#' Because the models for binary outcomes may be slower to fit than thise for other distributions, this function can run
+#' across multiple cores using the \code{cores} argument. Supplying any value other than NULL to \code{cores} turns on
+#' parallel computing using the \code{parallel} package with a call to \code{foreach}. Users should expect that parallel 
+#' computing may make model fitting faster than using a single core for more complicated models. For simpler models, 
+#' users may prefer to use single thread computing (\code{cores}=NA), as the processes involved in allocating memory and 
+#' copying data across cores can sometimes increase computation time depending on the complexity of the simulation tasks.
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
@@ -163,6 +169,12 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
   if (length(probs)==1){
     probs <- rep(probs, narms)
   }
+  
+  if (length(probs)!=narms){
+    stop("Length of probs
+         must equal narms, or be provided as a scalar 
+         if probs for all arms are equal.")
+  }
    
   if (length(sigma_b_sq)!=narms){
     stop("Length of variance parameters sigma_b_sq
@@ -178,8 +190,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                                           quiet = quiet, method = method, 
                                           all.sim.data = all.sim.data,
                                           seed = seed,
-                                          cores = cores,
-                                          poor.fit.override = poor.fit.override)
+                                          cores = cores)
   
   models <- binary.ma.rct[[1]]
 
