@@ -18,9 +18,9 @@
 #' 
 #' Because the models for binary outcomes may be slower to fit than thise for other distributions, this function can run
 #' across multiple cores using the \code{cores} argument. Supplying any value other than NULL to \code{cores} turns on
-#' parallel computing using the \code{parallel} package with a call to \code{foreach}. Users should expect that parallel 
+#' parallel computing using \code{foreach}. Users should expect that parallel 
 #' computing may make model fitting faster than using a single core for more complicated models. For simpler models, 
-#' users may prefer to use single thread computing (\code{cores}=NA), as the processes involved in allocating memory and 
+#' users may prefer to use single thread computing (\code{cores}=1), as the processes involved in allocating memory and 
 #' copying data across cores can sometimes increase computation time depending on the complexity of the simulation tasks.
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
@@ -95,7 +95,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                           alpha = 0.05,
                           quiet = FALSE, ICC=NULL, method = 'glmm', 
                           all.sim.data = FALSE, seed = 123, 
-                          cores=NULL,
+                          cores=1,
                           overall.power=FALSE,
                           poor.fit.override = FALSE){
 
@@ -182,6 +182,10 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
          if sigma_b_sq for all arms are equal.")
   }
   
+  if (narms<3){
+    print("Warning: LRT significance not calculable when narms<3. Use cps.binary() instead.")
+  }
+  
   # run the simulations 
   binary.ma.rct <- cps.ma.binary.internal(nsim = nsim, 
                                           str.nsubjects = str.nsubjects, 
@@ -190,6 +194,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                                           quiet = quiet, method = method, 
                                           all.sim.data = all.sim.data,
                                           seed = seed,
+                                          poor.fit.override = poor.fit.override,
                                           cores = cores)
   
   models <- binary.ma.rct[[1]]
@@ -229,25 +234,27 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     colnames(z.val) <- names.zval
     colnames(p.val) <- names.pval
     
+    if (narms>2){
     # Organize the LRT output
-    LRT.holder <- matrix(unlist(binary.ma.rct[[2]]), ncol=3, nrow=nsim, 
-                         byrow=TRUE, 
-                         dimnames = list(seq(1:nsim), 
+      LRT.holder <- matrix(unlist(binary.ma.rct[[2]]), ncol=3, nrow=nsim, 
+                           byrow=TRUE, 
+                           dimnames = list(seq(1:nsim), 
                                          colnames(bin.ma.rct[[2]][[1]])))
     
     # Proportion of times P(>F)
-    sig.LRT <-  ifelse(LRT.holder[,3] < alpha, 1, 0)
-    LRT.holder.abbrev <- sum(sig.LRT)/nsim
+      sig.LRT <-  ifelse(LRT.holder[,3] < alpha, 1, 0)
+      LRT.holder.abbrev <- sum(sig.LRT)/nsim
+    }
     
     # Calculate and store power estimate & confidence intervals
-    sig.val <-  ifelse(p.val < alpha, 1, 0)
-    pval.power <- apply (sig.val, 2, FUN=function(x) {sum(x, na.rm=TRUE)/nsim})
-    power.parms <-  data.frame(Power = round(pval.power, 3),
-                               Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
+      sig.val <-  ifelse(p.val < alpha, 1, 0)
+      pval.power <- apply (sig.val, 2, FUN=function(x) {sum(x, na.rm=TRUE)/nsim})
+      power.parms <-  data.frame(Power = round(pval.power, 3),
+                                 Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
                                                      sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                                Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
                                                      sqrt((pval.power * (1 - pval.power)) / nsim), 3))
-    rownames(power.parms) <- names.power
+      rownames(power.parms) <- names.power
     
     # Store simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, z.val, p.val)
@@ -266,8 +273,8 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                                "failed.to.converge" <-  binary.ma.rct[[4]])
     } else {
       complete.output <-  list("power" <-  power.parms[-1,],
-                               "overall.power" <- prop_H0_rejection(alpha=alpha, nsim=nsim, 
-                                                                    LRT.holder.abbrev=LRT.holder.abbrev, test="Wald"),
+                               "overall.power" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
+                                                                    LRT.holder.abbrev=LRT.holder.abbrev, test="Wald")),
                                "proportion.failed.to.converge" <- binary.ma.rct[[3]])
     }
     return(complete.output)

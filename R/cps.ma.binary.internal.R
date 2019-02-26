@@ -29,7 +29,7 @@
 #' @param seed Option to set.seed. Default is NULL.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge.
 #' @param cores a string or numeric value indicating the number of cores to be used for parallel computing. 
-#' When this option is set to NULL, no parallel computing is used.
+#' When this option is set to 1, no parallel computing is used.
 #' 
 #' @return A list with the following components
 #' \describe{
@@ -71,7 +71,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                     seed=NULL,
                                     poor.fit.override = FALSE,
                                     overall.power=FALSE,
-                                    cores=NULL){
+                                    cores=1){
   
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
@@ -140,8 +140,9 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                      mu = 0)
     
     for (j in 1:length(logit.p)){
-      randint[[j]] <- clusterPower::expit(logit.p[j]+ randint[[j]])
+      randint[,j] <- logit.p[j]+ randint[,j]
     }
+    randint <- clusterPower::expit(randint)
     
     # Create y-value
     y.intercept <-  vector(mode = "numeric", length = length(unlist(str.nsubjects)))
