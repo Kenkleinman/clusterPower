@@ -70,7 +70,8 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                     all.sim.data = FALSE, 
                                     seed=NULL,
                                     poor.fit.override = FALSE,
-                                    overall.power=FALSE,
+                                    overall.power = FALSE,
+                                    tdist = FALSE,
                                     cores=1){
   
   # Create vectors to collect iteration-specific values
@@ -135,9 +136,16 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     sim.dat[[i]] = data.frame(y = NA, trt = as.factor(unlist(trt1)), 
                               clust = as.factor(unlist(clust1)))
     # Generate between-cluster effects for non-treatment and treatment 
+    if (tdist==TRUE){
+      print("using t-distribution because tdist=TRUE")
+      randint = mapply(function(n, df) stats::rt(n, df = df), 
+                       n = nclusters, 
+                       df = Inf)
+    } else {
     randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s)), 
                      nc = nclusters, s = sigma_b_sq, 
                      mu = 0)
+    }
     
     for (j in 1:length(logit.p)){
       randint[,j] <- logit.p[j]+ randint[,j]

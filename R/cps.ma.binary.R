@@ -97,6 +97,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                           all.sim.data = FALSE, seed = 123, 
                           cores=1,
                           overall.power=FALSE,
+                          tdist=FALSE,
                           poor.fit.override = FALSE){
 
   # Create wholenumber function
@@ -186,6 +187,14 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     print("Warning: LRT significance not calculable when narms<3. Use cps.binary() instead.")
   }
   
+  validateVariance(difference=probs, alpha=alpha, ICC=NA, sigma=NA, 
+                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
+                   sigma_b2=NA, method=method, quiet=quiet, 
+                   all.sim.data=all.sim.data, 
+                   poor.fit.override=poor.fit.override, 
+                   cores=cores,
+                   probs=probs)
+  
   # run the simulations 
   binary.ma.rct <- cps.ma.binary.internal(nsim = nsim, 
                                           str.nsubjects = str.nsubjects, 
@@ -195,6 +204,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                                           all.sim.data = all.sim.data,
                                           seed = seed,
                                           poor.fit.override = poor.fit.override,
+                                          tdist = tdist,
                                           cores = cores)
   
   models <- binary.ma.rct[[1]]

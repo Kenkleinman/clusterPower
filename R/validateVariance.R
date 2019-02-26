@@ -55,13 +55,15 @@ validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma
   }
 
   # Validate ICC, SIGMA, SIGMA_B, ICC2, SIGMA2, SIGMA_B2
-  parm1.arg.list = list(ICC, sigma, sigma_b)
-  parm1.args = unlist(lapply(parm1.arg.list, is.null))
-  if(sum(parm1.args) > 1){
-    stop("At least two of the following terms must be specified: ICC, sigma, sigma_b")
-  }
-  if(sum(parm1.args) == 0 && ICC != sigma_b / (sigma_b + sigma)){
-    stop("At least one of the following terms has been misspecified: ICC, sigma, sigma_b")
+  if(difference!=probs){
+    parm1.arg.list = list(ICC, sigma, sigma_b)
+    parm1.args = unlist(lapply(parm1.arg.list, is.null))
+    if(sum(parm1.args) > 1){
+      stop("At least two of the following terms must be specified: ICC, sigma, sigma_b")
+    }
+    if(sum(parm1.args) == 0 && ICC != sigma_b / (sigma_b + sigma)){
+      stop("At least one of the following terms has been misspecified: ICC, sigma, sigma_b")
+    }
   }
   
   if (!is.na(probs)){
