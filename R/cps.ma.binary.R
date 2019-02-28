@@ -34,6 +34,9 @@
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' @param multi.p.method A string indicating the method to use for adjusting p-values for multiple
+#' comparisons. Choose one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY",
+#   "fdr", "none". The default is "bonferroni". See ?p.adjust for additional details.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge or 
@@ -94,6 +97,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                           probs = NULL, sigma_b_sq = NULL, 
                           alpha = 0.05,
                           quiet = FALSE, ICC=NULL, method = 'glmm', 
+                          multi.p.method = "bonferroni",
                           all.sim.data = FALSE, seed = 123, 
                           cores=1,
                           overall.power=FALSE,
@@ -172,14 +176,11 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
   }
   
   if (length(probs)!=narms){
-    stop("Length of probs
-         must equal narms, or be provided as a scalar 
-         if probs for all arms are equal.")
+    stop("Length of probs must equal narms, or be provided as a scalar if probs for all arms are equal.")
   }
    
   if (length(sigma_b_sq)!=narms){
-    stop("Length of variance parameters sigma_b_sq
-         must equal narms, or be provided as a scalar 
+    stop("Length of variance parameters sigma_b_sq must equal narms, or be provided as a scalar 
          if sigma_b_sq for all arms are equal.")
   }
   
@@ -220,7 +221,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
       Estimates[i,] <- models[[i]][[10]][,1]
       std.error[i,] <- models[[i]][[10]][,2]
       z.val[i,] <- models[[i]][[10]][,3]
-      p.val[i,] <- models[[i]][[10]][,4]
+      p.val[i,] <- p.adjust(models[[i]][[10]][,4], method = multi.p.method)
     }
     
     # Organize the row/col names for the model estimates output
