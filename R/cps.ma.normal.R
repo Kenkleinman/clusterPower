@@ -29,6 +29,9 @@
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' @param multi.p.method A string indicating the method to use for adjusting p-values for multiple
+#' comparisons. Choose one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY",
+#' "fdr", "none". The default is "bonferroni". See ?p.adjust for additional details.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
 #' @param cores a string or numeric value indicating the number of cores to be used for parallel computing. 
@@ -89,6 +92,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                         means = NULL, sigma_sq = NULL, 
                         sigma_b_sq = NULL, alpha = 0.05,
                         quiet = FALSE, ICC=NULL, method = 'glmm', 
+                        multi.p.method = "bonferroni",
                         all.sim.data = FALSE, seed = 123, 
                         cores=NULL,
                         poor.fit.override = FALSE){
@@ -289,7 +293,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
        Estimates[i,] <- models[[i]]$coefficients[,1]
        std.error[i,] <- models[[i]]$coefficients[,2]
        Wald[i,] <- models[[i]]$coefficients[,3]
-       Pr[i,] <- models[[i]]$coefficients[,4]
+       Pr[i,] <- p.adjust(models[[i]]$coefficients[,4], method = multi.p.method)
      }
      
      # Organize the row/col names for the output

@@ -68,7 +68,7 @@
 #'                       Includes model number for cross-referencing against \code{model.estimates}}
 #' }
 #' 
-#' @author Alexander R. Bogdan
+#' @author Alexander R. Bogdan, Alexandria C. Sakrejda, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
 #' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and Advanced Multilevel Modelling. London, 1999: Sage.
 #' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation Coefficient in Cluster Randomized Trials: 
@@ -87,7 +87,10 @@
 cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
                         p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
                         sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = 'glmm', 
-                      quiet = TRUE, all.sim.data = FALSE){
+                      quiet = TRUE, all.sim.data = FALSE, seed = NA){
+  if (!is.na(seed)){
+  set.seed(seed = seed)
+  }
     # Create objects to collect iteration-specific values
     est.vector = NULL
     se.vector = NULL
@@ -256,12 +259,30 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       y0.linpred = y0.intercept + logit.p1
       y0.prob = expit(y0.linpred)
       y0 = unlist(lapply(y0.prob, function(x) stats::rbinom(1, 1, x)))
+      if (length(table(y0))!=2){
+        warning(print("y0 is completely seperated. Repeating the random draw 1 time."))
+        randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
+        y0.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
+        y0.linpred = y0.intercept + logit.p1
+        y0.prob = expit(y0.linpred)
+        y0 = unlist(lapply(y0.prob, function(x) stats::rbinom(1, 1, x)))
+      }
 
       # Create treatment y-value
       y1.intercept = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
       y1.linpred = y1.intercept + logit.p2
       y1.prob = expit(y1.linpred)
       y1 = unlist(lapply(y1.prob, function(x) stats::rbinom(1, 1, x)))
+      if (length(table(y1))!=2){
+        warning(print("y1 is completely seperated. Repeating the random draw 1 time."))
+        randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
+        y1.intercept = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
+        y1.linpred = y1.intercept + logit.p2
+        y1.prob = expit(y1.linpred)
+        y1 = unlist(lapply(y1.prob, function(x) stats::rbinom(1, 1, x)))
+      }
+
+      
       
       # Create single response vector
       y = c(y0, y1)
@@ -284,7 +305,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       
       # Fit GLMM (lmer)
       if(method == 'glmm'){
-        my.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat, family = stats::binomial(link = 'logit'))
+        my.mod = try(lme4::glmer(y ~ trt + (1|clust), data = sim.dat, family = stats::binomial(link = 'logit')))
         model.converge = try(my.mod)
         converge.ind = is.null(model.converge@optinfo$conv$lme4$messages)
         converge.vector = append(converge.vector, converge.ind)

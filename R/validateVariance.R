@@ -55,7 +55,7 @@ validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma
   }
 
   # Validate ICC, SIGMA, SIGMA_B, ICC2, SIGMA2, SIGMA_B2
-  if(difference!=probs){
+  if(length(difference)==1){
     parm1.arg.list = list(ICC, sigma, sigma_b)
     parm1.args = unlist(lapply(parm1.arg.list, is.null))
     if(sum(parm1.args) > 1){
@@ -66,8 +66,8 @@ validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma
     }
   }
   
-  if (!is.na(probs)){
-    if(is.numeric(probs)==FALSE){
+  if(length(difference)>1){
+    if(is.numeric(difference)==FALSE){
       stop("'probs' must be a numeric scalar or vector.")
     }
   }
@@ -100,10 +100,10 @@ validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma
          more than 25% of fits do not converge) or TRUE (Continue simulations).")
   }
   if (!is.na(cores)){
-    if(!is.integer(cores) & cores!="all"){
+    if(!is.numeric(cores) & cores!="all"){
       stop("cores must be an integer, or 'all'.")
     }
-    if (is.integer(cores)==TRUE){
+    if (is.numeric(cores)==TRUE){
       if (cores>parallel::detectCores()){
         stop("'cores' exceeds the number of available cores.")
       }
