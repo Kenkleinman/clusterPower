@@ -1,5 +1,5 @@
 
-#' Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.
+#' Power simulations for cluster-randomized trials: Multi-Arm Design, Continuous Outcome.
 #'
 #' This set of functions utilize iterative simulations to determine 
 #' approximate power for cluster-randomized controlled trials. Users 
