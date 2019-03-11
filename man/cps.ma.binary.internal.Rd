@@ -38,7 +38,9 @@ Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); defa
 
 \item{poor.fit.override}{Option to override \code{stop()} if more than 25 percent of fits fail to converge.}
 
-\item{cores}{a string or numeric value indicating the number of cores to be used for parallel computing. 
+\item{tdist}{Logical; use t-distribution instead of normal distribution for simulation values, default = FALSE}
+
+\item{cores}{A string or numeric value indicating the number of cores to be used for parallel computing. 
 When this option is set to 1, no parallel computing is used.}
 
 \item{means}{Expected probability of outcome for each arm; accepts a vector of length \code{narms} (required).}
@@ -98,6 +100,10 @@ This set of functions utilize iterative simulations to determine
 approximate power for cluster-randomized controlled trials. Users 
 can modify a variety of parameters to suit the simulations to their
 desired experimental situation. Generally called from \code{cps.ma.binary()}.
+Users must specify the desired number of simulations, number of subjects per 
+cluster, number of clusters per treatment arm, group proportions,
+between-cluster variance; significance level, analytic method, progress updates, 
+and simulated data set output may also be specified.
 
 This set of functions utilize iterative simulations to determine 
 approximate power for cluster-randomized controlled trials. Users 
@@ -105,13 +111,6 @@ can modify a variety of parameters to suit the simulations to their
 desired experimental situation.
 }
 \details{
-Runs the power simulation.
-
-Users must specify the desired number of simulations, number of subjects per 
-cluster, number of clusters per treatment arm, group proportions,
-between-cluster variance; significance level, analytic method, progress updates, 
-and simulated data set output may also be specified.
-
 Runs the power simulation.
 
 Users must specify the desired number of simulations, number of subjects per 
@@ -147,11 +146,7 @@ bin.ma.rct <- cps.ma.binary.internal(nsim = 10, str.nsubjects = str.nsubjects.ex
 
 }
 \author{
-Alexandria C. Sakrejda (\email{acbro0@umass.edu})
-
-Alexander R. Bogdan
-
-Ken Kleinman (\email{ken.kleinman@gmail.com})
+Alexandria C. Sakrejda (\email{acbro0@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@gmail.com})
 
 Alexandria C. Sakrejda (\email{acbro0@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@gmail.com})
 }

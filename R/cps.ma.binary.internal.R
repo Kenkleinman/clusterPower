@@ -4,9 +4,6 @@
 #' approximate power for cluster-randomized controlled trials. Users 
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation. Generally called from \code{cps.ma.binary()}.
-#' 
-#' Runs the power simulation.
-#' 
 #' Users must specify the desired number of simulations, number of subjects per 
 #' cluster, number of clusters per treatment arm, group proportions,
 #' between-cluster variance; significance level, analytic method, progress updates, 
@@ -25,7 +22,8 @@
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param seed Option to set.seed. Default is NULL.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25 percent of fits fail to converge.
-#' @param cores a string or numeric value indicating the number of cores to be used for parallel computing. 
+#' @param tdist Logical; use t-distribution instead of normal distribution for simulation values, default = FALSE
+#' @param cores A string or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to 1, no parallel computing is used.
 #' 
 #' @return A list with the following components
@@ -39,8 +37,6 @@
 #'   \item A vector of length \code{nsim} consisting of 1 and 0. 
 #'           When a model fails to converge, failed.to.converge==1, otherwise 0.
 #' }
-#' 
-#' 
 #' 
 #' @examples 
 #' \dontrun{
@@ -56,9 +52,7 @@
 #'                                 all.sim.data = FALSE, seed = 123)
 #' }
 #' 
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
-#' @author Alexander R. Bogdan 
-#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
 #' @export
 
@@ -69,7 +63,6 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                     all.sim.data = FALSE, 
                                     seed=NULL,
                                     poor.fit.override = FALSE,
-                                    overall.power = FALSE,
                                     tdist = FALSE,
                                     cores=1){
   
