@@ -10,7 +10,7 @@ test_check("clusterPower")
 
 #--------------------------------- MULTI-ARM CONTINUOUS OUTCOMES
 
-context("Multi-arm, normal outcome accuracy")
+context("Multi-arm outcome accuracy")
 
 # compare to a reference value from NIH calculator
 test_that("binary multi-arm case matches 2-arm binary case (simulated method)", {

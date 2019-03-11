@@ -10,19 +10,14 @@
 #' 
 #' @param sigma_sq Within-cluster variance; accepts a vector of length \code{narms}.
 #' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms}.
-#' @param ICC Intra-cluster correlation coefficient; accepts a vector of length \code{narms}
-# with values between 0 - 1.
-
-#' @return A vector of length \code{narms} 
-#' \describe{
-#'   \item{missing.arg}{The argument that the user did not specify is returned as a character 
-#'   vector with the first item being the name of the returned values.}
-#' }
+#' @param ICC Intra-cluster correlation coefficient; accepts a vector of length \code{narms} with values between 0 - 1.
+#' 
+#' @return A vector of length \code{narms} containing the argument that the user did not specify.
 #' 
 #' @examples 
 #' \dontrun{
-#' 
 #' ICC <- createMissingVarianceParam(sigma_sq = c(1, 1, 0.9), sigma_b_sq = c(0.1, 0.15, 0.1))
+#' }
 #' 
 #' @export
 

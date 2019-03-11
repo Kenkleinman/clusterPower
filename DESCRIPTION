@@ -5,6 +5,7 @@ Title: Power Calculations for Cluster-Randomized and Cluster-Randomized Crossove
 Authors@R: c(
   person("Ken", "Kleinman", email = "ken.kleinman@gmail.com", rol = c("aut","cre")),
   person("Jon", "Moyer", email = "jon.moyer@gmail.com", rol = c("aut")),
+  person("Alexandria", "Sakrejda", email = "acbro0@schoolph.umass.edu", rol = c("aut")),
   person("Nicholas", "Reich", email = "nick@schoolph.umass.edu", rol = c("aut")),
   person("Daniel", "Obeng", email = "dobeng@gmail.com", rol = c("ctb"))
   )
@@ -26,3 +27,4 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+Encoding: UTF-8

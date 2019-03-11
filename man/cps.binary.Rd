@@ -7,7 +7,7 @@
 cps.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
   p.diff = NULL, p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL,
   or.diff = NULL, sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05,
-  method = "glmm", quiet = TRUE, all.sim.data = FALSE)
+  method = "glmm", quiet = TRUE, all.sim.data = FALSE, seed = NA)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -36,13 +36,37 @@ If between cluster variances differ between treatment groups, sigma_b2 must also
 
 \item{sigma_b2}{Between-cluster variance for clusters in TREATMENT group}
 
-\item{alpha}{Significance level. Default = 0.05}
+\item{alpha}{Significance level; default = 0.05}
 
 \item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.}
 
-\item{quiet}{When set to FALSE, displays simulation progress and estimated completion time. Default is TRUE.}
+\item{quiet}{When set to FALSE, displays simulation progress and estimated completion time, default is TRUE.}
 
-\item{all.sim.data}{Option to output list of all simulated datasets. Default = FALSE}
+\item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE}
+}
+\value{
+A list with the following components
+\itemize{
+  \item Character string indicating total number of simulations, simulation type, and number of convergent models
+  \item Number of simulations
+  \item Data frame with columns "Power" (Estimated statistical power), 
+  "lower.95.ci" (Lower 95% confidence interval bound), "upper.95.ci" (Upper 95% confidence interval bound)
+  \item Analytic method used for power estimation
+  \item Significance level
+  \item Vector containing user-defined cluster sizes
+  \item Vector containing user-defined number of clusters
+  \item Data frame reporting sigma_b for each group
+  \item Vector containing expected difference in probabilities based on user inputs
+  \item Data frame containing three estimates of ICC
+  \item Data frame with columns: "Estimate" (Estimate of treatment effect for a given simulation), 
+  "Std.err" (Standard error for treatment effect estimate), "Test.statistic" (z-value (for GLMM) or 
+  Wald statistic (for GEE)), "p.value", "converge" (Did simulated model converge?), 
+  "sig.val" (Is p-value less than alpha?)
+  \item List of data frames, each containing: "y" (Simulated response value), 
+  "trt" (Indicator for treatment group), "clust" (Indicator for cluster)
+  \item List of warning messages produced by non-convergent models; 
+  Includes model number for cross-referencing against \code{model.estimates}
+}
 }
 \description{
 This function utilizes iterative simulations to determine 
@@ -80,5 +104,5 @@ Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation Coefficien
 A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. doi: 10.1111/j.1751-5823.2009.00092.x
 }
 \author{
-Alexander R. Bogdan
+Alexander R. Bogdan, Alexandria C. Sakrejda, and Ken Kleinman (\email{ken.kleinman@gmail.com})
 }

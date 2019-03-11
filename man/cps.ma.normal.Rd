@@ -5,9 +5,11 @@
 \title{Power simulations for cluster-randomized trials: Multi-Arm Designs, Continuous Outcome.}
 \usage{
 cps.ma.normal(nsim = 1000, nsubjects = NULL, narms = NULL,
-  nclusters = NULL, means = NULL, sigma = NULL, sigma_b = NULL,
-  alpha = 0.05, quiet = FALSE, ICC = NULL, method = "glmm",
-  all.sim.data = FALSE, seed = 123, poor.fit.override = FALSE)
+  nclusters = NULL, means = NULL, sigma_sq = NULL,
+  sigma_b_sq = NULL, alpha = 0.05, quiet = FALSE, ICC = NULL,
+  method = "glmm", multi.p.method = "bonferroni",
+  all.sim.data = FALSE, seed = 123, cores = NULL,
+  poor.fit.override = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -17,9 +19,9 @@ Each entry is a vector containing the number of subjects per cluster (required).
 
 \item{means}{Expected absolute treatment effect for each arm; accepts a vector of length \code{narms} (required).}
 
-\item{sigma}{Within-cluster variance; accepts a vector of length \code{narms} (required).}
+\item{sigma_sq}{Within-cluster variance; accepts a vector of length \code{narms} (required).}
 
-\item{sigma_b}{Between-cluster variance; accepts a vector of length \code{narms} (required).}
+\item{sigma_b_sq}{Between-cluster variance; accepts a vector of length \code{narms} (required).}
 
 \item{alpha}{Significance level; default = 0.05.}
 
@@ -28,12 +30,46 @@ Each entry is a vector containing the number of subjects per cluster (required).
 \item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.}
 
+\item{multi.p.method}{A string indicating the method to use for adjusting p-values for multiple
+comparisons. Choose one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY",
+"fdr", "none". The default is "bonferroni". See ?p.adjust for additional details.}
+
 \item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
 
 \item{seed}{Option to set.seed. Default is NULL.}
 
+\item{cores}{a string or numeric value indicating the number of cores to be used for parallel computing. 
+When this option is set to NULL, no parallel computing is used.}
+
 \item{poor.fit.override}{Option to override \code{stop()} if more than 25% of fits fail to converge or 
 power<0.5 after 50 iterations; default = FALSE}
+}
+\value{
+A list with the following components
+\itemize{
+  \item Data frame with columns "Power" (Estimated statistical power), 
+               "lower.95.ci" (Lower 95% confidence interval bound), 
+               "upper.95.ci" (Upper 95% confidence interval bound)
+  \item Produced only when all.sim.data=TRUE, data frame with columns corresponding 
+  to each arm with the suffixes as follows: 
+                  ".Estimate" (Estimate of treatment effect for a given simulation), 
+                  "Std.Err" (Standard error for treatment effect estimate), 
+                  ".tval" (for GLMM) | ".wald" (for GEE), 
+                  ".pval"
+  \item Produced only when all.sim.data=TRUE, table of F-test (when method="glmm") or 
+  chi^{2} (when method="gee") significance test results.
+  \item Overall power of model compared to H0.
+  \item List of \code{nsim} data frames, each containing: 
+                  "y" (Simulated response value), 
+                  "trt" (Indicator for treatment group), 
+                  "clust" (Indicator for cluster)
+  \item Character string containing the percent of \code{nsim} in which the glmm 
+  fit was singular, produced only when method == "glmm" & 
+  all.sim.data==FALSE
+  \item Vector containing of length \code{nsim} denoting whether 
+  or not a simulation glmm fit was singular, produced only when method == "glmm" & 
+  all.sim.data==TRUE
+  }
 }
 \description{
 This set of functions utilize iterative simulations to determine 
@@ -48,6 +84,28 @@ between-cluster variance. Significance level, analytic method, progress updates,
 and simulated data set output may also be specified. This function validates the user's input 
 and passes the necessary arguments to \code{cps.ma.normal.internal}, which performs the simulations.
 }
+\examples{
+\dontrun{
+
+nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+means.example <- c(30, 21, 53)
+sigma_sq.example <- c(1, 1, 0.9)
+sigma_b_sq.example <- c(0.1, 0.15, 0.1)
+
+multi.cps.normal <- cps.ma.normal(nsim = 2, nsubjects = nsubjects.example, 
+                       means = means.example, sigma_sq = sigma_sq.example, 
+                       sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
+                       quiet = FALSE, ICC=NULL, method = 'glmm', 
+                       all.sim.data = FALSE,
+                       seed = NULL, 
+                       poor.fit.override = FALSE)
+}
+
+}
 \author{
-Alexandria C. Sakrejda (\email{acbro0@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@gmail.com})
+Alexandria C. Sakrejda (\email{acbro0@umass.edu})
+
+Alexander R. Bogdan
+
+Ken Kleinman (\email{ken.kleinman@gmail.com})
 }

@@ -6,9 +6,10 @@
 sigma, and sigma_b inputs}
 \usage{
 validateVariance(difference = means, alpha = alpha, ICC = ICC,
-  sigma = sigma, sigma_b = sigma_b, ICC2 = ICC, sigma2 = sigma,
-  sigma_b2 = sigma_b, method = method, quiet = quiet,
-  all.sim.data = all.sim.data, poor.fit.override = poor.fit.override)
+  sigma = sigma_sq, sigma_b = sigma_b_sq, ICC2 = NA, sigma2 = NA,
+  sigma_b2 = NA, method = method, quiet = quiet,
+  all.sim.data = all.sim.data, poor.fit.override = poor.fit.override,
+  cores = NA, probs = NA)
 }
 \arguments{
 \item{difference}{Expected absolute treatment effect; accepts numeric.}
@@ -20,9 +21,7 @@ with values between 0 - 1.}
 
 \item{sigma}{Within-cluster variance; accepts numeric}
 
-\item{sigma_b}{Between-cluster variance; accepts numeric
-If clusters differ between treatment groups, at least 2 of the following 
-must be specified:}
+\item{sigma_b}{Between-cluster variance; accepts numeric}
 
 \item{ICC2}{Intra-cluster correlation coefficient for clusters in TREATMENT group}
 
@@ -37,19 +36,29 @@ Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); defa
 
 \item{all.sim.data}{Logical. Option to output list of all simulated datasets; default = FALSE.}
 
-\item{ICC}{Intra-cluster correlation coefficient; accepts a value between 0 - 1}
+\item{cores}{Integer number of cores the user would like to use for parallel computing or the string "all".}
+
+\item{probs}{Outcome probabilities per arm. Accepts a numeric vector or a scalar if all arms are equal.}
 }
 \value{
 A vector of length \code{narms} 
 \describe{
-  \item{missing.arg}{The argument that the user did not specify is returned as a character 
-  vector with the first item being the name of the returned values.}
+  \item{errors}{Stops function execution if validation fails for any component.}
 }
 }
 \description{
 Usually called from within a function, validateVariance takes variance parameters
 and validates those inputs. This function gives an error if one of the inputs 
 is missing or not specified properly.
+}
+\examples{
+\dontrun{
+
+var <- validateVariance(difference=30, alpha=0.05, ICC=0.2, sigma=100,
+  sigma_b=25, ICC2=0.5, sigma2=120, sigma_b2=120, method=c("glmm", "gee"), 
+  quiet=FALSE, all.sim.data=FALSE, poor.fit.override=TRUE)
+
+}
 }
 \author{
 Alexandria C. Sakrejda (\email{acbro0@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@gmail.com})

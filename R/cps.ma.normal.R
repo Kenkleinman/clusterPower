@@ -12,8 +12,6 @@
 #' and simulated data set output may also be specified. This function validates the user's input 
 #' and passes the necessary arguments to \code{cps.ma.normal.internal}, which performs the simulations.
 #' 
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
-#'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
@@ -36,33 +34,32 @@
 #'  
 #' 
 #' @return A list with the following components
-#' \describe{
-#'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
+#' \itemize{
+#'   \item Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound)}
-#'   \item{model.estimates}{Produced only when all.sim.data=TRUE, data frame with columns corresponding 
+#'                "upper.95.ci" (Upper 95% confidence interval bound)
+#'   \item Produced only when all.sim.data=TRUE, data frame with columns corresponding 
 #'   to each arm with the suffixes as follows: 
 #'                   ".Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
 #'                   ".tval" (for GLMM) | ".wald" (for GEE), 
 #'                   ".pval"
-#'   \item{overall.power}{Produced only when all.sim.data=TRUE, table of F-test (when method="glmm") or 
+#'   \item Produced only when all.sim.data=TRUE, table of F-test (when method="glmm") or 
 #'   chi^{2} (when method="gee") significance test results.
-#'   \item{overall.power2}{Overall power of model compared to H0.}
-#'   \item{sim.data}{List of \code{nsim} data frames, each containing: 
+#'   \item Overall power of model compared to H0.
+#'   \item List of \code{nsim} data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
-#'                   "clust" (Indicator for cluster)}
-#'   \item{proportion.failed.to.converge} {Character string containing the percent of
-#'   \code{nsim} in which the glmm fit was singular, produced only when method == "glmm" & 
-#'   all.sim.data==FALSE}
-#'   \item{failed.to.converge}{Vector containing of length \code{nsim} denoting whether 
+#'                   "clust" (Indicator for cluster)
+#'   \item Character string containing the percent of \code{nsim} in which the glmm 
+#'   fit was singular, produced only when method == "glmm" & 
+#'   all.sim.data==FALSE
+#'   \item Vector containing of length \code{nsim} denoting whether 
 #'   or not a simulation glmm fit was singular, produced only when method == "glmm" & 
-#'   all.sim.data==TRUE}
+#'   all.sim.data==TRUE
+#'   }
 #'          
-#' }
-#' 
-#' #' @examples 
+#' @examples 
 #' \dontrun{
 #' 
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
@@ -78,6 +75,10 @@
 #'                        seed = NULL, 
 #'                        poor.fit.override = FALSE)
 #' }
+#' 
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
+#' @author Alexander R. Bogdan 
+#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
 #' @export
 #' 

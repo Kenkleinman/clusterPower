@@ -1,4 +1,3 @@
-
 #' Power simulations for cluster-randomized trials: Multi-arm Designs, Dichotomous Outcome.
 #'
 #' This set of functions utilize iterative simulations to determine 
@@ -32,16 +31,15 @@
 #' When this option is set to 1, no parallel computing is used.
 #' 
 #' @return A list with the following components
-#' \describe{
-#'   \item{model.values}{List of length(nsim) containing gee- or glmm-fitted the model summaries.
-#'   Note: the responsibility for correcting for multiple testing lies with the user.}
-#'   \item{model.comparisons} Compares fitted model to a model for H0 using ML (anova).
-#'   \item{sim.data}{List of data frames, each containing: 
+#' \itemize{
+#'   \item List of length(nsim) containing gee- or glmm-fitted the model summaries.
+#'   \item Compares fitted model to a model for H0 using ML (anova).
+#'   \item List of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
-#'                   "clust" (Indicator for cluster)}
-#'   \item{failed.to.converge}{A vector of length \code{nsim} consisting of 1 and 0. 
-#         When a model fails to converge, failed.to.converge==1, otherwise 0.}
+#'                   "clust" (Indicator for cluster)
+#'   \item A vector of length \code{nsim} consisting of 1 and 0. 
+#         When a model fails to converge, failed.to.converge==1, otherwise 0.
 #' }
 #' 
 #' 

@@ -34,38 +34,32 @@
 #' between cluster variances are assumed to be equal for both groups. Accepts numeric.
 #' If between cluster variances differ between treatment groups, sigma_b2 must also be specified:
 #' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
-#' @param alpha Significance level. Default = 0.05
+#' @param alpha Significance level; default = 0.05
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default is TRUE.
-#' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
+#' @param quiet When set to FALSE, displays simulation progress and estimated completion time, default is TRUE.
+#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE
 #'  
 #' @return A list with the following components
-#' \describe{
-#'   \item{overview}{Character string indicating total number of simulations, simulation type, and number of convergent models}
-#'   \item{nsim}{Number of simulations}
-#'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
-#'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound)}
-#'   \item{method}{Analytic method used for power estimation}
-#'   \item{alpha}{Significance level}
-#'   \item{cluster.sizes}{Vector containing user-defined cluster sizes}
-#'   \item{n.clusters}{Vector containing user-defined number of clusters}
-#'   \item{variance.parms}{Data frame reporting sigma_b for each group}
-#'   \item{inputs}{Vector containing expected difference in probabilities based on user inputs}
-#'   \item{ICC}{Data frame containing three estimates of ICC}
-#'   \item{model.estimates}{Data frame with columns: 
-#'                   "Estimate" (Estimate of treatment effect for a given simulation), 
-#'                   "Std.err" (Standard error for treatment effect estimate), 
-#'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
-#'                   "p.value", 
-#'                   "converge" (Did simulated model converge?), 
-#'                   "sig.val" (Is p-value less than alpha?)}
-#'   \item{sim.data}{List of data frames, each containing: 
-#'                   "y" (Simulated response value), 
-#'                   "trt" (Indicator for treatment group), 
-#'                   "clust" (Indicator for cluster)}
-#'   \item{warning.list}{List of warning messages produced by non-convergent models. 
-#'                       Includes model number for cross-referencing against \code{model.estimates}}
+#' \itemize{
+#'   \item Character string indicating total number of simulations, simulation type, and number of convergent models
+#'   \item Number of simulations
+#'   \item Data frame with columns "Power" (Estimated statistical power), 
+#'   "lower.95.ci" (Lower 95% confidence interval bound), "upper.95.ci" (Upper 95% confidence interval bound)
+#'   \item Analytic method used for power estimation
+#'   \item Significance level
+#'   \item Vector containing user-defined cluster sizes
+#'   \item Vector containing user-defined number of clusters
+#'   \item Data frame reporting sigma_b for each group
+#'   \item Vector containing expected difference in probabilities based on user inputs
+#'   \item Data frame containing three estimates of ICC
+#'   \item Data frame with columns: "Estimate" (Estimate of treatment effect for a given simulation), 
+#'   "Std.err" (Standard error for treatment effect estimate), "Test.statistic" (z-value (for GLMM) or 
+#'   Wald statistic (for GEE)), "p.value", "converge" (Did simulated model converge?), 
+#'   "sig.val" (Is p-value less than alpha?)
+#'   \item List of data frames, each containing: "y" (Simulated response value), 
+#'   "trt" (Indicator for treatment group), "clust" (Indicator for cluster)
+#'   \item List of warning messages produced by non-convergent models; 
+#'   Includes model number for cross-referencing against \code{model.estimates}
 #' }
 #' 
 #' @author Alexander R. Bogdan, Alexandria C. Sakrejda, and Ken Kleinman (\email{ken.kleinman@@gmail.com})

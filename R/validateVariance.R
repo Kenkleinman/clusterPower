@@ -35,6 +35,7 @@
 #'   sigma_b=25, ICC2=0.5, sigma2=120, sigma_b2=120, method=c("glmm", "gee"), 
 #'   quiet=FALSE, all.sim.data=FALSE, poor.fit.override=TRUE)
 #' 
+#' }
 #' @export
 
 
