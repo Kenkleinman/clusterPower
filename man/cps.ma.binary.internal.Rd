@@ -36,7 +36,7 @@ Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); defa
 
 \item{seed}{Option to set.seed. Default is NULL.}
 
-\item{poor.fit.override}{Option to override \code{stop()} if more than 25% of fits fail to converge.}
+\item{poor.fit.override}{Option to override \code{stop()} if more than 25 percent of fits fail to converge.}
 
 \item{cores}{a string or numeric value indicating the number of cores to be used for parallel computing. 
 When this option is set to 1, no parallel computing is used.}
@@ -78,6 +78,7 @@ A list with the following components
                   "trt" (Indicator for treatment group), 
                   "clust" (Indicator for cluster)
   \item A vector of length \code{nsim} consisting of 1 and 0. 
+          When a model fails to converge, failed.to.converge==1, otherwise 0.
 }
 
 A list with the following components:
@@ -146,7 +147,11 @@ bin.ma.rct <- cps.ma.binary.internal(nsim = 10, str.nsubjects = str.nsubjects.ex
 
 }
 \author{
-Alexandria C. Sakrejda (\email{acbro0@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@gmail.com})
+Alexandria C. Sakrejda (\email{acbro0@umass.edu})
+
+Alexander R. Bogdan
+
+Ken Kleinman (\email{ken.kleinman@gmail.com})
 
 Alexandria C. Sakrejda (\email{acbro0@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@gmail.com})
 }
