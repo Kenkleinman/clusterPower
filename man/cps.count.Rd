@@ -42,6 +42,34 @@ If between cluster variances differ between treatment groups, the following must
 
 \item{all.sim.data}{Option to output list of all simulated datasets. Default = FALSE}
 }
+\value{
+A list with the following components
+\itemize{
+  \item Character string indicating total number of simulations, distribution of 
+  simulated data, and regression family
+  \item Number of simulations
+  \item Data frame with columns "Power" (Estimated statistical power), 
+               "lower.95.ci" (Lower 95% confidence interval bound), 
+               "upper.95.ci" (Upper 95% confidence interval bound)
+  \item Analytic method used for power estimation
+  \item Data frame containing families for distribution and analysis of simulated data
+  \item Significance level
+  \item Vector containing user-defined cluster sizes
+  \item Vector containing user-defined number of clusters
+  \item Data frame reporting between-cluster variances for Treatment/Non-Treatment groups
+  \item Vector containing expected counts and risk ratios based on user inputs
+  \item Data frame with columns: 
+                  "Estimate" (Estimate of treatment effect for a given simulation), 
+                  "Std.err" (Standard error for treatment effect estimate), 
+                  "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
+                  "p.value",
+                  "sig.val" (Is p-value less than alpha?)
+  \item List of data frames, each containing: 
+                  "y" (Simulated response value), 
+                  "trt" (Indicator for treatment group), 
+                  "clust" (Indicator for cluster)
+}
+}
 \description{
 This function utilizes iterative simulations to determine 
 approximate power for cluster-randomized controlled trials. Users 
@@ -68,4 +96,8 @@ count.sim = cps.count(nsim = 100, nsubjects = 50, nclusters = 6, c1 = 100,
 }
 \author{
 Alexander R. Bogdan
+
+Alexandria C. Sakrejda (\email{acbro0@umass.edu}
+
+Ken Kleinman (\email{ken.kleinman@gmail.com})
 }

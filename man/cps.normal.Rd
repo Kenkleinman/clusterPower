@@ -45,6 +45,32 @@ Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); defa
 
 \item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
 }
+\value{
+A list with the following components:
+\itemize{
+  \item Character string indicating total number of simulations and simulation type
+  \item Number of simulations
+  \item Data frame with columns "Power" (Estimated statistical power), 
+               "lower.95.ci" (Lower 95% confidence interval bound), 
+               "upper.95.ci" (Upper 95% confidence interval bound)
+  \item Analytic method used for power estimation
+  \item Significance level
+  \item Vector containing user-defined cluster sizes
+  \item Vector containing user-defined number of clusters in each treatment group
+  \item Data frame reporting ICC for Treatment/Non-Treatment groups
+  \item Vector containing expected difference between groups based on user inputs
+  \item Data frame with columns: 
+                  "Estimate" (Estimate of treatment effect for a given simulation), 
+                  "Std.err" (Standard error for treatment effect estimate), 
+                  "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
+                  "p.value", 
+                  "sig.val" (Is p-value less than alpha?)
+  \item List of data frames, each containing: 
+                  "y" (Simulated response value), 
+                  "trt" (Indicator for treatment group), 
+                  "clust" (Indicator for cluster)
+                  }
+}
 \description{
 This set of functions utilize iterative simulations to determine 
 approximate power for cluster-randomized controlled trials. Users 
@@ -69,5 +95,9 @@ normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference =
 
 }
 \author{
+Alexandria C. Sakrejda (\email{acbro0@umass.edu})
+
 Alexander R. Bogdan
+
+Ken Kleinman (\email{ken.kleinman@gmail.com})
 }

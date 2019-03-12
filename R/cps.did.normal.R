@@ -37,38 +37,36 @@
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' 
-#' @return A list with the following components
-#' \describe{
-#'   \item{overview}{Character string indicating total number of simulations and simulation type}
-#'   \item{nsim}{Number of simulations}
-#'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
+#' @return A list with the following components:
+#' \itemize{
+#'   \item Character string indicating total number of simulations and simulation type
+#'   \item Number of simulations
+#'   \item Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound)}
-#'   \item{method}{Analytic method used for power estimation}
-#'   \item{alpha}{Significance level}
-#'   \item{cluster.sizes}{Vector containing user-defined cluster sizes}
-#'   \item{n.clusters}{Vector containing user-defined number of clusters}
-#'   \item{variance.parms}{Data frame reporting ICC, within & between cluster variances for Treatment/Non-Treatment groups at each time point}
-#'   \item{inputs}{Vector containing expected difference between groups based on user inputs}
-#'   \item{differences}{Data frame with columns: 
+#'                "upper.95.ci" (Upper 95% confidence interval bound)
+#'   \item Analytic method used for power estimation
+#'   \item Significance level
+#'   \item Vector containing user-defined cluster sizes
+#'   \item Vector containing user-defined number of clusters
+#'   \item Data frame reporting ICC, within & between cluster variances
+#'   for Treatment/Non-Treatment groups at each time point
+#'   \item Vector containing expected difference between groups based on user inputs
+#'   \item Data frame with columns: 
 #'                   "Period" (Pre/Post-treatment indicator), 
 #'                   "Treatment" (Treatment group indicator), 
-#'                   "Value" (Mean response value)}
-#'   \item{model.estimates}{Data frame with columns: 
+#'                   "Value" (Mean response value)
+#'   \item Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.err" (Standard error for treatment effect estimate), 
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value", 
-#'                   "sig.val" (Is p-value less than alpha?)}
-#'   \item{sim.data}{List of data frames, each containing: 
+#'                   "sig.val" (Is p-value less than alpha?)
+#'   \item List of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
 #'                   "clust" (Indicator for cluster), 
-#'                   "period" (Indicator for time point)}
+#'                   "period" (Indicator for time point)
 #' }
-#' 
-#' @author Alexander R. Bogdan
-#' 
 #' @examples 
 #' \dontrun{
 #' normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 150, nclusters = 6, 
@@ -76,6 +74,10 @@
 #'                                 sigma_b0 = .1, method = 'glmm', quiet = FALSE, 
 #'                                 all.sim.data = FALSE)
 #' }
+#' 
+#' @author Alexander R. Bogdan 
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
+#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @export
 
