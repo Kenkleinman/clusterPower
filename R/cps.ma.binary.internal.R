@@ -1,14 +1,20 @@
-#' Power simulations for cluster-randomized trials: Multi-arm Designs, Dichotomous Outcome.
+#' Model fits for simulations for multi-arm designs with dichotomous outcome.
 #'
-#' This set of functions utilize iterative simulations to determine 
-#' approximate power for cluster-randomized controlled trials. Users 
-#' can modify a variety of parameters to suit the simulations to their
-#' desired experimental situation. Generally called from \code{cps.ma.binary()}.
-#' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, group proportions,
+#' Generally called from \code{cps.ma.binary()}, this function uses iterative 
+#' simulations to model significance of treatment effects for cluster-randomized 
+#' controlled trials. Users can modify a variety of parameters to suit the 
+#' simulations to their desired experimental situation. 
+#' 
+#' This function can be called directly in order to give the user access to the simulated 
+#' model fits in addition to the simulated data, the latter of which can also be accessed 
+#' here or using the function \code{cps.ma.binary()}. For the power estimates, use 
+#' \code{cps.ma.binary()}.
+#' 
+#' Users (or the wrapper function) must specify the desired number of 
+#' simulations, number of subjects per 
+#' cluster, number of clusters per treatment arm, group proportions, and 
 #' between-cluster variance; significance level, analytic method, progress updates, 
 #' and simulated data set output may also be specified.
-#' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param str.nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
@@ -21,12 +27,12 @@
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25 percent of fits fail to converge.
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge.
 #' @param tdist Logical; use t-distribution instead of normal distribution for simulation values, default = FALSE
 #' @param cores A string or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to 1, no parallel computing is used.
 #' 
-#' @return A list with the following components
+#' @return A list with the following components:
 #' \itemize{
 #'   \item List of length(nsim) containing gee- or glmm-fitted the model summaries.
 #'   \item Compares fitted model to a model for H0 using ML (anova).

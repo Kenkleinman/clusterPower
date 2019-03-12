@@ -27,3 +27,4 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 Encoding: UTF-8
+RoxygenNote: 6.1.1

@@ -29,7 +29,7 @@
 #' @param seed Option to set.seed. Default is NULL.
 #' @param cores a string or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to NULL, no parallel computing is used.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge or 
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge or 
 #' power<0.5 after 50 iterations; default = FALSE 
 #'  
 #' 

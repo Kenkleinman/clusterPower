@@ -36,7 +36,8 @@
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' 
-#' @return A list with the following components
+#' @return A list with the following components:
+#' \itemize{
 #'   \item Character string indicating total number of simulations and simulation type
 #'   \item Number of simulations
 #'   \item Data frame with columns "Power" (Estimated statistical power), 
@@ -58,6 +59,7 @@
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
 #'                   "clust" (Indicator for cluster)
+#'                   }
 #' 
 #' 
 #' @examples 

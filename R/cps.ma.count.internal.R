@@ -13,9 +13,6 @@
 #' between-cluster variance; significance level, analytic method, progress updates, 
 #' and simulated data set output may also be specified.
 #' 
-#' 
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
-#'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param str.nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
@@ -27,7 +24,7 @@
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param seed Option to set.seed; default is NULL.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge.
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge.
 #' @param cores a string or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to 1, no parallel computing is used.
 #' 
@@ -49,16 +46,16 @@
 #' probs.example <- c(0.30, 0.21, 0.53)
 #' sigma_b_sq.example <- c(25, 25, 120)
 #' 
-#' bin.ma.rct <- cps.ma.binary.internal(nsim = 10, str.nsubjects = str.nsubjects.example, 
+#' bin.ma.rct <- cps.ma.count.internal(nsim = 10, str.nsubjects = str.nsubjects.example, 
 #'                                  probs = probs.example,
 #'                                  sigma_b_sq = sigma_b_sq.example, alpha = 0.05, 
 #'                                 quiet = FALSE, method = 'gee', 
 #'                                 all.sim.data = FALSE, seed = 123)
 #' }
-#' 
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#'
 #' @export
-
-cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
+cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                     probs = NULL, sigma_b_sq = NULL,
                                     alpha = 0.05,
                                     quiet = FALSE, method = 'glmm', 

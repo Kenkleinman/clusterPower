@@ -36,7 +36,8 @@
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
 #' 
-#' @return A list with the following components
+#' @return A list with the following components:
+#' \itemize{
 #'   \item Character string indicating total number of simulations, 
 #'   distribution of simulated data, and regression family
 #'   \item Number of simulations
@@ -67,7 +68,7 @@
 #'                   'trt' (Indicator for treatment group), 
 #'                   'clust' (Indicator for cluster), 
 #'                   'period' (Indicator for time point)
-#' 
+#' }
 #' @examples 
 #' \dontrun{
 #' did.count.sim = cps.did.count(nsim = 100, nsubjects = 50, nclusters = 6, c1 = 100, 

@@ -25,7 +25,7 @@
 #' @param seed Option to set.seed, default is NULL.
 #' @param cores a string or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to NULL, no parallel computing is used.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge
 #' @return A list with the following components:
 #' \itemize{
 #'   \item List of \code{length(nsim)} containing gee- or glmm-fitted the model summaries.

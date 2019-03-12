@@ -16,15 +16,13 @@
 #' and simulated data set output may also be specified. This function validates the user's input 
 #' and passes the necessary arguments to \code{cps.ma.count.internal}, which performs the simulations.
 #' 
-#' Because the models for binary outcomes may be slower to fit than thise for other distributions, this function can run
+#' Because the models for count outcomes may be slower to fit than thise for other distributions, this function can run
 #' across multiple cores using the \code{cores} argument. Supplying any value other than NULL to \code{cores} turns on
 #' parallel computing using \code{foreach}. Users should expect that parallel 
 #' computing may make model fitting faster than using a single core for more complicated models. For simpler models, 
 #' users may prefer to use single thread computing (\code{cores}=1), as the processes involved in allocating memory and 
 #' copying data across cores can sometimes increase computation time depending on the complexity of the simulation tasks.
 #' 
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
-#'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
@@ -39,13 +37,13 @@
 #   "fdr", "none". The default is "bonferroni". See ?p.adjust for additional details.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge or 
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge or 
 #' power<0.5 after 50 iterations; default = FALSE.
 #' @param overall.power Logical value indicating whether the user would like to return the overall p-value. 
 #' The default is FALSE. This option uses \code{pbkrtest::PBmodcomp}, which can take a long time and 
 #' provides an approximation based on parametric bootstrapping. There is no reliable alternative method for 
 #' binomial outcomes, so proceed with caution if you choose to obtain estimates for overall power.
-#' @param cores a string ("all") or scalar numeric value indicating the number of cores to be used for 
+#' @param cores String ("all") or scalar indicating the number of cores to be used for 
 #' parallel computing. When this option is set to NULL, no parallel computing is used. Default = NULL.
 #'  
 #' @return A list with the following components:
@@ -81,17 +79,16 @@
 #' probs.example <- c(0.30, 0.21, 0.53)
 #' sigma_b_sq.example <- c(25, 25, 120)
 #' 
-#' bin.ma.rct <- cps.ma.binary(nsim = 10, nsubjects = nsubjects.example, 
+#' bin.ma.rct <- cps.ma.count(nsim = 10, nsubjects = nsubjects.example, 
 #'                                      probs = probs.example,
 #'                                      sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
 #'                                      quiet = FALSE, method = 'gee', 
 #'                                      all.sim.data = FALSE, seed = 123)
 #'}
 #' 
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
-#' 
-
-cps.ma.binary <- function(nsim = 1000, nsubjects = NULL, 
+cps.ma.count <- function(nsim = 1000, nsubjects = NULL, 
                           narms = NULL, nclusters = NULL,
                           probs = NULL, sigma_b_sq = NULL, 
                           alpha = 0.05,
@@ -186,7 +183,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
   }
   
   if (narms<3){
-    print("Warning: LRT significance not calculable when narms<3. Use cps.binary() instead.")
+    print("Warning: LRT significance not calculable when narms<3. Use cps.count() instead.")
   }
   
   validateVariance(difference=probs, alpha=alpha, ICC=NA, sigma=NA, 
@@ -198,7 +195,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                    probs=probs)
   
   # run the simulations 
-  binary.ma.rct <- cps.ma.binary.internal(nsim = nsim, 
+  count.ma.rct <- cps.ma.count.internal(nsim = nsim, 
                                           str.nsubjects = str.nsubjects, 
                                           probs = probs,
                                           sigma_b_sq = sigma_b_sq, alpha = alpha, 
@@ -209,7 +206,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                                           tdist = tdist,
                                           cores = cores)
   
-  models <- binary.ma.rct[[1]]
+  models <- count.ma.rct[[1]]
   
   #Organize output for GLMM
   if(method=="glmm"){
@@ -248,7 +245,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     
     if (narms>2){
       # Organize the LRT output
-      LRT.holder <- matrix(unlist(binary.ma.rct[[2]]), ncol=3, nrow=nsim, 
+      LRT.holder <- matrix(unlist(count.ma.rct[[2]]), ncol=3, nrow=nsim, 
                            byrow=TRUE, 
                            dimnames = list(seq(1:nsim), 
                                            colnames(bin.ma.rct[[2]][[1]])))
@@ -281,13 +278,13 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                                "overall.power" <- LRT.holder,
                                "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
                                                                          LRT.holder.abbrev=LRT.holder.abbrev, test="Wald")),
-                               "sim.data" <-  binary.ma.rct[[3]], 
-                               "failed.to.converge" <-  binary.ma.rct[[4]])
+                               "sim.data" <-  count.ma.rct[[3]], 
+                               "failed.to.converge" <-  count.ma.rct[[4]])
     } else {
       complete.output <-  list("power" <-  power.parms[-1,],
                                "overall.power" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
                                                                         LRT.holder.abbrev=LRT.holder.abbrev, test="Wald")),
-                               "proportion.failed.to.converge" <- binary.ma.rct[[3]])
+                               "proportion.failed.to.converge" <- count.ma.rct[[3]])
     }
     return(complete.output)
   }
@@ -328,7 +325,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     colnames(Pr) <- names.pval
     
     # Organize the LRT output
-    LRT.holder <- matrix(unlist(binary.ma.rct[[2]]), ncol=3, nrow=nsim, 
+    LRT.holder <- matrix(unlist(count.ma.rct[[2]]), ncol=3, nrow=nsim, 
                          byrow=TRUE, 
                          dimnames = list(seq(1:nsim), 
                                          c("Df", "X2", "P(>|Chi|)")))
@@ -359,7 +356,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                                "model.estimates" <-  ma.model.est, 
                                "overall.power" <- LRT.holder,
                                "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev)),
-                               "sim.data" <-  binary.ma.rct[[3]])
+                               "sim.data" <-  count.ma.rct[[3]])
     } else {
       complete.output <-  list("power" <-  power.parms[-1,],
                                "overall.power" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev)))

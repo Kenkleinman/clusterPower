@@ -3,13 +3,16 @@
 #' This set of functions utilize iterative simulations to determine 
 #' approximate power for multi-arm cluster-randomized controlled trials. Users 
 #' can modify a variety of parameters to suit the simulations to their
-#' desired experimental situation.
+#' desired experimental situation. Use this function to retrieve the power 
+#' estimations, multiple-testing corrections, and other relevant summary values.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, group probabilities, two of the following: ICC, within-cluster variance, or 
+#' cluster, number of clusters per treatment arm, group probabilities, and two of the following: ICC, within-cluster variance, or 
 #' between-cluster variance. Significance level, analytic method, progress updates, poor/singular fit override,
-#' and simulated data set output may also be specified. This function validates the user's input 
-#' and passes the necessary arguments to \code{cps.ma.normal.internal}, which performs the simulations.
+#' and simulated data set output (yes/no) may also be specified. This function validates the user's input, 
+#' formats the model fitting results, passes the necessary arguments to an internal function, \code{cps.ma.binary.internal}. 
+#' The internal function performs the simulations and model fitting. If the user wants access to the raw glmm or gee fits, 
+#' use \code{cps.ma.binary.internal()} instead. For more details, see \code{?cps.ma.binary.internal}.
 #' 
 #' Because the models for binary outcomes may be slower to fit than thise for other distributions, this function can run
 #' across multiple cores using the \code{cores} argument. Supplying any value other than NULL to \code{cores} turns on
@@ -32,20 +35,20 @@
 #   "fdr", "none". The default is "bonferroni". See ?p.adjust for additional details.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge or 
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge or 
 #' power<0.5 after 50 iterations; default = FALSE.
 #' @param overall.power Logical value indicating whether the user would like to return the overall p-value. 
 #' The default is FALSE. This option uses \code{pbkrtest::PBmodcomp}, which can take a long time and 
 #' provides an approximation based on parametric bootstrapping. There is no reliable alternative method for 
 #' binomial outcomes, so proceed with caution if you choose to obtain estimates for overall power.
-#' @param cores a string ("all") or scalar numeric value indicating the number of cores to be used for 
+#' @param cores String ("all") or scalar value indicating the number of cores to be used for 
 #' parallel computing. When this option is set to NULL, no parallel computing is used. Default = NULL.
 #'  
-#' @return A list with the following components
+#' @return A list with the following components:
 #' \itemize{
-#'   \item Data frame with columns "Power" (Estimated statistical power), 
-#'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound)
+#'   \item Data frame with columns "power" (Estimated statistical power), 
+#'                "lower.95.ci" (Lower 95\% confidence interval bound), 
+#'                "upper.95.ci" (Upper 95\% confidence interval bound)
 #'   \item Produced only when all.sim.data=TRUE, data frame with columns corresponding 
 #'   to each arm with the suffixes as follows: 
 #'                   ".Estimate" (Estimate of treatment effect for a given simulation), 
@@ -56,9 +59,9 @@
 #'   chi^{2} (when method="gee") significance test results.
 #'   \item Overall power of model compared to H0.
 #'   \item List of \code{nsim} data frames, each containing: 
-#'                   "y" (Simulated response value), 
-#'                   "trt" (Indicator for treatment group), 
-#'                   "clust" (Indicator for cluster)
+#'                   "y" (simulated response value), 
+#'                   "trt" (indicator for treatment group or arm), 
+#'                   "clust" (indicator for cluster)
 #'   \item Character string containing the percent of \code{nsim} in which the glmm 
 #'   fit was singular, produced only when method == "glmm" & 
 #'   all.sim.data==FALSE
@@ -81,12 +84,8 @@
 #'                                      all.sim.data = FALSE, seed = 123)
 #'}
 #'
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
-#' @author Alexander R. Bogdan 
-#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
-#' 
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
-
 cps.ma.binary <- function(nsim = 1000, nsubjects = NULL, 
                           narms = NULL, nclusters = NULL,
                           probs = NULL, sigma_b_sq = NULL, 
@@ -119,7 +118,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     stop("nsim must be a positive integer of length 1.")
   }
   if (exists("nsubjects", mode = "any")==FALSE){
-    stop("nsubjects must be specified. See ?cps.ma.normal for help.")
+    stop("nsubjects must be specified. See ?cps.ma.binary for help.")
   }
   if (length(nsubjects)==1 & exists("nclusters", mode = "numeric")==FALSE){
     stop("When nsubjects is scalar, user must supply nclusters (clusters per arm)")
