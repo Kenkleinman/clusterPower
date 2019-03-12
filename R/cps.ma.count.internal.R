@@ -1,5 +1,4 @@
-
-#' Power simulations for cluster-randomized trials: Multi-Arm, Count Outcome.
+#' NOT READY, DO NOT RUN Power simulations for cluster-randomized trials: Multi-Arm, Count Outcome.
 #'
 #' This set of functions utilize iterative simulations to determine 
 #' approximate power for cluster-randomized controlled trials. Users 

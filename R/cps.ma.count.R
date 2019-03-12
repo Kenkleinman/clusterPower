@@ -1,9 +1,4 @@
-
-##FIXME: TO DO
-# 11. testthat tests
-
-
-#' Power simulations for cluster-randomized trials: Multi-Arm Designs, Dichotomous Outcome.
+#' NOT READY, DO NOT RUN Power simulations for cluster-randomized trials: Multi-Arm Designs, Dichotomous Outcome.
 #'
 #' This set of functions utilize iterative simulations to determine 
 #' approximate power for multi-arm cluster-randomized controlled trials. Users 
