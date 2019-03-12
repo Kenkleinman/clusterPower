@@ -1,6 +1,6 @@
 #' Power simulations for cluster-randomized trials: Multi-Arm Designs, Continuous Outcome.
 #'
-#' This set of functions utilize iterative simulations to determine 
+#' This functions uses iterative simulations to determine 
 #' approximate power for multi-arm cluster-randomized controlled trials. Users 
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
@@ -12,6 +12,7 @@
 #' and simulated data set output may also be specified. This function validates the user's input 
 #' and passes the necessary arguments to \code{cps.ma.normal.internal}, which performs the simulations.
 #' 
+#' @param narms Integer representing the number of arms. Not required if nsubjects is provided.
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
@@ -67,7 +68,7 @@
 #' sigma_sq.example <- c(1, 1, 0.9)
 #' sigma_b_sq.example <- c(0.1, 0.15, 0.1)
 #' 
-#' multi.cps.normal <- cps.ma.normal(nsim = 2, nsubjects = nsubjects.example, 
+#' multi.cps.normal <- cps.ma.normal(nsim = 10, nsubjects = nsubjects.example, 
 #'                        means = means.example, sigma_sq = sigma_sq.example, 
 #'                        sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
 #'                        quiet = FALSE, ICC=NULL, method = 'glmm', 

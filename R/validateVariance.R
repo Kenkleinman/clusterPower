@@ -71,12 +71,12 @@ validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma
     if(is.numeric(difference)==FALSE){
       stop("difference must be a numeric scalar or vector.")
     }
-    if (difference >=1){
-      stop("probabilities must be less than 1.")
-    }
-    if (difference <=0){
-      stop("probabilities must be greater than zero.")
-    }
+   # if (difference >=1){
+  #    stop("probabilities must be less than 1.")
+  #  }
+  #  if (difference <=0){
+  #    stop("probabilities must be greater than zero.")
+  #  }
   }
   
   if (!is.na(ICC2) | !is.na(sigma2) | !is.na(sigma_b2)){
