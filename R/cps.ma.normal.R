@@ -122,10 +122,10 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
 
-  validateVariance(difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sq, 
-                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
-                   sigma_b2=NA, method=method, quiet=quiet, 
-                   all.sim.data=all.sim.data, poor.fit.override=poor.fit.override)
+ # validateVariance(difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sq, 
+#                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
+#                   sigma_b2=NA, method=method, quiet=quiet, 
+ #                  all.sim.data=all.sim.data, poor.fit.override=poor.fit.override)
   
   # create narms and nclusters if not provided directly by user
   if (exists("nsubjects", mode = "list")==TRUE){
