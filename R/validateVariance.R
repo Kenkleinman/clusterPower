@@ -77,7 +77,6 @@ validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma
     if (difference <=0){
       stop("probabilities must be greater than zero.")
     }
-    }
   }
   
   if (!is.na(ICC2) | !is.na(sigma2) | !is.na(sigma_b2)){
