@@ -13,6 +13,8 @@
 #' and passes the necessary arguments to \code{cps.ma.normal.internal}, which performs the simulations.
 #' 
 #' @param narms Integer representing the number of arms. Not required if nsubjects is provided.
+#' @param nclusters
+#' @param ICC
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
@@ -62,7 +64,6 @@
 #'          
 #' @examples 
 #' \dontrun{
-#' 
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' means.example <- c(30, 21, 53)
 #' sigma_sq.example <- c(1, 1, 0.9)
@@ -75,11 +76,27 @@
 #'                        all.sim.data = FALSE,
 #'                        seed = NULL, 
 #'                        poor.fit.override = FALSE)
+#'
+#' multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
+#'                                   nclusters = c(10,11,10), 
+#'                                   nsubjects = 100, 
+#'                                   means = c(21, 21, 21), 
+#'                                   sigma_sq = c(1,1,.9), 
+#'                                   sigma_b_sq = c(.1,.15,.1), 
+#'                                   alpha = 0.05,
+#'                                   quiet = FALSE, 
+#'                                   ICC=NULL, 
+#'                                   method = 'glmm',
+#'                                   all.sim.data = FALSE,
+#'                                   seed = NULL,
+#'                                   poor.fit.override = TRUE, 
+#'                                   cores="all")
 #' }
 #' 
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
-#' @author Alexander R. Bogdan 
-#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' 
+#' 
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
+#'   and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
 #' @export
 #' 
@@ -349,7 +366,9 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                 "sim.data" <-  normal.ma.rct[[3]])
      } else {
        complete.output <-  list("power" <-  power.parms[-1,],
-                                "overall.power" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev))
+                                "model.estimates" <-  ma.model.est, 
+                                "overall.power" <- LRT.holder,
+                                "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev))
      }
      return(complete.output)
    }
