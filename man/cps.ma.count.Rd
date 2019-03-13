@@ -2,7 +2,7 @@
 % Please edit documentation in R/cps.ma.count.R
 \name{cps.ma.count}
 \alias{cps.ma.count}
-\title{Power simulations for cluster-randomized trials: Multi-Arm Designs, Dichotomous Outcome.}
+\title{NOT READY, DO NOT RUN Power simulations for cluster-randomized trials: Multi-Arm Designs, Dichotomous Outcome.}
 \usage{
 cps.ma.count(nsim = 1000, nsubjects = NULL, narms = NULL,
   nclusters = NULL, probs = NULL, sigma_b_sq = NULL, alpha = 0.05,

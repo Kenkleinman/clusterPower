@@ -1,65 +1,108 @@
-#' Power simulations for cluster-randomized trials: Multi-Arm Designs, Continuous Outcome.
+#' Simulation-based power estimation for continuous outcome multi-arm 
+#' cluster-randomized trials.
 #'
-#' This functions uses iterative simulations to determine 
-#' approximate power for multi-arm cluster-randomized controlled trials. Users 
-#' can modify a variety of parameters to suit the simulations to their
-#' desired experimental situation.
+#' This function uses iterative simulations to determine 
+#' approximate power for multi-arm cluster-randomized controlled trials with a 
+#' normally-distributed outcome of interest. Users can modify a variety of 
+#' parameters to suit the simulations to their desired experimental situation. 
+#' Returns the summary power values for each treatment arm
 #' 
+#' Users must specify the desired number of simulations, the group/arm means, 
+#' and two of the following: ICC, within-cluster variance, or between-cluster 
+#' variance. Significance level, analytic method, progress updates, 
+#' poor/singular fit override, and simulated data set output may also be 
+#' specified. This function validates the user's input and passes the necessary 
+#' arguments to an internal function, which performs the simulations. The 
+#' internal function can be called directly by the user to return the fitted 
+#' models rather than the power summaries (see \code{?cps.ma.normal.internal}
+#' for details).
 #' 
-#' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, group means, two of the following: ICC, within-cluster variance, or 
-#' between-cluster variance. Significance level, analytic method, progress updates, poor/singular fit override,
-#' and simulated data set output may also be specified. This function validates the user's input 
-#' and passes the necessary arguments to \code{cps.ma.normal.internal}, which performs the simulations.
+#' Users must also supply the number of arms, the subjects per 
+#' cluster, and the number of clusters per treatment arm. For a balanced design, 
+#' users can provide these values with the arguments \code{narms}, 
+#' \code{nsubjects}, and \code{nclusters}, respectively. For unbalanced 
+#' designs, the user may provide a list of vectors with one vector per arm,
+#' with each vector containing the number of subjects per cluster. See the 
+#' examples provided below for a demonstration of the various input options.
 #' 
-#' @param narms Integer representing the number of arms. Not required if nsubjects is provided.
-#' @param nclusters
-#' @param ICC
+#' @param narms Integer value representing the number of arms. 
+#' @param nclusters An integer or vector of integers representing the number 
+#' of clusters in each arm.
+#' @param ICC The intra-cluster correlation coefficient
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
-#' Each entry is a vector containing the number of subjects per cluster (required).
-#' @param means Expected absolute treatment effect for each arm; accepts a vector of length \code{narms} (required).
-#' @param sigma_sq Within-cluster variance; accepts a vector of length \code{narms} (required).
-#' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param nsubjects Number of subjects per cluster (required); accepts an 
+#' integer if all are equal and \code{narms} and \code{nclusters} are provided. 
+#' Alternately, the user can supply a list with one entry per arm if the 
+#' cluster sizes are the same within the arm, or, if they are not the same 
+#' within the arms, the user can supply a list of vectors where each vector 
+#' represents an arm and each entry in the vector is the number of subjects 
+#' per cluster.
+#' @param means Expected absolute treatment effect for each arm; accepts a 
+#' vector of length \code{narms} (required).
+#' @param sigma_sq Within-cluster variance; accepts a vector of length 
+#' \code{narms} (required).
+#' @param sigma_b_sq Between-cluster variance; accepts a vector of length 
+#' \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
-#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
-#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
-#' @param multi.p.method A string indicating the method to use for adjusting p-values for multiple
-#' comparisons. Choose one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY",
-#' "fdr", "none". The default is "bonferroni". See ?p.adjust for additional details.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
+#' @param all.sim.data Option to output list of all simulated datasets; 
+#' default = FALSE.
+#' @param method Analytical method, either Generalized Linear Mixed Effects 
+#' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 
+#' 'gee') (required); default = 'glmm'.
+#' @param multi.p.method A string indicating the method to use for adjusting 
+#' p-values for multiple comparisons. Choose one of "holm", "hochberg", 
+#' "hommel", "bonferroni", "BH", "BY", "fdr", or "none" to leave p-values 
+#' unadjusted. The default isc"bonferroni". See \code{?p.adjust} for additional 
+#' details.
+#' @param quiet When set to FALSE, displays simulation progress and estimated 
+#' completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param cores a string or numeric value indicating the number of cores to be used for parallel computing. 
-#' When this option is set to NULL, no parallel computing is used.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge or 
-#' power<0.5 after 50 iterations; default = FALSE 
+#' @param cores a string ("all") or numeric value indicating the number of cores to be 
+#' used for parallel computing. 
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
+#' of fits fail to converge or power<0.5 after 50 iterations; default = FALSE. 
 #'  
-#' 
-#' @return A list with the following components
-#' \itemize{
-#'   \item Data frame with columns "Power" (Estimated statistical power), 
-#'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound)
-#'   \item Produced only when all.sim.data=TRUE, data frame with columns corresponding 
-#'   to each arm with the suffixes as follows: 
-#'                   ".Estimate" (Estimate of treatment effect for a given simulation), 
+#' @return A list with the following components:
+#' \describe{
+#'   \item{power}{
+#'   Data frame with columns "Power" (Estimated statistical power), 
+#'                "lower.95.ci" (Lower 95\% confidence interval bound), 
+#'                "upper.95.ci" (Upper 95\% confidence interval bound).
+#'                }
+#'   \item{model.estimates}{
+#'   Produced only when all.sim.data=TRUE, data frame with columns 
+#'   corresponding to each arm with the suffixes as follows: 
+#'                   ".Estimate" (Estimate of treatment effect for a given 
+#'                   simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
 #'                   ".tval" (for GLMM) | ".wald" (for GEE), 
 #'                   ".pval"
-#'   \item Produced only when all.sim.data=TRUE, table of F-test (when method="glmm") or 
-#'   chi^{2} (when method="gee") significance test results.
-#'   \item Overall power of model compared to H0.
-#'   \item List of \code{nsim} data frames, each containing: 
+#'                   }
+#'   \item{overall.power.table}{
+#'   Produced only when all.sim.data=TRUE, table of F-test (when 
+#'   method="glmm") or chi-squared (when method="gee") significance test 
+#'   results.
+#'   }
+#'   \item{overall.power.summary}{
+#'   Overall power of model compared to H0.
+#'   }
+#'   \item{simulated.data}{
+#'   List of \code{nsim} data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
-#'                   "clust" (Indicator for cluster)
-#'   \item Character string containing the percent of \code{nsim} in which the glmm 
-#'   fit was singular, produced only when method == "glmm" & 
-#'   all.sim.data==FALSE
-#'   \item Vector containing of length \code{nsim} denoting whether 
-#'   or not a simulation glmm fit was singular, produced only when method == "glmm" & 
-#'   all.sim.data==TRUE
+#'                   "clust" (Indicator for cluster).
+#'                   }
+#'   \item{model.fit.warning.percent}{
+#'   Character string containing the percent of \code{nsim} in which the 
+#'   glmm fit was singular or failed to converge, produced only when 
+#'   method == "glmm" & all.sim.data==FALSE.
+#'   }
+#'   \item{model.fit.warning.incidence}{
+#'   Vector of length \code{nsim} denoting whether 
+#'   or not a simulation glmm fit triggered a "singular fit" 
+#'   or "non-convergence" error, produced only when 
+#'   method == "glmm" & all.sim.data==TRUE.
+#'   }
 #'   }
 #'          
 #' @examples 
@@ -69,28 +112,22 @@
 #' sigma_sq.example <- c(1, 1, 0.9)
 #' sigma_b_sq.example <- c(0.1, 0.15, 0.1)
 #' 
-#' multi.cps.normal <- cps.ma.normal(nsim = 10, nsubjects = nsubjects.example, 
+#' multi.cps.normal.unbal <- cps.ma.normal(nsim = 10, nsubjects = nsubjects.example, 
 #'                        means = means.example, sigma_sq = sigma_sq.example, 
 #'                        sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
 #'                        quiet = FALSE, ICC=NULL, method = 'glmm', 
 #'                        all.sim.data = FALSE,
 #'                        seed = NULL, 
 #'                        poor.fit.override = FALSE)
-#'
-#' multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
-#'                                   nclusters = c(10,11,10), 
-#'                                   nsubjects = 100, 
-#'                                   means = c(21, 21, 21), 
-#'                                   sigma_sq = c(1,1,.9), 
-#'                                   sigma_b_sq = c(.1,.15,.1), 
-#'                                   alpha = 0.05,
-#'                                   quiet = FALSE, 
-#'                                   ICC=NULL, 
-#'                                   method = 'glmm',
-#'                                   all.sim.data = FALSE,
-#'                                   seed = NULL,
-#'                                   poor.fit.override = TRUE, 
-#'                                   cores="all")
+#'                        
+#'  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
+#'                                    nclusters = c (10,11,10), nsubjects = 100,
+#'                                    means = c(21, 21, 21.4),
+#'                                    sigma_sq = c(1,1,.9), 
+#'                                    sigma_b_sq = c(.1,.15,.1), alpha = 0.05,
+#'                                    quiet = FALSE, ICC=NULL, method = 'glmm',
+#'                                    all.sim.data = FALSE, seed = NULL,
+#'                                    poor.fit.override = TRUE, cores="all")
 #' }
 #' 
 #' 

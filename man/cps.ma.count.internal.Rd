@@ -2,7 +2,7 @@
 % Please edit documentation in R/cps.ma.count.internal.R
 \name{cps.ma.count.internal}
 \alias{cps.ma.count.internal}
-\title{Power simulations for cluster-randomized trials: Multi-Arm, Count Outcome.}
+\title{NOT READY, DO NOT RUN Power simulations for cluster-randomized trials: Multi-Arm, Count Outcome.}
 \usage{
 cps.ma.count.internal(nsim = 1000, str.nsubjects = NULL,
   probs = NULL, sigma_b_sq = NULL, alpha = 0.05, quiet = FALSE,
