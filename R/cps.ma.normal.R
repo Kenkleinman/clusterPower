@@ -108,16 +108,16 @@
 #' @examples 
 #' \dontrun{
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-#' means.example <- c(30, 21, 53)
+#' means.example <- c(22, 21, 21.5)
 #' sigma_sq.example <- c(1, 1, 0.9)
 #' sigma_b_sq.example <- c(0.1, 0.15, 0.1)
 #' 
-#' multi.cps.normal.unbal <- cps.ma.normal(nsim = 10, nsubjects = nsubjects.example, 
+#' multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.example, 
 #'                        means = means.example, sigma_sq = sigma_sq.example, 
 #'                        sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
 #'                        quiet = FALSE, ICC=NULL, method = 'glmm', 
 #'                        all.sim.data = FALSE,
-#'                        seed = NULL, 
+#'                        seed = 123, cores = "all",
 #'                        poor.fit.override = FALSE)
 #'                        
 #'  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
@@ -126,11 +126,17 @@
 #'                                    sigma_sq = c(1,1,.9), 
 #'                                    sigma_b_sq = c(.1,.15,.1), alpha = 0.05,
 #'                                    quiet = FALSE, ICC=NULL, method = 'glmm',
-#'                                    all.sim.data = FALSE, seed = NULL,
+#'                                    all.sim.data = FALSE, seed = 123,
 #'                                    poor.fit.override = TRUE, cores="all")
 #' }
-#' 
-#' 
+#' multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3,
+#'                                   nclusters = 10, nsubjects = 25, 
+#'                                   means = c(22.1, 21, 22.5),
+#'                                   sigma_sq = 1, 
+#'                                   sigma_b_sq = 1, alpha = 0.05,
+#'                                   quiet = FALSE, ICC=NULL, method = 'glmm',
+#'                                   all.sim.data = FALSE, seed = 123,
+#'                                   poor.fit.override = TRUE, cores="all")
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
 #'   and Ken Kleinman (\email{ken.kleinman@@gmail.com})
@@ -147,7 +153,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                         all.sim.data = FALSE, seed = 123, 
                         cores=NULL,
                         poor.fit.override = FALSE){
-  
+
   # Create wholenumber function
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
   
@@ -180,7 +186,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
 #                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
 #                   sigma_b2=NA, method=method, quiet=quiet, 
  #                  all.sim.data=all.sim.data, poor.fit.override=poor.fit.override)
-  
+
   # create narms and nclusters if not provided directly by user
   if (exists("nsubjects", mode = "list")==TRUE){
     # create narms and nclusters if not supplied by the user
@@ -197,15 +203,14 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   if(length(nclusters)>1 & length(nsubjects)==1){
     narms <- length(nclusters)
   }
-  # nclusters must be whole numbers
-  if (sum(is.wholenumber(nclusters)==FALSE)!=0 || nclusters < 1){
+  # nclusters must be positive whole numbers
+  if (sum(is.wholenumber(nclusters)==FALSE)!=0 || sum(unlist(nclusters) < 1)!=0){
     stop("nclusters must be postive integer values.")
   }
-  # nsubjects must be whole numbers
-  if (sum(is.wholenumber(unlist(nsubjects))==FALSE)!=0 || nsubjects < 1){
+  # nsubjects must be positive whole numbers
+  if (sum(is.wholenumber(unlist(nsubjects))==FALSE)!=0 || sum(unlist(nsubjects)< 1)!=0){
     stop("nsubjects must be positive integer values.")
   }
-
   # Create nsubjects structure from narms and nclusters when nsubjects is scalar
   if (length(nsubjects)==1){
     str.nsubjects <- lapply(nclusters, function(x) rep(nsubjects, x))

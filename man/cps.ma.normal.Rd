@@ -138,16 +138,16 @@ examples provided below for a demonstration of the various input options.
 \examples{
 \dontrun{
 nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-means.example <- c(30, 21, 53)
+means.example <- c(22, 21, 21.5)
 sigma_sq.example <- c(1, 1, 0.9)
 sigma_b_sq.example <- c(0.1, 0.15, 0.1)
 
-multi.cps.normal.unbal <- cps.ma.normal(nsim = 10, nsubjects = nsubjects.example, 
+multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.example, 
                        means = means.example, sigma_sq = sigma_sq.example, 
                        sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
                        quiet = FALSE, ICC=NULL, method = 'glmm', 
                        all.sim.data = FALSE,
-                       seed = NULL, 
+                       seed = 123, cores = "all",
                        poor.fit.override = FALSE)
                        
  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
@@ -156,11 +156,17 @@ multi.cps.normal.unbal <- cps.ma.normal(nsim = 10, nsubjects = nsubjects.example
                                    sigma_sq = c(1,1,.9), 
                                    sigma_b_sq = c(.1,.15,.1), alpha = 0.05,
                                    quiet = FALSE, ICC=NULL, method = 'glmm',
-                                   all.sim.data = FALSE, seed = NULL,
+                                   all.sim.data = FALSE, seed = 123,
                                    poor.fit.override = TRUE, cores="all")
 }
-
-
+multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3,
+                                  nclusters = 10, nsubjects = 25, 
+                                  means = c(22.1, 21, 22.5),
+                                  sigma_sq = 1, 
+                                  sigma_b_sq = 1, alpha = 0.05,
+                                  quiet = FALSE, ICC=NULL, method = 'glmm',
+                                  all.sim.data = FALSE, seed = 123,
+                                  poor.fit.override = TRUE, cores="all")
 
 }
 \author{
