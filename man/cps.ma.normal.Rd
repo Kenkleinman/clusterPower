@@ -159,7 +159,7 @@ multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.exampl
                                    all.sim.data = FALSE, seed = 123,
                                    poor.fit.override = TRUE, cores="all")
 }
-multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3,
+multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
                                   nclusters = 10, nsubjects = 25, 
                                   means = c(22.1, 21, 22.5),
                                   sigma_sq = 1, 

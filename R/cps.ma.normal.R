@@ -129,7 +129,7 @@
 #'                                    all.sim.data = FALSE, seed = 123,
 #'                                    poor.fit.override = TRUE, cores="all")
 #' }
-#' multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3,
+#' multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
 #'                                   nclusters = 10, nsubjects = 25, 
 #'                                   means = c(22.1, 21, 22.5),
 #'                                   sigma_sq = 1, 
@@ -182,10 +182,12 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
 
- # validateVariance(difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sq, 
-#                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
-#                   sigma_b2=NA, method=method, quiet=quiet, 
- #                  all.sim.data=all.sim.data, poor.fit.override=poor.fit.override)
+  validateVariance(dist="norm", 
+                   difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sq, 
+                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
+                   sigma_b2=NA, method=method, quiet=quiet, 
+                   all.sim.data=all.sim.data, 
+                   poor.fit.override=poor.fit.override)
 
   # create narms and nclusters if not provided directly by user
   if (exists("nsubjects", mode = "list")==TRUE){

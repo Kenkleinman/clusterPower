@@ -9,6 +9,8 @@
 
 #' @param ICC Intra-cluster correlation coefficient; accepts a vector of length \code{narms}
 #' with values between 0 - 1.
+#' @param dist String indicating outcome distribution. Takes one of "norm", "normal",
+#' bin", or "count".
 #' @param difference Expected absolute treatment effect; accepts numeric.
 #' @param sigma Within-cluster variance; accepts numeric
 #' @param sigma_b Between-cluster variance; accepts numeric
@@ -31,25 +33,29 @@
 #' @examples 
 #' \dontrun{
 #' 
-#' var <- validateVariance(difference=30, alpha=0.05, ICC=0.2, sigma=100,
-#'   sigma_b=25, ICC2=0.5, sigma2=120, sigma_b2=120, method=c("glmm", "gee"), 
-#'   quiet=FALSE, all.sim.data=FALSE, poor.fit.override=TRUE)
+#' var <- validateVariance(dist="normal", 
+#'                         difference=30, alpha=0.05, ICC=0.2, sigma=100,
+#'                         sigma_b=25, ICC2=0.5, sigma2=120, sigma_b2=120, 
+#'                         method=c("glmm", "gee"), quiet=FALSE, 
+#'                         all.sim.data=FALSE, poor.fit.override=TRUE)
 #' 
 #' }
 #' @export
 
 
-validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sq, 
+validateVariance <- function(dist=NULL, difference=means, alpha=alpha, 
+                             ICC=ICC, sigma=sigma_sq, 
                              sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
                              sigma_b2=NA, method=method, quiet=quiet, 
                              all.sim.data=all.sim.data, 
                              poor.fit.override=poor.fit.override, 
                              cores=NA,
                              probs=NA){
+  if (dist=="norm"){
   # Validate DIFFERENCE, ALPHA
-  min0.warning = " must be a numeric value greater than 0"
-  if(!is.numeric(difference) || difference < 0){
-    stop("difference", min0.warning)
+  min0.warning = " must be a numeric value"
+  if(!is.numeric(difference)){
+    stop("difference or means", min0.warning)
   }
   if(!is.numeric(alpha) || alpha < 0 || alpha > 1){
     stop("alpha must be a numeric value between 0 - 1")
@@ -66,19 +72,6 @@ validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma
       stop("At least one of the following terms has been misspecified: ICC, sigma, sigma_b")
     }
   }
-  
-  if(length(difference)>1){
-    if(is.numeric(difference)==FALSE){
-      stop("difference must be a numeric scalar or vector.")
-    }
-   # if (difference >=1){
-  #    stop("probabilities must be less than 1.")
-  #  }
-  #  if (difference <=0){
-  #    stop("probabilities must be greater than zero.")
-  #  }
-  }
-  
   if (!is.na(ICC2) | !is.na(sigma2) | !is.na(sigma_b2)){
     parm2.arg.list = list(ICC2, sigma2, sigma_b2)
     parm2.args = unlist(lapply(parm2.arg.list, is.null))
@@ -90,7 +83,19 @@ validateVariance <- function(difference=means, alpha=alpha, ICC=ICC, sigma=sigma
       stop("At least one of the following terms has been misspecified: ICC2, sigma2, sigma_b2")
     }
   }
-
+  }
+  
+  if (dist=="bin"){
+      if(is.numeric(probs)==FALSE | is.na(probs)){
+        stop("difference must be a numeric scalar or vector.")
+      }
+      if (probs >=1){
+          stop("probabilities must be less than 1.")
+        }
+      if (difference <=0){
+          stop("probabilities must be greater than zero.")
+        }
+    }
   # Validate METHOD, QUIET, ALL.SIM.DATA
   if(!is.element(method, c('glmm', 'gee'))){
     stop("method must be either 'glmm' (Generalized Linear Mixed Model)

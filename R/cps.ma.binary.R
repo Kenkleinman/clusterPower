@@ -184,7 +184,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     print("Warning: LRT significance not calculable when narms<3. Use cps.binary() instead.")
   }
   
-  validateVariance(difference=probs, alpha=alpha, ICC=NA, sigma=NA, 
+  validateVariance(dist="binary", alpha=alpha, ICC=NA, sigma=NA, 
                    sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
                    sigma_b2=NA, method=method, quiet=quiet, 
                    all.sim.data=all.sim.data, 
