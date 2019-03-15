@@ -12,30 +12,39 @@ cps.ma.normal.internal(nsim = 1000, str.nsubjects = NULL,
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
 
-\item{str.nsubjects}{Number of subjects per treatment group; accepts a list with one entry per arm. 
-Each entry is a vector containing the number of subjects per cluster (required).}
+\item{str.nsubjects}{Number of subjects per treatment group; accepts a list 
+with one entry per arm. Each entry is a vector containing the number of 
+subjects per cluster (required).}
 
-\item{means}{Expected absolute treatment effect for each arm; accepts a vector of length \code{narms} (required).}
+\item{means}{Expected absolute treatment effect for each arm; accepts a 
+vector of length \code{narms} (required).}
 
-\item{sigma_sq}{Within-cluster variance; accepts a vector of length \code{narms} (required).}
+\item{sigma_sq}{Within-cluster variance; accepts a vector of length 
+\code{narms} (required).}
 
-\item{sigma_b_sq}{Between-cluster variance; accepts a vector of length \code{narms} (required).}
+\item{sigma_b_sq}{Between-cluster variance; accepts a vector of length 
+\code{narms} (required).}
 
 \item{alpha}{Significance level; default = 0.05.}
 
-\item{quiet}{When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.}
+\item{quiet}{When set to FALSE, displays simulation progress and estimated 
+completion time; default is FALSE.}
 
-\item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
-Generalized Estimating Equation (GEE); accepts c('glmm', 'gee') (required); default = 'glmm'.}
+\item{method}{Analytical method, either Generalized Linear Mixed Effects 
+Model (GLMM) or Generalized Estimating Equation (GEE); accepts c('glmm', 
+'gee') (required); default = 'glmm'.}
 
-\item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
+\item{all.sim.data}{Option to output list of all simulated datasets; 
+default = FALSE.}
 
 \item{seed}{Option to set.seed, default is NULL.}
 
-\item{cores}{a string or numeric value indicating the number of cores to be used for parallel computing. 
-When this option is set to NULL, no parallel computing is used.}
+\item{cores}{a string or numeric value indicating the number of cores to be 
+used for parallel computing. When this option is set to NULL, no parallel 
+computing is used.}
 
-\item{poor.fit.override}{Option to override \code{stop()} if more than 25\% of fits fail to converge}
+\item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
+of fits fail to converge.}
 }
 \value{
 A list with the following components:
@@ -53,10 +62,11 @@ A list with the following components:
 This set of functions utilize iterative simulations to determine 
 approximate power for cluster-randomized controlled trials. Users 
 can modify a variety of parameters to suit the simulations to their
-desired experimental situation. Users must specify the desired number of simulations, number of subjects per 
-cluster, number of clusters per treatment arm, group means, two of the following: ICC, within-cluster variance, or 
-between-cluster variance; significance level, analytic method, progress updates, 
-and simulated data set output may also be specified.
+desired experimental situation. Users must specify the desired number 
+of simulations, number of subjects per cluster, number of clusters 
+per treatment arm, group means, two of the following: ICC, within-cluster 
+variance, or between-cluster variance; significance level, analytic method, 
+progress updates, and simulated data set output may also be specified.
 }
 \examples{
 \dontrun{

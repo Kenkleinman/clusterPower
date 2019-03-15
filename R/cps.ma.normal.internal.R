@@ -1,54 +1,81 @@
-#' Runs the power simulations for cluster-randomized trials: Multi-Arm Design, Continuous Outcome.
+#' Runs and returns simulations and model fits for multi-arm 
+#' cluster-randomized trials with continuous outcome.
 #'
-#' This set of functions utilize iterative simulations to determine 
-#' approximate power for cluster-randomized controlled trials. Users 
-#' can modify a variety of parameters to suit the simulations to their
-#' desired experimental situation. Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, group means, two of the following: ICC, within-cluster variance, or 
-#' between-cluster variance; significance level, analytic method, progress updates, 
-#' and simulated data set output may also be specified.
+#' This function is called within \code{cps.ma.normal()} to generate the 
+#' simulated data and return glmm or gee model fits according to the user's 
+#' specifications. However, this function can also be called independently 
+#' in order to return and examine the simulation model fits rather than the 
+#' power summary returned in \code{cps.ma.normal()}. 
 #' 
-#' 
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' Users can modify a variety of parameters to suit the simulations to their
+#' desired experimental situation. Users must specify the desired number 
+#' of simulations, number of subjects per cluster, number of clusters 
+#' per treatment arm, group means, within-cluster variance, and between-cluster 
+#' variance; significance level, analytic method, progress updates, and 
+#' simulated data set output may also be specified.
 #'
+#' As this function is not intended for the casual user, specifications to the 
+#' arguments are somewhat less flexible than those supplied to 
+#' \code{cps.ma.normal()}. Note that the str.nsubjects argument has a specific 
+#' structure that is somewhat verbose, but maximizes flexibility in the 
+#' applicable experimental design. 
+#' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param str.nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
-#' Each entry is a vector containing the number of subjects per cluster (required).
-#' @param means Expected absolute treatment effect for each arm; accepts a vector of length \code{narms} (required).
-#' @param sigma_sq Within-cluster variance; accepts a vector of length \code{narms} (required).
-#' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param str.nsubjects Number of subjects per treatment group; accepts a list 
+#' with one entry per arm. Each entry is a vector containing the number of 
+#' subjects per cluster (required).
+#' @param means Expected absolute treatment effect for each arm; accepts a 
+#' vector of length \code{narms} (required).
+#' @param sigma_sq Within-cluster variance; accepts a vector of length 
+#' \code{narms} (required).
+#' @param sigma_b_sq Between-cluster variance; accepts a vector of length 
+#' \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
-#' Generalized Estimating Equation (GEE); accepts c('glmm', 'gee') (required); default = 'glmm'.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
-#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param method Analytical method, either Generalized Linear Mixed Effects 
+#' Model (GLMM) or Generalized Estimating Equation (GEE); accepts c('glmm', 
+#' 'gee') (required); default = 'glmm'.
+#' @param quiet When set to FALSE, displays simulation progress and estimated 
+#' completion time; default is FALSE.
+#' @param all.sim.data Option to output list of all simulated datasets; 
+#' default = FALSE.
 #' @param seed Option to set.seed, default is NULL.
-#' @param cores a string or numeric value indicating the number of cores to be used for parallel computing. 
-#' When this option is set to NULL, no parallel computing is used.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge
+#' @param cores a string or numeric value indicating the number of cores to be 
+#' used for parallel computing. When this option is set to NULL, no parallel 
+#' computing is used.
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
+#' of fits fail to converge.
 #' @return A list with the following components:
-#' \itemize{
-#'   \item List of \code{length(nsim)} containing gee- or glmm-fitted the model summaries.
-#'   \item Compares fitted model to a model for H0 using ML (anova).
-#'   \item List of data frames, each containing: 
-#'                   "y" (Simulated response value), 
-#'                   "trt" (Indicator for treatment group), 
-#'                   "clust" (Indicator for cluster)
-#'   \item A vector of length \code{nsim} consisting of 1 and 0; 
-#         When a model fails to converge, failed.to.converge==1, otherwise 0.
+#' \describe{
+#'   \item{estimates}{List of \code{length(nsim)} containing gee- or glmm-fitted model 
+#'   estimates.}
+#'   \item{model comparisons}{Compares fitted model to a model for H0 using ML 
+#'   (ANOVA).}
+#'   \item{simulated datasets}{Produced when all.sim.data = TRUE, a list of 
+#'   data frames, each containing three columns: "y" (Simulated response value),  
+#'                   "trt" (Indicator for treatment group), and 
+#'                   "clust" (Indicator for cluster).}
+#'   \item{failed.to.converge}{A vector of length \code{nsim} consisting of 1 and 0 
+#'   (when all.sim.data = TRUE) or a string (when all.sim.data = FALSE) 
+#'   indicating the percent of model fits that produced a "singular fit" or "failed to converge" warning message;
+#'           When a model fails to converge, failed.to.converge == 1, otherwise 0.}
 #' }
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'@examples 
 #'\dontrun{
-#' str.nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-#' means.example <- c(30, 21, 53)
-#' sigma_sq.example <- c(100, 110, 100)
-#' sigma_b_sq.example <- c(25, 25, 120)
-#' normal.ma.rct <- cps.ma.normal.internal(nsim = 1000, str.nsubjects = str.nsubjects.example, 
-#'                                        means = means.example, sigma_sq = sigma_sq.example, 
-#'                                        sigma_b_sq = sigma_b_sq.example, alpha = 0.05, 
-#'                                        quiet = FALSE, method = 'glmm', 
-#'                                        all.sim.data = FALSE, seed = 123)
-#'                                        }
+#' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+#' means.example <- c(22, 21, 21.5)
+#' sigma_sq.example <- c(1, 1, 0.9)
+#' sigma_b_sq.example <- c(0.1, 0.15, 0.1)
+#' 
+#' multi.cps.normal.models <- cps.ma.normal.internal (nsim = 100, 
+#'                               str.nsubjects = nsubjects.example, 
+#'                               means = means.example, 
+#'                               sigma_sq = sigma_sq.example, 
+#'                               sigma_b_sq = sigma_b_sq.example, 
+#'                               alpha = 0.05,
+#'                               quiet = FALSE, method = 'glmm', 
+#'                               seed = 123, cores = "all",
+#'                               poor.fit.override = FALSE)
 #' @export
 
 cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
@@ -57,7 +84,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                       quiet = FALSE, method = 'glmm', 
                       all.sim.data = FALSE, 
                       seed=NULL,
-                      cores=NULL,
+                      cores="all",
                       poor.fit.override = FALSE){
 
   # Create vectors to collect iteration-specific values
