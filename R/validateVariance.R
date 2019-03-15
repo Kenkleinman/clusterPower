@@ -1,29 +1,39 @@
 #' Power simulations for cluster-randomized trials: validating ICC, 
-#' sigma, and sigma_b inputs
+#' sigma, and sigma_b inputs.
 #'
-#' Usually called from within a function, validateVariance takes variance parameters
-#' and validates those inputs. This function gives an error if one of the inputs 
-#' is missing or not specified properly. 
+#' Usually called from within a simulation-producing function, this function 
+#' takes variance parameters provided by the user and performs a series of 
+#' validation checks. This function gives an error and stops function execution 
+#' if any required input is missing, is the wrong type, or not specified 
+#' properly. 
 #' 
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 
-#' @param ICC Intra-cluster correlation coefficient; accepts a vector of length \code{narms}
-#' with values between 0 - 1.
-#' @param dist String indicating outcome distribution. Takes one of "norm", "normal",
-#' bin", or "count".
+#' @param ICC Intra-cluster correlation coefficient; accepts a vector of 
+#' length \code{narms} with values between 0 - 1.
+#' @param dist String indicating outcome distribution. Takes one of "norm", 
+#' "bin", or "count".
 #' @param difference Expected absolute treatment effect; accepts numeric.
 #' @param sigma Within-cluster variance; accepts numeric
 #' @param sigma_b Between-cluster variance; accepts numeric
-#' @param probs Outcome probabilities per arm. Accepts a numeric vector or a scalar if all arms are equal.
-#' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
-#' @param sigma2 Within-cluster variance for clusters in TREATMENT group
-#' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
+#' @param probs Outcome probabilities per arm. Accepts a numeric vector or a 
+#' scalar if all arms are equal.
+#' @param ICC2 Intra-cluster correlation coefficient for clusters in the 
+#' treatment group (used in 2-arm simulation methods only).
+#' @param sigma2 Within-cluster variance for clusters in treatment group
+#' (used in 2-arm simulation methods only).
+#' @param sigma_b2 Between-cluster variance for clusters in treatment group 
+#' (used in 2-arm simulation methods only).
 #' @param alpha Significance level; default = 0.05.
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
-#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
-#' @param quiet Logical. When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
-#' @param all.sim.data Logical. Option to output list of all simulated datasets; default = FALSE.
-#' @param cores Integer number of cores the user would like to use for parallel computing or the string "all". 
+#' @param method Analytical method, either Generalized Linear Mixed Effects 
+#' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 
+#' 'gee') (required); default = 'glmm'.
+#' @param quiet Logical. When set to FALSE, displays simulation progress and 
+#' estimated completion time; default is FALSE.
+#' @param all.sim.data Logical. Option to output list of all simulated 
+#' datasets; default = FALSE.
+#' @param cores Integer number of cores the user would like to use for 
+#' parallel computing or the string "all". 
 #' 
 #' @return A vector of length \code{narms} 
 #' \describe{
@@ -33,17 +43,16 @@
 #' @examples 
 #' \dontrun{
 #' 
-#' var <- validateVariance(dist="normal", 
-#'                         difference=30, alpha=0.05, ICC=0.2, sigma=100,
-#'                         sigma_b=25, ICC2=0.5, sigma2=120, sigma_b2=120, 
-#'                         method=c("glmm", "gee"), quiet=FALSE, 
-#'                         all.sim.data=FALSE, poor.fit.override=TRUE)
+#' validateVariance(dist="norm", difference=30, alpha=0.05, ICC=0.2, 
+#'                   sigma=100, sigma_b=25, ICC2=0.5, sigma2=120, 
+#'                   sigma_b2=120, method=c("glmm", "gee"), quiet=FALSE, 
+#'                   all.sim.data=FALSE, poor.fit.override=TRUE)
 #' 
 #' }
 #' @export
 
 
-validateVariance <- function(dist=NULL, difference=means, alpha=alpha, 
+validateVariance <- function(dist=NULL, difference=NULL, alpha=alpha, 
                              ICC=ICC, sigma=sigma_sq, 
                              sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
                              sigma_b2=NA, method=method, quiet=quiet, 
@@ -51,14 +60,14 @@ validateVariance <- function(dist=NULL, difference=means, alpha=alpha,
                              poor.fit.override=poor.fit.override, 
                              cores=NA,
                              probs=NA){
+  if(!is.element(dist, c('norm', 'bin', 'count'))){
+    stop("dist must be specified as 'norm', 'bin', or 'count'.")
+  }
   if (dist=="norm"){
   # Validate DIFFERENCE, ALPHA
   min0.warning = " must be a numeric value"
   if(!is.numeric(difference)){
     stop("difference or means", min0.warning)
-  }
-  if(!is.numeric(alpha) || alpha < 0 || alpha > 1){
-    stop("alpha must be a numeric value between 0 - 1")
   }
 
   # Validate ICC, SIGMA, SIGMA_B, ICC2, SIGMA2, SIGMA_B2
@@ -111,13 +120,18 @@ validateVariance <- function(dist=NULL, difference=means, alpha=alpha,
     stop("poor.fit.override must be either FALSE (Stop simulations if estimated power is <0.5 or 
          more than 25% of fits do not converge) or TRUE (Continue simulations).")
   }
+  #validate alpha
+  if(!is.numeric(alpha) || alpha < 0 || alpha > 1){
+    stop("alpha must be a numeric value between 0 - 1")
+  }
+  #validate cores
   if (!is.na(cores)){
     if(!is.numeric(cores) & cores!="all"){
       stop("cores must be an integer, or 'all'.")
     }
     if (is.numeric(cores)==TRUE){
       if (cores>parallel::detectCores()){
-        stop("'cores' exceeds the number of available cores.")
+        stop("'cores' exceeds the number of cores detected.")
       }
     }
   }

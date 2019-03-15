@@ -44,6 +44,8 @@
 #' computing is used.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
 #' of fits fail to converge.
+#' @param tdist Logical; use t-distribution instead of normal distribution 
+#' for simulation values, default = FALSE.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{estimates}{List of \code{length(nsim)} containing gee- or glmm-fitted model 
@@ -85,7 +87,8 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                       all.sim.data = FALSE, 
                       seed=NULL,
                       cores="all",
-                      poor.fit.override = FALSE){
+                      poor.fit.override = FALSE,
+                      tdist=FALSE){
 
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
@@ -127,7 +130,10 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     clust[[i]] <- lapply(seq(1, sum(nclusters))[i], 
                          function (x) {rep.int(x, unlist(str.nsubjects)[i])})
   }
-  
+  #Alert the user if using t-distribution
+  if (tdist==TRUE){
+    print("using t-distribution because tdist = TRUE")
+  }
   #setup for parallel computing
   if (!exists("cores", mode = "NULL")){
     ## Do computations with multiple processors:
@@ -143,9 +149,15 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     sim.dat[[i]] = data.frame(y = NA, trt = as.factor(unlist(trt)), 
                               clust = as.factor(unlist(clust)))
     # Generate between-cluster effects for non-treatment and treatment
+    if (tdist==TRUE){
+      randint = mapply(function(n, df) stats::rt(n, df = df), 
+                       n = nclusters, 
+                       df = Inf)
+    } else {
     randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s)), 
                                                       nc = nclusters, s = sigma_b_sq, 
                                                       mu = 0)
+    }
     # Create y-value
     y.bclust <-  vector(mode = "numeric", length = length(unlist(str.nsubjects)))
     y.wclust <-  vector(mode = "list", length = narms)

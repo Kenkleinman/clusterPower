@@ -22,13 +22,18 @@
 #' @param means Expected probability of outcome for each arm; accepts a vector of length \code{narms} (required).
 #' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
-#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
-#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param method Analytical method, either Generalized Linear Mixed Effects 
+#' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 
+#' 'gee') (required); default = 'glmm'.
+#' @param quiet When set to FALSE, displays simulation progress and estimated 
+#' completion time; default is FALSE.
+#' @param all.sim.data Option to output list of all simulated datasets; 
+#' default = FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge.
-#' @param tdist Logical; use t-distribution instead of normal distribution for simulation values, default = FALSE
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
+#' of fits fail to converge.
+#' @param tdist Logical; use t-distribution instead of normal distribution for 
+#' simulation values, default = FALSE.
 #' @param cores A string or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to 1, no parallel computing is used.
 #' 
@@ -47,15 +52,16 @@
 #' @examples 
 #' \dontrun{
 #' 
-#' str.nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-#' probs.example <- c(0.30, 0.21, 0.53)
-#' sigma_b_sq.example <- c(25, 25, 120)
+#' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+#' probs.example <- c(0.30, 0.5, 0.9)
+#' sigma_b_sq.example <- c(1, 1, 2)
 #' 
-#' bin.ma.rct <- cps.ma.binary.internal(nsim = 10, str.nsubjects = str.nsubjects.example, 
-#'                                  probs = probs.example,
-#'                                  sigma_b_sq = sigma_b_sq.example, alpha = 0.05, 
-#'                                 quiet = FALSE, method = 'gee', 
-#'                                 all.sim.data = FALSE, seed = 123)
+#' bin.ma.rct <- cps.ma.binary.internal (nsim = 10, 
+#'                             str.nsubjects = nsubjects.example, 
+#'                             probs = probs.example,
+#'                             sigma_b_sq = sigma_b_sq.example, 
+#'                             alpha = 0.05, all.sim.data = FALSE, 
+#'                             seed = 123, cores="all") 
 #' }
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
@@ -119,6 +125,11 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   }
   logit.p <- unlist(logit.p)
   
+  #Alert the user if using t-distribution
+  if (tdist==TRUE){
+    print("using t-distribution because tdist = TRUE")
+  }
+  
   #setup for parallel computing
   if (!exists("cores", mode = "NULL")){
     ## Do computations with multiple processors:
@@ -134,7 +145,6 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                               clust = as.factor(unlist(clust1)))
     # Generate between-cluster effects for non-treatment and treatment 
     if (tdist==TRUE){
-      print("using t-distribution because tdist=TRUE")
       randint = mapply(function(n, df) stats::rt(n, df = df), 
                        n = nclusters, 
                        df = Inf)
@@ -145,9 +155,9 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     }
     
     for (j in 1:length(logit.p)){
-      randint[,j] <- logit.p[j]+ randint[,j]
+      randint[[j]] <- logit.p[j]+ randint[[j]]
     }
-    randint <- clusterPower::expit(randint)
+    randint <- sapply(randint, clusterPower::expit)
     
     # Create y-value
     y.intercept <-  vector(mode = "numeric", length = length(unlist(str.nsubjects)))

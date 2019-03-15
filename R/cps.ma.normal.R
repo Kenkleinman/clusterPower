@@ -5,7 +5,7 @@
 #' approximate power for multi-arm cluster-randomized controlled trials with a 
 #' normally-distributed outcome of interest. Users can modify a variety of 
 #' parameters to suit the simulations to their desired experimental situation. 
-#' Returns the summary power values for each treatment arm
+#' This function returns the summary power values for each treatment arm.
 #' 
 #' Users must specify the desired number of simulations, the group/arm means, 
 #' and two of the following: ICC, within-cluster variance, or between-cluster 
@@ -61,7 +61,8 @@
 #' used for parallel computing. 
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
 #' of fits fail to converge or power<0.5 after 50 iterations; default = FALSE. 
-#'  
+#' @param tdist Logical; use t-distribution instead of normal distribution 
+#' for simulation values, default = FALSE.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{
@@ -152,7 +153,8 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                         multi.p.method = "bonferroni",
                         all.sim.data = FALSE, seed = 123, 
                         cores=NULL,
-                        poor.fit.override = FALSE){
+                        poor.fit.override = FALSE, 
+                        tdist=FALSE){
 
   # Create wholenumber function
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
@@ -258,7 +260,8 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                            all.sim.data = all.sim.data,
                                            seed = seed,
                                            cores=cores,
-                                           poor.fit.override = poor.fit.override)
+                                           poor.fit.override = poor.fit.override,
+                                           tdist = tdist)
    
    models <- normal.ma.rct[[1]]
    
@@ -406,13 +409,17 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
        complete.output <-  list("power" <-  power.parms[-1,],
                                 "model.estimates" <-  ma.model.est, 
                                 "overall.power" <- LRT.holder,
-                                "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
+                                "overall.power2" <- prop_H0_rejection(
+                                  alpha=alpha, nsim=nsim, 
+                                  LRT.holder.abbrev=LRT.holder.abbrev),
                                 "sim.data" <-  normal.ma.rct[[3]])
      } else {
        complete.output <-  list("power" <-  power.parms[-1,],
                                 "model.estimates" <-  ma.model.est, 
                                 "overall.power" <- LRT.holder,
-                                "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev))
+                                "overall.power2" <- prop_H0_rejection(
+                                  alpha=alpha, nsim=nsim, 
+                                  LRT.holder.abbrev=LRT.holder.abbrev))
      }
      return(complete.output)
    }
