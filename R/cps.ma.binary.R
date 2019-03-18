@@ -131,7 +131,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                           cores="all",
                           tdist=FALSE,
                           poor.fit.override = FALSE){
-
+  
   # Create wholenumber function
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
  
@@ -216,13 +216,13 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     print("Warning: LRT significance not calculable when narms<3. Use cps.binary() instead.")
   }
   
- # validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma=NA, 
-#                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
-##                   sigma_b2=NA, method=method, quiet=quiet, 
-#                   all.sim.data=all.sim.data, 
- #                  poor.fit.override=poor.fit.override, 
-#                   cores=cores,
-#                   probs=probs)
+  validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma=NA, 
+                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
+                   sigma_b2=NA, method=method, quiet=quiet, 
+                   all.sim.data=all.sim.data, 
+                   poor.fit.override=poor.fit.override, 
+                   cores=cores,
+                   probs=probs)
   
   # run the simulations 
   binary.ma.rct <- cps.ma.binary.internal(nsim = nsim, 

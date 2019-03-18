@@ -101,7 +101,7 @@ validateVariance <- function(dist=NULL, difference=NULL, alpha=alpha,
       if (probs >=1){
           stop("probabilities must be less than 1.")
         }
-      if (difference <=0){
+      if (probs <=0){
           stop("probabilities must be greater than zero.")
         }
     }
