@@ -125,15 +125,13 @@ validateVariance <- function(dist=NULL, difference=NULL, alpha=alpha,
     stop("alpha must be a numeric value between 0 - 1")
   }
   #validate cores
-  if (!is.na(cores)){
-    if(!is.numeric(cores) & cores!="all"){
-      stop("cores must be an integer, or 'all'.")
+    if(!is.numeric(cores) & cores!="all" & !is.na(cores)){
+      stop("cores must be NA, an integer, or 'all'.")
     }
     if (is.numeric(cores)==TRUE){
       if (cores>parallel::detectCores()){
         stop("'cores' exceeds the number of cores detected.")
       }
     }
-  }
 }
 

@@ -59,8 +59,8 @@
 #' @param seed Option to set.seed. Default is NULL.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge or 
 #' power<0.5 after 50 iterations; default = FALSE.
-#' @param cores String ("all") or scalar value indicating the number of cores 
-#' to be used for parallel computing. Default = "all".
+#' @param cores String ("all"), NA, or scalar value indicating the number of cores 
+#' to be used for parallel computing. Default = NA (no parallel computing).
 #' @param tdist Logical value indicating whether simulated data should be 
 #' drawn from a t-distribution rather than the normal distribution. 
 #' Default = FALSE.
@@ -128,10 +128,12 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                           quiet = FALSE, method = 'glmm', 
                           multi.p.method = "bonferroni",
                           all.sim.data = FALSE, seed = 123, 
-                          cores="all",
+                          cores=NA,
                           tdist=FALSE,
                           poor.fit.override = FALSE){
   
+  # use this later to determine total elapsed time
+  start.time <- Sys.time()
   # Create wholenumber function
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
  
@@ -213,7 +215,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
   }
   
   if (narms<3){
-    print("Warning: LRT significance not calculable when narms<3. Use cps.binary() instead.")
+    message("Warning: LRT significance not calculable when narms<3. Use cps.binary() instead.")
   }
   
   validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma=NA, 
@@ -273,13 +275,13 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     colnames(std.error) <- names.st.err
     colnames(z.val) <- names.zval
     colnames(p.val) <- names.pval
-    
+
     if (narms>2){
     # Organize the LRT output
       LRT.holder <- matrix(unlist(binary.ma.rct[[2]]), ncol=3, nrow=nsim, 
                            byrow=TRUE, 
                            dimnames = list(seq(1:nsim), 
-                                         colnames(bin.ma.rct[[2]][[1]])))
+                                         colnames(binary.ma.rct[[2]][[1]])))
     
     # Proportion of times P(>F)
       sig.LRT <-  ifelse(LRT.holder[,3] < alpha, 1, 0)
@@ -300,6 +302,15 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     ma.model.est <-  data.frame(Estimates, std.error, z.val, p.val)
     ma.model.est <- ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))] 
     
+    # performance messages
+    total.est <-  as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+    hr.est <-  total.est %/% 3600
+    min.est <-  total.est %/% 60
+    sec.est <-  round(total.est %% 60, 0)
+    message(paste0("Simulations Complete! Time Completed: ", Sys.time(), 
+                   "\nTotal Runtime: ", hr.est, 'Hr:', min.est, 'Min:', 
+                   sec.est, 'Sec'))
+    
     ## Output objects for GLMM
     
     # Create list containing all output (class 'crtpwr') and return
@@ -318,7 +329,8 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                                "proportion.failed.to.converge" <- binary.ma.rct[[3]])
     }
     return(complete.output)
-  }
+  } # end of GLMM options
+  
   #Organize output for GEE method
   if (method=="gee"){
     # Organize the output
@@ -379,6 +391,15 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)
     ma.model.est <- ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))] 
     
+    # performance messages
+    total.est <-  as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+    hr.est <-  total.est %/% 3600
+    min.est <-  total.est %/% 60
+    sec.est <-  round(total.est %% 60, 0)
+    message(paste0("Simulations Complete! Time Completed: ", Sys.time(), 
+                   "\nTotal Runtime: ", hr.est, 'Hr:', min.est, 'Min:', 
+                   sec.est, 'Sec'))
+    
     ## Output objects for GEE
     
     # Create list containing all output (class 'crtpwr') and return
@@ -386,13 +407,15 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
       complete.output <-  list("power" <-  power.parms[-1,],
                                "model.estimates" <-  ma.model.est, 
                                "overall.power" <- LRT.holder,
-                               "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev)),
+                               "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
+                                                                         LRT.holder.abbrev=LRT.holder.abbrev)),
                                "sim.data" <-  binary.ma.rct[[3]])
     } else {
       complete.output <-  list("power" <-  power.parms[-1,],
-                               "overall.power" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev)))
+                               "overall.power" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
+                                                                        LRT.holder.abbrev=LRT.holder.abbrev)))
     }
     return(complete.output)
-  }
-  }
+  }# end of GEE options
+}# end of fxn
 
