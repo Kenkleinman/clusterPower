@@ -140,24 +140,34 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                        nc = nclusters, s = sigma_b_sq, 
                        mu = 0)
     }
-    for (j in 1:length(logit.p)){
-      randint[[j]] <- logit.p[j]+ randint[[j]]
+    if (typeof(randint)=="list"){
+      randint.holder <- list()
+      for (j in 1:length(logit.p)){
+        randint.holder[[j]] <- logit.p[j]+ randint[[j]]
+      }
+      randintrandint <- sapply(randint.holder, clusterPower::expit) # check this
+    } else {
+      randint.holder <- matrix(nrow = nclusters[1], ncol = length(logit.p))
+      for (j in 1:length(logit.p)){
+        randint.holder[,j] <- logit.p[j]+ randint[,j]
+      }
+      randintrandint <- clusterPower::expit(randint.holder)
     }
-    randint <- sapply(randint, clusterPower::expit)
     # Create y-value
     y.intercept <-  vector(mode = "numeric", 
                            length = length(unlist(str.nsubjects)))
     y.intercept <-  sapply(1:sum(nclusters), 
-                           function(x) rep(unlist(randint)[x], 
+                           function(x) rep(unlist(randintrandint)[x], 
                                            length.out = unlist(str.nsubjects)[x]))
     y <- sapply(unlist(y.intercept), function(x) stats::rbinom(1, 1, x))
     return(y)
   }
-  sim.dat <- replicate(nsim, make.sim.dat(tdist=FALSE, logit.p = logit.p, 
+  sim.dat <- replicate(nsim, make.sim.dat(tdist=tdist, logit.p = logit.p, 
                                           nclusters=nclusters, 
-                                          sigma_b_sq=c(1,1,1), 
+                                          sigma_b_sq=sigma_b_sq, 
                                           str.nsubjects=str.nsubjects))
   
+  require(foreach)
   `%fun%` <- `%dopar%`
   if (is.na(cores)){
     `%fun%` <- `%do%`
@@ -170,7 +180,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     if (cores=="all"){nc <- parallel::detectCores()} else {nc <- cores}
     ## Create clusters and initialize the progress bar
     cl <- parallel::makeCluster(rep("localhost", nc), type="SOCK")
-    registerDoSNOW(cl)
+    doSNOW::registerDoSNOW(cl)
     }
     pb <- txtProgressBar(min=1, max=nsim, style=3)
     progress <- function(n) setTxtProgressBar(pb, n)
@@ -200,7 +210,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       Sys.sleep(1/100)
     }
   # Create simulation loop
-  # require(doParallel)
+   require(doParallel)
     require(foreach)
     if (!is.na(cores) & quiet == FALSE){
       message("Fitting models")
@@ -255,8 +265,14 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       prog.bar$update(5 / 5)
       Sys.sleep(1/100)
     }
+    # turn off parallel computing
+    if (!is.na(cores)){
+      #stop the progress bar
+      close(pb)
+      parallel::stopCluster(cl)
+    }
+  } #end of GLMM method
     
-  }
     # Fit GEE (geeglm)
     if(method == 'gee'){
       if(quiet == FALSE){
@@ -318,14 +334,14 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                         .inorder=FALSE) %fun% {
                                           summary(my.mod[[i]])
                                         }
-    }
       # turn off parallel computing
-    if (!is.na(cores)){
+      if (!is.na(cores)){
         #stop the progress bar
         close(pb)
         parallel::stopCluster(cl)
-    }
-  
+      }
+      } # end of GEE method
+
   ## Output objects
   if(all.sim.data == TRUE){
     complete.output.internal <-  list("estimates" = model.values,
@@ -339,4 +355,4 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                                                     "% did not converge", sep=""))
   }
   return(complete.output.internal)
-}
+} #end of function

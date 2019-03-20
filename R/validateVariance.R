@@ -95,13 +95,13 @@ validateVariance <- function(dist=NULL, difference=NULL, alpha=alpha,
   }
   
   if (dist=="bin"){
-      if(is.numeric(probs)==FALSE | is.na(probs)){
-        stop("difference must be a numeric scalar or vector.")
+      if(any(is.numeric(probs)==FALSE) | any(is.na(probs))){
+        stop("probs must be a scalar or numeric vector.")
       }
-      if (probs >=1){
+      if (any(probs >=1)){
           stop("probabilities must be less than 1.")
         }
-      if (probs <=0){
+      if (any(probs <=0)){
           stop("probabilities must be greater than zero.")
         }
     }

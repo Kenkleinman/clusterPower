@@ -102,16 +102,16 @@
 #' probs.example <- c(0.30, 0.5, 0.9)
 #' sigma_b_sq.example <- c(1, 1, 2)
 #' 
-#' bin.ma.rct.unbal <- cps.ma.binary(nsim = 10, 
+#' bin.ma.rct.unbal <- cps.ma.binary(nsim = 100, 
 #'                             nsubjects = nsubjects.example, 
 #'                             probs = probs.example,
 #'                             sigma_b_sq = sigma_b_sq.example, 
 #'                             alpha = 0.05, all.sim.data = FALSE, 
 #'                             seed = 123, cores="all") 
 #'                             
-#' bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 20, narms=2,
+#' bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 20, narms=3,
 #'                             nclusters=10,
-#'                             probs = c(0.1, 0.8),
+#'                             probs = c(0.30, 0.5, 0.7),
 #'                             sigma_b_sq = 1, alpha = 0.05,
 #'                             quiet = FALSE, method = 'glmm', 
 #'                             all.sim.data = FALSE, 
