@@ -9,7 +9,7 @@ cps.ma.normal(nsim = 1000, nsubjects = NULL, narms = NULL,
   nclusters = NULL, means = NULL, sigma_sq = NULL,
   sigma_b_sq = NULL, alpha = 0.05, quiet = FALSE, ICC = NULL,
   method = "glmm", multi.p.method = "bonferroni",
-  all.sim.data = FALSE, seed = 123, cores = NULL,
+  all.sim.data = FALSE, seed = NA, cores = NULL,
   poor.fit.override = FALSE, tdist = FALSE)
 }
 \arguments{

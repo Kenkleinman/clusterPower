@@ -6,7 +6,7 @@
 \usage{
 cps.ma.binary.internal(nsim = 1000, str.nsubjects = NULL,
   probs = NULL, sigma_b_sq = NULL, alpha = 0.05, quiet = FALSE,
-  method = "glmm", all.sim.data = FALSE, seed = NULL,
+  method = "glmm", all.sim.data = FALSE, seed = NA,
   poor.fit.override = FALSE, tdist = FALSE, cores = cores)
 }
 \arguments{

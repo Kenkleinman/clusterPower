@@ -72,7 +72,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                     alpha = 0.05,
                                     quiet = FALSE, method = 'glmm', 
                                     all.sim.data = FALSE, 
-                                    seed=NULL,
+                                    seed = NA,
                                     poor.fit.override = FALSE,
                                     tdist = FALSE,
                                     cores=cores){
@@ -93,7 +93,9 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   model.compare <- list()
   
   # option for reproducibility
-  set.seed(seed=seed)
+  if (!is.na(seed)){
+    set.seed(seed=seed)
+  }
   
   # Create indicators for treatment group & cluster for the sim.data output
   trt1 = list()

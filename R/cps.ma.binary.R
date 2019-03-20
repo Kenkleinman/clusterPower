@@ -77,7 +77,7 @@
 #'                   ".zval" (for GLMM) | ".wald" (for GEE), and 
 #'                   ".pval" (the p-value estimate).}
 #'   \item{overall.power}{Table of F-test (when method="glmm") or chi^{2} 
-#'   (when method="gee") significance test results.
+#'   (when method="gee") significance test results.}
 #'   \item{overall.power.summary}{Summary overall power of treatment model
 #'   compared to the null model.}
 #'   \item{sim.data}{Produced when all.sim.data==TRUE. List of \code{nsim} 
@@ -94,7 +94,7 @@
 #'   "non-convergence" error, produced only when method = "glmm" & 
 #'   all.sim.data=TRUE.
 #'   }
-#' }
+#'   }
 #' 
 #' @examples 
 #' \dontrun{
@@ -127,7 +127,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                           alpha = 0.05,
                           quiet = FALSE, method = 'glmm', 
                           multi.p.method = "bonferroni",
-                          all.sim.data = FALSE, seed = 123, 
+                          all.sim.data = FALSE, seed = NA, 
                           cores=NA,
                           tdist=FALSE,
                           poor.fit.override = FALSE){

@@ -7,9 +7,8 @@ cluster-randomized trials with continuous outcome.}
 \usage{
 cps.ma.normal.internal(nsim = 1000, str.nsubjects = NULL,
   means = NULL, sigma_sq = NULL, sigma_b_sq = NULL, alpha = 0.05,
-  quiet = FALSE, method = "glmm", all.sim.data = FALSE,
-  seed = NULL, cores = "all", poor.fit.override = FALSE,
-  tdist = FALSE)
+  quiet = FALSE, method = "glmm", all.sim.data = FALSE, seed = NA,
+  cores = "all", poor.fit.override = FALSE, tdist = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -88,6 +87,24 @@ arguments are somewhat less flexible than those supplied to
 \code{cps.ma.normal()}. Note that the str.nsubjects argument has a specific 
 structure that is somewhat verbose, but maximizes flexibility in the 
 applicable experimental design.
+}
+\examples{
+\dontrun{
+nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+means.example <- c(22, 21, 21.5)
+sigma_sq.example <- c(1, 1, 0.9)
+sigma_b_sq.example <- c(0.1, 0.15, 0.1)
+
+multi.cps.normal.models <- cps.ma.normal.internal (nsim = 100, 
+                              str.nsubjects = nsubjects.example, 
+                              means = means.example, 
+                              sigma_sq = sigma_sq.example, 
+                              sigma_b_sq = sigma_b_sq.example, 
+                              alpha = 0.05,
+                              quiet = FALSE, method = 'glmm', 
+                              seed = 123, cores = "all",
+                              poor.fit.override = FALSE)
+                              }
 }
 \author{
 Alexandria C. Sakrejda (\email{acbro0@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@gmail.com})

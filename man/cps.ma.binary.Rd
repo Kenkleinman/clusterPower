@@ -8,7 +8,7 @@ cluster-randomized trials.}
 cps.ma.binary(nsim = 1000, nsubjects = NULL, narms = NULL,
   nclusters = NULL, probs = NULL, sigma_b_sq = NULL, alpha = 0.05,
   quiet = FALSE, method = "glmm", multi.p.method = "bonferroni",
-  all.sim.data = FALSE, seed = 123, cores = NA, tdist = FALSE,
+  all.sim.data = FALSE, seed = NA, cores = NA, tdist = FALSE,
   poor.fit.override = FALSE)
 }
 \arguments{
@@ -60,6 +60,39 @@ Default = FALSE.}
 
 \item{poor.fit.override}{Option to override \code{stop()} if more than 25\% of fits fail to converge or 
 power<0.5 after 50 iterations; default = FALSE.}
+}
+\value{
+A list with the following components:
+\describe{
+  \item{power}{Data frame with columns "power" (Estimated statistical power), 
+               "lower.95.ci" (Lower 95\% confidence interval bound), 
+               "upper.95.ci" (Upper 95\% confidence interval bound).}
+  \item{model.estimates}{Data frame with columns corresponding 
+  to each arm with descriptive suffixes as follows: 
+                  ".Estimate" (Estimate of treatment effect for a given 
+                  simulation), 
+                  "Std.Err" (Standard error for treatment effect estimate), 
+                  ".zval" (for GLMM) | ".wald" (for GEE), and 
+                  ".pval" (the p-value estimate).}
+  \item{overall.power}{Table of F-test (when method="glmm") or chi^{2} 
+  (when method="gee") significance test results.}
+  \item{overall.power.summary}{Summary overall power of treatment model
+  compared to the null model.}
+  \item{sim.data}{Produced when all.sim.data==TRUE. List of \code{nsim} 
+  data frames, each containing: 
+                  "y" (simulated response value), 
+                  "trt" (indicator for treatment group or arm), and
+                  "clust" (indicator for cluster).}
+  \item{model.fit.warning.percent}{Character string containing the percent 
+  of \code{nsim} in which the glmm fit was singular or failed to converge, 
+  produced only when method = "glmm" & all.sim.data = FALSE.
+  }
+  \item{model.fit.warning.incidence}{Vector of length \code{nsim} denoting 
+  whether or not a simulation glmm fit triggered a "singular fit" or 
+  "non-convergence" error, produced only when method = "glmm" & 
+  all.sim.data=TRUE.
+  }
+  }
 }
 \description{
 This function uses iterative simulations to determine 

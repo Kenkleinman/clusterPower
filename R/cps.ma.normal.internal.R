@@ -62,8 +62,8 @@
 #'           When a model fails to converge, failed.to.converge == 1, otherwise 0.}
 #' }
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
-#'@examples 
-#'\dontrun{
+#' @examples 
+#' \dontrun{
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' means.example <- c(22, 21, 21.5)
 #' sigma_sq.example <- c(1, 1, 0.9)
@@ -78,6 +78,7 @@
 #'                               quiet = FALSE, method = 'glmm', 
 #'                               seed = 123, cores = "all",
 #'                               poor.fit.override = FALSE)
+#'                               }
 #' @export
 
 cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
@@ -85,7 +86,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                       alpha = 0.05,
                       quiet = FALSE, method = 'glmm', 
                       all.sim.data = FALSE, 
-                      seed=NULL,
+                      seed = NA,
                       cores="all",
                       poor.fit.override = FALSE,
                       tdist=FALSE){
@@ -115,7 +116,9 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   model.compare <- list()
   
   # option for reproducibility
-  set.seed(seed=seed)
+  if (!is.na(seed)){
+    set.seed(seed=seed)
+  }
   
   # Create indicators for treatment group & cluster for the sim.data output
   trt = list()
