@@ -92,12 +92,9 @@ normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference =
                         ICC = 0.2, sigma = 100, alpha = 0.05, method = 'glmm', 
                         quiet = FALSE, all.sim.data = FALSE)
 }
-
 }
 \author{
-Alexandria C. Sakrejda (\email{acbro0@umass.edu})
-
-Alexander R. Bogdan
-
-Ken Kleinman (\email{ken.kleinman@gmail.com})
+Alexander R. Bogdan, Alexandria C. Sakrejda 
+(\email{acbro0@umass.edu}), and @author Ken Kleinman 
+(\email{ken.kleinman@gmail.com})
 }

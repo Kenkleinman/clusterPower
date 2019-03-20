@@ -2,12 +2,14 @@
 % Please edit documentation in R/cps.ma.normal.internal.R
 \name{cps.ma.normal.internal}
 \alias{cps.ma.normal.internal}
-\title{Runs the power simulations for cluster-randomized trials: Multi-Arm Design, Continuous Outcome.}
+\title{Runs and returns simulations and model fits for multi-arm 
+cluster-randomized trials with continuous outcome.}
 \usage{
 cps.ma.normal.internal(nsim = 1000, str.nsubjects = NULL,
   means = NULL, sigma_sq = NULL, sigma_b_sq = NULL, alpha = 0.05,
   quiet = FALSE, method = "glmm", all.sim.data = FALSE,
-  seed = NULL, cores = NULL, poor.fit.override = FALSE)
+  seed = NULL, cores = "all", poor.fit.override = FALSE,
+  tdist = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -45,41 +47,47 @@ computing is used.}
 
 \item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
 of fits fail to converge.}
+
+\item{tdist}{Logical; use t-distribution instead of normal distribution 
+for simulation values, default = FALSE.}
 }
 \value{
 A list with the following components:
-\itemize{
-  \item List of \code{length(nsim)} containing gee- or glmm-fitted the model summaries.
-  \item Compares fitted model to a model for H0 using ML (anova).
-  \item List of data frames, each containing: 
-                  "y" (Simulated response value), 
-                  "trt" (Indicator for treatment group), 
-                  "clust" (Indicator for cluster)
-  \item A vector of length \code{nsim} consisting of 1 and 0; 
+\describe{
+  \item{estimates}{List of \code{length(nsim)} containing gee- or glmm-fitted model 
+  estimates.}
+  \item{model comparisons}{Compares fitted model to a model for H0 using ML 
+  (ANOVA).}
+  \item{simulated datasets}{Produced when all.sim.data = TRUE, a list of 
+  data frames, each containing three columns: "y" (Simulated response value),  
+                  "trt" (Indicator for treatment group), and 
+                  "clust" (Indicator for cluster).}
+  \item{failed.to.converge}{A vector of length \code{nsim} consisting of 1 and 0 
+  (when all.sim.data = TRUE) or a string (when all.sim.data = FALSE) 
+  indicating the percent of model fits that produced a "singular fit" or "failed to converge" warning message;
+          When a model fails to converge, failed.to.converge == 1, otherwise 0.}
 }
 }
 \description{
-This set of functions utilize iterative simulations to determine 
-approximate power for cluster-randomized controlled trials. Users 
-can modify a variety of parameters to suit the simulations to their
+This function is called within \code{cps.ma.normal()} to generate the 
+simulated data and return glmm or gee model fits according to the user's 
+specifications. However, this function can also be called independently 
+in order to return and examine the simulation model fits rather than the 
+power summary returned in \code{cps.ma.normal()}.
+}
+\details{
+Users can modify a variety of parameters to suit the simulations to their
 desired experimental situation. Users must specify the desired number 
 of simulations, number of subjects per cluster, number of clusters 
-per treatment arm, group means, two of the following: ICC, within-cluster 
-variance, or between-cluster variance; significance level, analytic method, 
-progress updates, and simulated data set output may also be specified.
-}
-\examples{
-\dontrun{
-str.nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-means.example <- c(30, 21, 53)
-sigma_sq.example <- c(100, 110, 100)
-sigma_b_sq.example <- c(25, 25, 120)
-normal.ma.rct <- cps.ma.normal.internal(nsim = 1000, str.nsubjects = str.nsubjects.example, 
-                                       means = means.example, sigma_sq = sigma_sq.example, 
-                                       sigma_b_sq = sigma_b_sq.example, alpha = 0.05, 
-                                       quiet = FALSE, method = 'glmm', 
-                                       all.sim.data = FALSE, seed = 123)
-                                       }
+per treatment arm, group means, within-cluster variance, and between-cluster 
+variance; significance level, analytic method, progress updates, and 
+simulated data set output may also be specified.
+
+As this function is not intended for the casual user, specifications to the 
+arguments are somewhat less flexible than those supplied to 
+\code{cps.ma.normal()}. Note that the str.nsubjects argument has a specific 
+structure that is somewhat verbose, but maximizes flexibility in the 
+applicable experimental design.
 }
 \author{
 Alexandria C. Sakrejda (\email{acbro0@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@gmail.com})

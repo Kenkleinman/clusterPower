@@ -7,7 +7,7 @@
 cps.ma.binary.internal(nsim = 1000, str.nsubjects = NULL,
   probs = NULL, sigma_b_sq = NULL, alpha = 0.05, quiet = FALSE,
   method = "glmm", all.sim.data = FALSE, seed = NULL,
-  poor.fit.override = FALSE, tdist = FALSE, cores = 1)
+  poor.fit.override = FALSE, tdist = FALSE, cores = cores)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -19,21 +19,26 @@ Each entry is a vector containing the number of subjects per cluster (required).
 
 \item{alpha}{Significance level; default = 0.05.}
 
-\item{quiet}{When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.}
+\item{quiet}{When set to FALSE, displays simulation progress and estimated 
+completion time; default is FALSE.}
 
-\item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
-Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.}
+\item{method}{Analytical method, either Generalized Linear Mixed Effects 
+Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 
+'gee') (required); default = 'glmm'.}
 
-\item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
+\item{all.sim.data}{Option to output list of all simulated datasets; 
+default = FALSE.}
 
 \item{seed}{Option to set.seed. Default is NULL.}
 
-\item{poor.fit.override}{Option to override \code{stop()} if more than 25\% of fits fail to converge.}
+\item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
+of fits fail to converge.}
 
-\item{tdist}{Logical; use t-distribution instead of normal distribution for simulation values, default = FALSE}
+\item{tdist}{Logical; use t-distribution instead of normal distribution for 
+simulation values, default = FALSE.}
 
-\item{cores}{A string or numeric value indicating the number of cores to be used for parallel computing. 
-When this option is set to 1, no parallel computing is used.}
+\item{cores}{A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
+When this option is set to NA, no parallel computing is used.}
 
 \item{means}{Expected probability of outcome for each arm; accepts a vector of length \code{narms} (required).}
 }
@@ -71,15 +76,16 @@ and simulated data set output may also be specified.
 \examples{
 \dontrun{
 
-str.nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-probs.example <- c(0.30, 0.21, 0.53)
-sigma_b_sq.example <- c(25, 25, 120)
+nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+probs.example <- c(0.30, 0.5, 0.9)
+sigma_b_sq.example <- c(1, 1, 2)
 
-bin.ma.rct <- cps.ma.binary.internal(nsim = 10, str.nsubjects = str.nsubjects.example, 
-                                 probs = probs.example,
-                                 sigma_b_sq = sigma_b_sq.example, alpha = 0.05, 
-                                quiet = FALSE, method = 'gee', 
-                                all.sim.data = FALSE, seed = 123)
+bin.ma.rct <- cps.ma.binary.internal (nsim = 10, 
+                            str.nsubjects = nsubjects.example, 
+                            probs = probs.example,
+                            sigma_b_sq = sigma_b_sq.example, 
+                            alpha = 0.05, all.sim.data = FALSE, 
+                            seed = 123, cores="all") 
 }
 
 }

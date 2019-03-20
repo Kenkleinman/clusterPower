@@ -10,7 +10,7 @@ cps.ma.normal(nsim = 1000, nsubjects = NULL, narms = NULL,
   sigma_b_sq = NULL, alpha = 0.05, quiet = FALSE, ICC = NULL,
   method = "glmm", multi.p.method = "bonferroni",
   all.sim.data = FALSE, seed = 123, cores = NULL,
-  poor.fit.override = FALSE)
+  poor.fit.override = FALSE, tdist = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -64,6 +64,9 @@ used for parallel computing.}
 
 \item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
 of fits fail to converge or power<0.5 after 50 iterations; default = FALSE.}
+
+\item{tdist}{Logical; use t-distribution instead of normal distribution 
+for simulation values, default = FALSE.}
 }
 \value{
 A list with the following components:
@@ -114,7 +117,7 @@ This function uses iterative simulations to determine
 approximate power for multi-arm cluster-randomized controlled trials with a 
 normally-distributed outcome of interest. Users can modify a variety of 
 parameters to suit the simulations to their desired experimental situation. 
-Returns the summary power values for each treatment arm
+This function returns the summary power values for each treatment arm.
 }
 \details{
 Users must specify the desired number of simulations, the group/arm means, 

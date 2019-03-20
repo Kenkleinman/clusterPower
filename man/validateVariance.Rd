@@ -3,45 +3,53 @@
 \name{validateVariance}
 \alias{validateVariance}
 \title{Power simulations for cluster-randomized trials: validating ICC, 
-sigma, and sigma_b inputs}
+sigma, and sigma_b inputs.}
 \usage{
-validateVariance(dist = NULL, difference = means, alpha = alpha,
+validateVariance(dist = NULL, difference = NULL, alpha = alpha,
   ICC = ICC, sigma = sigma_sq, sigma_b = sigma_b_sq, ICC2 = NA,
   sigma2 = NA, sigma_b2 = NA, method = method, quiet = quiet,
   all.sim.data = all.sim.data, poor.fit.override = poor.fit.override,
   cores = NA, probs = NA)
 }
 \arguments{
-\item{dist}{String indicating outcome distribution. Takes one of "norm", "normal",
-bin", or "count".}
+\item{dist}{String indicating outcome distribution. Takes one of "norm", 
+"bin", or "count".}
 
 \item{difference}{Expected absolute treatment effect; accepts numeric.}
 
 \item{alpha}{Significance level; default = 0.05.}
 
-\item{ICC}{Intra-cluster correlation coefficient; accepts a vector of length \code{narms}
-with values between 0 - 1.}
+\item{ICC}{Intra-cluster correlation coefficient; accepts a vector of 
+length \code{narms} with values between 0 - 1.}
 
 \item{sigma}{Within-cluster variance; accepts numeric}
 
 \item{sigma_b}{Between-cluster variance; accepts numeric}
 
-\item{ICC2}{Intra-cluster correlation coefficient for clusters in TREATMENT group}
+\item{ICC2}{Intra-cluster correlation coefficient for clusters in the 
+treatment group (used in 2-arm simulation methods only).}
 
-\item{sigma2}{Within-cluster variance for clusters in TREATMENT group}
+\item{sigma2}{Within-cluster variance for clusters in treatment group
+(used in 2-arm simulation methods only).}
 
-\item{sigma_b2}{Between-cluster variance for clusters in TREATMENT group}
+\item{sigma_b2}{Between-cluster variance for clusters in treatment group 
+(used in 2-arm simulation methods only).}
 
-\item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
-Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.}
+\item{method}{Analytical method, either Generalized Linear Mixed Effects 
+Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 
+'gee') (required); default = 'glmm'.}
 
-\item{quiet}{Logical. When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.}
+\item{quiet}{Logical. When set to FALSE, displays simulation progress and 
+estimated completion time; default is FALSE.}
 
-\item{all.sim.data}{Logical. Option to output list of all simulated datasets; default = FALSE.}
+\item{all.sim.data}{Logical. Option to output list of all simulated 
+datasets; default = FALSE.}
 
-\item{cores}{Integer number of cores the user would like to use for parallel computing or the string "all".}
+\item{cores}{Integer number of cores the user would like to use for 
+parallel computing or the string "all".}
 
-\item{probs}{Outcome probabilities per arm. Accepts a numeric vector or a scalar if all arms are equal.}
+\item{probs}{Outcome probabilities per arm. Accepts a numeric vector or a 
+scalar if all arms are equal.}
 }
 \value{
 A vector of length \code{narms} 
@@ -50,21 +58,22 @@ A vector of length \code{narms}
 }
 }
 \description{
-Usually called from within a function, validateVariance takes variance parameters
-and validates those inputs. This function gives an error if one of the inputs 
-is missing or not specified properly.
+Usually called from within a simulation-producing function, this function 
+takes variance parameters provided by the user and performs a series of 
+validation checks. This function gives an error and stops function execution 
+if any required input is missing, is the wrong type, or not specified 
+properly.
 }
 \examples{
 \dontrun{
 
-var <- validateVariance(dist="normal", 
-                        difference=30, alpha=0.05, ICC=0.2, sigma=100,
-                        sigma_b=25, ICC2=0.5, sigma2=120, sigma_b2=120, 
-                        method=c("glmm", "gee"), quiet=FALSE, 
-                        all.sim.data=FALSE, poor.fit.override=TRUE)
+validateVariance(dist="norm", difference=30, alpha=0.05, ICC=0.2, 
+                  sigma=100, sigma_b=25, ICC2=0.5, sigma2=120, 
+                  sigma_b2=120, method=c("glmm", "gee"), quiet=FALSE, 
+                  all.sim.data=FALSE, poor.fit.override=TRUE)
 
 }
 }
 \author{
-Alexandria C. Sakrejda (\email{acbro0@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@gmail.com})
+Alexandria C. Sakrejda (\email{acbro0@umass.edu}, and Ken Kleinman (\email{ken.kleinman@gmail.com})
 }
