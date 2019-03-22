@@ -42,6 +42,13 @@ The computed argument.
 Compute the power of a simple cluster randomized trial with a binary outcome,
 or determine parameters to obtain a target power.
 }
+\details{
+This function implements the approach of Donner and Klar (2000). An estimate for the
+ intracluster correlation coefficient (ICC) is used to calculate a design effect that 
+ accounts for variance inflation due to clustering. There are several ways in
+ which estimates for the ICC for a binary outcome can be calculated, as described by
+ Wu, Crespi, and Wong (2012).
+}
 \section{Authors}{
 
 Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
@@ -64,4 +71,12 @@ crtpwr.2prop(nsubjects=10 ,p1=.1, p2=.2, icc=.1)
 # 
 # The result, showimg nclusters of greater than 37, suggests 38 clusters per 
 # condition should be used.
+}
+\references{
+Donner A, Klar N. Design and Analysis of Cluster Randomization
+Trials in Health Research. London; Arnold; 2000.
+
+Wu S, Crespi CM, Wong WK. Comparison of Methods for Etimating Intraclass
+Correlation Coefficient for Binary Responses in Cancer Prevention Cluster Randomized
+Trials. Contemp Clin Trials. 2012; 33(5): 869-880. doi:10.1016/j.cct.2012.05.004 London: Arnold; 2000.
 }
