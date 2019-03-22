@@ -34,31 +34,35 @@
 #' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
 #' 
 #' @return A list with the following components
-#' \describe{
-#'   \item{overview}{Character string indicating total number of simulations, distribution of simulated data, and regression family}
-#'   \item{nsim}{Number of simulations}
-#'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
+#' \itemize{
+#'   \item Character string indicating total number of simulations, distribution of 
+#'   simulated data, and regression family
+#'   \item Number of simulations
+#'   \item Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound)}
-#'   \item{method}{Analytic method used for power estimation}
-#'   \item{dist.parms}{Data frame containing families for distribution and analysis of simulated data}
-#'   \item{alpha}{Significance level}
-#'   \item{cluster.sizes}{Vector containing user-defined cluster sizes}
-#'   \item{n.clusters}{Vector containing user-defined number of clusters}
-#'   \item{variance.parms}{Data frame reporting between-cluster variances for Treatment/Non-Treatment groups}
-#'   \item{inputs}{Vector containing expected counts and risk ratios based on user inputs}
-#'   \item{model.estimates}{Data frame with columns: 
+#'                "upper.95.ci" (Upper 95% confidence interval bound)
+#'   \item Analytic method used for power estimation
+#'   \item Data frame containing families for distribution and analysis of simulated data
+#'   \item Significance level
+#'   \item Vector containing user-defined cluster sizes
+#'   \item Vector containing user-defined number of clusters
+#'   \item Data frame reporting between-cluster variances for Treatment/Non-Treatment groups
+#'   \item Vector containing expected counts and risk ratios based on user inputs
+#'   \item Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.err" (Standard error for treatment effect estimate), 
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value",
-#'                   "sig.val" (Is p-value less than alpha?)}
-#'   \item{sim.data}{List of data frames, each containing: 
+#'                   "sig.val" (Is p-value less than alpha?)
+#'   \item List of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
-#'                   "clust" (Indicator for cluster)}
-#' 
-#' @author Alexander R. Bogdan
+#'                   "clust" (Indicator for cluster)
+#' }
+#' @author Alexander R. Bogdan 
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}
+#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#'
 #' 
 #' @examples 
 #' \dontrun{

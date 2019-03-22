@@ -5,6 +5,7 @@ Title: Power Calculations for Cluster-Randomized and Cluster-Randomized Crossove
 Authors@R: c(
   person("Ken", "Kleinman", email = "ken.kleinman@gmail.com", rol = c("aut","cre")),
   person("Jon", "Moyer", email = "jon.moyer@gmail.com", rol = c("aut")),
+  person("Alexandria", "Sakrejda", email = "acbro0@schoolph.umass.edu", rol = c("aut")),
   person("Nicholas", "Reich", email = "nick@schoolph.umass.edu", rol = c("aut")),
   person("Daniel", "Obeng", email = "dobeng@gmail.com", rol = c("ctb"))
   )
@@ -15,7 +16,6 @@ Imports: lme4 (>= 1.0),
     geepack(>= 1.2),
     tidyr (>= 0.8.1)
 Description: Calculate power for cluster randomized trials (CRTs) that compare two means, two proportions, or two counts using closed-form solutions. In addition, calculate power for cluster randomized  crossover trials using Monte Carlo methods. For more information, see Reich et al. (2012) <doi:10.1371/journal.pone.0035564>.
-RoxygenNote: 6.1.1
 Suggests: 
     shiny (>= 1.0.5),
     shinyBS (>= 0.61),
@@ -26,3 +26,5 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+Encoding: UTF-8
+RoxygenNote: 6.1.1

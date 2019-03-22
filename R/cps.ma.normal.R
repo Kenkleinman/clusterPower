@@ -1,8 +1,3 @@
-
-##FIXME: TO DO
-# 11. testthat tests
-
-
 #' Power simulations for cluster-randomized trials: Multi-Arm Designs, Continuous Outcome.
 #'
 #' This set of functions utilize iterative simulations to determine 
@@ -17,77 +12,85 @@
 #' and simulated data set output may also be specified. This function validates the user's input 
 #' and passes the necessary arguments to \code{cps.ma.normal.internal}, which performs the simulations.
 #' 
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
-#'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
 #' @param means Expected absolute treatment effect for each arm; accepts a vector of length \code{narms} (required).
-#' @param sigma Within-cluster variance; accepts a vector of length \code{narms} (required).
-#' @param sigma_b Between-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param sigma_sq Within-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' @param multi.p.method A string indicating the method to use for adjusting p-values for multiple
+#' comparisons. Choose one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY",
+#' "fdr", "none". The default is "bonferroni". See ?p.adjust for additional details.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25% of fits fail to converge or 
+#' @param cores a string or numeric value indicating the number of cores to be used for parallel computing. 
+#' When this option is set to NULL, no parallel computing is used.
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge or 
 #' power<0.5 after 50 iterations; default = FALSE 
 #'  
 #' 
 #' @return A list with the following components
-#' \describe{
-#'   \item{power}{Data frame with columns "Power" (Estimated statistical power), 
+#' \itemize{
+#'   \item Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound)}
-#'   \item{model.estimates}{Produced only when all.sim.data=TRUE, data frame with columns corresponding 
+#'                "upper.95.ci" (Upper 95% confidence interval bound)
+#'   \item Produced only when all.sim.data=TRUE, data frame with columns corresponding 
 #'   to each arm with the suffixes as follows: 
 #'                   ".Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
 #'                   ".tval" (for GLMM) | ".wald" (for GEE), 
 #'                   ".pval"
-#'   \item{overall.power}{Produced only when all.sim.data=TRUE, table of F-test (when method="glmm") or 
+#'   \item Produced only when all.sim.data=TRUE, table of F-test (when method="glmm") or 
 #'   chi^{2} (when method="gee") significance test results.
-#'   \item{overall.power2}{Overall power of model compared to H0.}
-#'   \item{sim.data}{List of \code{nsim} data frames, each containing: 
+#'   \item Overall power of model compared to H0.
+#'   \item List of \code{nsim} data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
-#'                   "clust" (Indicator for cluster)}
-#'   \item{proportion.failed.to.converge} {Character string containing the percent of
-#'   \code{nsim} in which the glmm fit was singular, produced only when method == "glmm" & 
-#'   all.sim.data==FALSE}
-#'   \item{failed.to.converge}{Vector containing of length \code{nsim} denoting whether 
+#'                   "clust" (Indicator for cluster)
+#'   \item Character string containing the percent of \code{nsim} in which the glmm 
+#'   fit was singular, produced only when method == "glmm" & 
+#'   all.sim.data==FALSE
+#'   \item Vector containing of length \code{nsim} denoting whether 
 #'   or not a simulation glmm fit was singular, produced only when method == "glmm" & 
-#'   all.sim.data==TRUE}
+#'   all.sim.data==TRUE
+#'   }
 #'          
-#' }
-#' 
-#' #' @examples 
+#' @examples 
 #' \dontrun{
 #' 
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' means.example <- c(30, 21, 53)
-#' sigma.example <- c(1, 1, 0.9)
-#' sigma_b.example <- c(0.1, 0.15, 0.1)
+#' sigma_sq.example <- c(1, 1, 0.9)
+#' sigma_b_sq.example <- c(0.1, 0.15, 0.1)
 #' 
 #' multi.cps.normal <- cps.ma.normal(nsim = 2, nsubjects = nsubjects.example, 
-#'                        means = means.example, sigma = sigma.example, 
-#'                        sigma_b = sigma_b.example, alpha = 0.05,
+#'                        means = means.example, sigma_sq = sigma_sq.example, 
+#'                        sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
 #'                        quiet = FALSE, ICC=NULL, method = 'glmm', 
 #'                        all.sim.data = FALSE,
 #'                        seed = NULL, 
 #'                        poor.fit.override = FALSE)
 #' }
 #' 
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
+#' @author Alexander R. Bogdan 
+#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' 
 #' @export
 #' 
  
 cps.ma.normal <- function(nsim = 1000, nsubjects = NULL, 
                            narms = NULL, nclusters = NULL,
-                        means = NULL, sigma = NULL, 
-                        sigma_b = NULL, alpha = 0.05,
+                        means = NULL, sigma_sq = NULL, 
+                        sigma_b_sq = NULL, alpha = 0.05,
                         quiet = FALSE, ICC=NULL, method = 'glmm', 
+                        multi.p.method = "bonferroni",
                         all.sim.data = FALSE, seed = 123, 
+                        cores=NULL,
                         poor.fit.override = FALSE){
   
   # Create wholenumber function
@@ -118,9 +121,9 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
 
-  validateVariance(difference=means, alpha=alpha, ICC=ICC, sigma=sigma, 
-                   sigma_b=sigma_b, ICC2=ICC, sigma2=sigma, 
-                   sigma_b2=sigma_b, method=method, quiet=quiet, 
+  validateVariance(difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sq, 
+                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
+                   sigma_b2=NA, method=method, quiet=quiet, 
                    all.sim.data=all.sim.data, poor.fit.override=poor.fit.override)
   
   # create narms and nclusters if not provided directly by user
@@ -155,12 +158,12 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     str.nsubjects <- nsubjects
   }
   
-  # allows for means, sigma, sigma_b, and ICC to be entered as scalar
-  if (length(sigma)==1){
-    sigma <- rep(sigma, narms)
+  # allows for means, sigma_sq, sigma_b_sq, and ICC to be entered as scalar
+  if (length(sigma_sq)==1){
+    sigma_sq <- rep(sigma_sq, narms)
   }
-  if (length(sigma_b)==1){
-    sigma_b <- rep(sigma_b, narms)
+  if (length(sigma_b_sq)==1){
+    sigma_b_sq <- rep(sigma_b_sq, narms)
   }
   if (length(ICC)==1){
     ICC <- rep(ICC, narms)
@@ -169,29 +172,30 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     means <- rep(means, narms)
   }
 
-  # supplies sigma or sigma_b if user supplies ICC
+  # supplies sigma_sq or sigma_b_sq if user supplies ICC
   if (exists("ICC", mode = "numeric")==TRUE){
-  if (exists("sigma", mode = "numeric")==FALSE){
-    sigma <- createMissingVarianceParam(sigma_b = sigma_b, ICC = ICC)
+  if (exists("sigma_sq", mode = "numeric")==FALSE){
+    sigma_sq <- createMissingVarianceParam(sigma_b_sq = sigma_b_sq, ICC = ICC)
   }
-  if (exists("sigma_b", mode = "numeric")==FALSE){
-    sigma_b <- createMissingVarianceParam(sigma = sigma, ICC = ICC)
+  if (exists("sigma_b_sq", mode = "numeric")==FALSE){
+    sigma_b_sq <- createMissingVarianceParam(sigma_sq = sigma_sq, ICC = ICC)
   }
   }
   
-  if (length(sigma)!=narms){
-    stop("Length of variance parameters (sigma, sigma_b, ICC) 
-         must equal narms, or be provided as a scalar if sigma for all arms are equal.")
+  if (length(sigma_sq)!=narms){
+    stop("Length of variance parameters (sigma_sq, sigma_b_sq, ICC) 
+         must equal narms, or be provided as a scalar if sigma_sq for all arms are equal.")
   }
 
    # run the simulations 
    normal.ma.rct <- cps.ma.normal.internal(nsim = nsim, 
                                            str.nsubjects = str.nsubjects, 
-                                           means = means, sigma = sigma, 
-                                           sigma_b = sigma_b, alpha = alpha, 
+                                           means = means, sigma_sq = sigma_sq, 
+                                           sigma_b_sq = sigma_b_sq, alpha = alpha, 
                                            quiet = quiet, method = method, 
                                            all.sim.data = all.sim.data,
                                            seed = seed,
+                                           cores=cores,
                                            poor.fit.override = poor.fit.override)
    
    models <- normal.ma.rct[[1]]
@@ -285,7 +289,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
        Estimates[i,] <- models[[i]]$coefficients[,1]
        std.error[i,] <- models[[i]]$coefficients[,2]
        Wald[i,] <- models[[i]]$coefficients[,3]
-       Pr[i,] <- models[[i]]$coefficients[,4]
+       Pr[i,] <- p.adjust(models[[i]]$coefficients[,4], method = multi.p.method)
      }
      
      # Organize the row/col names for the output

@@ -1,55 +1,51 @@
 #' Power simulations for cluster-randomized trials: calculating ICC, 
-#' sigma, and sigma_b inputs
+#' sigma_sq, and sigma_b_sq inputs
 #'
 #' Usually called from within a function, createMissingVarianceParam takes 2 of 3 
-#' arguments (ICC, sigma, or sigma_b) and returns the missing argument. It gives 
+#' arguments (ICC, sigma_sq, or sigma_b_sq) and returns the missing argument. It gives 
 #' an error if one of the inputs is missing or not specified properly. Note that 
 #' it is required that the user specify at least 2 of the arguments.
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
-#' @param sigma Within-cluster variance; accepts a vector of length \code{narms}.
-#' @param sigma_b Between-cluster variance; accepts a vector of length \code{narms}.
-#' @param ICC Intra-cluster correlation coefficient; accepts a vector of length \code{narms}
-# with values between 0 - 1.
-
-#' @return A vector of length \code{narms} 
-#' \describe{
-#'   \item{missing.arg}{The argument that the user did not specify is returned as a character 
-#'   vector with the first item being the name of the returned values.}
-#' }
+#' @param sigma_sq Within-cluster variance; accepts a vector of length \code{narms}.
+#' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms}.
+#' @param ICC Intra-cluster correlation coefficient; accepts a vector of length \code{narms} with values between 0 - 1.
+#' 
+#' @return A vector of length \code{narms} containing the argument that the user did not specify.
 #' 
 #' @examples 
 #' \dontrun{
-#' 
-#' ICC <- createMissingVarianceParam(sigma = c(1, 1, 0.9), sigma_b = c(0.1, 0.15, 0.1))
+#' ICC <- createMissingVarianceParam(sigma_sq = c(1, 1, 0.9), sigma_b_sq = c(0.1, 0.15, 0.1))
+#' }
 #' 
 #' @export
 
 
 ## Create missing variance parameters
 createMissingVarianceParam <- function(ICC = NULL, 
-                                       sigma = NULL,
-                                       sigma_b = NULL){
-  parm1.arg.list <-  list(ICC, sigma, sigma_b)
+                                       sigma_sq = NULL,
+                                       sigma_b_sq = NULL){
+  
+  parm1.arg.list <-  list(ICC, sigma_sq, sigma_b_sq)
   parm1.args <-  unlist(lapply(parm1.arg.list, is.null))
   if(sum(parm1.args) > 1){
-    stop("At least two of the following terms must be specified: ICC, sigma, sigma_b")
+    stop("At least two of the following terms must be specified: ICC, sigma_sq, sigma_b_sq")
   }
-  if(!is.null(c(ICC, sigma)) && is.null(sigma_b)){
-    sigma_b = ICC * sigma / (1 - ICC)
-    return(sigma_b)
+  if(!is.null(c(ICC, sigma_sq)) && is.null(sigma_b_sq)){
+    sigma_b_sq = ICC * sigma_sq / (1 - ICC)
+    return(sigma_b_sq)
   }
-  if(!is.null(c(ICC, sigma_b)) && is.null(sigma)){
-    sigma = sigma_b / ICC - sigma_b
-    return(sigma)
+  if(!is.null(c(ICC, sigma_b_sq)) && is.null(sigma_sq)){
+    sigma_sq = sigma_b_sq / ICC - sigma_b_sq
+    return(sigma_sq)
   }
-  if(!is.null(c(sigma, sigma_b)) && is.null(ICC)){
-    ICC = sigma_b / (sigma_b + sigma)
+  if(!is.null(c(sigma_sq, sigma_b_sq)) && is.null(ICC)){
+    ICC = sigma_b_sq / (sigma_b_sq + sigma_sq)
     return(ICC)
   }
-  if(sum(parm1.args) == 0 && ICC != sigma_b / (sigma_b + sigma)){
-    stop("At least one of the following terms has been misspecified: ICC, sigma, sigma_b")
+  if(sum(parm1.args) == 0 && ICC != sigma_b_sq / (sigma_b_sq + sigma_sq)){
+    stop("At least one of the following terms has been misspecified: ICC, sigma_sq, sigma_b_sq")
   }
 }
 

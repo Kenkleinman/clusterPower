@@ -1,18 +1,14 @@
-#' Model fits for simulations for multi-arm designs with dichotomous outcome.
+#' NOT READY, DO NOT RUN Power simulations for cluster-randomized trials: Multi-Arm, Count Outcome.
 #'
-#' Generally called from \code{cps.ma.binary()}, this function uses iterative 
-#' simulations to model significance of treatment effects for cluster-randomized 
-#' controlled trials. Users can modify a variety of parameters to suit the 
-#' simulations to their desired experimental situation. 
+#' This set of functions utilize iterative simulations to determine 
+#' approximate power for cluster-randomized controlled trials. Users 
+#' can modify a variety of parameters to suit the simulations to their
+#' desired experimental situation.
 #' 
-#' This function can be called directly in order to give the user access to the simulated 
-#' model fits in addition to the simulated data, the latter of which can also be accessed 
-#' here or using the function \code{cps.ma.binary()}. For the power estimates, use 
-#' \code{cps.ma.binary()}.
+#' Runs the power simulation.
 #' 
-#' Users (or the wrapper function) must specify the desired number of 
-#' simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, group proportions, and 
+#' Users must specify the desired number of simulations, number of subjects per 
+#' cluster, number of clusters per treatment arm, group means, two of the following: ICC, within-cluster variance, or 
 #' between-cluster variance; significance level, analytic method, progress updates, 
 #' and simulated data set output may also be specified.
 #' 
@@ -23,51 +19,49 @@
 #' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
-#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' Generalized Estimating Equation (GEE); accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
-#' @param seed Option to set.seed. Default is NULL.
+#' @param seed Option to set.seed; default is NULL.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge.
-#' @param tdist Logical; use t-distribution instead of normal distribution for simulation values, default = FALSE
-#' @param cores A string or numeric value indicating the number of cores to be used for parallel computing. 
+#' @param cores a string or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to 1, no parallel computing is used.
 #' 
 #' @return A list with the following components:
 #' \itemize{
 #'   \item List of length(nsim) containing gee- or glmm-fitted the model summaries.
-#'   \item Compares fitted model to a model for H0 using ML (anova).
+#'   \item Compares fitted model to a model for H0 using ML (ANOVA).
 #'   \item List of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
 #'                   "clust" (Indicator for cluster)
-#'   \item A vector of length \code{nsim} consisting of 1 and 0. 
-#'           When a model fails to converge, failed.to.converge==1, otherwise 0.
+#'   \item A vector of length \code{nsim} consisting of 1 and 0; 
+#'   when a model fails to converge, failed.to.converge==1, otherwise 0.
 #' }
 #' 
 #' @examples 
 #' \dontrun{
-#' 
 #' str.nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' probs.example <- c(0.30, 0.21, 0.53)
 #' sigma_b_sq.example <- c(25, 25, 120)
 #' 
-#' bin.ma.rct <- cps.ma.binary.internal(nsim = 10, str.nsubjects = str.nsubjects.example, 
+#' bin.ma.rct <- cps.ma.count.internal(nsim = 10, str.nsubjects = str.nsubjects.example, 
 #'                                  probs = probs.example,
 #'                                  sigma_b_sq = sigma_b_sq.example, alpha = 0.05, 
 #'                                 quiet = FALSE, method = 'gee', 
 #'                                 all.sim.data = FALSE, seed = 123)
 #' }
-#' 
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
-#' 
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#'
 #' @export
-cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
+cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                     probs = NULL, sigma_b_sq = NULL,
                                     alpha = 0.05,
                                     quiet = FALSE, method = 'glmm', 
                                     all.sim.data = FALSE, 
                                     seed=NULL,
                                     poor.fit.override = FALSE,
+                                    overall.power = FALSE,
                                     tdist = FALSE,
                                     cores=1){
   
@@ -109,7 +103,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   clust1 = list()
   for(i in 1:sum(nclusters)){
     clust1[[i]] <- lapply(seq(1, sum(nclusters))[i], 
-                         function (x) {rep.int(x, unlist(str.nsubjects)[i])})
+                          function (x) {rep.int(x, unlist(str.nsubjects)[i])})
   }
   
   # Calculate log odds for each group
@@ -126,91 +120,91 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     if (cores=="all"){nc <- parallel::detectCores()} else {nc <- cores}
     ## Create clusters
     cl <- parallel::makeCluster(rep("localhost", nc))
-  
-  # Create simulation loop
-  require(foreach)
-  foreach::foreach(i=1:nsim) %do% {
-    sim.dat[[i]] = data.frame(y = NA, trt = as.factor(unlist(trt1)), 
-                              clust = as.factor(unlist(clust1)))
-    # Generate between-cluster effects for non-treatment and treatment 
-    if (tdist==TRUE){
-      print("using t-distribution because tdist=TRUE")
-      randint = mapply(function(n, df) stats::rt(n, df = df), 
-                       n = nclusters, 
-                       df = Inf)
-    } else {
-    randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s)), 
-                     nc = nclusters, s = sigma_b_sq, 
-                     mu = 0)
-    }
     
-    for (j in 1:length(logit.p)){
-      randint[,j] <- logit.p[j]+ randint[,j]
-    }
-    randint <- clusterPower::expit(randint)
-    
-    # Create y-value
-    y.intercept <-  vector(mode = "numeric", length = length(unlist(str.nsubjects)))
-    y.intercept <-  sapply(1:sum(nclusters), 
-                        function(x) rep(unlist(randint)[x], length.out = unlist(str.nsubjects)[x]))
-  
-    # Put y into the simulated dataset
-    sim.dat[[i]][["y"]] <-  sapply(unlist(y.intercept), function(x) stats::rbinom(1, 1, x))
-  #end simulated dataset construction
-  
-    # Fit GLMM (lmer)
-    if(method == 'glmm'){
-      my.mod <-  lme4::glmer(y ~ trt + (1|clust), data = sim.dat[[i]], 
-                             family = stats::binomial(link = 'logit'))
-      model.values[[i]] <-  summary(my.mod)
-      # option to stop the function early if fits are singular
-      fail[i] <- ifelse(any( grepl("fail", my.mod@optinfo$conv$lme4$messages) )==TRUE |
-                          any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0)
-      if (poor.fit.override==FALSE){
-        if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations
-                                                    are singular fit: check model specifications")}
+    # Create simulation loop
+    require(foreach)
+    foreach::foreach(i=1:nsim) %do% {
+      sim.dat[[i]] = data.frame(y = NA, trt = as.factor(unlist(trt1)), 
+                                clust = as.factor(unlist(clust1)))
+      # Generate between-cluster effects for non-treatment and treatment 
+      if (tdist==TRUE){
+        print("using t-distribution because tdist=TRUE")
+        randint = mapply(function(n, df) stats::rt(n, df = df), 
+                         n = nclusters, 
+                         df = Inf)
+      } else {
+        randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s)), 
+                         nc = nclusters, s = sigma_b_sq, 
+                         mu = 0)
       }
-      # get the overall p-values (>Chisq)
-      model.compare[[i]] <- car::Anova(my.mod, type="II")
-      # stop the loop if power is <0.5
-      if (poor.fit.override==FALSE){
-        if (i > 50 & (i %% 10==0)){
-          temp.power.checker <- matrix(unlist(model.compare[1:i]), ncol=3, nrow=i, 
-                                       byrow=TRUE)
-          sig.val.temp <-  ifelse(temp.power.checker[,3][1:i] < alpha, 1, 0)
-          pval.power.temp <- sum(sig.val.temp)/i
-          if (pval.power.temp < 0.5){
-            stop(paste("Calculated power is < ", pval.power.temp, ", auto stop at simulation ", 
-                       i, ". Set poor.fit.override==TRUE to ignore this error.", sep = ""))
+      
+      for (j in 1:length(logit.p)){
+        randint[,j] <- logit.p[j]+ randint[,j]
+      }
+      randint <- clusterPower::expit(randint)
+      
+      # Create y-value
+      y.intercept <-  vector(mode = "numeric", length = length(unlist(str.nsubjects)))
+      y.intercept <-  sapply(1:sum(nclusters), 
+                             function(x) rep(unlist(randint)[x], length.out = unlist(str.nsubjects)[x]))
+      
+      # Put y into the simulated dataset
+      sim.dat[[i]][["y"]] <-  sapply(unlist(y.intercept), function(x) stats::rbinom(1, 1, x))
+      #end simulated dataset construction
+      
+      # Fit GLMM (lmer)
+      if(method == 'glmm'){
+        my.mod <-  lme4::glmer(y ~ trt + (1|clust), data = sim.dat[[i]], 
+                               family = stats::binomial(link = 'logit'))
+        model.values[[i]] <-  summary(my.mod)
+        # option to stop the function early if fits are singular
+        fail[i] <- ifelse(any( grepl("fail", my.mod@optinfo$conv$lme4$messages) )==TRUE |
+                            any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0)
+        if (poor.fit.override==FALSE){
+          if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations
+                                                      are singular fit: check model specifications")}
+          }
+        # get the overall p-values (>Chisq)
+        model.compare[[i]] <- car::Anova(my.mod, type="II")
+        # stop the loop if power is <0.5
+        if (poor.fit.override==FALSE){
+          if (i > 50 & (i %% 10==0)){
+            temp.power.checker <- matrix(unlist(model.compare[1:i]), ncol=3, nrow=i, 
+                                         byrow=TRUE)
+            sig.val.temp <-  ifelse(temp.power.checker[,3][1:i] < alpha, 1, 0)
+            pval.power.temp <- sum(sig.val.temp)/i
+            if (pval.power.temp < 0.5){
+              stop(paste("Calculated power is < ", pval.power.temp, ", auto stop at simulation ", 
+                         i, ". Set poor.fit.override==TRUE to ignore this error.", sep = ""))
+            }
+          }
+        }
+        }
+      
+      # Fit GEE (geeglm)
+      if(method == 'gee'){
+        my.mod = geepack::geeglm(y ~ trt, data = sim.dat[[i]],
+                                 family = stats::binomial(link = 'logit'), 
+                                 id = clust, corstr = "exchangeable")
+        model.values[[i]] <-  summary(my.mod)
+        # get the overall p-values (>Chisq)
+        model.compare[[i]] <- anova(my.mod)
+        # stop the loop if power is <0.5
+        if (poor.fit.override==FALSE){
+          if (i > 50 & (i %% 10==0)){
+            temp.power.checker <- matrix(unlist(model.compare[1:i]), ncol=3, nrow=i, 
+                                         byrow=TRUE)
+            sig.val.temp <-  ifelse(temp.power.checker[,3][1:i] < alpha, 1, 0)
+            pval.power.temp <- sum(sig.val.temp)/i
+            if (pval.power.temp < 0.5){
+              stop(paste("Calculated power is < ", pval.power.temp, ", auto stop at simulation ", 
+                         i, ". Set poor.fit.override==TRUE to ignore this error.", sep = ""))
+            }
           }
         }
       }
-    }
+    } # end of foreach call
     
-    # Fit GEE (geeglm)
-    if(method == 'gee'){
-      my.mod = geepack::geeglm(y ~ trt, data = sim.dat[[i]],
-                               family = stats::binomial(link = 'logit'), 
-                               id = clust, corstr = "exchangeable")
-      model.values[[i]] <-  summary(my.mod)
-      # get the overall p-values (>Chisq)
-      model.compare[[i]] <- anova(my.mod)
-      # stop the loop if power is <0.5
-      if (poor.fit.override==FALSE){
-        if (i > 50 & (i %% 10==0)){
-          temp.power.checker <- matrix(unlist(model.compare[1:i]), ncol=3, nrow=i, 
-                                       byrow=TRUE)
-          sig.val.temp <-  ifelse(temp.power.checker[,3][1:i] < alpha, 1, 0)
-          pval.power.temp <- sum(sig.val.temp)/i
-          if (pval.power.temp < 0.5){
-            stop(paste("Calculated power is < ", pval.power.temp, ", auto stop at simulation ", 
-                       i, ". Set poor.fit.override==TRUE to ignore this error.", sep = ""))
-          }
-        }
-      }
-    }
-  } # end of foreach call
-
     # Update simulation progress information
     if(quiet == FALSE){
       if(i == 1){
@@ -242,7 +236,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   if (!exists("cores", mode = "NULL")){
     parallel::stopCluster(cl)
   }
-
+  
   
   ## Output objects
   if(all.sim.data == TRUE){
