@@ -45,7 +45,7 @@
 #' # condition should be used.
 #' @references Donner A, Klar N. Design and Analysis of Cluster Randomization
 #' Trials in Health Research. London; Arnold; 2000.
-#' @references Wu S, Crespi CM, Wong WK. Comparison of Methods for Etimating Intraclass
+#' @references Wu S, Crespi CM, Wong WK. Comparison of Methods for Estimating Intraclass
 #' Correlation Coefficient for Binary Responses in Cancer Prevention Cluster Randomized
 #' Trials. Contemp Clin Trials. 2012; 33(5): 869-880. doi:10.1016/j.cct.2012.05.004 London: Arnold; 2000.
 #' @export
