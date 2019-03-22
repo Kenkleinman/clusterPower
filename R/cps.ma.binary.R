@@ -401,20 +401,23 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                    sec.est, 'Sec'))
     
     ## Output objects for GEE
-    
     # Create list containing all output (class 'crtpwr') and return
     if(all.sim.data == TRUE){
       complete.output <-  list("power" <-  power.parms[-1,],
                                "model.estimates" <-  ma.model.est, 
                                "overall.power" <- LRT.holder,
                                "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
-                                                                         LRT.holder.abbrev=LRT.holder.abbrev)),
-                               "sim.data" <-  binary.ma.rct[[3]])
+                                                                         LRT.holder.abbrev=LRT.holder.abbrev),
+                               "sim.data" <-  binary.ma.rct[[3]]))
     } else {
-      complete.output <-  list("power" <-  power.parms[-1,],
-                               "overall.power" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
-                                                                        LRT.holder.abbrev=LRT.holder.abbrev)))
-    }
+    complete.output <-  list("power" <-  power.parms[-1,],
+                             "model.estimates" <-  ma.model.est, 
+                             "overall.power" <- LRT.holder,
+                             "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
+                                                                       LRT.holder.abbrev=LRT.holder.abbrev)))
+  }# end of return options
+    # assign special class
+    class(complete.output) <- c("multiarm", "list")
     return(complete.output)
   }# end of GEE options
 }# end of fxn

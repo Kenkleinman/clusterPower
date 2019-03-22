@@ -130,8 +130,10 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   }
   sim.dat <- matrix(nrow = length(clust), ncol = nsim)
   # function to produce the simulated data
-  make.sim.dat <- function(tdist = tdist, logit.p = logit.p, nclusters = nclusters, 
-                           sigma_b_sq = sigma_b_sq, str.nsubjects = str.nsubjects){
+  make.sim.dat <- function(tdist = tdist, logit.p = logit.p, 
+                           nclusters = nclusters, 
+                           sigma_b_sq = sigma_b_sq, 
+                           str.nsubjects = str.nsubjects){
     # Generate between-cluster effects for non-treatment and treatment 
     if (tdist==TRUE){
       randint = mapply(function(n, df) stats::rt(n, df = df), 
@@ -240,7 +242,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     }
 
     if (!is.na(cores) & quiet == FALSE){
-      message("Performing null model comparisons")
+      message("\r Performing null model comparisons")
     }
   # get the overall p-values (>Chisq)
     model.compare <- foreach::foreach(i=1:nsim, .options.snow=opts,
@@ -256,7 +258,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     
   # get the model summaries
     if (!is.na(cores) & quiet == FALSE){
-      message("Retrieving model summaries")
+      message("\r Retrieving model summaries")
     }
     model.values <-  foreach::foreach(i=1:nsim, .options.snow=opts, .packages = "car", 
                                     .inorder=FALSE) %fun% {summary(my.mod[[i]])
