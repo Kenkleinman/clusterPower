@@ -19,7 +19,7 @@
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param str.nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
-#' @param means Expected probability of outcome for each arm; accepts a vector of length \code{narms} (required).
+#' @param probs Expected probability of outcome for each arm; accepts a vector of length \code{narms} (required).
 #' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects 
@@ -149,7 +149,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       for (j in 1:length(logit.p)){
         randint.holder[[j]] <- logit.p[j]+ randint[[j]]
       }
-      randintrandint <- sapply(randint.holder, clusterPower::expit) # check this
+      randintrandint <- sapply(randint.holder, clusterPower::expit)
     } else {
       randint.holder <- matrix(nrow = nclusters[1], ncol = length(logit.p))
       for (j in 1:length(logit.p)){
