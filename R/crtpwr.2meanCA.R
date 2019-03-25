@@ -1,7 +1,7 @@
 #' Power calculations for simple cluster randomized trials, continuous outcome with covariate adjustment
 #'
-#' Compute the power of a simple cluster randomized trial with a continuous outcome after adjusting for covariates,
-#' or determine parameters to obtain a target power.
+#' Compute the power of a simple cluster randomized trial with a continuous outcome after adjusting for 
+#' cluster-level covariates, or determine parameters to obtain a target power.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
 #'   \code{d}, \code{icc}, \code{varw}, \code{covdf}, and \code{rho_b} must be passed as \code{NA}.
@@ -73,7 +73,7 @@ crtpwr.2meanCA <- function(alpha = 0.05, power = 0.80, nclusters = NA,
   
   # list of needed inputs
   needlist <- list(alpha, power, nclusters, nsubjects, d, icc, varw, covdf, rho_b)
-  neednames <- c("alpha", "power", "nclusters", "nsubjects", "d", "icc", "varw", "covdf", "rho_b")
+  neednames <- c("alpha", "power", "nclusters", "nsubjects", "d", "icc", "varw", "covdf", "rho_b", "rho_w")
   needind <- which(unlist(lapply(needlist, is.na)))
   # check to see that exactly one needed param is NA
   
@@ -90,29 +90,9 @@ crtpwr.2meanCA <- function(alpha = 0.05, power = 0.80, nclusters = NA,
     # design effect
     DEFF <- 1 + (nsubjects - 1)*icc*(1 - rho_b^2)
     
-    # # variance inflation
-    # # if nvec exists, calcuate exact relative efficiency
-    # if (exists("nvec")) {
-    #   if(method == "taylor"){
-    #     a <- (1 - icc)/icc
-    #     RE <- ((nsubjects + a)/nsubjects)*(sum((nvec/(nvec+a)))/nclusters) # exact relative efficiency
-    #     VIF <- DEFF*RE
-    #   } else{
-    #     VIF <- 1 + ((cv^2 + 1)*nsubjects - 1)*icc
-    #   }
-    # } else if(!is.na(nsubjects)){
-    #   if(method == "taylor"){
-    #     L <- nsubjects*icc/DEFF
-    #     REt <- 1/(1 - cv^2*L*(1 - L)) # taylor approximation
-    #     VIF <- DEFF*REt
-    #   } else {
-    #     VIF <- 1 + ((cv^2 + 1)*nsubjects - 1)*icc
-    #   }
-    # }
-    
     tcrit <- qt(alpha/2, 2*(nclusters - 1) - covdf, lower.tail = FALSE)
     
-    ncp <- sqrt(nclusters*nsubjects/(2*DEFF)) * abs(d)/sqrt(varw)
+    ncp <- abs(d)/sqrt(2*varw*DEFF/(nclusters*nsubjects))
     
     pt(tcrit, 2*(nclusters - 1) - covdf, ncp, lower.tail = FALSE) #+ pt(-tcrit, 2*(nclusters - 1), ncp, lower.tail = TRUE)
   })
