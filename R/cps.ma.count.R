@@ -3,23 +3,22 @@
 #' 
 #' This function uses iterative simulations to determine 
 #' approximate power for multi-arm cluster-randomized controlled trials with 
-#' count outcomes of interest. Users can modify a variety of parameters to 
-#' suit the simulations to their desired experimental situation. 
-#' This function validates the user's input and passes the necessary 
-#' arguments to an internal function, which performs the simulations. 
-#' This function returns the summary power values for each treatment arm.
+#' count or poisson-distributed outcomes of interest. Users can modify a 
+#' variety of parameters to suit the simulations to their desired 
+#' experimental situation. This function validates the user's input and 
+#' passes the necessary arguments to an internal function, which performs 
+#' the simulations. This function returns the summary power values for 
+#' each treatment arm.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
 #' cluster, number of clusters per treatment arm, group probabilities, and the 
 #' between-cluster variance. Significance level, analytic method, progress 
 #' updates, poor/singular fit override, and whether or not to return the 
-#' simulated data may also be specified. The internal function can be called directly by the user to return the fitted 
-#' models rather than the power summaries (see \code{?cps.ma.count.internal}
-#' for details).
+#' simulated data may also be specified. The internal function can be called 
+#' directly by the user to return the fitted models rather than the power 
+#' summaries (see \code{?cps.ma.count.internal} for details).
 #' 
-#' Because the model for count outcomes may be slower to fit than those for 
-#' other distributions, this function may be slower than its normal or 
-#' count-distributed counterparts. Users can spread the simulated data 
+#' Users can spread the simulated data 
 #' generation and model fitting tasks across multiple cores using the 
 #' \code{cores} argument. Users should expect that parallel computing may make 
 #' model fitting faster than using a single core for more complicated models. 
@@ -101,7 +100,7 @@
 #' @examples 
 #' \dontrun{
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-#' counts.example <- c(0.30, 0.5, 0.9)
+#' counts.example <- c(30, 55, 98)
 #' sigma_b_sq.example <- c(1, 1, 2)
 #' 
 #' count.ma.rct.unbal <- cps.ma.count(nsim = 100, 
@@ -113,7 +112,7 @@
 #'                             
 #' count.ma.rct.bal <- cps.ma.count(nsim = 50, nsubjects = 20, narms=3,
 #'                             nclusters=10,
-#'                             counts = c(0.30, 0.5, 0.7),
+#'                             counts = c(30, 35, 70),
 #'                             sigma_b_sq = 1, alpha = 0.05,
 #'                             quiet = FALSE, method = 'glmm', 
 #'                             all.sim.data = FALSE, 
@@ -126,7 +125,7 @@
 cps.ma.count <- function(nsim = 1000, nsubjects = NULL, 
                           narms = NULL, nclusters = NULL,
                           counts = NULL, 
-                         family = c("poisson", "neg.binom"),
+                         family = "poisson",
                          sigma_b_sq = NULL, 
                           alpha = 0.05,
                           quiet = FALSE, method = 'glmm', 

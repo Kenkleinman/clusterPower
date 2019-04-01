@@ -58,7 +58,7 @@
 #' \dontrun{
 #' 
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-#' counts.example <- c(0.30, 0.5, 0.9)
+#' counts.example <- c(30, 55, 90)
 #' sigma_b_sq.example <- c(1, 1, 2)
 #' 
 #' count.ma.rct <- cps.ma.count.internal (nsim = 10, 
@@ -152,23 +152,21 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       for (j in 1:length(counts.)){
         randint.holder[[j]] <- log(counts.[j])+ randint[[j]]
       }
-      randintrandint <- sapply(randint.holder, clusterPower::expit)
+      randintrandint <- sapply(randint.holder, exp)
     } else {
       randint.holder <- matrix(nrow = nclusters.[1], ncol = length(counts.))
       for (j in 1:length(counts.)){
         randint.holder[,j] <- log(counts.[j])+ randint[,j]
       }
-      randintrandint <- clusterPower::expit(randint.holder)
+      randintrandint <- exp(randint.holder)
     }
     # Create y-value
     y.intercept <- vector(mode = "numeric", 
-                           length = length(unlist(str.nsubjects.)))
+                           length = length(clust))
     y.intercept <- sapply(1:sum(nclusters.), 
                            function(x) rep(unlist(randintrandint)[x], 
                                            length.out = unlist(str.nsubjects.)[x]))
-    y.intercept <- unlist(y.intercept)
-    print(y.intercept)
-    print(family.)
+    y.intercept <- as.vector(unlist(y.intercept))
     if(family. == 'poisson'){
       y <-  stats::rpois(length(y.intercept), y.intercept)
     }
