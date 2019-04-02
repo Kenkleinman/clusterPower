@@ -68,7 +68,7 @@
 #'                         ICC = 0.2, sigma = 100, alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
-#' @author Alexander R. Bogdan, Alexandria C. Sakrejda 
+#' @author Alexander R. Bogdan, @author Alexandria C. Sakrejda 
 #' (\email{acbro0@@umass.edu}), and @author Ken Kleinman 
 #' (\email{ken.kleinman@@gmail.com})
 #' @export
