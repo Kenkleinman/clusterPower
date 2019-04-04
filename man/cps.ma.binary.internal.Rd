@@ -15,6 +15,8 @@ cps.ma.binary.internal(nsim = 1000, str.nsubjects = NULL,
 \item{str.nsubjects}{Number of subjects per treatment group; accepts a list with one entry per arm. 
 Each entry is a vector containing the number of subjects per cluster (required).}
 
+\item{probs}{Expected probability of outcome for each arm; accepts a vector of length \code{narms} (required).}
+
 \item{sigma_b_sq}{Between-cluster variance; accepts a vector of length \code{narms} (required).}
 
 \item{alpha}{Significance level; default = 0.05.}
@@ -39,8 +41,6 @@ simulation values, default = FALSE.}
 
 \item{cores}{A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
 When this option is set to NA, no parallel computing is used.}
-
-\item{means}{Expected probability of outcome for each arm; accepts a vector of length \code{narms} (required).}
 }
 \value{
 A list with the following components:

@@ -2,80 +2,100 @@
 % Please edit documentation in R/cps.ma.count.internal.R
 \name{cps.ma.count.internal}
 \alias{cps.ma.count.internal}
-\title{NOT READY, DO NOT RUN Power simulations for cluster-randomized trials: Multi-Arm, Count Outcome.}
+\title{Model fits for simulations for multi-arm designs with count outcome.}
 \usage{
 cps.ma.count.internal(nsim = 1000, str.nsubjects = NULL,
-  probs = NULL, sigma_b_sq = NULL, alpha = 0.05, quiet = FALSE,
-  method = "glmm", all.sim.data = FALSE, seed = NULL,
-  poor.fit.override = FALSE, overall.power = FALSE, tdist = FALSE,
-  cores = 1)
+  counts = NULL, family = "poisson", sigma_b_sq = NULL,
+  alpha = 0.05, quiet = FALSE, method = "glmm",
+  all.sim.data = FALSE, seed = NA, poor.fit.override = FALSE,
+  tdist = FALSE, cores = cores)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
 
-\item{str.nsubjects}{Number of subjects per treatment group; accepts a list with one entry per arm. 
-Each entry is a vector containing the number of subjects per cluster (required).}
+\item{str.nsubjects}{Number of subjects per treatment group; accepts a list 
+with one entry per arm. Each entry is a vector containing the number of 
+subjects per cluster (required).}
 
-\item{sigma_b_sq}{Between-cluster variance; accepts a vector of length \code{narms} (required).}
+\item{counts}{Expected outcome for each arm; accepts a vector 
+of length \code{narms} (required).}
+
+\item{family}{A string consisting of either 'poisson' or 'neg.binom'.}
+
+\item{sigma_b_sq}{Between-cluster variance; accepts a vector of length 
+\code{narms} (required).}
 
 \item{alpha}{Significance level; default = 0.05.}
 
-\item{quiet}{When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.}
+\item{quiet}{When set to FALSE, displays simulation progress and estimated 
+completion time; default is FALSE.}
 
-\item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
-Generalized Estimating Equation (GEE); accepts c('glmm', 'gee') (required); default = 'glmm'.}
+\item{method}{Analytical method, either Generalized Linear Mixed Effects 
+Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 
+'gee') (required); default = 'glmm'.}
 
-\item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
+\item{all.sim.data}{Option to output list of all simulated datasets; 
+default = FALSE.}
 
-\item{seed}{Option to set.seed; default is NULL.}
+\item{seed}{Option to set.seed. Default is NULL.}
 
-\item{poor.fit.override}{Option to override \code{stop()} if more than 25\% of fits fail to converge.}
+\item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
+of fits fail to converge.}
 
-\item{cores}{a string or numeric value indicating the number of cores to be used for parallel computing. 
-When this option is set to 1, no parallel computing is used.}
+\item{tdist}{Logical; use t-distribution instead of normal distribution for 
+simulation values, default = FALSE.}
 
-\item{means}{Expected probability of outcome for each arm; accepts a vector of length \code{narms} (required).}
+\item{cores}{A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
+When this option is set to NA, no parallel computing is used.}
 }
 \value{
 A list with the following components:
 \itemize{
-  \item List of length(nsim) containing gee- or glmm-fitted the model summaries.
-  \item Compares fitted model to a model for H0 using ML (ANOVA).
+  \item List of length(nsim) containing gee- or glmm-fitted the model 
+  summaries.
+  \item Compares fitted model to a model for H0 using ML (anova).
   \item List of data frames, each containing: 
                   "y" (Simulated response value), 
                   "trt" (Indicator for treatment group), 
                   "clust" (Indicator for cluster)
-  \item A vector of length \code{nsim} consisting of 1 and 0; 
-  when a model fails to converge, failed.to.converge==1, otherwise 0.
+  \item A vector of length \code{nsim} consisting of 1 and 0. 
+          When a model fails to converge, failed.to.converge==1, otherwise 0.
 }
 }
 \description{
-This set of functions utilize iterative simulations to determine 
-approximate power for cluster-randomized controlled trials. Users 
-can modify a variety of parameters to suit the simulations to their
-desired experimental situation.
+Generally called from \code{cps.ma.count()}, this function uses iterative 
+simulations to model significance of treatment effects for cluster-randomized 
+controlled trials. Users can modify a variety of parameters to suit the 
+simulations to their desired experimental situation.
 }
 \details{
-Runs the power simulation.
+This function can be called directly in order to give the user access to the 
+simulated model fits in addition to the simulated data, the latter of which 
+can also be accessed here or using the function \code{cps.ma.count()}. This 
+function does not produce power estimates, just simulated data and model fits.
 
-Users must specify the desired number of simulations, number of subjects per 
-cluster, number of clusters per treatment arm, group means, two of the following: ICC, within-cluster variance, or 
-between-cluster variance; significance level, analytic method, progress updates, 
-and simulated data set output may also be specified.
+To call this function independenty, users must specify the desired number of 
+simulations, number of subjects per cluster, number of clusters per treatment
+arm, group proportions, and between-cluster variance. Significance level, 
+analytic method, progress updates and simulated data set output may also be 
+specified.
 }
 \examples{
 \dontrun{
-str.nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-probs.example <- c(0.30, 0.21, 0.53)
-sigma_b_sq.example <- c(25, 25, 120)
 
-bin.ma.rct <- cps.ma.count.internal(nsim = 10, str.nsubjects = str.nsubjects.example, 
-                                 probs = probs.example,
-                                 sigma_b_sq = sigma_b_sq.example, alpha = 0.05, 
-                                quiet = FALSE, method = 'gee', 
-                                all.sim.data = FALSE, seed = 123)
+nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+counts.example <- c(30, 55, 90)
+sigma_b_sq.example <- c(1, 1, 2)
+
+count.ma.rct <- cps.ma.count.internal (nsim = 10, 
+                            str.nsubjects = nsubjects.example, 
+                            counts = counts.example,
+                            sigma_b_sq = sigma_b_sq.example, 
+                            alpha = 0.05, all.sim.data = FALSE, 
+                            seed = 123, cores="all") 
 }
+
 }
 \author{
-Alexandria C. Sakrejda (\email{acbro0@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@gmail.com})
+Alexandria C. Sakrejda (\email{acbro0@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@gmail.com})
 }

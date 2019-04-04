@@ -54,7 +54,8 @@ scalar if all arms are equal.}
 \value{
 A vector of length \code{narms} 
 \describe{
-  \item{errors}{Stops function execution if validation fails for any component.}
+  \item{errors}{Stops function execution if validation fails for any 
+  component, but no return if input has no errors.}
 }
 }
 \description{

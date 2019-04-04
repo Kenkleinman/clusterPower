@@ -90,6 +90,7 @@ test_that("continuous simulation method matches the analytic method", {
     multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 2, 
                                   nclusters = nc[i], nsubjects = ns[i],
                                   means = c(0,1),
+                                  tdist = FALSE,
                                   ICC = icc.[i],
                                   sigma_sq = sig[i], alpha = 0.05,
                                   quiet = FALSE, method = 'glmm',
@@ -97,7 +98,10 @@ test_that("continuous simulation method matches the analytic method", {
                                   poor.fit.override = TRUE, cores="all")
     analytic.mean <- round(as.numeric(crtpwr.2mean(alpha = 0.05, power = NA, 
                               nclusters = nc[i], nsubjects = ns[i],
-                              icc = icc.[i], vart = sig[i], method = "weighted", 
+                              icc = icc.[i], 
+                              vart = createMissingVarianceParam(ICC = icc.[i], 
+                                                                sigma_sq = sig[i])+sig[i], 
+                              method = "weighted", 
                               tol = .Machine$double.eps^0.25, d=1)), 1)
     print(nc[i])
     print(ns[i])
