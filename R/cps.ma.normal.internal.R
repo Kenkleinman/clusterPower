@@ -176,7 +176,9 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod <-  lmerTest::lmer(y ~ trt + (1|clust), data = sim.dat[[i]])
+      my.mod <-  lmerTest::lmer(y ~ trt + (1|clust), data = sim.dat[[i]],
+                                control = lmerControl(optimizer = "optimx", calc.derivs = FALSE,
+                                                      optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)))
       model.values[[i]] <-  summary(my.mod)
       # option to stop the function early if fits are singular
       fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
