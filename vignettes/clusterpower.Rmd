@@ -92,13 +92,13 @@ where $t$ indexes period (baseline or intervention) and $x_{itj}=1$ if cluster $
 
 ## Individually randomized group treatment trials
 
-The individually randomized group treatment trial can be modeled as:
+In the other RCT designs discussed here, nesting of individuals within clusters should be established prior to randomization. However, clustering may also occur when randomization is individual but treatment is administered in groups, or there are effects associated with the clinicians offering treatment, i.e. groups of individuals are treated by the same physician. A two-arm individually randomized group treatment trial can be modeled as:
 
 \begin{equation}
 y_{ij}= \beta_{0}+x_{ij}\beta_{1}+x_{ij}b_{i1}+e_{ij}
 \end{equation}
 
-i.e., exactly as the parallel group two arm trial with different between-cluster variances per arm, except that the between-group variance in one arm is 0, because there are no groups at all.  
+i.e., exactly as the simple two arm trial with different between-cluster variances per arm, except that the between-group variance in one arm may be 0, because there are no groups. $x_{ij}$ is included as a treatment indicator.
 
 -----------------------
 
