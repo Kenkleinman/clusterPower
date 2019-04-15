@@ -78,7 +78,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
                       ICC = NULL, sigma = NULL, sigma_b = NULL,
                       ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL,
                       alpha = 0.05, method = 'glmm', quiet = FALSE,
-                      all.sim.data = FALSE){
+                      all.sim.data = FALSE, irgtt = FALSE){
   
   # Create vectors to collect iteration-specific values
   est.vector = NULL
@@ -106,8 +106,10 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   if(!is.wholenumber(nsim) || nsim < 1){
     stop(paste0("NSIM", min1.warning))
   }
-  if(!is.wholenumber(nclusters) || nclusters < 1){
+  if (irgtt == FALSE) {
+    if(!is.wholenumber(nclusters) || nclusters < 1){
     stop(paste0("NCLUSTERS", min1.warning))
+    }
   }
   if(!is.wholenumber(nsubjects) || nsubjects < 1){
     stop(paste0("NSUBJECTS", min1.warning))
@@ -284,8 +286,11 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   
   ## Output objects
   # Create object containing summary statement
+  if (irgtt == FALSE) {
   summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: Simple Design, Continuous Outcome")
-  
+  } else {
+    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: IRGTT Design, Continuous Outcome")
+  }
   # Create method object
   long.method = switch(method, glmm = 'Generalized Linear Mixed Model', 
                        gee = 'Generalized Estimating Equation')
