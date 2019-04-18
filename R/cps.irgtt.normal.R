@@ -33,8 +33,6 @@
 #' @param sigma2 Within-cluster variance for clusters in TREATMENT group
 #' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
 #' @param alpha Significance level; default = 0.05.
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
-#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' 
@@ -68,7 +66,7 @@
 #' \dontrun{
 #' irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = c(100, 10), 
 #'                        nclusters = 10, difference = 16,
-#'                         sigma = 100, sigma_b2 = 25, alpha = 0.05, method = 'glmm', 
+#'                         sigma = 100, sigma_b2 = 25, alpha = 0.05,
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
@@ -82,9 +80,14 @@ cps.irgtt.normal <-  function(nsim = NULL, nsubjects = NULL, nclusters = NULL, d
                       alpha = 0.05, method = 'glmm', quiet = FALSE,
                       all.sim.data = FALSE){
   if (sigma_b == 0 & sigma_b2 == 0){
-    stop("Sigma_b in both arms is 0. Please enter a sigma_b value for the arm containing clustered observations.")
+    warning("Sigma_b in both arms is 0. This is equivalent to a t-test. Did you mean to 
+            enter a sigma_b value for the arm containing clustered observations?")
   }
-  if (sigma_b != 0){
+  if (sigma_b != 0 & sigma_b2 != 0){
+    warning("Sigma_b is not zero for either arm. Did you want to use cps.normal()?")
+  }
+  if (sigma_b != 0 & sigma_b2 == 0){
+    stop("Non-clustered group must be entered as the reference group.")
     nclust <- c(nclusters, 1)
   }
   if (sigma_b2 != 0){
@@ -95,7 +98,7 @@ cps.irgtt.normal <-  function(nsim = NULL, nsubjects = NULL, nclusters = NULL, d
                    difference = difference, ICC = ICC, ICC2 = ICC2, 
                    sigma = sigma, sigma2 = sigma2, alpha = alpha, 
                    sigma_b = sigma_b, sigma_b2 = sigma_b2,
-                   method = method, quiet = quiet, all.sim.data = all.sim.data,
+                   method = "glmm", quiet = quiet, all.sim.data = all.sim.data,
                    irgtt = TRUE)
   return(sim)
 }

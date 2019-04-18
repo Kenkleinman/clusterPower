@@ -106,10 +106,8 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   if(!is.wholenumber(nsim) || nsim < 1){
     stop(paste0("NSIM", min1.warning))
   }
-  if (irgtt == FALSE) {
     if(!is.wholenumber(nclusters) || nclusters < 1){
     stop(paste0("NCLUSTERS", min1.warning))
-    }
   }
   if(!is.wholenumber(nsubjects) || nsubjects < 1){
     stop(paste0("NSUBJECTS", min1.warning))
@@ -237,7 +235,11 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
+      if(irgtt == TRUE){
+        my.mod <- lme4::lmer(y ~ trt + (0 + trt|clust))
+      } else {
+        my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
+      }
       glmm.values = summary(my.mod)$coefficient
       p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(nclusters) - 2)
       est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
@@ -247,6 +249,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     }
     
     # Fit GEE (geeglm)
+    # Note: there is no option for GEE with irgtt
     if(method == 'gee'){
       sim.dat = dplyr::arrange(sim.dat, clust)
       my.mod = geepack::geeglm(y ~ trt, data = sim.dat,
