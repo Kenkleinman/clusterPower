@@ -38,6 +38,7 @@
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time, default is TRUE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE
+#' @param seed Option to set the seed. Default is NA.
 #'  
 #' @return A list with the following components
 #' \itemize{
@@ -81,7 +82,7 @@
 cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
                         p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
                         sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = 'glmm', 
-                      quiet = TRUE, all.sim.data = FALSE, seed = NA){
+                      quiet = TRUE, all.sim.data = FALSE, seed = NA, irgtt = FALSE){
   if (!is.na(seed)){
   set.seed(seed = seed)
   }

@@ -28,9 +28,6 @@
 #' @param p2 Expected probability of outcome in treatment group
 #' @param p.diff Expected difference in probability of outcome between groups, defined as p.diff = p1 - p2
 #' At least 2 of the following 3 arguments must be specified when using expected odds ratios:
-#' @param or1 Expected odds ratio for outcome in non-treatment group
-#' @param or2 Expected odds ratio for outcome in treatment group
-#' @param or.diff Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2
 #' @param sigma_b Between-cluster variance; if sigma_b2 is not specified, 
 #' between cluster variances are assumed to be equal for both groups. Accepts numeric.
 #' If between cluster variances differ between treatment groups, sigma_b2 must also be specified:
@@ -39,6 +36,7 @@
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time, default is TRUE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE
+#' @param seed option to set seed. Default is NA.
 #'  
 #' @return A list with the following components
 #' \itemize{
@@ -72,7 +70,7 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' binary.sim = cps.binary(nsim = 100, nsubjects = 50, nclusters = 6, p1 = 0.4,
+#' binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 50, nclusters = 6, p1 = 0.4,
 #'                         p2 = 0.2, sigma_b = 100, alpha = 0.05, method = 'glmm', 
 #'                         all.sim.data = FALSE)
 #' }
@@ -80,10 +78,11 @@
 #'   and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
 
+#FIXME add irgtt equation in cps.binary
 # Define function
-cps.irgtt.binary <-  function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
+cps.irgtt.binary <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
                       p1 = NULL, p2 = NULL, sigma_b = NULL, sigma_b2 = NULL, 
-                      alpha = 0.05, method = 'glmm', 
+                      alpha = 0.05, 
                       quiet = TRUE, all.sim.data = FALSE, seed = NA){
   if (sigma_b == 0 & sigma_b2 == 0){
     warning("Sigma_b in both arms is 0. This is equivalent to a t-test. Did you mean to 
@@ -100,12 +99,10 @@ cps.irgtt.binary <-  function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p
     nclust <- c(1, nclusters)
   }
   
-  sim = cps.normal(nsim = nsim, nsubjects = nsubjects, nclusters = nclust, 
-                   difference = difference, ICC = ICC, ICC2 = ICC2, 
-                   sigma = sigma, sigma2 = sigma2, alpha = alpha, 
-                   sigma_b = sigma_b, sigma_b2 = sigma_b2,
-                   method = "glmm", quiet = quiet, all.sim.data = all.sim.data,
-                   irgtt = TRUE)
+  sim <- cps.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
+                        p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
+                        sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = 'glmm', 
+                        quiet = TRUE, all.sim.data = FALSE, seed = NA, irgtt = FALSE)
   return(sim)
   }
 

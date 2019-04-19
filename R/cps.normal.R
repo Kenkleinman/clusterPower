@@ -35,6 +35,7 @@
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param seed Option to set the seed. Default is NA.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -78,7 +79,12 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
                       ICC = NULL, sigma = NULL, sigma_b = NULL,
                       ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL,
                       alpha = 0.05, method = 'glmm', quiet = FALSE,
-                      all.sim.data = FALSE, irgtt = FALSE){
+                      all.sim.data = FALSE, seed = NA, irgtt = FALSE){
+  
+  # option for reproducibility
+  if (!is.na(seed)){
+    set.seed(seed=seed)
+  }
   
   # Create vectors to collect iteration-specific values
   est.vector = NULL
