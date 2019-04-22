@@ -71,9 +71,9 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' binary.sim = cps.binary(nsim = 100, nsubjects = 50, nclusters = 6, p1 = 0.4,
-#'                         p2 = 0.2, sigma_b = 100, alpha = 0.05, method = 'glmm', 
-#'                         all.sim.data = FALSE)
+#' binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.5,
+#'                         p2 = 0.2, sigma_b = 1, sigma_b2 = 1, alpha = 0.05, 
+#'                         method = 'glmm', all.sim.data = FALSE)
 #' }
 #'
 #' @export
@@ -294,13 +294,23 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       icc2.vector = append(icc2.vector, icc2)
       
       # Calculate LMER.ICC (lmer: sigma_b / (sigma_b + sigma))
-      lmer.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
+      if(irgtt==TRUE){
+        my.mod <- lme4::lmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
+                             family = stats::binomial(link = 'logit'))
+      } else {
+      lmer.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)}
       lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
       lmer.icc.vector = append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
       
       # Fit GLMM (lmer)
       if(method == 'glmm'){
-        my.mod = try(lme4::glmer(y ~ trt + (1|clust), data = sim.dat, family = stats::binomial(link = 'logit')))
+        if(irgtt==TRUE){
+          my.mod <- lme4::lmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
+                               family = stats::binomial(link = 'logit'))
+        } else {
+        my.mod = try(lme4::glmer(y ~ trt + (1|clust), data = sim.dat, 
+                                 family = stats::binomial(link = 'logit')))
+        }
         model.converge = try(my.mod)
         converge.ind = is.null(model.converge@optinfo$conv$lme4$messages)
         converge.vector = append(converge.vector, converge.ind)

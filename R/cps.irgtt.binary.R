@@ -70,8 +70,8 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 50, nclusters = 6, p1 = 0.4,
-#'                         p2 = 0.2, sigma_b = 100, alpha = 0.05, method = 'glmm', 
+#' binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.5,
+#'                         p2 = 0.2, sigma_b = 0, sigma_b2 = 1, alpha = 0.05, 
 #'                         all.sim.data = FALSE)
 #' }
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
@@ -81,9 +81,10 @@
 #FIXME add irgtt equation in cps.binary
 # Define function
 cps.irgtt.binary <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
-                      p1 = NULL, p2 = NULL, sigma_b = NULL, sigma_b2 = NULL, 
+                      p1 = NULL, p2 = NULL, sigma_b = 0, sigma_b2 = 0, 
                       alpha = 0.05, 
                       quiet = TRUE, all.sim.data = FALSE, seed = NA){
+  
   if (sigma_b == 0 & sigma_b2 == 0){
     warning("Sigma_b in both arms is 0. This is equivalent to a t-test. Did you mean to 
             enter a sigma_b value for the arm containing clustered observations?")
