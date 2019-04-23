@@ -147,13 +147,15 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS")
     }
     
-    # Validate SIGMA_B, SIGMA_B2
-    min0.warning = " must be a numeric value greater than 0"
-    if(!is.numeric(sigma_b) || sigma_b <= 0){
-      stop("SIGMA_B", min0.warning)
-    }
-    if(!is.null(sigma_b2) && sigma_b2 <= 0){
-      stop("SIGMA_B2", min0.warning)
+    if(irgtt==FALSE){
+      # Validate SIGMA_B, SIGMA_B2
+      min0.warning = " must be a numeric value greater than 0"
+      if(!is.numeric(sigma_b) || sigma_b <= 0){
+        stop("SIGMA_B", min0.warning)
+      }
+      if(!is.null(sigma_b2) && sigma_b2 <= 0){
+        stop("SIGMA_B2", min0.warning)
+      }
     }
     # Set between-cluster variances
     if(is.null(sigma_b2)){
@@ -294,13 +296,12 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       icc2.vector = append(icc2.vector, icc2)
       
       # Calculate LMER.ICC (lmer: sigma_b / (sigma_b + sigma))
-      if(irgtt==TRUE){
-        my.mod <- lme4::lmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
-                             family = stats::binomial(link = 'logit'))
-      } else {
-      lmer.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)}
-      lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
-      lmer.icc.vector = append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
+      if(irgtt==FALSE){
+        lmer.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat,
+                            family = stats::binomial(link = 'logit'))
+        lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
+        lmer.icc.vector = append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
+      }
       
       # Fit GLMM (lmer)
       if(method == 'glmm'){
@@ -367,10 +368,16 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     
     ## Output objects
     # Create object containing summary statement
+    if(irgtt==FALSE){
     summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
                              " Simulations: Simple Design, Binary Outcome\nNote: ", sum(converge.vector == FALSE), 
                              " additional models were fitted to account for non-convergent simulations.")
-    
+    } else {
+    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
+                               " Simulations: IRGTT Design, Binary Outcome\nNote: ", sum(converge.vector == FALSE), 
+                               " additional models were fitted to account for non-convergent simulations.")
+      
+    }
     # Create method object
     long.method = switch(method, glmm = 'Generalized Linear Mixed Model', 
                          gee = 'Generalized Estimating Equation')
@@ -405,14 +412,16 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     # Create object containing number of clusters
     n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
     
-    # Create object containing estimated ICC values
-    ICC = round(t(data.frame('P_h' = c('ICC' = icc1), 
+    if (irgtt==FALSE){
+      # Create object containing estimated ICC values
+      ICC = round(t(data.frame('P_h' = c('ICC' = icc1), 
                              'P_c' = c('ICC' = mean(icc2.vector)), 
                              'lmer' = c('ICC' = mean(lmer.icc.vector)))), 3)
-    # Create object containing all ICC values
-    # Note: P_h is a single calculated value. No vector to be appended.
-    icc.list = data.frame('P_c' = icc2.vector, 
+      # Create object containing all ICC values
+      # Note: P_h is a single calculated value. No vector to be appended.
+      icc.list = data.frame('P_c' = icc2.vector, 
                           'lmer' = lmer.icc.vector)
+    }
     
     # Create object containing group-specific variance parameters
     var.parms = t(data.frame('Non.Treatment' = c('sigma_b' = sigma_b[1]), 
@@ -425,9 +434,24 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     }
     
     # Create list containing all output (class 'crtpwr') and return
-    complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, "alpha" = alpha,
-                                     "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                     "inputs" = inputs, "ICC" = ICC, "icc.list" = icc.list, "model.estimates" = cps.model.est, 
-                                     "sim.data" = simulated.datasets, "warning.list" = warning.list), class = 'crtpwr')
+    if(irgtt==FALSE){
+    complete.output = structure(list("overview" = summary.message, "nsim" = nsim, 
+                                     "power" = power.parms, "method" = long.method, 
+                                     "alpha" = alpha, "cluster.sizes" = cluster.sizes, 
+                                     "n.clusters" = n.clusters, "variance.parms" = var.parms, 
+                                     "inputs" = inputs, "ICC" = ICC, "icc.list" = icc.list, 
+                                     "model.estimates" = cps.model.est, 
+                                     "sim.data" = simulated.datasets, 
+                                     "warning.list" = warning.list), class = 'crtpwr')
+    } else {
+    complete.output = structure(list("overview" = summary.message, "nsim" = nsim, 
+                                       "power" = power.parms, "method" = long.method, 
+                                       "alpha" = alpha, "cluster.sizes" = cluster.sizes, 
+                                       "n.clusters" = n.clusters, "variance.parms" = var.parms, 
+                                       "inputs" = inputs,
+                                       "model.estimates" = cps.model.est, 
+                                       "sim.data" = simulated.datasets, 
+                                       "warning.list" = warning.list), class = 'crtpwr')
+    }
     return(complete.output)
     }

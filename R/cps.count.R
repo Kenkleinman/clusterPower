@@ -77,7 +77,11 @@
 cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL, c2 = NULL, 
                      c.diff = NULL, sigma_b = NULL, sigma_b2 = NULL, family = 'poisson', 
                      analysis = 'poisson', method = 'glmm', alpha = 0.05, quiet = FALSE, 
-                     all.sim.data = FALSE){
+                     all.sim.data = FALSE, irgtt = FALSE, seed = NA){
+  
+  if (!is.na(seed)){
+    set.seed(seed = seed)
+  }
   # Create vectors to collect iteration-specific values
   est.vector = NULL
   se.vector = NULL
@@ -129,12 +133,14 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   }
   
   # Validate SIGMA_B, SIGMA_B2, ALPHA
-  min0.warning = " must be a numeric value greater than 0"
-  if(!is.numeric(sigma_b) || sigma_b <= 0){
-    stop("SIGMA_B", min0.warning)
-  }
-  if(!is.null(sigma_b2) && sigma_b2 <= 0){
-    stop("SIGMA_B2", min0.warning)
+  if (irgtt==FALSE){
+    min0.warning = " must be a numeric value greater than 0"
+    if(!is.numeric(sigma_b) || sigma_b <= 0){
+      stop("SIGMA_B", min0.warning)
+    }
+    if(!is.null(sigma_b2) && sigma_b2 <= 0){
+      stop("SIGMA_B2", min0.warning)
+    }
   }
   if(!is.numeric(alpha) || alpha < 0 || alpha > 1){
     stop("ALPHA must be a numeric value between 0 - 1")
@@ -227,11 +233,26 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      if(analysis == 'poisson'){
-        my.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat, family = stats::poisson(link = 'log'))
-      }
-      if(analysis == 'neg.binom'){
-        my.mod = lme4::glmer.nb(y ~ trt + (1|clust), data = sim.dat)
+      if(irgtt == FALSE){
+        if(analysis == 'poisson'){
+          require("optimx")
+          my.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat, 
+                               family = stats::poisson(link = 'log'), 
+                               control = lme4::glmerControl(optimizer = "optimx"))
+        }
+        if(analysis == 'neg.binom'){
+          my.mod = lme4::glmer.nb(y ~ trt + (1|clust), data = sim.dat)
+        }
+      } else {
+        if(analysis == 'poisson'){
+          require("optimx")
+          my.mod <- lme4::lmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
+                               family = stats::poisson(link = 'log'),                                
+                               control = lme4::glmerControl(optimizer = "optimx"))
+        }
+        if(analysis == 'neg.binom'){
+          my.mod = lme4::glmer.nb(y ~ trt + (0 + trt|clust), data = sim.dat)
+        }        
       }
       glmm.values = summary(my.mod)$coefficient
       est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
@@ -273,13 +294,21 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   
   ## Output objects
   # Create object containing summary statement
-  summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
-                           " Simulations: Count Outcome\nData Simulated from ", 
-                           switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'), 
-                           " distribution\nAnalyzed using ", 
-                           switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'), 
-                           " regression")
-  
+  if (irgtt==FALSE){
+    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
+                             " Simulations: Simple Design, Count Outcome\nData Simulated from ", 
+                             switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'), 
+                             " distribution\nAnalyzed using ", 
+                             switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'), 
+                             " regression")
+  } else {
+    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
+                             " Simulations: IRGTT Design, Count Outcome\nData Simulated from ", 
+                             switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'), 
+                             " distribution\nAnalyzed using ", 
+                             switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'), 
+                             " regression")    
+  }
   # Create method object
   long.method = switch(method, glmm = 'Generalized Linear Mixed Model', 
                        gee = 'Generalized Estimating Equation')

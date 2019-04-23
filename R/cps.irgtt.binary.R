@@ -70,7 +70,7 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.5,
+#' binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 30, nclusters = 10, p1 = 0.5,
 #'                         p2 = 0.2, sigma_b = 0, sigma_b2 = 1, alpha = 0.05, 
 #'                         all.sim.data = FALSE)
 #' }
@@ -90,7 +90,7 @@ cps.irgtt.binary <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.
             enter a sigma_b value for the arm containing clustered observations?")
   }
   if (sigma_b != 0 & sigma_b2 != 0){
-    warning("Sigma_b is not zero for either arm. Did you want to use cps.normal()?")
+    warning("Sigma_b is not zero for either arm. Did you want to use cps.binary()?")
   }
   if (sigma_b != 0 & sigma_b2 == 0){
     stop("Non-clustered group must be entered as the reference group.")
@@ -100,11 +100,9 @@ cps.irgtt.binary <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.
     nclust <- c(1, nclusters)
   }
   
-  sim <- cps.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
-                        p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
-                        sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = 'glmm', 
-                        quiet = TRUE, all.sim.data = FALSE, seed = NA, irgtt = FALSE)
+  sim <- cps.binary(nsim = nsim, nsubjects = nsubjects, nclusters = nclust, p.diff = p.diff,
+                        p1 = p1, p2 = p2, or1 = NULL, or2 = NULL, or.diff = NULL, 
+                        sigma_b = sigma_b, sigma_b2 = sigma_b2, alpha = alpha, method = 'glmm', 
+                        quiet = quiet, all.sim.data = all.sim.data, seed = seed, irgtt = TRUE)
   return(sim)
   }
-
-
