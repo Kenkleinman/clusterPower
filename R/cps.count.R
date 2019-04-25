@@ -238,7 +238,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
           require("optimx")
           my.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat, 
                                family = stats::poisson(link = 'log'), 
-                               control = lme4::glmerControl(optimizer = "optimx"))
+                               control = lme4::lmerControl(optimizer = c("optimx", "bobyqa")))
         }
         if(analysis == 'neg.binom'){
           my.mod = lme4::glmer.nb(y ~ trt + (1|clust), data = sim.dat)
@@ -248,7 +248,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
           require("optimx")
           my.mod <- lme4::lmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
                                family = stats::poisson(link = 'log'),                                
-                               control = lme4::glmerControl(optimizer = "optimx"))
+                               control = lme4::lmerControl(optimizer = c("optimx", "bobyqa")))
         }
         if(analysis == 'neg.binom'){
           my.mod = lme4::glmer.nb(y ~ trt + (0 + trt|clust), data = sim.dat)

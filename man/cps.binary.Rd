@@ -5,21 +5,16 @@
 \title{Power simulations for cluster-randomized trials: Simple Designs, Binary Outcome.}
 \usage{
 cps.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  p.diff = NULL, p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL,
-  or.diff = NULL, sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05,
-  method = "glmm", quiet = TRUE, all.sim.data = FALSE, seed = NA,
-  irgtt = FALSE)
+  p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL,
+  sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = "glmm",
+  quiet = TRUE, all.sim.data = FALSE, seed = NA, irgtt = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
 
 \item{nsubjects}{Number of subjects per cluster; accepts integer (required).}
 
-\item{nclusters}{Number of clusters per treatment group; accepts integer (required).
-At least 2 of the following 3 arguments must be specified when using expected probabilities:}
-
-\item{p.diff}{Expected difference in probability of outcome between groups, defined as p.diff = p1 - p2
-At least 2 of the following 3 arguments must be specified when using expected odds ratios:}
+\item{nclusters}{Number of clusters per treatment group; accepts integer (required).}
 
 \item{p1}{Expected probability of outcome in non-treatment group}
 
@@ -45,7 +40,9 @@ If between cluster variances differ between treatment groups, sigma_b2 must also
 
 \item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE}
 
-\item{seed}{Option to set the seed. Default is NA.}
+\item{seed}{Option to set the seed. Default is NA.
+
+At least 2 of the following 3 arguments must be specified when using expected odds ratios:}
 }
 \value{
 A list with the following components
@@ -94,9 +91,9 @@ P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 }
 \examples{
 \dontrun{
-binary.sim = cps.binary(nsim = 100, nsubjects = 50, nclusters = 6, p1 = 0.4,
-                        p2 = 0.2, sigma_b = 100, alpha = 0.05, method = 'glmm', 
-                        all.sim.data = FALSE)
+binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.5,
+                        p2 = 0.2, sigma_b = 1, sigma_b2 = 1, alpha = 0.05, 
+                        method = 'glmm', all.sim.data = FALSE)
 }
 
 }

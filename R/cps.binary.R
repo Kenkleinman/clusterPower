@@ -22,14 +22,8 @@
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
 #' @param nclusters Number of clusters per treatment group; accepts integer (required).
-#' At least 2 of the following 3 arguments must be specified when using expected probabilities:
 #' @param p1 Expected probability of outcome in non-treatment group
 #' @param p2 Expected probability of outcome in treatment group
-#' @param p.diff Expected difference in probability of outcome between groups, defined as p.diff = p1 - p2
-#' At least 2 of the following 3 arguments must be specified when using expected odds ratios:
-#' @param or1 Expected odds ratio for outcome in non-treatment group
-#' @param or2 Expected odds ratio for outcome in treatment group
-#' @param or.diff Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2
 #' @param sigma_b Between-cluster variance; if sigma_b2 is not specified, 
 #' between cluster variances are assumed to be equal for both groups. Accepts numeric.
 #' If between cluster variances differ between treatment groups, sigma_b2 must also be specified:
@@ -39,6 +33,12 @@
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time, default is TRUE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE
 #' @param seed Option to set the seed. Default is NA.
+#' 
+#' At least 2 of the following 3 arguments must be specified when using expected odds ratios:
+#' @param or1 Expected odds ratio for outcome in non-treatment group
+#' @param or2 Expected odds ratio for outcome in treatment group
+#' @param or.diff Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2
+#
 #'  
 #' @return A list with the following components
 #' \itemize{
@@ -79,7 +79,7 @@
 #' @export
 
 # Define function
-cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
+cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                         p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
                         sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = 'glmm', 
                       quiet = TRUE, all.sim.data = FALSE, seed = NA, irgtt = FALSE){
@@ -164,8 +164,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       sigma_b[2] = sigma_b2
     }
     
-    # Validate P1, P2, P.DIFF & OR1, OR2, OR.DIFF
-    parm1.arg.list = list(p1, p2, p.diff)
+    # Validate P1, P2, & OR1, OR2, OR.DIFF
+    parm1.arg.list = list(p1, p2)
     parm1.args = unlist(lapply(parm1.arg.list, is.null))
     parm2.arg.list = list(or1, or2, or.diff)
     parm2.args = unlist(lapply(parm2.arg.list, is.null))
@@ -173,13 +173,10 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       stop("Only one set of parameters may be supplied: Expected probabilities OR expected odds ratios")
     }
     if(sum(parm2.args) == 3 && sum(parm1.args) > 1){
-      stop("At least two of the following terms must be specified: P1, P2, P.DIFF")
+      stop("Both terms must be specified: p1, p2")
     }
     if(sum(parm1.args) == 3 && sum(parm2.args) > 1){
       stop("At least two of the following terms must be specified: OR1, OR2, OR.DIFF")
-    }
-    if(sum(parm1.args) == 0 && p.diff != abs(p1 - p2)){
-      stop("At least one of the following terms has been misspecified: P1, P2, P.DIFF")
     }
     if(sum(parm2.args) == 0 && or.diff != abs(or1 - or2)){
       stop("At least one of the following terms has been misspecified: OR1, OR2, OR.DIFF")
@@ -203,17 +200,6 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     }
     
     # Calculate all expected probabilities/odds ratios (if they have not been specified)
-    if(sum(parm2.args) == 3){
-      if(is.null(p1)){
-        p1 = abs(p.diff - p2)
-      }
-      if(is.null(p2)){
-        p2 = abs(p1 - p.diff)
-      }
-      if(is.null(p.diff)){
-        p.diff = abs(p1 - p2)
-      }
-    }
     if(sum(parm1.args) == 3){
       if(is.null(or1)){
         or1 = abs(or.diff - or2)

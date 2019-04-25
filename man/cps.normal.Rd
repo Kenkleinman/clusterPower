@@ -13,7 +13,7 @@ cps.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
 
-\item{nsubjects}{Number of subjects per treatment group; accepts either a scalar (equal cluster sizes, both groups), 
+\item{nsubjects}{Number of subjects per cluster; accepts either a scalar (equal cluster sizes, both groups), 
 a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
 (unequal cluster sizes within groups) (required).}
 
@@ -28,6 +28,7 @@ At least 2 of the following must be specified:}
 \item{sigma}{Within-cluster variance; accepts numeric}
 
 \item{sigma_b}{Between-cluster variance; accepts numeric
+
 If clusters differ between treatment groups, at least 2 of the following 
 must be specified:}
 

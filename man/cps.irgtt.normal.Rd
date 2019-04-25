@@ -17,11 +17,9 @@ cps.irgtt.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
 a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
 (unequal cluster sizes within groups) (required).}
 
-\item{nclusters}{Number of clusters per group; accepts single integer or vector of length 2 for unequal number 
-of clusters per treatment group (required)}
+\item{nclusters}{Number of clusters in the clustered group; accepts a scalar (required)}
 
-\item{difference}{Expected absolute treatment effect; accepts numeric (required).
-At least 2 of the following must be specified:}
+\item{difference}{Expected absolute treatment effect; accepts numeric (required).}
 
 \item{ICC}{Intra-cluster correlation coefficient; accepts a value between 0 - 1}
 
@@ -41,7 +39,8 @@ must be specified: ICC2, sigma2.}
 
 \item{quiet}{When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.}
 
-\item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
+\item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.
+At least 2 of the following must be specified:}
 }
 \value{
 A list with the following components:

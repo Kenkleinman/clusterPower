@@ -20,9 +20,11 @@
 #' @param nsubjects Number of subjects per treatment group; accepts either a scalar (equal cluster sizes, both groups), 
 #' a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
 #' (unequal cluster sizes within groups) (required).
-#' @param nclusters Number of clusters per group; accepts single integer or vector of length 2 for unequal number 
-#' of clusters per treatment group (required)
+#' @param nclusters Number of clusters in the clustered group; accepts a scalar (required)
 #' @param difference Expected absolute treatment effect; accepts numeric (required).
+#' @param alpha Significance level; default = 0.05.
+#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
+#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' At least 2 of the following must be specified:
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
 #' @param sigma Within-cluster variance; accepts numeric
@@ -32,9 +34,6 @@
 #' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
 #' @param sigma2 Within-cluster variance for clusters in TREATMENT group
 #' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
-#' @param alpha Significance level; default = 0.05.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
-#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -61,7 +60,6 @@
 #'                   "clust" (Indicator for cluster)
 #'                   }
 #' 
-#' 
 #' @examples 
 #' \dontrun{
 #' irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = c(100, 10), 
@@ -80,8 +78,7 @@ cps.irgtt.normal <-  function(nsim = NULL, nsubjects = NULL, nclusters = NULL, d
                       alpha = 0.05, method = 'glmm', quiet = FALSE,
                       all.sim.data = FALSE){
   if (sigma_b == 0 & sigma_b2 == 0){
-    warning("Sigma_b in both arms is 0. This is equivalent to a t-test. Did you mean to 
-            enter a sigma_b value for the arm containing clustered observations?")
+    warning("Sigma_b in both arms is 0. This is equivalent to a t-test. Did you mean to enter a sigma_b value for the arm containing clustered observations?")
   }
   if (sigma_b != 0 & sigma_b2 != 0){
     warning("Sigma_b is not zero for either arm. Did you want to use cps.normal()?")

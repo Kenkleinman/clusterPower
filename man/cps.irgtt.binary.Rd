@@ -6,28 +6,21 @@
 randomized group treatment trials.}
 \usage{
 cps.irgtt.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  p.diff = NULL, p1 = NULL, p2 = NULL, sigma_b = NULL,
-  sigma_b2 = NULL, alpha = 0.05, quiet = TRUE,
-  all.sim.data = FALSE, seed = NA)
+  p1 = NULL, p2 = NULL, sigma_b = 0, sigma_b2 = 0, alpha = 0.05,
+  quiet = TRUE, all.sim.data = FALSE, seed = NA)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
 
-\item{nsubjects}{Number of subjects per cluster; accepts integer (required).}
+\item{nsubjects}{Number of subjects per cluster in the clustered (treatment) group; accepts integer (required).}
 
-\item{nclusters}{Number of clusters per treatment group; accepts integer (required).
-At least 2 of the following 3 arguments must be specified when using expected probabilities:}
+\item{nclusters}{Number of clusters per treatment group; accepts integer (required).}
 
-\item{p.diff}{Expected difference in probability of outcome between groups, defined as p.diff = p1 - p2
-At least 2 of the following 3 arguments must be specified when using expected odds ratios:}
+\item{p1}{Expected probability of outcome in non-treatment group (required)}
 
-\item{p1}{Expected probability of outcome in non-treatment group}
+\item{p2}{Expected probability of outcome in treatment group (required)}
 
-\item{p2}{Expected probability of outcome in treatment group}
-
-\item{sigma_b}{Between-cluster variance; if sigma_b2 is not specified, 
-between cluster variances are assumed to be equal for both groups. Accepts numeric.
-If between cluster variances differ between treatment groups, sigma_b2 must also be specified:}
+\item{sigma_b}{Between-cluster variance; defaults to 0. Accepts numeric.}
 
 \item{sigma_b2}{Between-cluster variance for clusters in TREATMENT group}
 
@@ -88,8 +81,8 @@ P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 }
 \examples{
 \dontrun{
-binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 50, nclusters = 6, p1 = 0.4,
-                        p2 = 0.2, sigma_b = 100, alpha = 0.05, method = 'glmm', 
+binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 30, nclusters = 10, p1 = 0.5,
+                        p2 = 0.2, sigma_b = 0, sigma_b2 = 1, alpha = 0.05, 
                         all.sim.data = FALSE)
 }
 }
@@ -97,7 +90,7 @@ binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 50, nclusters = 6, p1 = 0
 Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and 
 Advanced Multilevel Modelling. London, 1999: Sage.
 
-Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation 
+Eldridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation 
 Coefficient in Cluster Randomized Trials: 
 A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. 
 doi: 10.1111/j.1751-5823.2009.00092.x

@@ -21,16 +21,11 @@
 #' P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per cluster; accepts integer (required). 
+#' @param nsubjects Number of subjects per cluster in the clustered (treatment) group; accepts integer (required). 
 #' @param nclusters Number of clusters per treatment group; accepts integer (required).
-#' At least 2 of the following 3 arguments must be specified when using expected probabilities:
-#' @param p1 Expected probability of outcome in non-treatment group
-#' @param p2 Expected probability of outcome in treatment group
-#' @param p.diff Expected difference in probability of outcome between groups, defined as p.diff = p1 - p2
-#' At least 2 of the following 3 arguments must be specified when using expected odds ratios:
-#' @param sigma_b Between-cluster variance; if sigma_b2 is not specified, 
-#' between cluster variances are assumed to be equal for both groups. Accepts numeric.
-#' If between cluster variances differ between treatment groups, sigma_b2 must also be specified:
+#' @param p1 Expected probability of outcome in non-treatment group (required)
+#' @param p2 Expected probability of outcome in treatment group (required)
+#' @param sigma_b Between-cluster variance; defaults to 0. Accepts numeric.
 #' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
 #' @param alpha Significance level; default = 0.05
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
@@ -63,7 +58,7 @@
 #' 
 #' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and 
 #' Advanced Multilevel Modelling. London, 1999: Sage.
-#' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation 
+#' @references Eldridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation 
 #' Coefficient in Cluster Randomized Trials: 
 #' A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. 
 #' doi: 10.1111/j.1751-5823.2009.00092.x
@@ -80,7 +75,7 @@
 
 #FIXME add irgtt equation in cps.binary
 # Define function
-cps.irgtt.binary <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
+cps.irgtt.binary <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                       p1 = NULL, p2 = NULL, sigma_b = 0, sigma_b2 = 0, 
                       alpha = 0.05, 
                       quiet = TRUE, all.sim.data = FALSE, seed = NA){
@@ -100,7 +95,7 @@ cps.irgtt.binary <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.
     nclust <- c(1, nclusters)
   }
   
-  sim <- cps.binary(nsim = nsim, nsubjects = nsubjects, nclusters = nclust, p.diff = p.diff,
+  sim <- cps.binary(nsim = nsim, nsubjects = nsubjects, nclusters = nclust,
                         p1 = p1, p2 = p2, or1 = NULL, or2 = NULL, or.diff = NULL, 
                         sigma_b = sigma_b, sigma_b2 = sigma_b2, alpha = alpha, method = 'glmm', 
                         quiet = quiet, all.sim.data = all.sim.data, seed = seed, irgtt = TRUE)
