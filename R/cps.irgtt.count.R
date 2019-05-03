@@ -28,7 +28,7 @@
 #' If between cluster variances differ between treatment groups, the following must also be specified:
 #' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
 #' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
-#' @param analysis Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
+#' @param analysis Family used for regression; currently only applicable for GLMM. Accepts 'poisson' or 'neg.binom' (required); default = 'poisson'
 #' @param alpha Significance level. Default = 0.05.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
@@ -66,8 +66,8 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' count.sim = cps.irgtt.count(nsim = 100, nsubjects = 50, nclusters = 6, c1 = 100,
-#'                       c2 = 25, sigma_b2 = 100, family = 'poisson', analysis = 'poisson',
+#' count.sim <- cps.irgtt.count(nsim = 100, nsubjects = 50, nclusters = 60, c1 = 1000,
+#'                       c2 = 2500, sigma_b2 = 10, family = 'poisson', analysis = 'poisson',
 #'                       alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
 #' }
 #'

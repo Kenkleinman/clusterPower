@@ -213,10 +213,18 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
       
     # Create treatment y-value
     y1.intercept = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
+    print("y1.intercept")
+    print(y1.intercept)
     y1.linpred = y1.intercept + log(c2) #+ log((c1 / (1 - c1)) / (c2 / (1 - c2)))
+    print("y1.linpred")
+    print(y1.linpred)
     y1.prob = exp(y1.linpred)
+    print("y1.prob")
+    print(y1.prob)
     if(family == 'poisson'){
       y1 = stats::rpois(length(y1.prob), y1.prob)
+      print("y1")
+      print(y1)
     }
     if(family == 'neg.binom'){
       y1 = stats::rnbinom(length(y1.prob), size = 1, mu = y1.prob)
@@ -226,7 +234,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     y = c(y0, y1)
     
     # Create and store data for simulated dataset
-    sim.dat = data.frame(y = y, trt = trt, clust = clust)
+    sim.dat = data.frame(y = as.integer(y), trt = as.factor(trt), clust = as.factor(clust))
     if(all.sim.data == TRUE){
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
@@ -236,29 +244,37 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
       if(irgtt == FALSE){
         if(analysis == 'poisson'){
           require("optimx")
+          print(trt)
+          print(clust)
+          print(y)
           my.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat, 
-                               family = stats::poisson(link = 'log'), 
-                               control = lme4::lmerControl(optimizer = c("optimx", "bobyqa")))
+                               family = stats::poisson(link = 'log'))
         }
         if(analysis == 'neg.binom'){
           my.mod = lme4::glmer.nb(y ~ trt + (1|clust), data = sim.dat)
         }
+        glmm.values = summary(my.mod)$coefficient
+        est.vector = append(est.vector, glmm.values['trt1', 'Estimate'])
+        se.vector = append(se.vector, glmm.values['trt1', 'Std. Error'])
+        stat.vector = append(stat.vector, glmm.values['trt1', 'z value'])
+        pval.vector = append(pval.vector, glmm.values['trt1', 'Pr(>|z|)'])  
       } else {
         if(analysis == 'poisson'){
           require("optimx")
-          my.mod <- lme4::lmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
+          my.mod <- lme4::glmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
                                family = stats::poisson(link = 'log'),                                
-                               control = lme4::lmerControl(optimizer = c("optimx", "bobyqa")))
+                               control = lme4::glmerControl(optimizer = "optimx", 
+                                                            optCtrl = list(method= "nlminb")))
         }
         if(analysis == 'neg.binom'){
           my.mod = lme4::glmer.nb(y ~ trt + (0 + trt|clust), data = sim.dat)
         }        
       }
       glmm.values = summary(my.mod)$coefficient
-      est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
-      pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
+      est.vector = append(est.vector, glmm.values['trt1', 'Estimate'])
+      se.vector = append(se.vector, glmm.values['trt1', 'Std. Error'])
+      stat.vector = append(stat.vector, glmm.values['trt1', 'z value'])
+      pval.vector = append(pval.vector, glmm.values['trt1', 'Pr(>|z|)'])  
     }
     # Fit GEE (geeglm)
     if(method == 'gee'){
