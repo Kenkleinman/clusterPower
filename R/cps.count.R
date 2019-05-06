@@ -16,8 +16,8 @@
 #' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per cluster; accepts integer (required). 
-#' @param nclusters Number of clusters per treatment group; accepts integer (required).
+#' @param nsubjects Number of subjects per cluster; accepts a single integer or a vector of 2 integers (if nsubjects differs between arms) (required). 
+#' @param nclusters Number of clusters per treatment group; accepts a single integer or a vector of 2 integers (if nsubjects differs between arms) (required).
 #' At least 2 of the following 3 arguments must be specified:
 #' @param c1 Expected outcome count in non-treatment group
 #' @param c2 Expected outcome count in treatment group
@@ -66,8 +66,8 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' count.sim = cps.count(nsim = 100, nsubjects = 50, nclusters = 6, c1 = 100,
-#'                       c2 = 25, sigma_b = 100, family = 'poisson', analysis = 'poisson',
+#' count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 36, c1 = 100,
+#'                       c2 = 200, sigma_b = 1, family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
 #' }
 #'
@@ -123,12 +123,12 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   }
   # Set sample sizes for each cluster (if not already specified)
   if(length(nsubjects) == 1){
-    nsubjects[1:sum(nclusters)] = nsubjects
+    nsubjects = c(nsubjects, nsubjects)
   } 
   if(nclusters[1] == nclusters[2] && length(nsubjects) == nclusters[1]){
     nsubjects = rep(nsubjects, 2)
   }
-  if(length(nclusters) == 2 && length(nsubjects) != 1 && length(nsubjects) != sum(nclusters)){
+  if(length(nclusters) == 2 && length(nsubjects) != 1 && length(nsubjects) != length(nclusters)){
     stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS")
   }
   
@@ -190,10 +190,13 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   }
   
   # Create indicators for treatment group & cluster
-  trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
-          rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
-  clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
-  
+  trt = c(rep(0, length.out = nsubjects[1]*nclusters[1]), 
+          #rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
+          rep(1, length.out = nsubjects[2]*nclusters[2]))
+  clust = c(rep(1:nclusters[1], each = nsubjects[1]), rep((nclusters[1] + 1):(nclusters[1] + nclusters[2]), 
+                                                          each = nsubjects[2]))
+  #clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
+
   # Create simulation loop
   for(i in 1:nsim){
     # Generate between-cluster effects for non-treatment and treatment
@@ -201,7 +204,8 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
     
     # Create non-treatment y-value
-    y0.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
+    #y0.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
+    y0.intercept <- rep(randint.0, each = nsubjects[1])
     y0.linpred = y0.intercept + log(c1) 
     y0.prob = exp(y0.linpred)
     if(family == 'poisson'){
@@ -212,19 +216,12 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     }
       
     # Create treatment y-value
-    y1.intercept = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
-    print("y1.intercept")
-    print(y1.intercept)
+    #y1.intercept = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
+    y1.intercept <- rep(randint.1, each = nsubjects[2])
     y1.linpred = y1.intercept + log(c2) #+ log((c1 / (1 - c1)) / (c2 / (1 - c2)))
-    print("y1.linpred")
-    print(y1.linpred)
     y1.prob = exp(y1.linpred)
-    print("y1.prob")
-    print(y1.prob)
     if(family == 'poisson'){
       y1 = stats::rpois(length(y1.prob), y1.prob)
-      print("y1")
-      print(y1)
     }
     if(family == 'neg.binom'){
       y1 = stats::rnbinom(length(y1.prob), size = 1, mu = y1.prob)
@@ -244,9 +241,6 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
       if(irgtt == FALSE){
         if(analysis == 'poisson'){
           require("optimx")
-          print(trt)
-          print(clust)
-          print(y)
           my.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat, 
                                family = stats::poisson(link = 'log'))
         }
@@ -260,11 +254,12 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
         pval.vector = append(pval.vector, glmm.values['trt1', 'Pr(>|z|)'])  
       } else {
         if(analysis == 'poisson'){
-          require("optimx")
+         # require("optimx")
           my.mod <- lme4::glmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
-                               family = stats::poisson(link = 'log'),                                
-                               control = lme4::glmerControl(optimizer = "optimx", 
-                                                            optCtrl = list(method= "nlminb")))
+                               family = stats::poisson(link = 'log')#,                                
+                              # control = lme4::glmerControl(optimizer = "optimx", 
+          #                                                  optCtrl = list(method= "nlminb"))
+          )
         }
         if(analysis == 'neg.binom'){
           my.mod = lme4::glmer.nb(y ~ trt + (0 + trt|clust), data = sim.dat)
@@ -350,8 +345,8 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
                         'Difference' = c("count" = c.diff, 'risk.ratio' = c2.c1.rr - c1.c2.rr)))
   
   # Create object containing group-specific cluster sizes
-  cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 
-                       'Treatment' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
+  cluster.sizes = list('Non.Treatment' = rep (nsubjects[1], length.out = nclusters[1]), 
+                       'Treatment' = rep(nsubjects[2], length.out = nclusters[2]))
   
   # Create object containing number of clusters
   n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), 
