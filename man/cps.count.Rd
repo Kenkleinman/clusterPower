@@ -13,9 +13,9 @@ cps.count(nsim = NULL, nsubjects = NULL, nclusters = NULL,
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
 
-\item{nsubjects}{Number of subjects per cluster; accepts integer (required).}
+\item{nsubjects}{Number of subjects per cluster; accepts a single integer or a vector of 2 integers (if nsubjects differs between arms) (required).}
 
-\item{nclusters}{Number of clusters per treatment group; accepts integer (required).
+\item{nclusters}{Number of clusters per treatment group; accepts a single integer or a vector of 2 integers (if nsubjects differs between arms) (required).
 At least 2 of the following 3 arguments must be specified:}
 
 \item{c1}{Expected outcome count in non-treatment group}
@@ -88,8 +88,8 @@ while the function is running.
 }
 \examples{
 \dontrun{
-count.sim = cps.count(nsim = 100, nsubjects = 50, nclusters = 6, c1 = 100,
-                      c2 = 25, sigma_b = 100, family = 'poisson', analysis = 'poisson',
+count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 36, c1 = 100,
+                      c2 = 200, sigma_b = 1, family = 'poisson', analysis = 'poisson',
                       method = 'glmm', alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
 }
 

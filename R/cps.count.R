@@ -191,12 +191,9 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   
   # Create indicators for treatment group & cluster
   trt = c(rep(0, length.out = nsubjects[1]*nclusters[1]), 
-          #rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
           rep(1, length.out = nsubjects[2]*nclusters[2]))
   clust = c(rep(1:nclusters[1], each = nsubjects[1]), rep((nclusters[1] + 1):(nclusters[1] + nclusters[2]), 
                                                           each = nsubjects[2]))
-  #clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
-
   # Create simulation loop
   for(i in 1:nsim){
     # Generate between-cluster effects for non-treatment and treatment
@@ -204,7 +201,6 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
     
     # Create non-treatment y-value
-    #y0.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
     y0.intercept <- rep(randint.0, each = nsubjects[1])
     y0.linpred = y0.intercept + log(c1) 
     y0.prob = exp(y0.linpred)
@@ -216,7 +212,6 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     }
       
     # Create treatment y-value
-    #y1.intercept = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
     y1.intercept <- rep(randint.1, each = nsubjects[2])
     y1.linpred = y1.intercept + log(c2) #+ log((c1 / (1 - c1)) / (c2 / (1 - c2)))
     y1.prob = exp(y1.linpred)
@@ -229,6 +224,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     
     # Create single response vector
     y = c(y0, y1)
+    print(y)
     
     # Create and store data for simulated dataset
     sim.dat = data.frame(y = as.integer(y), trt = as.factor(trt), clust = as.factor(clust))
