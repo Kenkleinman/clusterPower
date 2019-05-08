@@ -15,7 +15,7 @@
 #' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per treatment group; accepts either a scalar (equal cluster sizes, both groups), 
+#' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes, both groups), 
 #' a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
 #' (unequal cluster sizes within groups) (required).
 #' @param nclusters Number of clusters per group; accepts single integer or vector of length 2 for unequal number 
@@ -25,6 +25,7 @@
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
 #' @param sigma Within-cluster variance; accepts numeric
 #' @param sigma_b Between-cluster variance; accepts numeric
+#' 
 #' If clusters differ between treatment groups, at least 2 of the following 
 #' must be specified:
 #' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
@@ -35,6 +36,7 @@
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param seed Option to set the seed. Default is NA.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -68,11 +70,9 @@
 #'                         ICC = 0.2, sigma = 100, alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
-#' 
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
-#' @author Alexander R. Bogdan 
-#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
-#'
+#' @author Alexander R. Bogdan, @author Alexandria C. Sakrejda 
+#' (\email{acbro0@@umass.edu}), and @author Ken Kleinman 
+#' (\email{ken.kleinman@@gmail.com})
 #' @export
 
 
@@ -80,7 +80,12 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
                       ICC = NULL, sigma = NULL, sigma_b = NULL,
                       ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL,
                       alpha = 0.05, method = 'glmm', quiet = FALSE,
-                      all.sim.data = FALSE){
+                      all.sim.data = FALSE, seed = NA, irgtt = FALSE){
+  
+  # option for reproducibility
+  if (!is.na(seed)){
+    set.seed(seed=seed)
+  }
   
   # Create vectors to collect iteration-specific values
   est.vector = NULL
@@ -108,7 +113,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   if(!is.wholenumber(nsim) || nsim < 1){
     stop(paste0("NSIM", min1.warning))
   }
-  if(!is.wholenumber(nclusters) || nclusters < 1){
+    if(!is.wholenumber(nclusters) || nclusters < 1){
     stop(paste0("NCLUSTERS", min1.warning))
   }
   if(!is.wholenumber(nsubjects) || nsubjects < 1){
@@ -237,7 +242,11 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
+      if(irgtt == TRUE){
+        my.mod <- lme4::lmer(y ~ trt + (0 + trt|clust))
+      } else {
+        my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
+      }
       glmm.values = summary(my.mod)$coefficient
       p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(nclusters) - 2)
       est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
@@ -247,6 +256,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     }
     
     # Fit GEE (geeglm)
+    # Note: there is no option for GEE with irgtt
     if(method == 'gee'){
       sim.dat = dplyr::arrange(sim.dat, clust)
       my.mod = geepack::geeglm(y ~ trt, data = sim.dat,
@@ -286,8 +296,11 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   
   ## Output objects
   # Create object containing summary statement
+  if (irgtt == FALSE) {
   summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: Simple Design, Continuous Outcome")
-  
+  } else {
+    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: IRGTT Design, Continuous Outcome")
+  }
   # Create method object
   long.method = switch(method, glmm = 'Generalized Linear Mixed Model', 
                        gee = 'Generalized Estimating Equation')
