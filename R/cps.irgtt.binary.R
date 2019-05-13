@@ -31,7 +31,7 @@
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time, default is TRUE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE
-#' @param seed option to set seed. Default is NA.
+#' @param seed Option to set seed. Default is NA.
 #'  
 #' @return A list with the following components
 #' \itemize{
@@ -77,7 +77,7 @@
 # Define function
 cps.irgtt.binary <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                       p1 = NULL, p2 = NULL, sigma_b = 0, sigma_b2 = 0, 
-                      alpha = 0.05, 
+                      alpha = 0.05,
                       quiet = TRUE, all.sim.data = FALSE, seed = NA){
   
   if (sigma_b == 0 & sigma_b2 == 0){

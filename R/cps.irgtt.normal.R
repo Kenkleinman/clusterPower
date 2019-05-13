@@ -25,6 +25,7 @@
 #' @param alpha Significance level; default = 0.05.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param seed Option to set seed. Default is NA.
 #' At least 2 of the following must be specified:
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
 #' @param sigma Within-cluster variance; accepts numeric
@@ -76,7 +77,7 @@ cps.irgtt.normal <-  function(nsim = NULL, nsubjects = NULL, nclusters = NULL, d
                       ICC = NULL, sigma = NULL, sigma_b = 0,
                       ICC2 = ICC, sigma2 = sigma, sigma_b2 = 0,
                       alpha = 0.05, method = 'glmm', quiet = FALSE,
-                      all.sim.data = FALSE){
+                      all.sim.data = FALSE, seed = NA){
   if (sigma_b == 0 & sigma_b2 == 0){
     warning("Sigma_b in both arms is 0. This is equivalent to a t-test. Did you mean to enter a sigma_b value for the arm containing clustered observations?")
   }
@@ -94,9 +95,9 @@ cps.irgtt.normal <-  function(nsim = NULL, nsubjects = NULL, nclusters = NULL, d
   sim = cps.normal(nsim = nsim, nsubjects = nsubjects, nclusters = nclust, 
                    difference = difference, ICC = ICC, ICC2 = ICC2, 
                    sigma = sigma, sigma2 = sigma2, alpha = alpha, 
-                   sigma_b = sigma_b, sigma_b2 = sigma_b2,
+                   sigma_b = sigma_b, sigma_b2 = sigma_b2, 
                    method = "glmm", quiet = quiet, all.sim.data = all.sim.data,
-                   irgtt = TRUE)
+                   seed = seed, irgtt = TRUE)
   return(sim)
 }
   

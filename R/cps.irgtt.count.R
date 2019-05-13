@@ -31,7 +31,8 @@
 #' @param analysis Family used for regression; currently only applicable for GLMM. Accepts 'poisson' or 'neg.binom' (required); default = 'poisson'
 #' @param alpha Significance level. Default = 0.05.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.
-#' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
+#' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE.
+#' @param seed Option to set seed. Default is NA.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -77,7 +78,7 @@
 cps.irgtt.count <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL, c2 = NULL, 
                      c.diff = NULL, sigma_b = 0, sigma_b2 = 0, family = 'poisson', 
                      analysis = 'poisson', alpha = 0.05, quiet = FALSE, 
-                     all.sim.data = FALSE){
+                     all.sim.data = FALSE, seed = NA){
   
   if (sigma_b == 0 & sigma_b2 == 0){
     warning("Sigma_b in both arms is 0. This is equivalent to a t-test. Did you mean to 
@@ -97,6 +98,6 @@ cps.irgtt.count <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 
   sim <- cps.count(nsim = nsim, nsubjects = nsubjects, nclusters = nclusters, c1 = c1, c2 = c2, 
                    c.diff = c.diff, sigma_b = sigma_b, sigma_b2 = sigma_b2, family = family, 
                    analysis = analysis, method = 'glmm', alpha = alpha, quiet = quiet, 
-                   all.sim.data = all.sim.data, irgtt = TRUE)
+                   all.sim.data = all.sim.data, seed = seed, irgtt = TRUE)
   return(sim)
   }
