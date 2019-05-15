@@ -66,8 +66,8 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 30,
-#'                         ICC = 0.2, sigma = 100, alpha = 0.05, method = 'glmm', 
+#' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 9, difference = 10,
+#'                         ICC = 0.3, sigma = 100, alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
 #' @author Alexander R. Bogdan, @author Alexandria C. Sakrejda 

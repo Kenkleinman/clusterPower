@@ -212,11 +212,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
       }
       p1 = or1 / (1 + or1)
       p2 = or2 / (1 + or2)
-<<<<<<< HEAD
     #  p.diff = abs(p1 - p2)
-=======
-    #  p.diff = abs(p1 - p2)
->>>>>>> 8f5623760bae95c713021ac2f19effa09a3defcb
     }
     
     # Calculate ICC1 (sigma_b / (sigma_b + pi^2/3))
