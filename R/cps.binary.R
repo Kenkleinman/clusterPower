@@ -388,8 +388,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
     p1.p2.or = round(p1 / (1 - p1) / (p2 / (1 - p2)), 3) 
     p2.p1.or = round(p2 / (1 - p2) / (p1 / (1 - p1)), 3) 
     inputs = t(data.frame('Non.Treatment' = c("probability" = p1, "odds.ratio" = p1.p2.or), 
-                          'Treatment' = c("probability" = p2, 'odds.ratio' = p2.p1.or), 
-                          'Difference' = c("probability" = p.diff, 'odds.ratio' = p2.p1.or - p1.p2.or)))
+                          'Treatment' = c("probability" = p2, 'odds.ratio' = p2.p1.or)))#, 
+                         # 'Difference' = c("probability" = p.diff, 'odds.ratio' = p2.p1.or - p1.p2.or)))
 
     # Create object containing group-specific cluster sizes
     cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 
