@@ -224,7 +224,6 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     
     # Create single response vector
     y = c(y0, y1)
-    print(y)
     
     # Create and store data for simulated dataset
     sim.dat = data.frame(y = as.integer(y), trt = as.factor(trt), clust = as.factor(clust))
@@ -257,7 +256,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
           #                                                  optCtrl = list(method= "nlminb"))
           )
         }
-        if(analysis == 'neg.binom'){
+        if(analysis == 'neg.binom'){ # this is not tested
           my.mod = lme4::glmer.nb(y ~ trt + (0 + trt|clust), data = sim.dat)
         }        
       }

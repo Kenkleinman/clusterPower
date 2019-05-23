@@ -283,7 +283,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
       
       # Calculate LMER.ICC (lmer: sigma_b / (sigma_b + sigma))
       if(irgtt==FALSE){
-        lmer.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat,
+        lmer.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat,
                             family = stats::binomial(link = 'logit'))
         lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
         lmer.icc.vector = append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
@@ -292,7 +292,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
       # Fit GLMM (lmer)
       if(method == 'glmm'){
         if(irgtt==TRUE){
-          my.mod <- lme4::lmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
+          my.mod <- lme4::glmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
                                family = stats::binomial(link = 'logit'))
         } else {
         my.mod = try(lme4::glmer(y ~ trt + (1|clust), data = sim.dat, 

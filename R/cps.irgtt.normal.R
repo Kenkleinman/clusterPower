@@ -63,8 +63,8 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = c(100, 10), 
-#'                        nclusters = 10, difference = 16,
+#' irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = c(75, 10), 
+#'                        nclusters = 5, difference = 10,
 #'                         sigma = 100, sigma_b2 = 25, alpha = 0.05,
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
@@ -85,8 +85,7 @@ cps.irgtt.normal <-  function(nsim = NULL, nsubjects = NULL, nclusters = NULL, d
     warning("Sigma_b is not zero for either arm. Did you want to use cps.normal()?")
   }
   if (sigma_b != 0 & sigma_b2 == 0){
-    stop("Non-clustered group must be entered as the reference group.")
-    nclust <- c(nclusters, 1)
+    stop("Non-clustered group must be the reference group.")
   }
   if (sigma_b2 != 0){
     nclust <- c(1, nclusters)

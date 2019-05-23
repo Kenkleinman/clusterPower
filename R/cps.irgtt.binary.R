@@ -65,7 +65,7 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 30, nclusters = 10, p1 = 0.5,
+#' irgtt.binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 30, nclusters = 10, p1 = 0.5,
 #'                         p2 = 0.2, sigma_b = 0, sigma_b2 = 1, alpha = 0.05, 
 #'                         all.sim.data = FALSE)
 #' }
