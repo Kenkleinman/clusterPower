@@ -23,8 +23,7 @@
 #' @param c1 Expected outcome count in non-treatment group
 #' @param c2 Expected outcome count in treatment group
 #' @param c.diff Expected difference in outcome count between groups, defined as c.diff = c1 - c2
-#' @param sigma_b Between-cluster variance; if sigma_b2 is not specified, 
-#' between cluster variances are assumed to be equal between groups. Accepts numeric
+#' @param sigma_b Between-cluster variance; defaults to 0. Accepts numeric.
 #' If between cluster variances differ between treatment groups, the following must also be specified:
 #' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
 #' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'

@@ -30,7 +30,7 @@ cps.irgtt.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
 
 \item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE}
 
-\item{seed}{option to set seed. Default is NA.}
+\item{seed}{Option to set seed. Default is NA.}
 
 \item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.}
 }
@@ -81,7 +81,7 @@ P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 }
 \examples{
 \dontrun{
-binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 30, nclusters = 10, p1 = 0.5,
+irgtt.binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 30, nclusters = 10, p1 = 0.5,
                         p2 = 0.2, sigma_b = 0, sigma_b2 = 1, alpha = 0.05, 
                         all.sim.data = FALSE)
 }

@@ -8,7 +8,7 @@ randomized group treatment trials.}
 cps.irgtt.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
   difference = NULL, ICC = NULL, sigma = NULL, sigma_b = 0,
   ICC2 = ICC, sigma2 = sigma, sigma_b2 = 0, alpha = 0.05,
-  method = "glmm", quiet = FALSE, all.sim.data = FALSE)
+  method = "glmm", quiet = FALSE, all.sim.data = FALSE, seed = NA)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -23,9 +23,8 @@ a vector of length two (equal cluster sizes within groups), or a vector of lengt
 
 \item{ICC}{Intra-cluster correlation coefficient; accepts a value between 0 - 1}
 
-\item{sigma}{Within-cluster variance; accepts numeric}
-
-\item{sigma_b}{Between-cluster variance; accepts numeric
+\item{sigma}{Within-cluster variance; accepts numeric
+#' @param sigma_b Between-cluster variance; defaults to 0. Accepts numeric.
 If clusters differ between treatment groups, at least 1 of the following 
 must be specified: ICC2, sigma2.}
 
@@ -33,13 +32,15 @@ must be specified: ICC2, sigma2.}
 
 \item{sigma2}{Within-cluster variance for clusters in TREATMENT group}
 
-\item{sigma_b2}{Between-cluster variance for clusters in TREATMENT group}
+\item{sigma_b2}{Between-cluster variance for clusters in TREATMENT group.}
 
 \item{alpha}{Significance level; default = 0.05.}
 
 \item{quiet}{When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.}
 
-\item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.
+\item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
+
+\item{seed}{Option to set seed. Default is NA.
 At least 2 of the following must be specified:}
 }
 \value{
@@ -86,8 +87,8 @@ and simulated data set output may also be specified.
 }
 \examples{
 \dontrun{
-irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = c(100, 10), 
-                       nclusters = 10, difference = 16,
+irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = c(75, 10), 
+                       nclusters = 5, difference = 10,
                         sigma = 100, sigma_b2 = 25, alpha = 0.05,
                         quiet = FALSE, all.sim.data = FALSE)
 }

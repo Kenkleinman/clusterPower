@@ -243,7 +243,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     # Fit GLMM (lmer)
     if(method == 'glmm'){
       if(irgtt == TRUE){
-        my.mod <- lme4::lmer(y ~ trt + (0 + trt|clust))
+        my.mod <- lme4::lmer(y ~ trt + (0 + trt|clust), data = sim.dat)
       } else {
         my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
       }

@@ -8,7 +8,7 @@ group treatment trial designs, count outcome.}
 cps.irgtt.count(nsim = NULL, nsubjects = NULL, nclusters = NULL,
   c1 = NULL, c2 = NULL, c.diff = NULL, sigma_b = 0, sigma_b2 = 0,
   family = "poisson", analysis = "poisson", alpha = 0.05,
-  quiet = FALSE, all.sim.data = FALSE)
+  quiet = FALSE, all.sim.data = FALSE, seed = NA)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -24,8 +24,7 @@ At least 2 of the following 3 arguments must be specified:}
 
 \item{c.diff}{Expected difference in outcome count between groups, defined as c.diff = c1 - c2}
 
-\item{sigma_b}{Between-cluster variance; if sigma_b2 is not specified, 
-between cluster variances are assumed to be equal between groups. Accepts numeric
+\item{sigma_b}{Between-cluster variance; defaults to 0. Accepts numeric.
 If between cluster variances differ between treatment groups, the following must also be specified:}
 
 \item{sigma_b2}{Between-cluster variance for clusters in TREATMENT group}
@@ -38,7 +37,9 @@ If between cluster variances differ between treatment groups, the following must
 
 \item{quiet}{When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.}
 
-\item{all.sim.data}{Option to output list of all simulated datasets. Default = FALSE}
+\item{all.sim.data}{Option to output list of all simulated datasets. Default = FALSE.}
+
+\item{seed}{Option to set seed. Default is NA.}
 }
 \value{
 A list with the following components

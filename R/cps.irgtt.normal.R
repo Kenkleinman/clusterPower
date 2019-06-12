@@ -29,12 +29,12 @@
 #' At least 2 of the following must be specified:
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
 #' @param sigma Within-cluster variance; accepts numeric
-#' @param sigma_b Between-cluster variance; accepts numeric
+#' #' @param sigma_b Between-cluster variance; defaults to 0. Accepts numeric.
 #' If clusters differ between treatment groups, at least 1 of the following 
 #' must be specified: ICC2, sigma2.
 #' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
 #' @param sigma2 Within-cluster variance for clusters in TREATMENT group
-#' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
+#' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group.
 #' 
 #' @return A list with the following components:
 #' \itemize{
