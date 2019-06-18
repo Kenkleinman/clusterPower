@@ -98,7 +98,7 @@ normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 9, difference = 
 }
 }
 \author{
-Alexander R. Bogdan, @author Alexandria C. Sakrejda 
-(\email{acbro0@umass.edu}), and @author Ken Kleinman 
+Alexander R. Bogdan, Alexandria C. Sakrejda 
+(\email{acbro0@umass.edu}), and Ken Kleinman 
 (\email{ken.kleinman@gmail.com})
 }

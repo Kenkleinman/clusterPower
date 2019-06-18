@@ -70,8 +70,8 @@
 #'                         ICC = 0.3, sigma = 100, alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
-#' @author Alexander R. Bogdan, @author Alexandria C. Sakrejda 
-#' (\email{acbro0@@umass.edu}), and @author Ken Kleinman 
+#' @author Alexander R. Bogdan, Alexandria C. Sakrejda 
+#' (\email{acbro0@@umass.edu}), and Ken Kleinman 
 #' (\email{ken.kleinman@@gmail.com})
 #' @export
 
@@ -92,6 +92,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
+  fail.vector = NULL
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -253,6 +254,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
       se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
       stat.vector = append(stat.vector, glmm.values['trt', 't value'])
       pval.vector = append(pval.vector, p.val)
+      fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
     }
     
     # Fit GEE (geeglm)
@@ -329,10 +331,12 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
                            'Treatment' = c('ICC' = ICC[2], 'sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
   
+  fail <- unlist(fail.vector)
+  
   # Create list containing all output (class 'crtpwr') and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                   "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets), 
+                                   "inputs" = difference, "model.estimates" = cps.model.est, "convergence.error" = fail, "sim.data" = simulated.datasets), 
                               class = 'crtpwr')
   return(complete.output)
   }
