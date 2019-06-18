@@ -63,6 +63,9 @@
 #' of fits fail to converge or power<0.5 after 50 iterations; default = FALSE. 
 #' @param tdist Logical; use t-distribution instead of normal distribution 
 #' for simulation values, default = FALSE.
+#' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
+#' the overall model comparisons, and the convergence report vector. This is equivalent
+#' to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{
@@ -154,7 +157,8 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                         all.sim.data = FALSE, seed = NA, 
                         cores=NULL,
                         poor.fit.override = FALSE, 
-                        tdist=FALSE){
+                        tdist=FALSE,
+                        return.all.models = FALSE){
 
   # Create wholenumber function
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
@@ -272,15 +276,25 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    t.val = matrix(NA, nrow = nsim, ncol = narms)
    p.val = matrix(NA, nrow = nsim, ncol = narms)
  
+  if(max(sigma_sq)!=min(sigma_sq)){
+    for (i in 1:nsim){
+      Estimates[i,] <- models[[i]][,1]
+      std.error[i,] <- models[[i]][,2]
+      t.val[i,] <- models[[i]][,4]
+      p.val[i,] <- models[[i]][,5]
+    }
+    keep.names <- rownames(models[[1]])
+  } else {
    for (i in 1:nsim){
      Estimates[i,] <- models[[i]][[10]][,1]
      std.error[i,] <- models[[i]][[10]][,2]
      t.val[i,] <- models[[i]][[10]][,4]
      p.val[i,] <- models[[i]][[10]][,5]
    }
+    keep.names <- rownames(models[[1]][[10]])
+   }
  
  # Organize the row/col names for the model estimates output
-   keep.names <- rownames(models[[1]][[10]])
  
    names.Est <- rep(NA, narms)
    names.st.err <- rep(NA, narms)
@@ -335,7 +349,14 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                               "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
                               "sim.data" <-  normal.ma.rct[[3]], 
                               "failed.to.converge" <-  normal.ma.rct[[4]])
-   } else {
+   } 
+   if (return.all.models == TRUE) {
+     complete.output <-  list("power" <-  power.parms[-1,],
+                              "model.estimates" <-  ma.model.est, 
+                              "overall.power" <- LRT.holder,
+                              "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
+                              "all.models" <-  normal.ma.rct)
+     } else {
      complete.output <-  list("power" <-  power.parms[-1,],
                               "overall.power" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
                               "proportion.failed.to.converge" <- normal.ma.rct[[3]])

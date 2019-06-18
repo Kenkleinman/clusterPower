@@ -99,8 +99,6 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   narms = length(str.nsubjects)
   nclusters = sapply(str.nsubjects, length)
   
-  # validation goes here
-  
   # Set start.time for progress iterator & initialize progress bar
   start.time = Sys.time()
   prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
@@ -170,23 +168,42 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       y.wclust[[j]] <-  lapply(str.nsubjects[[j]], function(x) stats:: rnorm(x, mean = means[j], 
                                                                              sd = sqrt(sigma_sq[j])))
     }
-    
+
     # Create data frame for simulated dataset
-    sim.dat[[i]][["y"]] <-  as.vector(unlist(y.bclust) + unlist(y.wclust))
-    
+    y <- as.vector(unlist(y.bclust) + unlist(y.wclust))
+    sim.dat[[i]][["y"]] <- y
+  
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod <-  lmerTest::lmer(y ~ trt + (1|clust), data = sim.dat[[i]],
-                                control = lmerControl(optimizer = "optimx", calc.derivs = FALSE,
-                                                      optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE)))
+      if (max(sigma_sq)!=min(sigma_sq)){
+        trt2 <- unlist(trt)
+        clust2 <- unlist(clust)
+      my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
+                     weights=nlme::varIdent(form=~1|as.factor(trt2)))
+      model.values[[i]] <-  summary(my.mod)$tTable
+      # get the overall p-values (>Chisq)
+      null.mod <- try(nlme::lme(y~1, random=~1+as.factor(trt2)|clust2, 
+                            weights=nlme::varIdent(form=~1|as.factor(trt2))))
+      }
+    if(max(sigma_sq)==min(sigma_sq)){
+      if (length(sigma_b_sq==2)){
+        my.mod <-  lmerTest::lmer(y~trt+(1|clust), data = sim.dat[[i]])
+      } else {
+        my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), 
+          data = sim.dat[[i]])
+        print("line 194 success!")
+      }
+      
       model.values[[i]] <-  summary(my.mod)
+      # get the overall p-values (>Chisq)
+      null.mod <- update.formula(my.mod, y ~ (1|clust))
       # option to stop the function early if fits are singular
       fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
       if (poor.fit.override==FALSE){
         if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+        }
       }
     }
-  
   # Fit GEE (geeglm)
   if(method == 'gee'){
     data.holder = dplyr::arrange(sim.dat[[i]], clust)
@@ -195,10 +212,8 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     model.values[[i]] = summary(my.mod)
   }
     
-  # get the overall p-values (>Chisq)
-  null.mod <- update.formula(my.mod, y ~ (1|clust))
-  model.compare[[i]] <- anova(my.mod, null.mod)
-  
+
+  model.compare[[i]] <- try(anova(my.mod, null.mod))
   # stop the loop if power is <0.5
   if (poor.fit.override==FALSE){
     if (i > 50 & (i %% 10==0)){
@@ -212,7 +227,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     }
     }
   }
-
+  
   # Update simulation progress information
   if(quiet == FALSE){
     if(i == 1){
@@ -243,16 +258,16 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   if (!exists("cores", mode = "NULL")){
     parallel::stopCluster(cl)
   }
-  
+
   ## Output objects
   if(all.sim.data == TRUE){
     complete.output.internal <-  list("estimates" = model.values,
-                                      "model.comparisons" = model.compare,
+                                      "model.comparisons" = try(model.compare),
                                       "sim.data" = sim.dat,
                                       "failed.to.converge"= fail)
   } else {
     complete.output.internal <-  list("estimates" = model.values,
-                                      "model.comparisons" = model.compare,
+                                      "model.comparisons" = try(model.compare),
                                     "failed.to.converge" =  paste((sum(fail)/nsim)*100, "% did not converge", sep=""))
   }
   return(complete.output.internal)
