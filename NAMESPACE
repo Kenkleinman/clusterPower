@@ -2,6 +2,9 @@
 
 export(cpa.binary)
 export(cpa.count)
+export(cpa.did.binary)
+export(cpa.did.normal)
+export(cpa.ma.normal)
 export(cpa.normal)
 export(cps.binary)
 export(cps.count)

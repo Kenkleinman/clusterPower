@@ -10,7 +10,8 @@ cps.ma.normal(nsim = 1000, nsubjects = NULL, narms = NULL,
   sigma_b_sq = NULL, alpha = 0.05, quiet = FALSE, ICC = NULL,
   method = "glmm", multi.p.method = "bonferroni",
   all.sim.data = FALSE, seed = NA, cores = NULL,
-  poor.fit.override = FALSE, tdist = FALSE)
+  poor.fit.override = FALSE, tdist = FALSE,
+  return.all.models = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -67,6 +68,10 @@ of fits fail to converge or power<0.5 after 50 iterations; default = FALSE.}
 
 \item{tdist}{Logical; use t-distribution instead of normal distribution 
 for simulation values, default = FALSE.}
+
+\item{return.all.models}{Logical; Returns all of the fitted models, the simulated data,
+the overall model comparisons, and the convergence report vector. This is equivalent
+to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.}
 }
 \value{
 A list with the following components:
