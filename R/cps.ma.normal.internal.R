@@ -175,34 +175,60 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      if (max(sigma_sq)!=min(sigma_sq)){
+      
+      if (max(sigma_sq)!=min(sigma_sq) & max(sigma_b_sq)!=min(sigma_b_sq)){
         trt2 <- unlist(trt)
         clust2 <- unlist(clust)
       my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
-                     weights=nlme::varIdent(form=~1|as.factor(trt2)))
+                     weights=nlme::varIdent(form=~1|as.factor(trt2)), 
+                     method="ML",
+                     control=nlme::lmeControl(opt='optim'))
       model.values[[i]] <-  summary(my.mod)$tTable
       # get the overall p-values (>Chisq)
-      null.mod <- try(nlme::lme(y~1, random=~1+as.factor(trt2)|clust2, 
-                            weights=nlme::varIdent(form=~1|as.factor(trt2))))
-      }
-    if(max(sigma_sq)==min(sigma_sq)){
-      if (length(sigma_b_sq==2)){
-        my.mod <-  lmerTest::lmer(y~trt+(1|clust), data = sim.dat[[i]])
-      } else {
-        my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), 
-          data = sim.dat[[i]])
-        print("line 194 success!")
+      null.mod <- nlme::lme(y~1, random=~1+as.factor(trt2)|clust2, 
+                            weights=nlme::varIdent(form=~1|as.factor(trt2)), 
+                                                   method="ML",
+                            control=nlme::lmeControl(opt='optim'))
       }
       
-      model.values[[i]] <-  summary(my.mod)
-      # get the overall p-values (>Chisq)
-      null.mod <- update.formula(my.mod, y ~ (1|clust))
-      # option to stop the function early if fits are singular
-      fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
-      if (poor.fit.override==FALSE){
-        if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+      if (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)!=min(sigma_b_sq)){
+        my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), REML=FALSE,
+                                  data = sim.dat[[i]])
+        # get the overall p-values (>Chisq)
+        null.mod <- update.formula(my.mod, y ~ (1+as.factor(trt)|clust))
+        # option to stop the function early if fits are singular
+        fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
+        if (poor.fit.override==FALSE){
+          if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
         }
       }
+      
+      if (max(sigma_sq)!=min(sigma_sq) & max(sigma_b_sq)==min(sigma_b_sq)){
+        trt2 <- unlist(trt)
+        clust2 <- unlist(clust)
+        my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
+                            method="ML",
+                            control=nlme::lmeControl(opt='optim'))
+        model.values[[i]] <-  summary(my.mod)$tTable
+        # get the overall p-values (>Chisq)
+        null.mod <- nlme::lme(y~1, random=~1+as.factor(trt2)|clust2,  
+                                                         method="ML",
+                              control=nlme::lmeControl(opt='optim'))
+      }
+      
+      if (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)==min(sigma_b_sq)){
+        my.mod <-  lmerTest::lmer(y~trt+(1|clust), REML=FALSE, 
+                                  data = sim.dat[[i]])
+        # get the overall p-values (>Chisq)
+        null.mod <- update.formula(my.mod, y ~ (1|clust))
+        # option to stop the function early if fits are singular
+        fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
+        if (poor.fit.override==FALSE){
+          if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+        }
+      } 
+      
+      model.values[[i]] <-  summary(my.mod)
     }
   # Fit GEE (geeglm)
   if(method == 'gee'){
