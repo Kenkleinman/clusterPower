@@ -244,17 +244,122 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     # Fit GLMM (lmer)
     if(method == 'glmm'){
       if(irgtt == TRUE){
-        my.mod <- lme4::lmer(y ~ trt + (0 + trt|clust), data = sim.dat)
-      } else {
-        my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
+        if (sigma!=sigma2 && sigma_b!=sigma_b2){
+          trt2 <- unlist(trt)
+          clust2 <- unlist(clust)
+          my.mod <- nlme::lme(y~as.factor(trt2), random=~0+as.factor(trt2)|clust2, 
+                              weights=nlme::varIdent(form=~0|as.factor(trt2)), 
+                              method="ML",
+                              control=nlme::lmeControl(opt='optim'))
+          glmm.values <-  summary(my.mod)$tTable
+          # get the overall p-values (>Chisq)
+          null.mod <- nlme::lme(y~1, random=~0+as.factor(trt2)|clust2, 
+                                weights=nlme::varIdent(form=~0|as.factor(trt2)), 
+                                method="ML",
+                                control=nlme::lmeControl(opt='optim'))
+          pval.vector = append(pval.vector, glmm.values['as.factor(trt2)1', 'p-value'])
+          est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
+          se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
+          stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
+          # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+        }
+        
+        if (sigma==sigma2 && sigma_b!=sigma_b2){
+          my.mod <-  lmerTest::lmer(y ~ trt + (0 + as.factor(trt)|clust), REML=FALSE,
+                                    data = sim.dat)
+          # get the overall p-values (>Chisq)
+          null.mod <- update.formula(my.mod, y ~ (1+as.factor(trt)|clust))
+          glmm.values = summary(my.mod)$coefficient
+          # option to stop the function early if fits are singular
+          fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
+          if (poor.fit.override==FALSE){
+            if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+          }
+          p.val = append(p.val, glmm.values['trt', 'Pr(>|t|)'])
+          est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
+          se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
+          stat.vector = append(stat.vector, glmm.values['trt', 't value'])
+          pval.vector = append(pval.vector, p.val)
+          fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+        }
+        #if not IRGTT, then the following:
+  } else {
+        if (sigma!=sigma2 && sigma_b!=sigma_b2){
+          trt2 <- unlist(trt)
+          clust2 <- unlist(clust)
+          my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
+                              weights=nlme::varIdent(form=~1|as.factor(trt2)), 
+                              method="ML",
+                              control=nlme::lmeControl(opt='optim'))
+          glmm.values <-  summary(my.mod)$tTable
+          # get the overall p-values (>Chisq)
+          null.mod <- nlme::lme(y~1, random=~1+as.factor(trt2)|clust2, 
+                                weights=nlme::varIdent(form=~1|as.factor(trt2)), 
+                                method="ML",
+                                control=nlme::lmeControl(opt='optim'))
+          pval.vector = append(pval.vector, glmm.values['as.factor(trt2)1', 'p-value'])
+          est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
+          se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
+          stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
+         # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+        }
+        
+        if (sigma==sigma2 && sigma_b!=sigma_b2){
+          my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), REML=FALSE,
+                                    data = sim.dat[[i]])
+          # get the overall p-values (>Chisq)
+          null.mod <- update.formula(my.mod, y ~ (1+as.factor(trt)|clust))
+          glmm.values = summary(my.mod)$coefficient
+          # option to stop the function early if fits are singular
+          fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
+          if (poor.fit.override==FALSE){
+            if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+          }
+          p.val = append(p.val, glmm.values['trt', 'Pr(>|t|)'])
+          est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
+          se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
+          stat.vector = append(stat.vector, glmm.values['trt', 't value'])
+          pval.vector = append(pval.vector, p.val)
+          fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+        }
+        
+        if (sigma!=sigma2 && sigma_b==sigma_b2){
+          trt2 <- unlist(trt)
+          clust2 <- unlist(clust)
+          my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
+                              method="ML",
+                              control=nlme::lmeControl(opt='optim'))
+          glmm.values <-  summary(my.mod)$tTable
+          # get the overall p-values (>Chisq)
+          null.mod <- nlme::lme(y~1, random=~1+as.factor(trt2)|clust2,  
+                                method="ML",
+                                control=nlme::lmeControl(opt='optim'))
+          pval.vector = append(pval.vector, glmm.values['as.factor(trt2)1', 'p-value'])
+          est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
+          se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
+          stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
+          # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+        }
+        
+        if (sigma==sigma2 && sigma_b==sigma_b2){
+          my.mod <-  lmerTest::lmer(y~trt+(1|clust), REML=FALSE, 
+                                    data = sim.dat[[i]])
+          # get the overall p-values (>Chisq)
+          null.mod <- update.formula(my.mod, y ~ (1|clust))
+          glmm.values = summary(my.mod)$coefficient
+          # option to stop the function early if fits are singular
+          fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
+          if (poor.fit.override==FALSE){
+            if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+          }
+          p.val = append(p.val, glmm.values['trt', 'Pr(>|t|)'])
+          est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
+          se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
+          stat.vector = append(stat.vector, glmm.values['trt', 't value'])
+          pval.vector = append(pval.vector, p.val)
+          fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+        } 
       }
-      glmm.values = summary(my.mod)$coefficient
-      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(nclusters) - 2)
-      est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-      pval.vector = append(pval.vector, p.val)
-      fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
     }
     
     # Fit GEE (geeglm)
