@@ -37,6 +37,10 @@
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param seed Option to set the seed. Default is NA.
+#' @param irgtt Logical. Is the experimental design an individually randomized 
+#' group treatment trial? For details, see ?cps.irgtt.normal.
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
+#' of fits fail to converge.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -80,7 +84,8 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
                       ICC = NULL, sigma = NULL, sigma_b = NULL,
                       ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL,
                       alpha = 0.05, method = 'glmm', quiet = FALSE,
-                      all.sim.data = FALSE, seed = NA, irgtt = FALSE){
+                      all.sim.data = FALSE, seed = NA, poor.fit.override=FALSE,
+                      irgtt = FALSE){
   
   # option for reproducibility
   if (!is.na(seed)){
@@ -245,6 +250,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     if(method == 'glmm'){
       if(irgtt == TRUE){
         if (sigma!=sigma2 && sigma_b!=sigma_b2){
+          print("line248")
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
           my.mod <- nlme::lme(y~as.factor(trt2), random=~0+as.factor(trt2)|clust2, 
@@ -268,20 +274,18 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           my.mod <-  lmerTest::lmer(y ~ trt + (0 + as.factor(trt)|clust), REML=FALSE,
                                     data = sim.dat)
           # get the overall p-values (>Chisq)
-          null.mod <- update.formula(my.mod, y ~ (1+as.factor(trt)|clust))
-          glmm.values = summary(my.mod)$coefficient
-          # option to stop the function early if fits are singular
-          fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
-          if (poor.fit.override==FALSE){
-            if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
-          }
-          p.val = append(p.val, glmm.values['trt', 'Pr(>|t|)'])
+          null.mod <- update.formula(my.mod, y ~ (0+as.factor(trt)|clust))
+          glmm.values = summary(my.mod)$coefficients
+          pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|t|)'])
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
           se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
           stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          pval.vector = append(pval.vector, p.val)
           fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
-        }
+          # option to stop the function early if fits are singular
+          if (poor.fit.override==FALSE){
+            if(sum(fail.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+          }
+         }
         #if not IRGTT, then the following:
   } else {
         if (sigma!=sigma2 && sigma_b!=sigma_b2){
@@ -306,22 +310,20 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
         
         if (sigma==sigma2 && sigma_b!=sigma_b2){
           my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), REML=FALSE,
-                                    data = sim.dat[[i]])
+                                    data = sim.dat)
           # get the overall p-values (>Chisq)
           null.mod <- update.formula(my.mod, y ~ (1+as.factor(trt)|clust))
-          glmm.values = summary(my.mod)$coefficient
-          # option to stop the function early if fits are singular
-          fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
-          if (poor.fit.override==FALSE){
-            if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
-          }
-          p.val = append(p.val, glmm.values['trt', 'Pr(>|t|)'])
+          glmm.values = summary(my.mod)$coefficients
+          pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|t|)'])
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
           se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
           stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          pval.vector = append(pval.vector, p.val)
           fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
-        }
+          # option to stop the function early if fits are singular
+          if (poor.fit.override==FALSE){
+            if(sum(fail.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+          }
+         }
         
         if (sigma!=sigma2 && sigma_b==sigma_b2){
           trt2 <- unlist(trt)
@@ -343,21 +345,19 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
         
         if (sigma==sigma2 && sigma_b==sigma_b2){
           my.mod <-  lmerTest::lmer(y~trt+(1|clust), REML=FALSE, 
-                                    data = sim.dat[[i]])
+                                    data = sim.dat)
           # get the overall p-values (>Chisq)
           null.mod <- update.formula(my.mod, y ~ (1|clust))
-          glmm.values = summary(my.mod)$coefficient
-          # option to stop the function early if fits are singular
-          fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
-          if (poor.fit.override==FALSE){
-            if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
-          }
-          p.val = append(p.val, glmm.values['trt', 'Pr(>|t|)'])
+          glmm.values = summary(my.mod)$coefficients
+          pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|t|)'])
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
           se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
           stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          pval.vector = append(pval.vector, p.val)
           fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          # option to stop the function early if fits are singular
+          if (poor.fit.override==FALSE){
+            if(sum(fail.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+          }
         } 
       }
     }

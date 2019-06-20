@@ -8,7 +8,8 @@ randomized group treatment trials.}
 cps.irgtt.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
   difference = NULL, ICC = NULL, sigma = NULL, sigma_b = 0,
   ICC2 = ICC, sigma2 = sigma, sigma_b2 = 0, alpha = 0.05,
-  method = "glmm", quiet = FALSE, all.sim.data = FALSE, seed = NA)
+  method = "glmm", quiet = FALSE, all.sim.data = FALSE, seed = NA,
+  poor.fit.override = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -40,7 +41,10 @@ must be specified: ICC2, sigma2.}
 
 \item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
 
-\item{seed}{Option to set seed. Default is NA.
+\item{seed}{Option to set seed. Default is NA.}
+
+\item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
+of fits fail to converge.
 At least 2 of the following must be specified:}
 }
 \value{

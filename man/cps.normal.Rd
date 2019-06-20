@@ -8,7 +8,7 @@ cps.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
   difference = NULL, ICC = NULL, sigma = NULL, sigma_b = NULL,
   ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL, alpha = 0.05,
   method = "glmm", quiet = FALSE, all.sim.data = FALSE, seed = NA,
-  irgtt = FALSE)
+  poor.fit.override = FALSE, irgtt = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -48,6 +48,12 @@ Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); defa
 \item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
 
 \item{seed}{Option to set the seed. Default is NA.}
+
+\item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
+of fits fail to converge.}
+
+\item{irgtt}{Logical. Is the experimental design an individually randomized 
+group treatment trial? For details, see ?cps.irgtt.normal.}
 }
 \value{
 A list with the following components:
