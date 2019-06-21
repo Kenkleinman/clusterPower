@@ -246,21 +246,21 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
     
+    # trt and clust are re-coded as trt2 and clust2 to work nicely with lme. This can be changed later.
     # Fit GLMM (lmer)
     if(method == 'glmm'){
       if(irgtt == TRUE){
         if (sigma!=sigma2 && sigma_b!=sigma_b2){
-          print("line248")
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
           my.mod <- nlme::lme(y~as.factor(trt2), random=~0+as.factor(trt2)|clust2, 
-                              weights=nlme::varIdent(form=~0|as.factor(trt2)), 
+                              weights=nlme::varIdent(form=~1|as.factor(trt2)), 
                               method="ML",
                               control=nlme::lmeControl(opt='optim'))
           glmm.values <-  summary(my.mod)$tTable
           # get the overall p-values (>Chisq)
           null.mod <- nlme::lme(y~1, random=~0+as.factor(trt2)|clust2, 
-                                weights=nlme::varIdent(form=~0|as.factor(trt2)), 
+                                weights=nlme::varIdent(form=~1|as.factor(trt2)), 
                                 method="ML",
                                 control=nlme::lmeControl(opt='optim'))
           pval.vector = append(pval.vector, glmm.values['as.factor(trt2)1', 'p-value'])
@@ -274,7 +274,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           my.mod <-  lmerTest::lmer(y ~ trt + (0 + as.factor(trt)|clust), REML=FALSE,
                                     data = sim.dat)
           # get the overall p-values (>Chisq)
-          null.mod <- update.formula(my.mod, y ~ (0+as.factor(trt)|clust))
+          null.mod <- stats::update.formula(my.mod, y ~ 1 + (0+as.factor(trt)|clust))
           glmm.values = summary(my.mod)$coefficients
           pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|t|)'])
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
@@ -312,7 +312,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), REML=FALSE,
                                     data = sim.dat)
           # get the overall p-values (>Chisq)
-          null.mod <- update.formula(my.mod, y ~ (1+as.factor(trt)|clust))
+          null.mod <- stats::update.formula(my.mod, y ~ 1 + (1+as.factor(trt)|clust))
           glmm.values = summary(my.mod)$coefficients
           pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|t|)'])
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
@@ -329,11 +329,13 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
           my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
+                              weights=nlme::varIdent(form=~1|as.factor(trt2)),
                               method="ML",
                               control=nlme::lmeControl(opt='optim'))
           glmm.values <-  summary(my.mod)$tTable
           # get the overall p-values (>Chisq)
-          null.mod <- nlme::lme(y~1, random=~1+as.factor(trt2)|clust2,  
+          null.mod <- nlme::lme(y~1, random=~1+as.factor(trt2)|clust2, 
+                                weights=nlme::varIdent(form=~1|as.factor(trt2)),
                                 method="ML",
                                 control=nlme::lmeControl(opt='optim'))
           pval.vector = append(pval.vector, glmm.values['as.factor(trt2)1', 'p-value'])
@@ -347,7 +349,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           my.mod <-  lmerTest::lmer(y~trt+(1|clust), REML=FALSE, 
                                     data = sim.dat)
           # get the overall p-values (>Chisq)
-          null.mod <- update.formula(my.mod, y ~ (1|clust))
+          null.mod <- update.formula(my.mod, y ~ 1 + (1|clust))
           glmm.values = summary(my.mod)$coefficients
           pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|t|)'])
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])

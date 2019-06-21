@@ -173,6 +173,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     y <- as.vector(unlist(y.bclust) + unlist(y.wclust))
     sim.dat[[i]][["y"]] <- y
   
+    # trt and clust are re-coded as trt2 and clust2 to work nicely with lme. This can be changed later.
     # Fit GLMM (lmer)
     if(method == 'glmm'){
       
@@ -195,7 +196,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), REML=FALSE,
                                   data = sim.dat[[i]])
         # get the overall p-values (>Chisq)
-        null.mod <- update.formula(my.mod, y ~ (1+as.factor(trt)|clust))
+        null.mod <- update.formula(my.mod, y ~ 1 + (1+as.factor(trt)|clust))
         # option to stop the function early if fits are singular
         fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
         if (poor.fit.override==FALSE){
@@ -206,13 +207,15 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       if (max(sigma_sq)!=min(sigma_sq) & max(sigma_b_sq)==min(sigma_b_sq)){
         trt2 <- unlist(trt)
         clust2 <- unlist(clust)
-        my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
+        my.mod <- nlme::lme(y~as.factor(trt2), random=~1|clust2, 
+                            weights=nlme::varIdent(form=~1|as.factor(trt2)), 
                             method="ML",
                             control=nlme::lmeControl(opt='optim'))
         model.values[[i]] <-  summary(my.mod)$tTable
         # get the overall p-values (>Chisq)
-        null.mod <- nlme::lme(y~1, random=~1+as.factor(trt2)|clust2,  
-                                                         method="ML",
+        null.mod <- nlme::lme(y~1, random=~1|clust2,  
+                              weights=nlme::varIdent(form=~1|as.factor(trt2)), 
+                              method="ML",
                               control=nlme::lmeControl(opt='optim'))
       }
       
@@ -220,7 +223,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         my.mod <-  lmerTest::lmer(y~trt+(1|clust), REML=FALSE, 
                                   data = sim.dat[[i]])
         # get the overall p-values (>Chisq)
-        null.mod <- update.formula(my.mod, y ~ (1|clust))
+        null.mod <- update.formula(my.mod, y ~ 1 + (1|clust))
         # option to stop the function early if fits are singular
         fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
         if (poor.fit.override==FALSE){
