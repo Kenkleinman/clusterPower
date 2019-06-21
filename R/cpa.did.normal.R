@@ -30,7 +30,8 @@
 #'   error.
 #' @param n The number of clusters per condition. It must be greater than 1.
 #' @param m The mean of the cluster sizes.
-#' @param did The difference in mean change between conditions (i.e. "difference-in-difference").
+#' @param difference.control The difference in mean change in the control arm.
+#' @param intervention.control The difference in mean change in the intervention arm.
 #' @param ICC The intraclass correlation.
 #' @param rho_c The correlation between baseline and post-test outcomes at the
 #'   cluster level. This value can be used in both cross-sectional and cohort
@@ -45,9 +46,10 @@
 #' @return The computed argument.
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
-#' # power = 0.80, m = 100, did = 0.50 units, ICC = 0.05, rho_c = 0.50, rho_s = 0.70,
+#' # power = 0.80, m = 100, difference.control = 5, difference.intervention = 4.5,
+#'  units, ICC = 0.05, rho_c = 0.50, rho_s = 0.70,
 #' # and vart = 1 unit.
-#' cpa.did.normal(m = 100 , did = 0.5, ICC = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
+#' cpa.did.normal(m = 100 , difference.control = 5, difference.intervention = 4.5, ICC = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
 #' # 
 #' # The result, nclusters = 4.683358, suggests 5 clusters per condition should be used.
 #' 
@@ -60,14 +62,17 @@
 #' @export
 
 cpa.did.normal <- function(alpha = 0.05, power = 0.80, n = NA,
-                          m = NA, did = NA, ICC = NA,
+                          m = NA, difference.control = NA, 
+                          difference.intervention = NA, ICC = NA,
                           rho_c = NA, rho_s = NA,
                           vart = NA,
                           tol = .Machine$double.eps^0.25){
   
   did.analytic.normal <- crtpwr.2meanD(alpha = alpha, 
                             power = power, nclusters = n,
-                            nsubjects = m, d = did, icc = ICC,
+                            nsubjects = m, 
+                            d = difference.control-difference.intervention, 
+                            icc = ICC,
                             rho_c = rho_c, rho_s = rho_s,
                             vart = vart,
                             tol = tol)

@@ -95,6 +95,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
     converge.vector = NULL
     icc2.vector = NULL
     lmer.icc.vector = NULL
+    fail.vector = NULL
     simulated.datasets = list()
     warning.list = list()
     start.time = Sys.time()
@@ -310,6 +311,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
         se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
         stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
         pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
+        fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
       }
       # Fit GEE (geeglm)
       if(method == 'gee'){
@@ -428,7 +430,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                                      "inputs" = inputs, "ICC" = ICC, "icc.list" = icc.list, 
                                      "model.estimates" = cps.model.est, 
                                      "sim.data" = simulated.datasets, 
-                                     "warning.list" = warning.list), class = 'crtpwr')
+                                     "warning.list" = warning.list,
+                                     "convergence.error" = fail.vector), class = 'crtpwr')
     } else {
     complete.output = structure(list("overview" = summary.message, "nsim" = nsim, 
                                        "power" = power.parms, "method" = long.method, 
@@ -437,7 +440,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                                        "inputs" = inputs,
                                        "model.estimates" = cps.model.est, 
                                        "sim.data" = simulated.datasets, 
-                                       "warning.list" = warning.list), class = 'crtpwr')
+                                       "warning.list" = warning.list,
+                                       "convergence.error" = fail.vector), class = 'crtpwr')
     }
     return(complete.output)
     }

@@ -87,6 +87,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
+  fail.vector = NULL
   simulated.datasets = list()
   start.time = Sys.time()
   
@@ -247,6 +248,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
         se.vector = append(se.vector, glmm.values['trt1', 'Std. Error'])
         stat.vector = append(stat.vector, glmm.values['trt1', 'z value'])
         pval.vector = append(pval.vector, glmm.values['trt1', 'Pr(>|z|)'])  
+        fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
       } else {
         if(analysis == 'poisson'){
          # require("optimx")
@@ -264,7 +266,8 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
       est.vector = append(est.vector, glmm.values['trt1', 'Estimate'])
       se.vector = append(se.vector, glmm.values['trt1', 'Std. Error'])
       stat.vector = append(stat.vector, glmm.values['trt1', 'z value'])
-      pval.vector = append(pval.vector, glmm.values['trt1', 'Pr(>|z|)'])  
+      pval.vector = append(pval.vector, glmm.values['trt1', 'Pr(>|z|)'])
+      fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
     }
     # Fit GEE (geeglm)
     if(method == 'gee'){
@@ -361,7 +364,8 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, 
                                    "dist.parms" = dist.parms, "alpha" = alpha, "cluster.sizes" = cluster.sizes, 
                                    "n.clusters" = n.clusters, "variance.parms" = var.parms, "inputs" = inputs, 
-                                   "model.estimates" = cps.model.est, "sim.data" = simulated.datasets), 
+                                   "model.estimates" = cps.model.est, "sim.data" = simulated.datasets,
+                                   "convergence.error" = fail.vector), 
                               class = 'crtpwr')
   
   return(complete.output)

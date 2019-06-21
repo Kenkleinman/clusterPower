@@ -5,7 +5,8 @@
 \title{Power calculations for difference-in-difference cluster randomized trials, continuous outcome}
 \usage{
 cpa.did.normal(alpha = 0.05, power = 0.8, n = NA, m = NA,
-  did = NA, ICC = NA, rho_c = NA, rho_s = NA, vart = NA,
+  difference.control = NA, difference.intervention = NA, ICC = NA,
+  rho_c = NA, rho_s = NA, vart = NA,
   tol = .Machine$double.eps^0.25)
 }
 \arguments{
@@ -19,7 +20,7 @@ error.}
 
 \item{m}{The mean of the cluster sizes.}
 
-\item{did}{The difference in mean change between conditions (i.e. "difference-in-difference").}
+\item{difference.control}{The difference in mean change in the control arm.}
 
 \item{ICC}{The intraclass correlation.}
 
@@ -36,6 +37,8 @@ are completely different from post-test subjects), this value should be 0.}
 
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}
+
+\item{intervention.control}{The difference in mean change in the intervention arm.}
 }
 \value{
 The computed argument.
@@ -72,9 +75,10 @@ Alexandria Sakrejda, Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman 
 
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
-# power = 0.80, m = 100, did = 0.50 units, ICC = 0.05, rho_c = 0.50, rho_s = 0.70,
+# power = 0.80, m = 100, difference.control = 5, difference.intervention = 4.5,
+ units, ICC = 0.05, rho_c = 0.50, rho_s = 0.70,
 # and vart = 1 unit.
-cpa.did.normal(m = 100 , did = 0.5, ICC = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
+cpa.did.normal(m = 100 , difference.control = 5, difference.intervention = 4.5, ICC = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
 # 
 # The result, nclusters = 4.683358, suggests 5 clusters per condition should be used.
 
