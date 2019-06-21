@@ -22,14 +22,8 @@
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
 #' @param nclusters Number of clusters per treatment group; accepts integer (required).
-#' At least 2 of the following 3 arguments must be specified when using expected probabilities:
 #' @param p1 Expected probability of outcome in non-treatment group
 #' @param p2 Expected probability of outcome in treatment group
-#' @param p.diff Expected difference in probability of outcome between groups, defined as p.diff = p1 - p2
-#' At least 2 of the following 3 arguments must be specified when using expected odds ratios:
-#' @param or1 Expected odds ratio for outcome in non-treatment group
-#' @param or2 Expected odds ratio for outcome in treatment group
-#' @param or.diff Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2
 #' @param sigma_b Between-cluster variance; if sigma_b2 is not specified, 
 #' between cluster variances are assumed to be equal for both groups. Accepts numeric.
 #' If between cluster variances differ between treatment groups, sigma_b2 must also be specified:
@@ -38,6 +32,13 @@
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time, default is TRUE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE
+#' @param seed Option to set the seed. Default is NA.
+#' 
+#' At least 2 of the following 3 arguments must be specified when using expected odds ratios:
+#' @param or1 Expected odds ratio for outcome in non-treatment group
+#' @param or2 Expected odds ratio for outcome in treatment group
+#' @param or.diff Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2
+#
 #'  
 #' @return A list with the following components
 #' \itemize{
@@ -70,18 +71,18 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' binary.sim = cps.binary(nsim = 100, nsubjects = 50, nclusters = 6, p1 = 0.4,
-#'                         p2 = 0.2, sigma_b = 100, alpha = 0.05, method = 'glmm', 
-#'                         all.sim.data = FALSE)
+#' binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.5,
+#'                         p2 = 0.2, sigma_b = 1, sigma_b2 = 1, alpha = 0.05, 
+#'                         method = 'glmm', all.sim.data = FALSE)
 #' }
 #'
 #' @export
 
 # Define function
-cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
+cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                         p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
                         sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = 'glmm', 
-                      quiet = TRUE, all.sim.data = FALSE, seed = NA){
+                      quiet = TRUE, all.sim.data = FALSE, seed = NA, irgtt = FALSE){
   if (!is.na(seed)){
   set.seed(seed = seed)
   }
@@ -94,6 +95,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     converge.vector = NULL
     icc2.vector = NULL
     lmer.icc.vector = NULL
+    fail.vector = NULL
     simulated.datasets = list()
     warning.list = list()
     start.time = Sys.time()
@@ -146,13 +148,15 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS")
     }
     
-    # Validate SIGMA_B, SIGMA_B2
-    min0.warning = " must be a numeric value greater than 0"
-    if(!is.numeric(sigma_b) || sigma_b <= 0){
-      stop("SIGMA_B", min0.warning)
-    }
-    if(!is.null(sigma_b2) && sigma_b2 <= 0){
-      stop("SIGMA_B2", min0.warning)
+    if(irgtt==FALSE){
+      # Validate SIGMA_B, SIGMA_B2
+      min0.warning = " must be a numeric value greater than 0"
+      if(!is.numeric(sigma_b) || sigma_b <= 0){
+        stop("SIGMA_B", min0.warning)
+      }
+      if(!is.null(sigma_b2) && sigma_b2 <= 0){
+        stop("SIGMA_B2", min0.warning)
+      }
     }
     # Set between-cluster variances
     if(is.null(sigma_b2)){
@@ -161,8 +165,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       sigma_b[2] = sigma_b2
     }
     
-    # Validate P1, P2, P.DIFF & OR1, OR2, OR.DIFF
-    parm1.arg.list = list(p1, p2, p.diff)
+    # Validate P1, P2, & OR1, OR2, OR.DIFF
+    parm1.arg.list = list(p1, p2)
     parm1.args = unlist(lapply(parm1.arg.list, is.null))
     parm2.arg.list = list(or1, or2, or.diff)
     parm2.args = unlist(lapply(parm2.arg.list, is.null))
@@ -170,13 +174,10 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       stop("Only one set of parameters may be supplied: Expected probabilities OR expected odds ratios")
     }
     if(sum(parm2.args) == 3 && sum(parm1.args) > 1){
-      stop("At least two of the following terms must be specified: P1, P2, P.DIFF")
+      stop("Both terms must be specified: p1, p2")
     }
     if(sum(parm1.args) == 3 && sum(parm2.args) > 1){
       stop("At least two of the following terms must be specified: OR1, OR2, OR.DIFF")
-    }
-    if(sum(parm1.args) == 0 && p.diff != abs(p1 - p2)){
-      stop("At least one of the following terms has been misspecified: P1, P2, P.DIFF")
     }
     if(sum(parm2.args) == 0 && or.diff != abs(or1 - or2)){
       stop("At least one of the following terms has been misspecified: OR1, OR2, OR.DIFF")
@@ -200,17 +201,6 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     }
     
     # Calculate all expected probabilities/odds ratios (if they have not been specified)
-    if(sum(parm2.args) == 3){
-      if(is.null(p1)){
-        p1 = abs(p.diff - p2)
-      }
-      if(is.null(p2)){
-        p2 = abs(p1 - p.diff)
-      }
-      if(is.null(p.diff)){
-        p.diff = abs(p1 - p2)
-      }
-    }
     if(sum(parm1.args) == 3){
       if(is.null(or1)){
         or1 = abs(or.diff - or2)
@@ -223,7 +213,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       }
       p1 = or1 / (1 + or1)
       p2 = or2 / (1 + or2)
-      p.diff = abs(p1 - p2)
+    #  p.diff = abs(p1 - p2)
     }
     
     # Calculate ICC1 (sigma_b / (sigma_b + pi^2/3))
@@ -293,13 +283,22 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
       icc2.vector = append(icc2.vector, icc2)
       
       # Calculate LMER.ICC (lmer: sigma_b / (sigma_b + sigma))
-      lmer.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
-      lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
-      lmer.icc.vector = append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
+      if(irgtt==FALSE){
+        lmer.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat,
+                            family = stats::binomial(link = 'logit'))
+        lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
+        lmer.icc.vector = append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
+      }
       
       # Fit GLMM (lmer)
       if(method == 'glmm'){
-        my.mod = try(lme4::glmer(y ~ trt + (1|clust), data = sim.dat, family = stats::binomial(link = 'logit')))
+        if(irgtt==TRUE){
+          my.mod <- lme4::glmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
+                               family = stats::binomial(link = 'logit'))
+        } else {
+        my.mod = try(lme4::glmer(y ~ trt + (1|clust), data = sim.dat, 
+                                 family = stats::binomial(link = 'logit')))
+        }
         model.converge = try(my.mod)
         converge.ind = is.null(model.converge@optinfo$conv$lme4$messages)
         converge.vector = append(converge.vector, converge.ind)
@@ -312,6 +311,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
         se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
         stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
         pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
+        fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
       }
       # Fit GEE (geeglm)
       if(method == 'gee'){
@@ -356,10 +356,16 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     
     ## Output objects
     # Create object containing summary statement
+    if(irgtt==FALSE){
     summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
                              " Simulations: Simple Design, Binary Outcome\nNote: ", sum(converge.vector == FALSE), 
                              " additional models were fitted to account for non-convergent simulations.")
-    
+    } else {
+    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
+                               " Simulations: IRGTT Design, Binary Outcome\nNote: ", sum(converge.vector == FALSE), 
+                               " additional models were fitted to account for non-convergent simulations.")
+      
+    }
     # Create method object
     long.method = switch(method, glmm = 'Generalized Linear Mixed Model', 
                          gee = 'Generalized Estimating Equation')
@@ -384,8 +390,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     p1.p2.or = round(p1 / (1 - p1) / (p2 / (1 - p2)), 3) 
     p2.p1.or = round(p2 / (1 - p2) / (p1 / (1 - p1)), 3) 
     inputs = t(data.frame('Non.Treatment' = c("probability" = p1, "odds.ratio" = p1.p2.or), 
-                          'Treatment' = c("probability" = p2, 'odds.ratio' = p2.p1.or), 
-                          'Difference' = c("probability" = p.diff, 'odds.ratio' = p2.p1.or - p1.p2.or)))
+                          'Treatment' = c("probability" = p2, 'odds.ratio' = p2.p1.or)))#, 
+                         # 'Difference' = c("probability" = p.diff, 'odds.ratio' = p2.p1.or - p1.p2.or)))
 
     # Create object containing group-specific cluster sizes
     cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 
@@ -394,14 +400,16 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     # Create object containing number of clusters
     n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
     
-    # Create object containing estimated ICC values
-    ICC = round(t(data.frame('P_h' = c('ICC' = icc1), 
+    if (irgtt==FALSE){
+      # Create object containing estimated ICC values
+      ICC = round(t(data.frame('P_h' = c('ICC' = icc1), 
                              'P_c' = c('ICC' = mean(icc2.vector)), 
                              'lmer' = c('ICC' = mean(lmer.icc.vector)))), 3)
-    # Create object containing all ICC values
-    # Note: P_h is a single calculated value. No vector to be appended.
-    icc.list = data.frame('P_c' = icc2.vector, 
+      # Create object containing all ICC values
+      # Note: P_h is a single calculated value. No vector to be appended.
+      icc.list = data.frame('P_c' = icc2.vector, 
                           'lmer' = lmer.icc.vector)
+    }
     
     # Create object containing group-specific variance parameters
     var.parms = t(data.frame('Non.Treatment' = c('sigma_b' = sigma_b[1]), 
@@ -414,9 +422,26 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = 
     }
     
     # Create list containing all output (class 'crtpwr') and return
-    complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, "alpha" = alpha,
-                                     "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                     "inputs" = inputs, "ICC" = ICC, "icc.list" = icc.list, "model.estimates" = cps.model.est, 
-                                     "sim.data" = simulated.datasets, "warning.list" = warning.list), class = 'crtpwr')
+    if(irgtt==FALSE){
+    complete.output = structure(list("overview" = summary.message, "nsim" = nsim, 
+                                     "power" = power.parms, "method" = long.method, 
+                                     "alpha" = alpha, "cluster.sizes" = cluster.sizes, 
+                                     "n.clusters" = n.clusters, "variance.parms" = var.parms, 
+                                     "inputs" = inputs, "ICC" = ICC, "icc.list" = icc.list, 
+                                     "model.estimates" = cps.model.est, 
+                                     "sim.data" = simulated.datasets, 
+                                     "warning.list" = warning.list,
+                                     "convergence.error" = fail.vector), class = 'crtpwr')
+    } else {
+    complete.output = structure(list("overview" = summary.message, "nsim" = nsim, 
+                                       "power" = power.parms, "method" = long.method, 
+                                       "alpha" = alpha, "cluster.sizes" = cluster.sizes, 
+                                       "n.clusters" = n.clusters, "variance.parms" = var.parms, 
+                                       "inputs" = inputs,
+                                       "model.estimates" = cps.model.est, 
+                                       "sim.data" = simulated.datasets, 
+                                       "warning.list" = warning.list,
+                                       "convergence.error" = fail.vector), class = 'crtpwr')
+    }
     return(complete.output)
     }

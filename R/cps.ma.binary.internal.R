@@ -19,18 +19,23 @@
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param str.nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
 #' Each entry is a vector containing the number of subjects per cluster (required).
-#' @param means Expected probability of outcome for each arm; accepts a vector of length \code{narms} (required).
+#' @param probs Expected probability of outcome for each arm; accepts a vector of length \code{narms} (required).
 #' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
-#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
-#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param method Analytical method, either Generalized Linear Mixed Effects 
+#' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 
+#' 'gee') (required); default = 'glmm'.
+#' @param quiet When set to FALSE, displays simulation progress and estimated 
+#' completion time; default is FALSE.
+#' @param all.sim.data Option to output list of all simulated datasets; 
+#' default = FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge.
-#' @param tdist Logical; use t-distribution instead of normal distribution for simulation values, default = FALSE
-#' @param cores A string or numeric value indicating the number of cores to be used for parallel computing. 
-#' When this option is set to 1, no parallel computing is used.
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
+#' of fits fail to converge.
+#' @param tdist Logical; use t-distribution instead of normal distribution for 
+#' simulation values, default = FALSE.
+#' @param cores A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
+#' When this option is set to NA, no parallel computing is used.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -47,15 +52,16 @@
 #' @examples 
 #' \dontrun{
 #' 
-#' str.nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-#' probs.example <- c(0.30, 0.21, 0.53)
-#' sigma_b_sq.example <- c(25, 25, 120)
+#' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+#' probs.example <- c(0.30, 0.5, 0.9)
+#' sigma_b_sq.example <- c(1, 1, 2)
 #' 
-#' bin.ma.rct <- cps.ma.binary.internal(nsim = 10, str.nsubjects = str.nsubjects.example, 
-#'                                  probs = probs.example,
-#'                                  sigma_b_sq = sigma_b_sq.example, alpha = 0.05, 
-#'                                 quiet = FALSE, method = 'gee', 
-#'                                 all.sim.data = FALSE, seed = 123)
+#' bin.ma.rct <- cps.ma.binary.internal (nsim = 10, 
+#'                             str.nsubjects = nsubjects.example, 
+#'                             probs = probs.example,
+#'                             sigma_b_sq = sigma_b_sq.example, 
+#'                             alpha = 0.05, all.sim.data = FALSE, 
+#'                             seed = 123, cores="all") 
 #' }
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
@@ -66,26 +72,17 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                     alpha = 0.05,
                                     quiet = FALSE, method = 'glmm', 
                                     all.sim.data = FALSE, 
-                                    seed=NULL,
+                                    seed = NA,
                                     poor.fit.override = FALSE,
                                     tdist = FALSE,
-                                    cores=1){
+                                    cores=cores){
   
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
   
-  
   # Create NCLUSTERS, NARMS, from str.nsubjects
   narms = length(str.nsubjects)
   nclusters = sapply(str.nsubjects, length)
-  
-  # validation goes here
-  
-  # Set start.time for progress iterator & initialize progress bar
-  start.time = Sys.time()
-  prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
-                                         total = nsim, clear = FALSE, width = 100)
-  prog.bar$tick(0)
   
   # This container keeps track of how many models failed to converge
   fail <- rep(NA, nsim)
@@ -96,7 +93,9 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   model.compare <- list()
   
   # option for reproducibility
-  set.seed(seed=seed)
+  if (!is.na(seed)){
+    set.seed(seed=seed)
+  }
   
   # Create indicators for treatment group & cluster for the sim.data output
   trt1 = list()
@@ -119,141 +118,245 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   }
   logit.p <- unlist(logit.p)
   
-  #setup for parallel computing
-  if (!exists("cores", mode = "NULL")){
-    ## Do computations with multiple processors:
-    ## Number of cores:
-    if (cores=="all"){nc <- parallel::detectCores()} else {nc <- cores}
-    ## Create clusters
-    cl <- parallel::makeCluster(rep("localhost", nc))
-  
-  # Create simulation loop
-  require(foreach)
-  foreach::foreach(i=1:nsim) %do% {
-    sim.dat[[i]] = data.frame(y = NA, trt = as.factor(unlist(trt1)), 
-                              clust = as.factor(unlist(clust1)))
+  #Alert the user if using t-distribution
+  if (tdist==TRUE){
+    print("using t-distribution because tdist = TRUE")
+  }
+  #make the simulated data
+  trt <-  as.factor(unlist(trt1)) 
+  clust <- as.factor(unlist(clust1))
+  if (length(trt)!=length(clust)){
+    stop("trt and clust are not the same length, see line 134")
+  }
+  sim.dat <- matrix(nrow = length(clust), ncol = nsim)
+  # function to produce the simulated data
+  make.sim.dat <- function(tdist = tdist, logit.p = logit.p, 
+                           nclusters = nclusters, 
+                           sigma_b_sq = sigma_b_sq, 
+                           str.nsubjects = str.nsubjects){
     # Generate between-cluster effects for non-treatment and treatment 
     if (tdist==TRUE){
-      print("using t-distribution because tdist=TRUE")
       randint = mapply(function(n, df) stats::rt(n, df = df), 
                        n = nclusters, 
                        df = Inf)
     } else {
-    randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s)), 
-                     nc = nclusters, s = sigma_b_sq, 
-                     mu = 0)
+      randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s)), 
+                       nc = nclusters, s = sigma_b_sq, 
+                       mu = 0)
     }
-    
-    for (j in 1:length(logit.p)){
-      randint[,j] <- logit.p[j]+ randint[,j]
+    if (typeof(randint)=="list"){
+      randint.holder <- list()
+      for (j in 1:length(logit.p)){
+        randint.holder[[j]] <- logit.p[j]+ randint[[j]]
+      }
+      randintrandint <- sapply(randint.holder, clusterPower::expit)
+    } else {
+      randint.holder <- matrix(nrow = nclusters[1], ncol = length(logit.p))
+      for (j in 1:length(logit.p)){
+        randint.holder[,j] <- logit.p[j]+ randint[,j]
+      }
+      randintrandint <- clusterPower::expit(randint.holder)
     }
-    randint <- clusterPower::expit(randint)
-    
     # Create y-value
-    y.intercept <-  vector(mode = "numeric", length = length(unlist(str.nsubjects)))
+    y.intercept <-  vector(mode = "numeric", 
+                           length = length(unlist(str.nsubjects)))
     y.intercept <-  sapply(1:sum(nclusters), 
-                        function(x) rep(unlist(randint)[x], length.out = unlist(str.nsubjects)[x]))
+                           function(x) rep(unlist(randintrandint)[x], 
+                                           length.out = unlist(str.nsubjects)[x]))
+    y <- sapply(unlist(y.intercept), function(x) stats::rbinom(1, 1, x))
+    return(y)
+  }
+  sim.dat <- replicate(nsim, make.sim.dat(tdist=tdist, logit.p = logit.p, 
+                                          nclusters=nclusters, 
+                                          sigma_b_sq=sigma_b_sq, 
+                                          str.nsubjects=str.nsubjects))
   
-    # Put y into the simulated dataset
-    sim.dat[[i]][["y"]] <-  sapply(unlist(y.intercept), function(x) stats::rbinom(1, 1, x))
-  #end simulated dataset construction
+  require(foreach)
+  `%fun%` <- `%dopar%`
+  if (is.na(cores)){
+    `%fun%` <- `%do%`
+  }
   
-    # Fit GLMM (lmer)
-    if(method == 'glmm'){
-      my.mod <-  lme4::glmer(y ~ trt + (1|clust), data = sim.dat[[i]], 
-                             family = stats::binomial(link = 'logit'))
-      model.values[[i]] <-  summary(my.mod)
-      # option to stop the function early if fits are singular
-      fail[i] <- ifelse(any( grepl("fail", my.mod@optinfo$conv$lme4$messages) )==TRUE |
-                          any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0)
-      if (poor.fit.override==FALSE){
-        if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations
-                                                    are singular fit: check model specifications")}
-      }
-      # get the overall p-values (>Chisq)
-      model.compare[[i]] <- car::Anova(my.mod, type="II")
-      # stop the loop if power is <0.5
-      if (poor.fit.override==FALSE){
-        if (i > 50 & (i %% 10==0)){
-          temp.power.checker <- matrix(unlist(model.compare[1:i]), ncol=3, nrow=i, 
-                                       byrow=TRUE)
-          sig.val.temp <-  ifelse(temp.power.checker[,3][1:i] < alpha, 1, 0)
-          pval.power.temp <- sum(sig.val.temp)/i
-          if (pval.power.temp < 0.5){
-            stop(paste("Calculated power is < ", pval.power.temp, ", auto stop at simulation ", 
-                       i, ". Set poor.fit.override==TRUE to ignore this error.", sep = ""))
-          }
-        }
-      }
+  #setup for parallel computing
+    ## Do computations with multiple processors:
+    ## Number of cores:
+    if (!is.na(cores)){
+    if (cores=="all"){nc <- parallel::detectCores()} else {nc <- cores}
+    ## Create clusters and initialize the progress bar
+    cl <- parallel::makeCluster(rep("localhost", nc), type="SOCK")
+    doSNOW::registerDoSNOW(cl)
     }
+    pb <- txtProgressBar(min=1, max=nsim, style=3)
+    progress <- function(n) setTxtProgressBar(pb, n)
+    opts <- list(progress=progress)
+  
+  if (method=="glmm"){
+    # Update simulation progress information
+    if(quiet == FALSE){
+      sim.start <- Sys.time()
+      lme4::glmer(sim.dat[,1] ~ trt + (1|clust), family = stats::binomial(link = 'logit'))
+      avg.iter.time = as.numeric(difftime(Sys.time(), sim.start, units = 'secs'))
+        time.est = avg.iter.time * (nsim - 1) / 60
+        hr.est = time.est %/% 60
+        min.est = round(time.est %% 60, 0)
+        message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
+                       ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
+        # initialize progress bar
+        if (is.na(cores)){
+          prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
+                                                 total = 5, clear = FALSE, show_after = 0)
+          prog.bar$tick(0)
+        }
+    }
+    if (is.na(cores) & quiet==FALSE){
+      # Iterate progress bar
+      prog.bar$update(1 / 5)
+      Sys.sleep(1/100)
+    }
+  # Create simulation loop
+   require(doParallel)
+    require(foreach)
+    if (!is.na(cores) & quiet == FALSE){
+      message("Fitting models")
+    }
+    my.mod <- foreach::foreach(i=1:nsim, .options.snow=opts, 
+                             .packages = "lme4", .inorder=FALSE) %fun% { 
+                               lme4::glmer(sim.dat[,i] ~ trt + (1|clust), 
+                                           family = stats::binomial(link = 'logit'))
+                             }
+    
+    if (is.na(cores) & quiet==FALSE){
+      # Iterate progress bar
+      prog.bar$update(3 / 5)
+      Sys.sleep(1/100)
+    }
+    
+    # option to stop the function early if fits are singular
+    fail <- foreach::foreach(i=1:nsim, .packages = "lme4", .inorder=FALSE) %fun% {
+                             ifelse(any( grepl("fail", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE |
+                                      any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE, 1, 0)
+                           }
+    if (poor.fit.override==FALSE){
+      if(sum(unlist(fail), na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations
+                                                are singular fit: check model specifications")}
+    }
+
+    if (!is.na(cores) & quiet == FALSE){
+      message("\r Performing null model comparisons")
+    }
+  # get the overall p-values (>Chisq)
+    model.compare <- foreach::foreach(i=1:nsim, .options.snow=opts,
+                                      .packages = "car", .inorder=FALSE) %fun% {
+                                      car::Anova(my.mod[[i]], type="II")
+                                      }
+    
+    if (is.na(cores) & quiet==FALSE){
+      # Iterate progress bar
+      prog.bar$update(4 / 5)
+      Sys.sleep(1/100)
+    }
+    
+  # get the model summaries
+    if (!is.na(cores) & quiet == FALSE){
+      message("\r Retrieving model summaries")
+    }
+    model.values <-  foreach::foreach(i=1:nsim, .options.snow=opts, .packages = "car", 
+                                    .inorder=FALSE) %fun% {summary(my.mod[[i]])
+                                    }
+    
+    if (is.na(cores) & quiet==FALSE){
+      # Iterate progress bar
+      prog.bar$update(5 / 5)
+      Sys.sleep(1/100)
+    }
+    # turn off parallel computing
+    if (!is.na(cores)){
+      #stop the progress bar
+      close(pb)
+      parallel::stopCluster(cl)
+    }
+  } #end of GLMM method
     
     # Fit GEE (geeglm)
     if(method == 'gee'){
-      my.mod = geepack::geeglm(y ~ trt, data = sim.dat[[i]],
-                               family = stats::binomial(link = 'logit'), 
-                               id = clust, corstr = "exchangeable")
-      model.values[[i]] <-  summary(my.mod)
-      # get the overall p-values (>Chisq)
-      model.compare[[i]] <- anova(my.mod)
-      # stop the loop if power is <0.5
-      if (poor.fit.override==FALSE){
-        if (i > 50 & (i %% 10==0)){
-          temp.power.checker <- matrix(unlist(model.compare[1:i]), ncol=3, nrow=i, 
-                                       byrow=TRUE)
-          sig.val.temp <-  ifelse(temp.power.checker[,3][1:i] < alpha, 1, 0)
-          pval.power.temp <- sum(sig.val.temp)/i
-          if (pval.power.temp < 0.5){
-            stop(paste("Calculated power is < ", pval.power.temp, ", auto stop at simulation ", 
-                       i, ". Set poor.fit.override==TRUE to ignore this error.", sep = ""))
-          }
-        }
-      }
-    }
-  } # end of foreach call
-
-    # Update simulation progress information
-    if(quiet == FALSE){
-      if(i == 1){
-        avg.iter.time <-  as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-        time.est <-  avg.iter.time * (nsim - 1) / 60
-        hr.est <-  time.est %/% 60
-        min.est <-  round(time.est %% 60, 0)
+      if(quiet == FALSE){
+        sim.start <- Sys.time()
+        geepack::geeglm(sim.dat[,1] ~ trt,
+                        family = stats::binomial(link = 'logit'), 
+                        id = clust, corstr = "exchangeable")
+        time.est = avg.iter.time * (nsim - 1) / 60
+        hr.est = time.est %/% 60
+        min.est = round(time.est %% 60, 0)
         message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
                        ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
+        # initialize progress bar
+        if (is.na(cores)){
+          prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
+                                                 total = 5, clear = FALSE)
+          prog.bar$tick(0)
+        }
+      }
+      require(foreach)
+      if (!is.na(cores) & quiet == FALSE){
+        message("Fitting models")
       }
       
-      # Iterate progress bar
-      prog.bar$update(i / nsim)
-      Sys.sleep(1/100)
-      
-      if(i == nsim){
-        total.est <-  as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-        hr.est <-  total.est %/% 3600
-        min.est <-  total.est %/% 60
-        sec.est <-  round(total.est %% 60, 0)
-        message(paste0("Simulations Complete! Time Completed: ", Sys.time(), 
-                       "\nTotal Runtime: ", hr.est, 'Hr:', min.est, 'Min:', sec.est, 'Sec'))
+      if (is.na(cores) & quiet==FALSE){
+        # Iterate progress bar
+        prog.bar$update(2 / 5)
+        Sys.sleep(1/100)
       }
-    }
-  } 
-  # end of large simulation loop
-  
-  # turn off parallel computing
-  if (!exists("cores", mode = "NULL")){
-    parallel::stopCluster(cl)
-  }
 
-  
+      my.mod <- foreach::foreach(i=1:nsim, .options.snow=opts, 
+                                 .packages = "geepack", .inorder=FALSE) %fun% { 
+                                   geepack::geeglm(sim.dat[,i] ~ trt,
+                                                   family = stats::binomial(link = 'logit'), 
+                                                   id = clust, corstr = "exchangeable")
+                                 }
+      if (!is.na(cores) & quiet == FALSE){
+        message("Performing null model comparisons")
+      }
+      if (is.na(cores) & quiet==FALSE){
+        # Iterate progress bar
+        prog.bar$update(3 / 5)
+        Sys.sleep(1/100)
+      }
+      # get the overall p-values (>Chisq)
+      model.compare <- foreach::foreach(i=1:nsim, .inorder=FALSE) %fun% {
+                                          anova(my.mod[[i]])
+      }
+      if (is.na(cores) & quiet==FALSE){
+        # Iterate progress bar
+        prog.bar$update(4 / 5)
+        Sys.sleep(1/100)
+      }
+      if (!is.na(cores) & quiet == FALSE){
+        message("Retrieving model summaries")
+      }
+      # get the model summaries
+      model.values <-  foreach::foreach(i=1:nsim, .packages = "car", 
+                                        .inorder=FALSE) %fun% {
+                                          summary(my.mod[[i]])
+                                        }
+      # turn off parallel computing
+      if (!is.na(cores)){
+        #stop the progress bar
+        close(pb)
+        parallel::stopCluster(cl)
+      }
+      } # end of GEE method
+
   ## Output objects
   if(all.sim.data == TRUE){
     complete.output.internal <-  list("estimates" = model.values,
                                       "model.comparisons" = model.compare,
-                                      "sim.data" = sim.dat,
-                                      "failed.to.converge"= fail)
+                                      "sim.data" = data.frame(trt, clust, sim.dat),
+                                      "failed.to.converge"= unlist(fail))
   } else {
     complete.output.internal <-  list("estimates" = model.values,
                                       "model.comparisons" = model.compare,
-                                      "failed.to.converge" =  paste((sum(fail)/nsim)*100, "% did not converge", sep=""))
+                                      "failed.to.converge" =  paste((sum(unlist(fail))/nsim)*100, 
+                                                                    "% did not converge", sep=""))
   }
   return(complete.output.internal)
-}
+} #end of function

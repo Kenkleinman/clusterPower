@@ -1,84 +1,149 @@
-#' Power simulations for cluster-randomized trials: Multi-Arm Designs, Continuous Outcome.
+#' Simulation-based power estimation for continuous outcome multi-arm 
+#' cluster-randomized trials.
 #'
-#' This set of functions utilize iterative simulations to determine 
-#' approximate power for multi-arm cluster-randomized controlled trials. Users 
-#' can modify a variety of parameters to suit the simulations to their
-#' desired experimental situation.
+#' This function uses iterative simulations to determine 
+#' approximate power for multi-arm cluster-randomized controlled trials with a 
+#' normally-distributed outcome of interest. Users can modify a variety of 
+#' parameters to suit the simulations to their desired experimental situation. 
+#' This function returns the summary power values for each treatment arm.
 #' 
+#' Users must specify the desired number of simulations, the group/arm means, 
+#' and two of the following: ICC, within-cluster variance, or between-cluster 
+#' variance. Significance level, analytic method, progress updates, 
+#' poor/singular fit override, and simulated data set output may also be 
+#' specified. This function validates the user's input and passes the necessary 
+#' arguments to an internal function, which performs the simulations. The 
+#' internal function can be called directly by the user to return the fitted 
+#' models rather than the power summaries (see \code{?cps.ma.normal.internal}
+#' for details).
 #' 
-#' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, group means, two of the following: ICC, within-cluster variance, or 
-#' between-cluster variance. Significance level, analytic method, progress updates, poor/singular fit override,
-#' and simulated data set output may also be specified. This function validates the user's input 
-#' and passes the necessary arguments to \code{cps.ma.normal.internal}, which performs the simulations.
+#' Users must also supply the number of arms, the subjects per 
+#' cluster, and the number of clusters per treatment arm. For a balanced design, 
+#' users can provide these values with the arguments \code{narms}, 
+#' \code{nsubjects}, and \code{nclusters}, respectively. For unbalanced 
+#' designs, the user may provide a list of vectors with one vector per arm,
+#' with each vector containing the number of subjects per cluster. See the 
+#' examples provided below for a demonstration of the various input options.
 #' 
+#' @param narms Integer value representing the number of arms. 
+#' @param nclusters An integer or vector of integers representing the number 
+#' of clusters in each arm.
+#' @param ICC The intra-cluster correlation coefficient
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
-#' Each entry is a vector containing the number of subjects per cluster (required).
-#' @param means Expected absolute treatment effect for each arm; accepts a vector of length \code{narms} (required).
-#' @param sigma_sq Within-cluster variance; accepts a vector of length \code{narms} (required).
-#' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param nsubjects Number of subjects per cluster (required); accepts an 
+#' integer if all are equal and \code{narms} and \code{nclusters} are provided. 
+#' Alternately, the user can supply a list with one entry per arm if the 
+#' cluster sizes are the same within the arm, or, if they are not the same 
+#' within the arms, the user can supply a list of vectors where each vector 
+#' represents an arm and each entry in the vector is the number of subjects 
+#' per cluster.
+#' @param means Expected absolute treatment effect for each arm; accepts a 
+#' vector of length \code{narms} (required).
+#' @param sigma_sq Within-cluster variance; accepts a vector of length 
+#' \code{narms} (required).
+#' @param sigma_b_sq Between-cluster variance; accepts a vector of length 
+#' \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
-#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
-#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
-#' @param multi.p.method A string indicating the method to use for adjusting p-values for multiple
-#' comparisons. Choose one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY",
-#' "fdr", "none". The default is "bonferroni". See ?p.adjust for additional details.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
+#' @param all.sim.data Option to output list of all simulated datasets; 
+#' default = FALSE.
+#' @param method Analytical method, either Generalized Linear Mixed Effects 
+#' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 
+#' 'gee') (required); default = 'glmm'.
+#' @param multi.p.method A string indicating the method to use for adjusting 
+#' p-values for multiple comparisons. Choose one of "holm", "hochberg", 
+#' "hommel", "bonferroni", "BH", "BY", "fdr", or "none" to leave p-values 
+#' unadjusted. The default isc"bonferroni". See \code{?p.adjust} for additional 
+#' details.
+#' @param quiet When set to FALSE, displays simulation progress and estimated 
+#' completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param cores a string or numeric value indicating the number of cores to be used for parallel computing. 
-#' When this option is set to NULL, no parallel computing is used.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge or 
-#' power<0.5 after 50 iterations; default = FALSE 
-#'  
-#' 
-#' @return A list with the following components
-#' \itemize{
-#'   \item Data frame with columns "Power" (Estimated statistical power), 
-#'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound)
-#'   \item Produced only when all.sim.data=TRUE, data frame with columns corresponding 
-#'   to each arm with the suffixes as follows: 
-#'                   ".Estimate" (Estimate of treatment effect for a given simulation), 
+#' @param cores a string ("all") or numeric value indicating the number of cores to be 
+#' used for parallel computing. 
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
+#' of fits fail to converge or power<0.5 after 50 iterations; default = FALSE. 
+#' @param tdist Logical; use t-distribution instead of normal distribution 
+#' for simulation values, default = FALSE.
+#' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
+#' the overall model comparisons, and the convergence report vector. This is equivalent
+#' to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.
+#' @return A list with the following components:
+#' \describe{
+#'   \item{power}{
+#'   Data frame with columns "Power" (Estimated statistical power), 
+#'                "lower.95.ci" (Lower 95\% confidence interval bound), 
+#'                "upper.95.ci" (Upper 95\% confidence interval bound).
+#'                }
+#'   \item{model.estimates}{
+#'   Produced only when all.sim.data=TRUE, data frame with columns 
+#'   corresponding to each arm with the suffixes as follows: 
+#'                   ".Estimate" (Estimate of treatment effect for a given 
+#'                   simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
 #'                   ".tval" (for GLMM) | ".wald" (for GEE), 
 #'                   ".pval"
-#'   \item Produced only when all.sim.data=TRUE, table of F-test (when method="glmm") or 
-#'   chi^{2} (when method="gee") significance test results.
-#'   \item Overall power of model compared to H0.
-#'   \item List of \code{nsim} data frames, each containing: 
+#'                   }
+#'   \item{overall.power.table}{
+#'   Produced only when all.sim.data=TRUE, table of F-test (when 
+#'   method="glmm") or chi-squared (when method="gee") significance test 
+#'   results.
+#'   }
+#'   \item{overall.power.summary}{
+#'   Overall power of model compared to H0.
+#'   }
+#'   \item{simulated.data}{
+#'   List of \code{nsim} data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
-#'                   "clust" (Indicator for cluster)
-#'   \item Character string containing the percent of \code{nsim} in which the glmm 
-#'   fit was singular, produced only when method == "glmm" & 
-#'   all.sim.data==FALSE
-#'   \item Vector containing of length \code{nsim} denoting whether 
-#'   or not a simulation glmm fit was singular, produced only when method == "glmm" & 
-#'   all.sim.data==TRUE
+#'                   "clust" (Indicator for cluster).
+#'                   }
+#'   \item{model.fit.warning.percent}{
+#'   Character string containing the percent of \code{nsim} in which the 
+#'   glmm fit was singular or failed to converge, produced only when 
+#'   method == "glmm" & all.sim.data==FALSE.
+#'   }
+#'   \item{model.fit.warning.incidence}{
+#'   Vector of length \code{nsim} denoting whether 
+#'   or not a simulation glmm fit triggered a "singular fit" 
+#'   or "non-convergence" error, produced only when 
+#'   method == "glmm" & all.sim.data==TRUE.
+#'   }
 #'   }
 #'          
 #' @examples 
 #' \dontrun{
-#' 
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-#' means.example <- c(30, 21, 53)
+#' means.example <- c(22, 21, 21.5)
 #' sigma_sq.example <- c(1, 1, 0.9)
 #' sigma_b_sq.example <- c(0.1, 0.15, 0.1)
 #' 
-#' multi.cps.normal <- cps.ma.normal(nsim = 2, nsubjects = nsubjects.example, 
+#' multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.example, 
 #'                        means = means.example, sigma_sq = sigma_sq.example, 
 #'                        sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
 #'                        quiet = FALSE, ICC=NULL, method = 'glmm', 
 #'                        all.sim.data = FALSE,
-#'                        seed = NULL, 
+#'                        seed = 123, cores = "all",
 #'                        poor.fit.override = FALSE)
+#'                        
+#'  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
+#'                                    nclusters = c (10,11,10), nsubjects = 100,
+#'                                    means = c(21, 21, 21.4),
+#'                                    sigma_sq = c(1,1,.9), 
+#'                                    sigma_b_sq = c(.1,.15,.1), alpha = 0.05,
+#'                                    quiet = FALSE, ICC=NULL, method = 'glmm',
+#'                                    all.sim.data = FALSE, seed = 123,
+#'                                    poor.fit.override = TRUE, cores="all")
 #' }
+#' multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
+#'                                   nclusters = 10, nsubjects = 25, 
+#'                                   means = c(22.1, 21, 22.5),
+#'                                   sigma_sq = 1, 
+#'                                   sigma_b_sq = 1, alpha = 0.05,
+#'                                   quiet = FALSE, ICC=NULL, method = 'glmm',
+#'                                   all.sim.data = FALSE, seed = 123,
+#'                                   poor.fit.override = TRUE, cores="all")
 #' 
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
-#' @author Alexander R. Bogdan 
-#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
+#'   and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
 #' @export
 #' 
@@ -87,12 +152,14 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                            narms = NULL, nclusters = NULL,
                         means = NULL, sigma_sq = NULL, 
                         sigma_b_sq = NULL, alpha = 0.05,
-                        quiet = FALSE, ICC=NULL, method = 'glmm', 
+                        quiet = FALSE, ICC = NULL, method = 'glmm', 
                         multi.p.method = "bonferroni",
-                        all.sim.data = FALSE, seed = 123, 
+                        all.sim.data = FALSE, seed = NA, 
                         cores=NULL,
-                        poor.fit.override = FALSE){
-  
+                        poor.fit.override = FALSE, 
+                        tdist=FALSE,
+                        return.all.models = FALSE){
+
   # Create wholenumber function
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
   
@@ -121,11 +188,13 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
 
-  validateVariance(difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sq, 
+  validateVariance(dist="norm", 
+                   difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sq, 
                    sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
                    sigma_b2=NA, method=method, quiet=quiet, 
-                   all.sim.data=all.sim.data, poor.fit.override=poor.fit.override)
-  
+                   all.sim.data=all.sim.data, 
+                   poor.fit.override=poor.fit.override)
+
   # create narms and nclusters if not provided directly by user
   if (exists("nsubjects", mode = "list")==TRUE){
     # create narms and nclusters if not supplied by the user
@@ -142,15 +211,14 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   if(length(nclusters)>1 & length(nsubjects)==1){
     narms <- length(nclusters)
   }
-  # nclusters must be whole numbers
-  if (sum(is.wholenumber(nclusters)==FALSE)!=0 || nclusters < 1){
+  # nclusters must be positive whole numbers
+  if (sum(is.wholenumber(nclusters)==FALSE)!=0 || sum(unlist(nclusters) < 1)!=0){
     stop("nclusters must be postive integer values.")
   }
-  # nsubjects must be whole numbers
-  if (sum(is.wholenumber(unlist(nsubjects))==FALSE)!=0 || nsubjects < 1){
+  # nsubjects must be positive whole numbers
+  if (sum(is.wholenumber(unlist(nsubjects))==FALSE)!=0 || sum(unlist(nsubjects)< 1)!=0){
     stop("nsubjects must be positive integer values.")
   }
-
   # Create nsubjects structure from narms and nclusters when nsubjects is scalar
   if (length(nsubjects)==1){
     str.nsubjects <- lapply(nclusters, function(x) rep(nsubjects, x))
@@ -196,7 +264,8 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                            all.sim.data = all.sim.data,
                                            seed = seed,
                                            cores=cores,
-                                           poor.fit.override = poor.fit.override)
+                                           poor.fit.override = poor.fit.override,
+                                           tdist = tdist)
    
    models <- normal.ma.rct[[1]]
    
@@ -207,15 +276,25 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    t.val = matrix(NA, nrow = nsim, ncol = narms)
    p.val = matrix(NA, nrow = nsim, ncol = narms)
  
+  if(max(sigma_sq)!=min(sigma_sq)){
+    for (i in 1:nsim){
+      Estimates[i,] <- models[[i]][,1]
+      std.error[i,] <- models[[i]][,2]
+      t.val[i,] <- models[[i]][,4]
+      p.val[i,] <- models[[i]][,5]
+    }
+    keep.names <- rownames(models[[1]])
+  } else {
    for (i in 1:nsim){
      Estimates[i,] <- models[[i]][[10]][,1]
      std.error[i,] <- models[[i]][[10]][,2]
      t.val[i,] <- models[[i]][[10]][,4]
      p.val[i,] <- models[[i]][[10]][,5]
    }
+    keep.names <- rownames(models[[1]][[10]])
+   }
  
  # Organize the row/col names for the model estimates output
-   keep.names <- rownames(models[[1]][[10]])
  
    names.Est <- rep(NA, narms)
    names.st.err <- rep(NA, narms)
@@ -270,7 +349,14 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                               "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
                               "sim.data" <-  normal.ma.rct[[3]], 
                               "failed.to.converge" <-  normal.ma.rct[[4]])
-   } else {
+   } 
+   if (return.all.models == TRUE) {
+     complete.output <-  list("power" <-  power.parms[-1,],
+                              "model.estimates" <-  ma.model.est, 
+                              "overall.power" <- LRT.holder,
+                              "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
+                              "all.models" <-  normal.ma.rct)
+     } else {
      complete.output <-  list("power" <-  power.parms[-1,],
                               "overall.power" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
                               "proportion.failed.to.converge" <- normal.ma.rct[[3]])
@@ -344,11 +430,17 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
        complete.output <-  list("power" <-  power.parms[-1,],
                                 "model.estimates" <-  ma.model.est, 
                                 "overall.power" <- LRT.holder,
-                                "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
+                                "overall.power2" <- prop_H0_rejection(
+                                  alpha=alpha, nsim=nsim, 
+                                  LRT.holder.abbrev=LRT.holder.abbrev),
                                 "sim.data" <-  normal.ma.rct[[3]])
      } else {
        complete.output <-  list("power" <-  power.parms[-1,],
-                                "overall.power" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev))
+                                "model.estimates" <-  ma.model.est, 
+                                "overall.power" <- LRT.holder,
+                                "overall.power2" <- prop_H0_rejection(
+                                  alpha=alpha, nsim=nsim, 
+                                  LRT.holder.abbrev=LRT.holder.abbrev))
      }
      return(complete.output)
    }

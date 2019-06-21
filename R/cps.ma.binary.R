@@ -1,107 +1,142 @@
-#' Power simulations for cluster-randomized trials: Multi-Arm Designs, Binary Outcome.
-#'
-#' This set of functions utilize iterative simulations to determine 
-#' approximate power for multi-arm cluster-randomized controlled trials. Users 
-#' can modify a variety of parameters to suit the simulations to their
-#' desired experimental situation. Use this function to retrieve the power 
-#' estimations, multiple-testing corrections, and other relevant summary values.
+#' Simulation-based power estimation for binary outcome multi-arm 
+#' cluster-randomized trials.
+#' 
+#' This function uses iterative simulations to determine 
+#' approximate power for multi-arm cluster-randomized controlled trials with 
+#' binary outcomes of interest. Users can modify a variety of parameters to 
+#' suit the simulations to their desired experimental situation. 
+#' This function validates the user's input and passes the necessary 
+#' arguments to an internal function, which performs the simulations. 
+#' This function returns the summary power values for each treatment arm.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, group probabilities, and two of the following: ICC, within-cluster variance, or 
-#' between-cluster variance. Significance level, analytic method, progress updates, poor/singular fit override,
-#' and simulated data set output (yes/no) may also be specified. This function validates the user's input, 
-#' formats the model fitting results, passes the necessary arguments to an internal function, \code{cps.ma.binary.internal}. 
-#' The internal function performs the simulations and model fitting. If the user wants access to the raw glmm or gee fits, 
-#' use \code{cps.ma.binary.internal()} instead. For more details, see \code{?cps.ma.binary.internal}.
+#' cluster, number of clusters per treatment arm, group probabilities, and the 
+#' between-cluster variance. Significance level, analytic method, progress 
+#' updates, poor/singular fit override, and whether or not to return the 
+#' simulated data may also be specified. The internal function can be called directly by the user to return the fitted 
+#' models rather than the power summaries (see \code{?cps.ma.normal.internal}
+#' for details).
 #' 
-#' Because the models for binary outcomes may be slower to fit than thise for other distributions, this function can run
-#' across multiple cores using the \code{cores} argument. Supplying any value other than NULL to \code{cores} turns on
-#' parallel computing using \code{foreach}. Users should expect that parallel 
-#' computing may make model fitting faster than using a single core for more complicated models. For simpler models, 
-#' users may prefer to use single thread computing (\code{cores}=1), as the processes involved in allocating memory and 
-#' copying data across cores can sometimes increase computation time depending on the complexity of the simulation tasks.
+#' Because the model for binary outcomes may be slower to fit than those for 
+#' other distributions, this function may be slower than its normal or 
+#' count-distributed counterparts. Users can spread the simulated data 
+#' generation and model fitting tasks across multiple cores using the 
+#' \code{cores} argument. Users should expect that parallel computing may make 
+#' model fitting faster than using a single core for more complicated models. 
+#' For simpler models, users may prefer to use single thread computing 
+#' (\code{cores}=1), as the processes involved in allocating memory and 
+#' copying data across cores also may take some time. For time-savings, 
+#' this function stops execution early if estimated power < 0.5 or more 
+#' than 25\% of models produce a singular fit or non-convergence warning 
+#' message, unless \code{poor.fit.override = TRUE}.
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per treatment group; accepts a list with one entry per arm. 
-#' Each entry is a vector containing the number of subjects per cluster (required).
-#' @param probs Expected absolute treatment effect probabilities for each arm; accepts a scalar or a vector of length \code{narms} (required).
-#' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms} (required).
+#' @param nsubjects Number of subjects per cluster (required); accepts an 
+#' integer if all are equal and \code{narms} and \code{nclusters} are provided. 
+#' Alternately, the user can supply a list with one entry per arm if the 
+#' cluster sizes are the same within the arm, or, if they are not the same 
+#' within the arms, the user can supply a list of vectors where each vector 
+#' represents an arm and each entry in the vector is the number of subjects 
+#' per cluster.
+#' @param narms Integer value representing the number of trial arms. 
+#' @param nclusters An integer or vector of integers representing the number 
+#' of clusters in each arm.
+#' @param probs Expected absolute treatment effect probabilities for each arm; 
+#' accepts a scalar or a vector of length \code{narms} (required).
+#' @param sigma_b_sq Between-cluster variance; accepts a vector of length 
+#' \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
-#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
-#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
-#' @param multi.p.method A string indicating the method to use for adjusting p-values for multiple
-#' comparisons. Choose one of "holm", "hochberg", "hommel", "bonferroni", "BH", "BY",
-#   "fdr", "none". The default is "bonferroni". See ?p.adjust for additional details.
+#' @param all.sim.data Option to output list of all simulated datasets; 
+#' default = FALSE.
+#' @param method Analytical method, either Generalized Linear Mixed Effects 
+#' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 
+#' 'gee') (required); default = 'glmm'.
+#' @param multi.p.method A string indicating the method to use for adjusting
+#' p-values for multiple comparisons. Choose one of "holm", "hochberg", 
+#' "hommel", "bonferroni", "BH", "BY", "fdr", "none". The default is 
+#' "bonferroni". See \code{?p.adjust} for additional details.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge or 
 #' power<0.5 after 50 iterations; default = FALSE.
-#' @param overall.power Logical value indicating whether the user would like to return the overall p-value. 
-#' The default is FALSE. This option uses \code{pbkrtest::PBmodcomp}, which can take a long time and 
-#' provides an approximation based on parametric bootstrapping. There is no reliable alternative method for 
-#' binomial outcomes, so proceed with caution if you choose to obtain estimates for overall power.
-#' @param cores String ("all") or scalar value indicating the number of cores to be used for 
-#' parallel computing. When this option is set to NULL, no parallel computing is used. Default = NULL.
-#'  
+#' @param cores String ("all"), NA, or scalar value indicating the number of cores 
+#' to be used for parallel computing. Default = NA (no parallel computing).
+#' @param tdist Logical value indicating whether simulated data should be 
+#' drawn from a t-distribution rather than the normal distribution. 
+#' Default = FALSE.
 #' @return A list with the following components:
-#' \itemize{
-#'   \item Data frame with columns "power" (Estimated statistical power), 
+#' \describe{
+#'   \item{power}{Data frame with columns "power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95\% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95\% confidence interval bound)
-#'   \item Produced only when all.sim.data=TRUE, data frame with columns corresponding 
-#'   to each arm with the suffixes as follows: 
-#'                   ".Estimate" (Estimate of treatment effect for a given simulation), 
+#'                "upper.95.ci" (Upper 95\% confidence interval bound).}
+#'   \item{model.estimates}{Data frame with columns corresponding 
+#'   to each arm with descriptive suffixes as follows: 
+#'                   ".Estimate" (Estimate of treatment effect for a given 
+#'                   simulation), 
 #'                   "Std.Err" (Standard error for treatment effect estimate), 
-#'                   ".zval" (for GLMM) | ".wald" (for GEE), 
-#'                   ".pval"
-#'   \item Produced only when all.sim.data=TRUE, table of F-test (when method="glmm") or 
-#'   chi^{2} (when method="gee") significance test results.
-#'   \item Overall power of model compared to H0.
-#'   \item List of \code{nsim} data frames, each containing: 
+#'                   ".zval" (for GLMM) | ".wald" (for GEE), and 
+#'                   ".pval" (the p-value estimate).}
+#'   \item{overall.power}{Table of F-test (when method="glmm") or chi^{2} 
+#'   (when method="gee") significance test results.}
+#'   \item{overall.power.summary}{Summary overall power of treatment model
+#'   compared to the null model.}
+#'   \item{sim.data}{Produced when all.sim.data==TRUE. List of \code{nsim} 
+#'   data frames, each containing: 
 #'                   "y" (simulated response value), 
-#'                   "trt" (indicator for treatment group or arm), 
-#'                   "clust" (indicator for cluster)
-#'   \item Character string containing the percent of \code{nsim} in which the glmm 
-#'   fit was singular, produced only when method == "glmm" & 
-#'   all.sim.data==FALSE
-#'   \item Vector containing of length \code{nsim} denoting whether 
-#'   or not a simulation glmm fit was singular, produced only when method == "glmm" & 
-#'   all.sim.data==TRUE
-#' }
+#'                   "trt" (indicator for treatment group or arm), and
+#'                   "clust" (indicator for cluster).}
+#'   \item{model.fit.warning.percent}{Character string containing the percent 
+#'   of \code{nsim} in which the glmm fit was singular or failed to converge, 
+#'   produced only when method = "glmm" & all.sim.data = FALSE.
+#'   }
+#'   \item{model.fit.warning.incidence}{Vector of length \code{nsim} denoting 
+#'   whether or not a simulation glmm fit triggered a "singular fit" or 
+#'   "non-convergence" error, produced only when method = "glmm" & 
+#'   all.sim.data=TRUE.
+#'   }
+#'   }
 #' 
 #' @examples 
 #' \dontrun{
-#' 
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-#' probs.example <- c(0.30, 0.21, 0.53)
-#' sigma_b_sq.example <- c(25, 25, 120)
+#' probs.example <- c(0.30, 0.5, 0.9)
+#' sigma_b_sq.example <- c(1, 1, 2)
 #' 
-#' bin.ma.rct <- cps.ma.binary(nsim = 10, nsubjects = nsubjects.example, 
-#'                                      probs = probs.example,
-#'                                      sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
-#'                                      quiet = FALSE, method = 'gee', 
-#'                                      all.sim.data = FALSE, seed = 123)
+#' bin.ma.rct.unbal <- cps.ma.binary(nsim = 100, 
+#'                             nsubjects = nsubjects.example, 
+#'                             probs = probs.example,
+#'                             sigma_b_sq = sigma_b_sq.example, 
+#'                             alpha = 0.05, all.sim.data = FALSE, 
+#'                             seed = 123, cores="all") 
+#'                             
+#' bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 20, narms=3,
+#'                             nclusters=10,
+#'                             probs = c(0.30, 0.5, 0.7),
+#'                             sigma_b_sq = 1, alpha = 0.05,
+#'                             quiet = FALSE, method = 'glmm', 
+#'                             all.sim.data = FALSE, 
+#'                             multi.p.method="none",
+#'                             poor.fit.override = TRUE,
+#'                             seed = 123, cores="all")                             
 #'}
-#'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
 cps.ma.binary <- function(nsim = 1000, nsubjects = NULL, 
                           narms = NULL, nclusters = NULL,
                           probs = NULL, sigma_b_sq = NULL, 
                           alpha = 0.05,
-                          quiet = FALSE, ICC=NULL, method = 'glmm', 
+                          quiet = FALSE, method = 'glmm', 
                           multi.p.method = "bonferroni",
-                          all.sim.data = FALSE, seed = 123, 
-                          cores=1,
-                          overall.power=FALSE,
+                          all.sim.data = FALSE, seed = NA, 
+                          cores=NA,
                           tdist=FALSE,
                           poor.fit.override = FALSE){
-
+  
+  # use this later to determine total elapsed time
+  start.time <- Sys.time()
   # Create wholenumber function
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
  
-  if(narms > 2){
     # create proportion of F-test rejections fxn
     prop_H0_rejection <- function (alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev, test="F"){
       print(paste("Proportion of ", test, " significance-test rejections = ", 
@@ -111,7 +146,6 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                   round(LRT.holder.abbrev + abs(stats::qnorm(alpha / 2)) * 
                           sqrt((LRT.holder.abbrev * (1 - LRT.holder.abbrev)) / nsim), 3), ".", sep=""))
     }
-  }
    
   # input validation steps
   if(!is.wholenumber(nsim) || nsim < 1 || length(nsim)>1){
@@ -181,10 +215,10 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
   }
   
   if (narms<3){
-    print("Warning: LRT significance not calculable when narms<3. Use cps.binary() instead.")
+    message("Warning: LRT significance not calculable when narms<3. Use cps.binary() instead.")
   }
   
-  validateVariance(difference=probs, alpha=alpha, ICC=NA, sigma=NA, 
+  validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma=NA, 
                    sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
                    sigma_b2=NA, method=method, quiet=quiet, 
                    all.sim.data=all.sim.data, 
@@ -196,7 +230,8 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
   binary.ma.rct <- cps.ma.binary.internal(nsim = nsim, 
                                           str.nsubjects = str.nsubjects, 
                                           probs = probs,
-                                          sigma_b_sq = sigma_b_sq, alpha = alpha, 
+                                          sigma_b_sq = sigma_b_sq, 
+                                          alpha = alpha, 
                                           quiet = quiet, method = method, 
                                           all.sim.data = all.sim.data,
                                           seed = seed,
@@ -240,13 +275,13 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     colnames(std.error) <- names.st.err
     colnames(z.val) <- names.zval
     colnames(p.val) <- names.pval
-    
+
     if (narms>2){
     # Organize the LRT output
       LRT.holder <- matrix(unlist(binary.ma.rct[[2]]), ncol=3, nrow=nsim, 
                            byrow=TRUE, 
                            dimnames = list(seq(1:nsim), 
-                                         colnames(bin.ma.rct[[2]][[1]])))
+                                         colnames(binary.ma.rct[[2]][[1]])))
     
     # Proportion of times P(>F)
       sig.LRT <-  ifelse(LRT.holder[,3] < alpha, 1, 0)
@@ -267,6 +302,15 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     ma.model.est <-  data.frame(Estimates, std.error, z.val, p.val)
     ma.model.est <- ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))] 
     
+    # performance messages
+    total.est <-  as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+    hr.est <-  total.est %/% 3600
+    min.est <-  total.est %/% 60
+    sec.est <-  round(total.est %% 60, 0)
+    message(paste0("Simulations Complete! Time Completed: ", Sys.time(), 
+                   "\nTotal Runtime: ", hr.est, 'Hr:', min.est, 'Min:', 
+                   sec.est, 'Sec'))
+    
     ## Output objects for GLMM
     
     # Create list containing all output (class 'crtpwr') and return
@@ -285,7 +329,8 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                                "proportion.failed.to.converge" <- binary.ma.rct[[3]])
     }
     return(complete.output)
-  }
+  } # end of GLMM options
+  
   #Organize output for GEE method
   if (method=="gee"){
     # Organize the output
@@ -346,20 +391,34 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)
     ma.model.est <- ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))] 
     
-    ## Output objects for GEE
+    # performance messages
+    total.est <-  as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+    hr.est <-  total.est %/% 3600
+    min.est <-  total.est %/% 60
+    sec.est <-  round(total.est %% 60, 0)
+    message(paste0("Simulations Complete! Time Completed: ", Sys.time(), 
+                   "\nTotal Runtime: ", hr.est, 'Hr:', min.est, 'Min:', 
+                   sec.est, 'Sec'))
     
+    ## Output objects for GEE
     # Create list containing all output (class 'crtpwr') and return
     if(all.sim.data == TRUE){
       complete.output <-  list("power" <-  power.parms[-1,],
                                "model.estimates" <-  ma.model.est, 
                                "overall.power" <- LRT.holder,
-                               "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev)),
-                               "sim.data" <-  binary.ma.rct[[3]])
+                               "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
+                                                                         LRT.holder.abbrev=LRT.holder.abbrev),
+                               "sim.data" <-  binary.ma.rct[[3]]))
     } else {
-      complete.output <-  list("power" <-  power.parms[-1,],
-                               "overall.power" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev)))
-    }
+    complete.output <-  list("power" <-  power.parms[-1,],
+                             "model.estimates" <-  ma.model.est, 
+                             "overall.power" <- LRT.holder,
+                             "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
+                                                                       LRT.holder.abbrev=LRT.holder.abbrev)))
+  }# end of return options
+    # assign special class
+    class(complete.output) <- c("multiarm", "list")
     return(complete.output)
-  }
-  }
+  }# end of GEE options
+}# end of fxn
 

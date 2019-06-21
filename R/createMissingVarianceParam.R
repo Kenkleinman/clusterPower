@@ -1,19 +1,15 @@
-#' Power simulations for cluster-randomized trials: calculating ICC, 
-#' sigma_sq, and sigma_b_sq inputs
+#' Calculates ICC, sigma_sq, or sigma_b_sq from the other 2 variables.
 #'
-#' Usually called from within a function, createMissingVarianceParam takes 2 of 3 
-#' arguments (ICC, sigma_sq, or sigma_b_sq) and returns the missing argument. It gives 
-#' an error if one of the inputs is missing or not specified properly. Note that 
-#' it is required that the user specify at least 2 of the arguments.
-#' 
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' Usually called from within another function, this function takes 2 of 3 
+#' arguments (ICC, sigma_sq, or sigma_b_sq) and returns the missing argument. 
+#' Note that it is required that the user specify at least 2 of the arguments.
 #' 
 #' @param sigma_sq Within-cluster variance; accepts a vector of length \code{narms}.
 #' @param sigma_b_sq Between-cluster variance; accepts a vector of length \code{narms}.
 #' @param ICC Intra-cluster correlation coefficient; accepts a vector of length \code{narms} with values between 0 - 1.
 #' 
 #' @return A vector of length \code{narms} containing the argument that the user did not specify.
-#' 
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu} and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @examples 
 #' \dontrun{
 #' ICC <- createMissingVarianceParam(sigma_sq = c(1, 1, 0.9), sigma_b_sq = c(0.1, 0.15, 0.1))

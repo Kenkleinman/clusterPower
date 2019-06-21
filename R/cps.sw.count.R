@@ -18,8 +18,8 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
 #' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
-#' @param c.ntrt Expected outcome count in non-treatment group. Accepts scalar between 0 - 1 (required).
-#' @param c.trt Expected outcome count in treatment group. Accepts scalar between 0 - 1 (required).
+#' @param c.ntrt Expected outcome count in non-treatment group. Accepts scalar (required).
+#' @param c.trt Expected outcome count in treatment group. Accepts scalar (required).
 #' @param steps Number of crossover steps; a baseline step (all clusters in non-treatment group) is assumed. 
 #' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 
 #' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 

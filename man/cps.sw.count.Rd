@@ -17,9 +17,9 @@ or a vector of length \code{nclusters} (user-defined size for each cluster) (req
 
 \item{nclusters}{Number of clusters; accepts non-negative integer scalar (required).}
 
-\item{c.ntrt}{Expected outcome count in non-treatment group. Accepts scalar between 0 - 1 (required).}
+\item{c.ntrt}{Expected outcome count in non-treatment group. Accepts scalar (required).}
 
-\item{c.trt}{Expected outcome count in treatment group. Accepts scalar between 0 - 1 (required).}
+\item{c.trt}{Expected outcome count in treatment group. Accepts scalar (required).}
 
 \item{steps}{Number of crossover steps; a baseline step (all clusters in non-treatment group) is assumed. 
 Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 

@@ -15,7 +15,7 @@
 #' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per treatment group; accepts either a scalar (equal cluster sizes, both groups), 
+#' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes, both groups), 
 #' a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
 #' (unequal cluster sizes within groups) (required).
 #' @param nclusters Number of clusters per group; accepts single integer or vector of length 2 for unequal number 
@@ -25,6 +25,7 @@
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
 #' @param sigma Within-cluster variance; accepts numeric
 #' @param sigma_b Between-cluster variance; accepts numeric
+#' 
 #' If clusters differ between treatment groups, at least 2 of the following 
 #' must be specified:
 #' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
@@ -35,6 +36,11 @@
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param seed Option to set the seed. Default is NA.
+#' @param irgtt Logical. Is the experimental design an individually randomized 
+#' group treatment trial? For details, see ?cps.irgtt.normal.
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
+#' of fits fail to converge.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -64,15 +70,13 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 30, difference = 30,
-#'                         ICC = 0.2, sigma = 100, alpha = 0.05, method = 'glmm', 
+#' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 9, difference = 10,
+#'                         ICC = 0.3, sigma = 100, alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
-#' 
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
-#' @author Alexander R. Bogdan 
-#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
-#'
+#' @author Alexander R. Bogdan, Alexandria C. Sakrejda 
+#' (\email{acbro0@@umass.edu}), and Ken Kleinman 
+#' (\email{ken.kleinman@@gmail.com})
 #' @export
 
 
@@ -80,13 +84,20 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
                       ICC = NULL, sigma = NULL, sigma_b = NULL,
                       ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL,
                       alpha = 0.05, method = 'glmm', quiet = FALSE,
-                      all.sim.data = FALSE){
+                      all.sim.data = FALSE, seed = NA, poor.fit.override=FALSE,
+                      irgtt = FALSE){
+  
+  # option for reproducibility
+  if (!is.na(seed)){
+    set.seed(seed=seed)
+  }
   
   # Create vectors to collect iteration-specific values
   est.vector = NULL
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
+  fail.vector = NULL
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -108,7 +119,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   if(!is.wholenumber(nsim) || nsim < 1){
     stop(paste0("NSIM", min1.warning))
   }
-  if(!is.wholenumber(nclusters) || nclusters < 1){
+    if(!is.wholenumber(nclusters) || nclusters < 1){
     stop(paste0("NCLUSTERS", min1.warning))
   }
   if(!is.wholenumber(nsubjects) || nsubjects < 1){
@@ -237,16 +248,122 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod = lme4::lmer(y ~ trt + (1|clust), data = sim.dat)
-      glmm.values = summary(my.mod)$coefficient
-      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = sum(nclusters) - 2)
-      est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-      pval.vector = append(pval.vector, p.val)
+      if(irgtt == TRUE){
+        if (sigma!=sigma2 && sigma_b!=sigma_b2){
+          print("line248")
+          trt2 <- unlist(trt)
+          clust2 <- unlist(clust)
+          my.mod <- nlme::lme(y~as.factor(trt2), random=~0+as.factor(trt2)|clust2, 
+                              weights=nlme::varIdent(form=~0|as.factor(trt2)), 
+                              method="ML",
+                              control=nlme::lmeControl(opt='optim'))
+          glmm.values <-  summary(my.mod)$tTable
+          # get the overall p-values (>Chisq)
+          null.mod <- nlme::lme(y~1, random=~0+as.factor(trt2)|clust2, 
+                                weights=nlme::varIdent(form=~0|as.factor(trt2)), 
+                                method="ML",
+                                control=nlme::lmeControl(opt='optim'))
+          pval.vector = append(pval.vector, glmm.values['as.factor(trt2)1', 'p-value'])
+          est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
+          se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
+          stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
+          # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+        }
+        
+        if (sigma==sigma2 && sigma_b!=sigma_b2){
+          my.mod <-  lmerTest::lmer(y ~ trt + (0 + as.factor(trt)|clust), REML=FALSE,
+                                    data = sim.dat)
+          # get the overall p-values (>Chisq)
+          null.mod <- update.formula(my.mod, y ~ (0+as.factor(trt)|clust))
+          glmm.values = summary(my.mod)$coefficients
+          pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|t|)'])
+          est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
+          se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
+          stat.vector = append(stat.vector, glmm.values['trt', 't value'])
+          fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          # option to stop the function early if fits are singular
+          if (poor.fit.override==FALSE){
+            if(sum(fail.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+          }
+         }
+        #if not IRGTT, then the following:
+  } else {
+        if (sigma!=sigma2 && sigma_b!=sigma_b2){
+          trt2 <- unlist(trt)
+          clust2 <- unlist(clust)
+          my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
+                              weights=nlme::varIdent(form=~1|as.factor(trt2)), 
+                              method="ML",
+                              control=nlme::lmeControl(opt='optim'))
+          glmm.values <-  summary(my.mod)$tTable
+          # get the overall p-values (>Chisq)
+          null.mod <- nlme::lme(y~1, random=~1+as.factor(trt2)|clust2, 
+                                weights=nlme::varIdent(form=~1|as.factor(trt2)), 
+                                method="ML",
+                                control=nlme::lmeControl(opt='optim'))
+          pval.vector = append(pval.vector, glmm.values['as.factor(trt2)1', 'p-value'])
+          est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
+          se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
+          stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
+         # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+        }
+        
+        if (sigma==sigma2 && sigma_b!=sigma_b2){
+          my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), REML=FALSE,
+                                    data = sim.dat)
+          # get the overall p-values (>Chisq)
+          null.mod <- update.formula(my.mod, y ~ (1+as.factor(trt)|clust))
+          glmm.values = summary(my.mod)$coefficients
+          pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|t|)'])
+          est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
+          se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
+          stat.vector = append(stat.vector, glmm.values['trt', 't value'])
+          fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          # option to stop the function early if fits are singular
+          if (poor.fit.override==FALSE){
+            if(sum(fail.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+          }
+         }
+        
+        if (sigma!=sigma2 && sigma_b==sigma_b2){
+          trt2 <- unlist(trt)
+          clust2 <- unlist(clust)
+          my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
+                              method="ML",
+                              control=nlme::lmeControl(opt='optim'))
+          glmm.values <-  summary(my.mod)$tTable
+          # get the overall p-values (>Chisq)
+          null.mod <- nlme::lme(y~1, random=~1+as.factor(trt2)|clust2,  
+                                method="ML",
+                                control=nlme::lmeControl(opt='optim'))
+          pval.vector = append(pval.vector, glmm.values['as.factor(trt2)1', 'p-value'])
+          est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
+          se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
+          stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
+          # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+        }
+        
+        if (sigma==sigma2 && sigma_b==sigma_b2){
+          my.mod <-  lmerTest::lmer(y~trt+(1|clust), REML=FALSE, 
+                                    data = sim.dat)
+          # get the overall p-values (>Chisq)
+          null.mod <- update.formula(my.mod, y ~ (1|clust))
+          glmm.values = summary(my.mod)$coefficients
+          pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|t|)'])
+          est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
+          se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
+          stat.vector = append(stat.vector, glmm.values['trt', 't value'])
+          fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          # option to stop the function early if fits are singular
+          if (poor.fit.override==FALSE){
+            if(sum(fail.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+          }
+        } 
+      }
     }
     
     # Fit GEE (geeglm)
+    # Note: there is no option for GEE with irgtt
     if(method == 'gee'){
       sim.dat = dplyr::arrange(sim.dat, clust)
       my.mod = geepack::geeglm(y ~ trt, data = sim.dat,
@@ -286,8 +403,11 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   
   ## Output objects
   # Create object containing summary statement
+  if (irgtt == FALSE) {
   summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: Simple Design, Continuous Outcome")
-  
+  } else {
+    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, " Simulations: IRGTT Design, Continuous Outcome")
+  }
   # Create method object
   long.method = switch(method, glmm = 'Generalized Linear Mixed Model', 
                        gee = 'Generalized Estimating Equation')
@@ -316,10 +436,12 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
                            'Treatment' = c('ICC' = ICC[2], 'sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
   
+  fail <- unlist(fail.vector)
+  
   # Create list containing all output (class 'crtpwr') and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                   "inputs" = difference, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets), 
+                                   "inputs" = difference, "model.estimates" = cps.model.est, "convergence.error" = fail, "sim.data" = simulated.datasets), 
                               class = 'crtpwr')
   return(complete.output)
   }

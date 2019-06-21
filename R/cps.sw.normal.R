@@ -90,6 +90,7 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
+  fail.vector = NULL
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -225,6 +226,8 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   #sim.dat['time.point'] = as.numeric(gsub("t", "", sim.dat[, 'time.point']))
   sim.dat['y'] = 0
   
+  sim.dat.holder <- list()
+  
   ## Craete simulation & analysis loop
   for (i in 1:nsim){
     # Create vectors of cluster effects
@@ -251,31 +254,38 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
     iter.values = cbind(stats::aggregate(y ~ trt + time.point, data = sim.dat, mean)[, 3])
     values.vector = values.vector + iter.values
     
+    sim.dat.holder[[i]] <- sim.dat
+    
     # Store simulated data sets if ALL.SIM.DATA == TRUE 
     if(all.sim.data == TRUE){
-      simulated.datasets = append(simulated.datasets, list(sim.dat))
+      simulated.datasets[[i]] = list(sim.dat)
     }
+  }
     
     ###################################################################
     ### DEV NOTE: Hussey & Hughes (2007) does not specify degrees of freedom for significance testing
     ###           GLMM DF = NCLUSTERS[Total # of clusters] - length(STEP.INDEX)[# of steps] - 2[# of treatment groups]
     ###################################################################
-    
-    # Fit GLMM (lmer)
+  models <- list()
+  
+  for(i in 1:nsim){  
+  # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod = lme4::lmer(y ~ trt + time.point + (1|clust), data = sim.dat)
-      glmm.values = summary(my.mod)$coefficient
+      my.mod = lme4::lmer(y ~ trt + time.point + (1|clust), data = sim.dat.holder[[i]])
+      models[[i]] = my.mod
+      glmm.values <- summary(my.mod)$coefficients
       p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = nclusters - length(step.index) - 2)
       est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
       se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
       stat.vector = append(stat.vector, glmm.values['trt', 't value'])
       pval.vector = append(pval.vector, p.val)
+      fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
     }
     
     # Fit GEE (geeglm)
     if(method == 'gee'){
       sim.dat = dplyr::arrange(sim.dat, clust)
-      my.mod = geepack::geeglm(y ~ trt + time.point, data = sim.dat,
+      my.mod = geepack::geeglm(y ~ trt + time.point, data = sim.dat.holder[[i]],
                                id = clust, corstr = "exchangeable")
       gee.values = summary(my.mod)$coefficients
       est.vector = append(est.vector, gee.values['trt', 'Estimate'])
@@ -354,7 +364,8 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms,
                                    "inputs" = difference, "means" = group.means, "model.estimates" = cps.model.est, "sim.data" = simulated.datasets, 
-                                   "crossover.matrix" = crossover.mat),
+                                   "crossover.matrix" = crossover.mat,
+                                   "convergence.error" = fail.vector),
                               class = 'crtpwr')
 
   return(complete.output)
