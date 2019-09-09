@@ -33,6 +33,7 @@
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param opt Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'L-BFGS-B'.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -80,7 +81,7 @@
 
 cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt = NULL, 
                          p.trt = NULL, steps = NULL, sigma_b = NULL, alpha = 0.05, 
-                         method = 'glmm', quiet = FALSE, all.sim.data = FALSE){
+                         method = 'glmm', quiet = FALSE, all.sim.data = FALSE, opt = 'L-BFGS-B'){
   
   # Create vectors to collect iteration-specific values
   est.vector = NULL
@@ -225,6 +226,9 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
   logit.p.ntrt = log(p.ntrt / (1 - p.ntrt))
   logit.p.trt = log(p.trt / (1 - p.trt))
   
+  if(method == 'glmm'){
+    require("optimx")
+  }
   
   ## Create simulation & analysis loop
   for (i in 1:nsim){
@@ -266,7 +270,11 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
     
     # Fit GLMM (lmer)
     if(method == 'glmm'){
-      my.mod = lme4::glmer(y ~ trt + time.point + (1|clust), data = sim.dat, family = stats::binomial(link = 'logit'))
+      my.mod = lme4::glmer(y ~ trt + time.point + (1|clust), data = sim.dat, 
+                           family = stats::binomial(link = 'logit'), 
+                           control = lme4::glmerControl(optimizer = "optimx", calc.derivs = FALSE,
+                                                        optCtrl = list(method = opt, 
+                                                                       starttests = FALSE, kkt = FALSE)))
       glmm.values = summary(my.mod)$coefficient
       est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
       se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
