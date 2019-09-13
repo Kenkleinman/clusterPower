@@ -104,7 +104,7 @@ i.e., exactly as the simple two arm trial with different between-cluster varianc
 
 ## Stepped wedge designs
 
-In an SWT, participants in the treatment arm begin the intervention in groups at different times. Clusters typically switch from control to intervention only, with the intervention continued until the end of the study. 
+In an SWT, participants in the treatment arm begin the intervention in groups at different times. Clusters typically switch from control to intervention only, with the intervention continued until the end of the study. The stepped wedge trial design is a type of cross-over trial in which clusters switch treatments in waves. Initially all the clusters recieve the same standard treatment, and at the end of the trial all of the clusters recieve the treatment of interest. More than one cluster can change treatments in a wave, but the order in which clusters change treatments is randomly determined. During each wave, the outcome of interest is assessed for all clusters.
 
 (eqn) [see @hussey2007design].
 

@@ -2,7 +2,13 @@ library(testthat)
 library(clusterPower)
 library(CRTSize)
 
+library("devtools")
+install_github("Kenkleinman/clusterPower@lexi")
+library("clusterPower")
+
 test_check("clusterPower")
+
+
 
 #######################################
 #### MULTI-ARM CRT DESIGNS TESTING #######

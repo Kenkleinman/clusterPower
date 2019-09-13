@@ -5,7 +5,14 @@
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
 #' 
-#' Runs power simulations for stepped wedge cluster-randomized controlled trials with a count outcome.
+#' Runs power simulations for stepped wedge cluster-randomized controlled trials 
+#' with a count outcome. The stepped wedge trial design is a type of cross-over
+#' design in which clusters change treatments in waves. Initially all the 
+#' clusters recieve the same standard treatment, and at the end of the trial all
+#' of the clusters will be recieving the treatment of interest. More than one 
+#' cluster can change treatments in a wave, but the order in which clusters 
+#' change treatments is randomly determined. The outcome of interest is assessed 
+#' in each cluster during each wave.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
 #' cluster, number of clusters per treatment arm, expected absolute difference 
