@@ -165,6 +165,8 @@ test_that("continuous simulation method matches the analytic method", {
   } # end of loop
 })
 
+#FAIL: 'continuous simulation method matches the 2-arm simulation method'
+#* task 1 failed - "zero-length inputs cannot be mixed with those of non-zero length'
 test_that("continuous simulation method matches the 2-arm simulation method", {
   nc <- sample.int(200, 10)
   ns <- sample.int(200, 10)
