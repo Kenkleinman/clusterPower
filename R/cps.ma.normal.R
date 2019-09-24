@@ -196,16 +196,16 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                    poor.fit.override=poor.fit.override)
 
   # create narms and nclusters if not provided directly by user
-  if (exists("nsubjects", mode = "list")==TRUE){
+  if (exists("nsubjects", mode = "list")){
     # create narms and nclusters if not supplied by the user
-    if (exists("narms", mode = "numeric")==FALSE){
+    if (!exists("narms", mode = "numeric")){
       narms <- length(nsubjects)
     }
-    if (exists("nclusters", mode = "numeric")==FALSE){
+    if (!exists("nclusters", mode = "numeric")){
       nclusters <- vapply(nsubjects, length, 0)
     }
   }
-  if(length(nclusters)==1 & exists("nsubjects", mode = "list")==FALSE){
+  if(length(nclusters)==1 & !exists("nsubjects", mode = "list")){
     nclusters <- rep(nclusters, narms)
   }
   if(length(nclusters)>1 & length(nsubjects)==1){
@@ -241,11 +241,11 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   }
 
   # supplies sigma_sq or sigma_b_sq if user supplies ICC
-  if (exists("ICC", mode = "numeric")==TRUE){
-  if (exists("sigma_sq", mode = "numeric")==FALSE){
+  if (length(ICC)!=0){
+  if (length(sigma_sq)==0){
     sigma_sq <- createMissingVarianceParam(sigma_b_sq = sigma_b_sq, ICC = ICC)
   }
-  if (exists("sigma_b_sq", mode = "numeric")==FALSE){
+  if (length(sigma_b_sq)==0){
     sigma_b_sq <- createMissingVarianceParam(sigma_sq = sigma_sq, ICC = ICC)
   }
   }
