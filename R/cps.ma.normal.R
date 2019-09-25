@@ -177,14 +177,14 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   if(!is.wholenumber(nsim) || nsim < 1 || length(nsim)>1){
     stop("nsim must be a positive integer of length 1.")
   }
-  if (exists("nsubjects", mode = "any")==FALSE){
+  if (is.null(nsubjects)){
     stop("nsubjects must be specified. See ?cps.ma.normal for help.")
   }
-  if (length(nsubjects)==1 & exists("nclusters", mode = "numeric")==FALSE){
+  if (length(nsubjects)==1 & !exists("nclusters", mode = "numeric")){
     stop("When nsubjects is scalar, user must supply nclusters (clusters per arm)")
   }
   if (length(nsubjects)==1 & length(nclusters)==1 & 
-      exists("narms", mode = "numeric")==FALSE){
+      !exists("narms", mode = "numeric")){
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
 

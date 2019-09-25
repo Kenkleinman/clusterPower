@@ -4,6 +4,7 @@ library(CRTSize)
 
 library("devtools")
 install_github("Kenkleinman/clusterPower@lexi")
+
 library("clusterPower")
 
 test_check("clusterPower")
@@ -14,22 +15,22 @@ test_check("clusterPower")
 #### MULTI-ARM CRT DESIGNS TESTING #######
 #######################################
 
-#--------------------------------- MULTI-ARM CONTINUOUS OUTCOMES
+#--------------------------------- MULTI-ARM BINARY OUTCOME
 
 context("Multi-arm outcome accuracy")
 
 # compare to a reference value from NIH calculator
 test_that("binary multi-arm case matches 2-arm binary case (simulated method)", {
-  expect_equal(as.numeric(cps.ma.binary(nsim = 100, nsubjects = 50, narms=2,
-                                                nclusters=4,
+  expect_equal(as.numeric(cps.ma.binary(nsim = 100, nsubjects = 50, narms = 2,
+                                                nclusters = 4,
                                                 probs = c(0.4, 0.1),
                                                 sigma_b_sq = 1, alpha = 0.05,
                                                 quiet = FALSE, method = 'glmm', 
                                                 all.sim.data = FALSE, 
-                                                multi.p.method="none",
+                                                multi.p.method = "none",
                                                 poor.fit.override = TRUE,
                                                 seed = 123, 
-                                                cores="all")[[1]][1]), 
+                                                cores = "all")[[1]][1]), 
                        as.numeric(cps.binary(nsim = 100, nsubjects = 50, 
                                              nclusters = 4, p1 = 0.4,p2 = 0.1, 
                                              sigma_b = 1, alpha = 0.05, method = 'glmm', 

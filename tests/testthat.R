@@ -196,7 +196,6 @@ test_that("DID binary simulation and analytic methods give similar power estimat
 # SW normal/binary/count
 # Multi-arm normal/binary/count
 
-# NOTE: most of these don't exist yet.
 
 
 
