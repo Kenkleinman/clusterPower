@@ -279,7 +279,7 @@ cps.sw.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.ntrt
     if(method == 'glmm'){
       my.mod = lme4::glmer(y ~ trt + time.point + (1|clust), data = sim.dat, 
                            family = stats::binomial(link = 'logit'), 
-                           control = lme4::glmerControl(optimizer = "optimx", calc.derivs = FALSE,
+                           control = lme4::glmerControl(optimizer = "optimx", calc.derivs = TRUE,
                                                         optCtrl = list(method = opt, 
                                                                        starttests = FALSE, kkt = FALSE)))
       glmm.values = summary(my.mod)$coefficient

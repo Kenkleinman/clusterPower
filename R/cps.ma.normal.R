@@ -66,6 +66,7 @@
 #' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
 #' the overall model comparisons, and the convergence report vector. This is equivalent
 #' to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.
+#' @param opt Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'bobyqa'.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{
@@ -158,7 +159,8 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                         cores=NULL,
                         poor.fit.override = FALSE, 
                         tdist=FALSE,
-                        return.all.models = FALSE){
+                        return.all.models = FALSE,
+                        opt = "bobyqa"){
 
   # Create wholenumber function
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
@@ -172,7 +174,24 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
         round(LRT.holder.abbrev + abs(stats::qnorm(alpha / 2)) * 
                 sqrt((LRT.holder.abbrev * (1 - LRT.holder.abbrev)) / nsim), 3), ".", sep=""))
   }
-  
+
+  # create narms and nclusters if not provided directly by user
+  if (isTRUE(is.list(nsubjects))) {
+    # create narms and nclusters if not supplied by the user
+    if (is.null(narms)) {
+      narms <- length(nsubjects)
+    }
+    if (is.null(nclusters)) {
+      nclusters <- vapply(nsubjects, length, 0)
+    }
+  }
+  if (length(nclusters) == 1 & !isTRUE(is.list(nsubjects))) {
+    nclusters <- rep(nclusters, narms)
+  }
+  if (length(nclusters) > 1 & length(nsubjects) == 1) {
+    narms <- length(nclusters)
+  }
+    
   # input validation steps
   if(!is.wholenumber(nsim) || nsim < 1 || length(nsim)>1){
     stop("nsim must be a positive integer of length 1.")
@@ -180,11 +199,11 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   if (is.null(nsubjects)){
     stop("nsubjects must be specified. See ?cps.ma.normal for help.")
   }
-  if (length(nsubjects)==1 & !exists("nclusters", mode = "numeric")){
+  if (length(nsubjects) == 1 & !isTRUE(is.numeric(nclusters))) {
     stop("When nsubjects is scalar, user must supply nclusters (clusters per arm)")
   }
-  if (length(nsubjects)==1 & length(nclusters)==1 & 
-      !exists("narms", mode = "numeric")){
+  if (length(nsubjects) == 1 & length(nclusters)==1 & 
+      !isTRUE(is.list(narms))) {
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
 
@@ -195,22 +214,6 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                    all.sim.data=all.sim.data, 
                    poor.fit.override=poor.fit.override)
 
-  # create narms and nclusters if not provided directly by user
-  if (exists("nsubjects", mode = "list")){
-    # create narms and nclusters if not supplied by the user
-    if (!exists("narms", mode = "numeric")){
-      narms <- length(nsubjects)
-    }
-    if (!exists("nclusters", mode = "numeric")){
-      nclusters <- vapply(nsubjects, length, 0)
-    }
-  }
-  if(length(nclusters)==1 & !exists("nsubjects", mode = "list")){
-    nclusters <- rep(nclusters, narms)
-  }
-  if(length(nclusters)>1 & length(nsubjects)==1){
-    narms <- length(nclusters)
-  }
   # nclusters must be positive whole numbers
   if (sum(is.wholenumber(nclusters)==FALSE)!=0 || sum(unlist(nclusters) < 1)!=0){
     stop("nclusters must be postive integer values.")
@@ -254,7 +257,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     stop("Length of variance parameters (sigma_sq, sigma_b_sq, ICC) 
          must equal narms, or be provided as a scalar if sigma_sq for all arms are equal.")
   }
-
+  
    # run the simulations 
    normal.ma.rct <- cps.ma.normal.internal(nsim = nsim, 
                                            str.nsubjects = str.nsubjects, 
@@ -263,9 +266,10 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                            quiet = quiet, method = method, 
                                            all.sim.data = all.sim.data,
                                            seed = seed,
-                                           cores=cores,
+                                           cores = cores,
                                            poor.fit.override = poor.fit.override,
-                                           tdist = tdist)
+                                           tdist = tdist,
+                                           opt = opt)
    
    models <- normal.ma.rct[[1]]
    

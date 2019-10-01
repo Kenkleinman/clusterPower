@@ -46,6 +46,7 @@
 #' of fits fail to converge.
 #' @param tdist Logical; use t-distribution instead of normal distribution 
 #' for simulation values, default = FALSE.
+#' @param opt Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'bobyqa'.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{estimates}{List of \code{length(nsim)} containing gee- or glmm-fitted model 
@@ -87,13 +88,17 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                       quiet = FALSE, method = 'glmm', 
                       all.sim.data = FALSE, 
                       seed = NA,
-                      cores="all",
+                      cores = "all",
                       poor.fit.override = FALSE,
-                      tdist=FALSE){
+                      tdist=FALSE,
+                      opt = opt){
 
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
   
+  if (opt != 'bobyqa'){
+    require("optimx")
+  }
   
   # Create NCLUSTERS, NARMS, from str.nsubjects
   narms = length(str.nsubjects)
@@ -115,7 +120,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   
   # option for reproducibility
   if (!is.na(seed)){
-    set.seed(seed=seed)
+    set.seed(seed = seed)
   }
   
   # Create indicators for treatment group & cluster for the sim.data output
@@ -136,7 +141,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     print("using t-distribution because tdist = TRUE")
   }
   #setup for parallel computing
-  if (!exists("cores", mode = "NULL")){
+  if (!is.null(cores)){
     ## Do computations with multiple processors:
     ## Number of cores:
     if (cores=="all"){nc <- parallel::detectCores()} else {nc <- cores}
@@ -175,21 +180,20 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   
     # trt and clust are re-coded as trt2 and clust2 to work nicely with lme. This can be changed later.
     # Fit GLMM (lmer)
-    if(method == 'glmm'){
-      
-      if (max(sigma_sq)!=min(sigma_sq) & max(sigma_b_sq)!=min(sigma_b_sq)){
+    if (method == 'glmm') {
+      if (max(sigma_sq) != min(sigma_sq) & max(sigma_b_sq) != min(sigma_b_sq)){
         trt2 <- unlist(trt)
         clust2 <- unlist(clust)
-      my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
-                     weights=nlme::varIdent(form=~1|as.factor(trt2)), 
-                     method="ML",
-                     control=nlme::lmeControl(opt='optim'))
+      my.mod <- nlme::lme(y~as.factor(trt2), random = ~1+as.factor(trt2)|clust2, 
+                     weights = nlme::varIdent(form = ~1|as.factor(trt2)), 
+                     method = "ML",
+                     control = nlme::lmeControl(opt = opt))
       model.values[[i]] <-  summary(my.mod)$tTable
       # get the overall p-values (>Chisq)
-      null.mod <- nlme::lme(y~1, random=~1+as.factor(trt2)|clust2, 
-                            weights=nlme::varIdent(form=~1|as.factor(trt2)), 
+      null.mod <- nlme::lme(y~1, random = ~1 + as.factor(trt2)|clust2, 
+                            weights = nlme::varIdent(form = ~1|as.factor(trt2)), 
                                                    method="ML",
-                            control=nlme::lmeControl(opt='optim'))
+                            control=nlme::lmeControl(opt=opt))
       }
       
       if (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)!=min(sigma_b_sq)){
@@ -207,16 +211,16 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       if (max(sigma_sq)!=min(sigma_sq) & max(sigma_b_sq)==min(sigma_b_sq)){
         trt2 <- unlist(trt)
         clust2 <- unlist(clust)
-        my.mod <- nlme::lme(y~as.factor(trt2), random=~1|clust2, 
-                            weights=nlme::varIdent(form=~1|as.factor(trt2)), 
+        my.mod <- nlme::lme(y~as.factor(trt2), random = ~1|clust2, 
+                            weights=nlme::varIdent(form = ~1|as.factor(trt2)), 
                             method="ML",
-                            control=nlme::lmeControl(opt='optim'))
+                            control=nlme::lmeControl(opt = opt))
         model.values[[i]] <-  summary(my.mod)$tTable
         # get the overall p-values (>Chisq)
         null.mod <- nlme::lme(y~1, random=~1|clust2,  
-                              weights=nlme::varIdent(form=~1|as.factor(trt2)), 
+                              weights=nlme::varIdent(form = ~1|as.factor(trt2)), 
                               method="ML",
-                              control=nlme::lmeControl(opt='optim'))
+                              control=nlme::lmeControl(opt = opt))
       }
       
       if (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)==min(sigma_b_sq)){

@@ -36,6 +36,7 @@
 #' simulation values, default = FALSE.
 #' @param cores A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to NA, no parallel computing is used.
+#' @param opt Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'optim'.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -75,7 +76,8 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                     seed = NA,
                                     poor.fit.override = FALSE,
                                     tdist = FALSE,
-                                    cores=cores){
+                                    cores = cores,
+                                    opt = opt){
   
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
@@ -219,11 +221,15 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     if (!is.na(cores) & quiet == FALSE){
       message("Fitting models")
     }
-    my.mod <- foreach::foreach(i=1:nsim, .options.snow=opts, 
-                             .packages = "lme4", .inorder=FALSE) %fun% { 
+    
+    my.mod <- foreach::foreach(i=1:nsim, .options.snow = opts, 
+                             .packages = c("lme4", "optimx"), .inorder = FALSE) %fun% { 
                                lme4::glmer(sim.dat[,i] ~ trt + (1|clust), 
-                                           family = stats::binomial(link = 'logit'))
-                             }
+                                           family = stats::binomial(link = 'logit'),
+                                           control = lme4::glmerControl(optimizer = "optimx", calc.derivs = TRUE,
+                                                                        optCtrl = list(method = opt, 
+                                                                                       starttests = FALSE, kkt = FALSE)))
+                               }
     
     if (is.na(cores) & quiet==FALSE){
       # Iterate progress bar
