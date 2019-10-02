@@ -91,14 +91,12 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                       cores = "all",
                       poor.fit.override = FALSE,
                       tdist=FALSE,
-                      opt = opt){
+                      opt = "optim"){
 
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
   
-  if (opt != 'bobyqa'){
-    require("optimx")
-  }
+  require("optimx")
   
   # Create NCLUSTERS, NARMS, from str.nsubjects
   narms = length(str.nsubjects)
@@ -119,13 +117,13 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   model.compare <- list()
   
   # option for reproducibility
-  if (!is.na(seed)){
+  if (!is.na(seed)) {
     set.seed(seed = seed)
   }
   
   # Create indicators for treatment group & cluster for the sim.data output
   trt = list()
-  for (arm in 1:length(str.nsubjects)){
+  for (arm in 1:length(str.nsubjects)) {
     trt[[arm]] = list()
     for (cluster in 1:length(str.nsubjects[[arm]])){
       trt[[arm]][[cluster]] = rep(arm, str.nsubjects[[arm]][[cluster]])

@@ -65,6 +65,7 @@
 #' @param tdist Logical value indicating whether simulated data should be 
 #' drawn from a t-distribution rather than the normal distribution. 
 #' Default = FALSE.
+#' @param opt Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'optim'.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{Data frame with columns "power" (Estimated statistical power), 
@@ -133,7 +134,8 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
                           all.sim.data = FALSE, seed = NA, 
                           cores=NA,
                           tdist=FALSE,
-                          poor.fit.override = FALSE){
+                          poor.fit.override = FALSE,
+                         opt = "optim"){
   
   # use this later to determine total elapsed time
   start.time <- Sys.time()
@@ -150,37 +152,36 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
                         sqrt((LRT.holder.abbrev * (1 - LRT.holder.abbrev)) / nsim), 3), ".", sep=""))
   }
   
+  # create narms and nclusters if not provided directly by user
+  if (isTRUE(is.list(nsubjects))) {
+    # create narms and nclusters if not supplied by the user
+    if (is.null(narms)) {
+      narms <- length(nsubjects)
+    }
+    if (is.null(nclusters)) {
+      nclusters <- vapply(nsubjects, length, 0)
+    }
+  }
+  if (length(nclusters) == 1 & !isTRUE(is.list(nsubjects))) {
+    nclusters <- rep(nclusters, narms)
+  }
+  if (length(nclusters) > 1 & length(nsubjects) == 1) {
+    narms <- length(nclusters)
+  }
+  
   # input validation steps
   if(!is.wholenumber(nsim) || nsim < 1 || length(nsim)>1){
     stop("nsim must be a positive integer of length 1.")
   }
-  if (exists("nsubjects", mode = "any")==FALSE){
+  if (isTRUE(is.null(nsubjects))) {
     stop("nsubjects must be specified. See ?cps.ma.count for help.")
   }
-  if (length(nsubjects)==1 & exists("nclusters", mode = "numeric")==FALSE){
+  if (length(nsubjects)==1 & !isTRUE(is.numeric(nclusters))) {
     stop("When nsubjects is scalar, user must supply nclusters (clusters per arm)")
   }
   if (length(nsubjects)==1 & length(nclusters)==1 & 
-      exists("narms", mode = "numeric")==FALSE){
+      !isTRUE(is.numeric(narms))) {
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
-  }
-  
-  # create narms and nclusters if not provided directly by user
-  if (exists("nsubjects", mode = "list")==TRUE){
-    # create narms and nclusters if not supplied by the user
-    if (exists("narms", mode = "numeric")==FALSE){
-      narms <- length(nsubjects)
-    }
-    if (exists("nclusters", mode = "numeric")==FALSE){
-      nclusters <- vapply(nsubjects, length, 0)
-    }
-  }
-  
-  if(length(nclusters)==1 & (exists("nsubjects", mode = "list")==FALSE)){
-    nclusters <- rep(nclusters, narms)
-  }
-  if(length(nclusters)>1 & length(nsubjects)==1){
-    narms <- length(nclusters)
   }
   
   # nclusters must be whole numbers
@@ -208,26 +209,25 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
     counts <- rep(counts, narms)
   }
   
-  if (length(counts)!=narms){
+  if (length(counts) != narms) {
     stop("Length of counts must equal narms, or be provided as a scalar if counts for all arms are equal.")
   }
   
-  if (length(sigma_b_sq)!=narms){
+  if (length(sigma_b_sq) != narms) {
     stop("Length of variance parameters sigma_b_sq must equal narms, or be provided as a scalar 
          if sigma_b_sq for all arms are equal.")
   }
   
-  if (narms<3){
+  if (narms < 3) {
     message("Warning: LRT significance not calculable when narms<3. Use cps.count() instead.")
   }
   
-  #validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma=NA, 
-  #                 sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
-  #                 sigma_b2=NA, method=method, quiet=quiet, 
-  #                 all.sim.data=all.sim.data, 
-  #                 poor.fit.override=poor.fit.override, 
-  #                 cores=cores,
-  #                 counts=counts)
+# validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma=NA, 
+#                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
+#                   sigma_b2=NA, method=method, quiet=quiet, 
+#                   all.sim.data=all.sim.data, 
+#                   poor.fit.override=poor.fit.override, 
+#                   cores=cores)
   
   # run the simulations 
   count.ma.rct <- cps.ma.count.internal(nsim = nsim, 
@@ -241,7 +241,8 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
                                           poor.fit.override = poor.fit.override,
                                           tdist = tdist,
                                           cores = cores,
-                                          family = family)
+                                          family = family,
+                                        opt = opt)
   
   models <- count.ma.rct[[1]]
   

@@ -66,7 +66,7 @@
 #' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
 #' the overall model comparisons, and the convergence report vector. This is equivalent
 #' to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.
-#' @param opt Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'bobyqa'.
+#' @param opt Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'optim'.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{
@@ -160,7 +160,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                         poor.fit.override = FALSE, 
                         tdist=FALSE,
                         return.all.models = FALSE,
-                        opt = "bobyqa"){
+                        opt = "optim"){
 
   # Create wholenumber function
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
@@ -280,14 +280,14 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    t.val = matrix(NA, nrow = nsim, ncol = narms)
    p.val = matrix(NA, nrow = nsim, ncol = narms)
  
-  if(max(sigma_sq)!=min(sigma_sq)){
-    for (i in 1:nsim){
-      Estimates[i,] <- models[[i]][,1]
-      std.error[i,] <- models[[i]][,2]
-      t.val[i,] <- models[[i]][,4]
-      p.val[i,] <- models[[i]][,5]
+  if(max(sigma_sq) != min(sigma_sq)) {
+    for (i in 1:nsim) {
+      Estimates[i,] <- models[[i]][20][[1]][,1]
+      std.error[i,] <- models[[i]][20][[1]][,2]
+      t.val[i,] <- models[[i]][20][[1]][,4]
+      p.val[i,] <- models[[i]][20][[1]][,5]
     }
-    keep.names <- rownames(models[[1]])
+    keep.names <- rownames(models[[1]][20][[1]])
   } else {
    for (i in 1:nsim){
      Estimates[i,] <- models[[i]][[10]][,1]

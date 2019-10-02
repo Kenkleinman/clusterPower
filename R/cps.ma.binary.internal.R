@@ -77,7 +77,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                     poor.fit.override = FALSE,
                                     tdist = FALSE,
                                     cores = cores,
-                                    opt = opt){
+                                    opt = "optim"){
   
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
