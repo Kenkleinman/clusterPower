@@ -72,9 +72,10 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 # Find the required number of clusters switching to intervention at each time point for a trial 
 # with alpha = 0.05, power = 0.80, nsubjects = 50, ntimes = 5, d = 1.5 units, icc = 0.2,
 # rho_c = 0.80, rho_s = 0.50, and vart = 16 square-units.
-crtpwr.sw(nsubjects = 50 , ntimes = 5, d = 1.5, icc = 0.2, rho_c = 0.80, rho_s = 0.50, vart = 16)
+crtpwr.sw(nsubjects = 50, ntimes = 5, d = 1.5, icc = 0.2, rho_c = 0.80, rho_s = 0.50, vart = 16)
 # 
-# The result, nclusters = 1.899014, suggests 2 clusters per condition should be used.
+# The result, nclusters = 2.134918, suggests 3 clusters switching per time point should be used. This
+# means that the total number of clusters in the study is nclusters*ntimes = 3*5 = 15.
 
 }
 \references{
