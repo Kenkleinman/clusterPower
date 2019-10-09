@@ -32,10 +32,10 @@
 #' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
 #' of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the cumulative 
 #' number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).
-#' @param sigma Within-cluster variance; accepts non-negative numeric scalar (indicating equal within-cluster variances for both 
+#' @param sigma_sq Within-cluster variance; accepts non-negative numeric scalar (indicating equal within-cluster variances for both 
 #' treatment groups) or a vector of length 2 specifying within-cluster variances for the non-treatment and treatment groups, 
 #' respectively (required).
-#' @param sigma_b Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
+#' @param sigma_b_sq Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
 #' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances (required).
 #' @param alpha Significance level. Default = 0.05.
@@ -77,7 +77,7 @@
 #' @examples 
 #' \dontrun{
 #' normal.sw.rct = cps.sw.normal(nsim = 100, nsubjects = 50, nclusters = 30, 
-#'                               difference = 3, steps = 5, sigma = 100, sigma_b = 30, 
+#'                               difference = 3, steps = 5, sigma_sq = 100, sigma_b_sq = 30, 
 #'                               alpha = 0.05, method = 'glmm', quiet = FALSE, 
 #'                               all.sim.data = FALSE)
 #' }
@@ -89,7 +89,7 @@
 #' @export
 
 cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, difference = NULL, 
-                         steps = NULL, sigma = NULL, sigma_b = NULL, alpha = 0.05, 
+                         steps = NULL, sigma_sq = NULL, sigma_b_sq = NULL, alpha = 0.05, 
                          method = 'glmm', quiet = FALSE, all.sim.data = FALSE){
   
   # Create vectors to collect iteration-specific values
@@ -173,32 +173,32 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
     stop("ALPHA must be a numeric value between 0 - 1")
   }
   
-  # Validate SIGMA, SIGMA_B0, SIGMA_B1
-  sigma_b.warning = " must be a scalar (equal between-cluster variance for both treatment and non-treatment groups) 
+  # Validate sigma_sq, SIGMA_B0, SIGMA_B1
+  sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both treatment and non-treatment groups) 
   or a vector of length 2, specifying unique between-cluster variances for the treatment and non-treatment groups."
-  if(!is.numeric(sigma) || any(sigma < 0)){
-    stop("All values supplied to SIGMA must be numeric values > 0")
+  if(!is.numeric(sigma_sq) || any(sigma_sq < 0)){
+    stop("All values supplied to sigma_sq must be numeric values > 0")
   }
-  if(!length(sigma) %in% c(1, 2)){
-    stop("SIGMA must be a scalar (equal within-cluster variance for both treatment and non-treatment groups) 
+  if(!length(sigma_sq) %in% c(1, 2)){
+    stop("sigma_sq must be a scalar (equal within-cluster variance for both treatment and non-treatment groups) 
          or a vector of length 2, specifying unique within-cluster variances for the treatment and non-treament groups.")
   }
-  if(!is.numeric(sigma_b) || any(sigma_b < 0)){
-    stop("All values supplied to SIGMA_B must be numeric values >= 0")
+  if(!is.numeric(sigma_b_sq) || any(sigma_b_sq < 0)){
+    stop("All values supplied to sigma_b_sq must be numeric values >= 0")
   }
-  if(!length(sigma_b) %in% c(1, 2)){
-    stop("SIGMA_B", sigma_b.warning)
+  if(!length(sigma_b_sq) %in% c(1, 2)){
+    stop("sigma_b_sq", sigma_b_sq.warning)
   }
-  # Set SIGMA & SIGMA_B (if not already set)
-  if(length(sigma) == 1){
-    sigma[2] = sigma
+  # Set sigma_sq & sigma_b_sq (if not already set)
+  if(length(sigma_sq) == 1){
+    sigma_sq[2] = sigma_sq
   }
-  # Note: If user-defined, SIGMA_B[2] is additive
-  if(length(sigma_b) == 2){
-    sigma_b[2] = sigma_b[1] + sigma_b[2]
+  # Note: If user-defined, sigma_b_sq[2] is additive
+  if(length(sigma_b_sq) == 2){
+    sigma_b_sq[2] = sigma_b_sq[1] + sigma_b_sq[2]
   }
-  if(length(sigma_b) == 1){
-    sigma_b[2] = sigma_b
+  if(length(sigma_b_sq) == 1){
+    sigma_b_sq[2] = sigma_b_sq
   }
     
   # Validate METHOD, QUIET, ALL.SIM.DATA
@@ -238,19 +238,19 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   ## Craete simulation & analysis loop
   for (i in 1:nsim){
     # Create vectors of cluster effects
-    ntrt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b[1]))
-    trt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b[2]))
+    ntrt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b_sq[1]))
+    trt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b_sq[2]))
     
     # Add subject specific effects & cluster effects
     for(j in 1:nclusters){
       # Assign non-treatment subject & cluster effects 
       sim.dat['y'] = ifelse(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0, 
-                            stats::rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0), 0, sqrt(sigma[1])) + 
+                            stats::rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0), 0, sqrt(sigma_sq[1])) + 
                               ntrt.cluster.effects[j], 
                             sim.dat[, 'y'])
       # Assign treatment subject & cluster effects
       sim.dat['y'] = ifelse(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1, 
-                            stats::rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1), difference, sqrt(sigma[2])) + 
+                            stats::rnorm(sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1), difference, sqrt(sigma_sq[2])) + 
                               trt.cluster.effects[j], 
                             sim.dat[, 'y'])
     }
@@ -360,8 +360,8 @@ cps.sw.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differ
   n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
 
   # Create object containing variance parameters for each group at each time point
-  var.parms = t(data.frame('Non.Treatment' = c('sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
-                           'Treatment' = c('sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
+  var.parms = t(data.frame('Non.Treatment' = c('sigma_sq' = sigma_sq[1], 'sigma_b_sq' = sigma_b_sq[1]), 
+                           'Treatment' = c('sigma_sq' = sigma_sq[2], 'sigma_b_sq' = sigma_b_sq[2])))
   
   # Create crossover matrix output object
   crossover.mat = apply(as.matrix(c(0, step.index)), 1, 

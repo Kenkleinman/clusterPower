@@ -22,13 +22,13 @@
 #' @param c1 Expected outcome count in non-treatment group
 #' @param c2 Expected outcome count in treatment group
 #' @param c.diff Expected difference in outcome count between groups, defined as c.diff = c1 - c2
-#' @param sigma_b0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
+#' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
 #' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances
-#' @param sigma_b1 Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
+#' @param sigma_b_sq1 Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
 #' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
-#' between-cluster variances. For data simulation, SIGMA_B1 is added to SIGMA_B0, such that if SIGMA_B0 = 5 
-#' and SIGMA_B1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.
+#' between-cluster variances. For data simulation, sigma_b_sq1 is added to sigma_b_sq0, such that if sigma_b_sq0 = 5 
+#' and sigma_b_sq1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.
 #' @param alpha Significance level for power estimation, accepts value between 0 - 1; default = 0.05
 #' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
 #' @param analysis Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
@@ -72,7 +72,7 @@
 #' @examples 
 #' \dontrun{
 #' did.count.sim = cps.did.count(nsim = 100, nsubjects = 50, nclusters = 6, c1 = 100, 
-#'                               c2 = 25, sigma_b0 = c(10, 15), sigma_b1 = c(12, 18), 
+#'                               c2 = 25, sigma_b_sq0 = c(10, 15), sigma_b_sq1 = c(12, 18), 
 #'                               family = 'poisson', analysis = 'poisson', method = 'glmm', 
 #'                               alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
 #' }
@@ -86,7 +86,7 @@
 
 # Define function
 cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL, c2 = NULL, 
-                     c.diff = NULL, sigma_b0 = NULL, sigma_b1 = 0, family = 'poisson', 
+                     c.diff = NULL, sigma_b_sq0 = NULL, sigma_b_sq1 = 0, family = 'poisson', 
                      analysis = 'poisson', method = 'glmm', alpha = 0.05, quiet = FALSE, 
                      all.sim.data = FALSE){
   
@@ -161,29 +161,29 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
     c.diff = c1 - c2
   }
   
-  # Validate SIGMA_B0 & SIGMA_B1
-  sigma_b.warning = " must be a scalar (equal between-cluster variance for both treatment groups) or a vector of length 2, 
+  # Validate sigma_b_sq0 & sigma_b_sq1
+  sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both treatment groups) or a vector of length 2, 
   specifying between-cluster variances for each treatment group"
-  if(!is.numeric(sigma_b0) || any(sigma_b0 < 0)){
-    stop("All values supplied to SIGMA_B0 must be numeric values > 0")
+  if(!is.numeric(sigma_b_sq0) || any(sigma_b_sq0 < 0)){
+    stop("All values supplied to sigma_b_sq0 must be numeric values > 0")
   }
-  if(!length(sigma_b0) %in% c(1,2)){
-    stop("SIGMA_B0", sigma_b.warning)
+  if(!length(sigma_b_sq0) %in% c(1,2)){
+    stop("sigma_b_sq0", sigma_b_sq.warning)
   }
-  if(!length(sigma_b1) %in% c(1,2)){
-    stop("SIGMA_B1", sigma_b.warning)
+  if(!length(sigma_b_sq1) %in% c(1,2)){
+    stop("sigma_b_sq1", sigma_b_sq.warning)
   }
-  if(!is.numeric(sigma_b1) || any(sigma_b1 < 0)){
-    stop("All values supplied to SIGMA_B1 must be numeric values >= 0")
+  if(!is.numeric(sigma_b_sq1) || any(sigma_b_sq1 < 0)){
+    stop("All values supplied to sigma_b_sq1 must be numeric values >= 0")
   }
-  # Set SIGMA_B0 & SIGMA_B1 (if not already specified)
-  if(length(sigma_b0) == 1){
-    sigma_b0[2] = sigma_b0
+  # Set sigma_b_sq0 & sigma_b_sq1 (if not already specified)
+  if(length(sigma_b_sq0) == 1){
+    sigma_b_sq0[2] = sigma_b_sq0
   }
-  if(length(sigma_b1) == 1){
-    sigma_b1[2] = sigma_b1
+  if(length(sigma_b_sq1) == 1){
+    sigma_b_sq1[2] = sigma_b_sq1
   }
-  sigma_b1 = sigma_b1 + sigma_b0
+  sigma_b_sq1 = sigma_b_sq1 + sigma_b_sq0
   
   # Validate FAMILY, ANALYSIS, ALPHA, METHOD, QUIET, ALL.SIM.DATA
   if(!is.element(family, c('poisson', 'neg.binom'))){
@@ -218,8 +218,8 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
   for(i in 1:nsim){
     ## TIME == 0
     # Generate between-cluster effects for non-treatment and treatment
-    randint.ntrt.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b0[1]))
-    randint.trt.0 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b0[2]))
+    randint.ntrt.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq0[1]))
+    randint.trt.0 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq0[2]))
     
     # Create non-treatment y-value
     y0.ntrt.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.ntrt.0[x], length.out = nsubjects[x])))
@@ -245,8 +245,8 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
     
     ## TIME == 1
     # Generate between-cluster effects for non-treatment and treatment
-    randint.ntrt.1 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b1[1]))
-    randint.trt.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b1[2]))
+    randint.ntrt.1 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq1[1]))
+    randint.trt.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq1[2]))
     
     # Create non-treatment y-value
     y1.ntrt.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.ntrt.1[x], length.out = nsubjects[x])))
@@ -373,10 +373,10 @@ cps.did.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = N
   n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
   
   # Create object containing group-specific variance parameters
-  var.parms = list("Time.Point.0" = data.frame('Non.Treatment' = c("sigma_b" = sigma_b0[1]), 
-                                               'Treatment' = c("sigma_b" = sigma_b0[2])), 
-                   "Time.Point.1" = data.frame('Non.Treatment' = c("sigma_b" = sigma_b1[1]), 
-                                               'Treatment' = c("sigma_b" = sigma_b1[2])))
+  var.parms = list("Time.Point.0" = data.frame('Non.Treatment' = c("sigma_b_sq" = sigma_b_sq0[1]), 
+                                               'Treatment' = c("sigma_b_sq" = sigma_b_sq0[2])), 
+                   "Time.Point.1" = data.frame('Non.Treatment' = c("sigma_b_sq" = sigma_b_sq1[1]), 
+                                               'Treatment' = c("sigma_b_sq" = sigma_b_sq1[2])))
   
   # Create object containing FAMILY & REGRESSION parameters
   dist.parms = rbind('Family:' = paste0(switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'), ' distribution'), 

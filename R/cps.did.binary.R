@@ -31,13 +31,13 @@
 #' @param or1 Expected odds ratio for outcome in non-treatment group
 #' @param or2 Expected odds ratio for outcome in treatment group
 #' @param or.diff Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2
-#' @param sigma_b0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
+#' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
 #' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances
-#' @param sigma_b1 Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
+#' @param sigma_b_sq1 Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
 #' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
-#' between-cluster variances. For data simulation, SIGMA_B1 is added to SIGMA_B0, such that if SIGMA_B0 = 5 
-#' and SIGMA_B1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.
+#' between-cluster variances. For data simulation, sigma_b_sq1 is added to sigma_b_sq0, such that if sigma_b_sq0 = 5 
+#' and sigma_b_sq1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.
 #' @param alpha Significance level. Default = 0.05
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation start time and completion time. Default is TRUE.
@@ -55,7 +55,7 @@
 #'   \item Significance level
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters
-#'   \item Data frame reporting sigma_b for each group at each time point
+#'   \item Data frame reporting sigma_b_sq for each group at each time point
 #'   \item Vector containing expected difference in probabilities based on user inputs
 #'   \item Data frame with columns: 
 #'                   "Period" (Pre/Post-treatment indicator), 
@@ -81,7 +81,7 @@
 #' @examples 
 #' \dontrun{
 #' did.binary.sim = cps.did.binary(nsim = 100, nsubjects = 50, nclusters = 6, 
-#'                                 p1 = 0.4, p2 = 0.2, sigma_b0 = 10, alpha = 0.05,
+#'                                 p1 = 0.4, p2 = 0.2, sigma_b_sq0 = 10, alpha = 0.05,
 #'                                 method = 'glmm', all.sim.data = FALSE)
 #' }
 #'
@@ -98,7 +98,7 @@
 # Define function
 cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.diff = NULL,
                       p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
-                      sigma_b0 = NULL, sigma_b1 = 0, alpha = 0.05, method = 'glmm', 
+                      sigma_b_sq0 = NULL, sigma_b_sq1 = 0, alpha = 0.05, method = 'glmm', 
                       quiet = TRUE, all.sim.data = FALSE){
   # Create objects to collect iteration-specific values
   est.vector = NULL
@@ -125,7 +125,7 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
   # Define expit function
   expit = function(x)  1 / (1 + exp(-x))
   
-  # Validate NSIM, NSUBJECTS, NCLUSTERS, SIGMA_B, ALPHA
+  # Validate NSIM, NSUBJECTS, NCLUSTERS, sigma_b_sq, ALPHA
   sim.data.arg.list = list(nsim, nsubjects, nclusters)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if(sum(sim.data.args) > 0){
@@ -209,29 +209,29 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
     p.diff = abs(p1 - p2)
   }
   
-  # Validate SIGMA_B0 & SIGMA_B1
-  sigma_b.warning = " must be a scalar (equal between-cluster variance for both treatment groups) or a vector of length 2, 
+  # Validate sigma_b_sq0 & sigma_b_sq1
+  sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both treatment groups) or a vector of length 2, 
          specifying between-cluster variances for each treatment group"
-  if(!is.numeric(sigma_b0) || any(sigma_b0 < 0)){
-    stop("All values supplied to SIGMA_B0 must be numeric values > 0")
+  if(!is.numeric(sigma_b_sq0) || any(sigma_b_sq0 < 0)){
+    stop("All values supplied to sigma_b_sq0 must be numeric values > 0")
   }
-  if(!length(sigma_b0) %in% c(1,2)){
-    stop("SIGMA_B0", sigma_b.warning)
+  if(!length(sigma_b_sq0) %in% c(1,2)){
+    stop("sigma_b_sq0", sigma_b_sq.warning)
   }
-  if(!length(sigma_b1) %in% c(1,2)){
-    stop("SIGMA_B1", sigma_b.warning)
+  if(!length(sigma_b_sq1) %in% c(1,2)){
+    stop("sigma_b_sq1", sigma_b_sq.warning)
   }
-  if(!is.numeric(sigma_b1) || any(sigma_b1 < 0)){
-    stop("All values supplied to SIGMA_B1 must be numeric values >= 0")
+  if(!is.numeric(sigma_b_sq1) || any(sigma_b_sq1 < 0)){
+    stop("All values supplied to sigma_b_sq1 must be numeric values >= 0")
   }
-  # Set SIGMA_B0 & SIGMA_B1 (if not already specified)
-  if(length(sigma_b0) == 1){
-    sigma_b0[2] = sigma_b0
+  # Set sigma_b_sq0 & sigma_b_sq1 (if not already specified)
+  if(length(sigma_b_sq0) == 1){
+    sigma_b_sq0[2] = sigma_b_sq0
   }
-  if(length(sigma_b1) == 1){
-    sigma_b1[2] = sigma_b1
+  if(length(sigma_b_sq1) == 1){
+    sigma_b_sq1[2] = sigma_b_sq1
   }
-  sigma_b1 = sigma_b1 + sigma_b0
+  sigma_b_sq1 = sigma_b_sq1 + sigma_b_sq0
   
   # Validate ALPHA, METHOD, QUIET, ALL.SIM.DATA
   if(!is.numeric(alpha) || alpha < 0 || alpha > 1){
@@ -248,9 +248,9 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
     stop("ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output")
   }
   
-  # Calculate ICC1 at baseline (_0) and tx period (_1) (sigma_b / (sigma_b + pi^2/3))
-  icc1_0 = mean(sapply(1:2, function(x) sigma_b0[x] / (sigma_b0[x] + pi^2 / 3)))
-  icc1_1 = mean(sapply(1:2, function(x) sigma_b1[x] / (sigma_b1[x] + pi^2 / 3)))
+  # Calculate ICC1 at baseline (_0) and tx period (_1) (sigma_b_sq / (sigma_b_sq + pi^2/3))
+  icc1_0 = mean(sapply(1:2, function(x) sigma_b_sq0[x] / (sigma_b_sq0[x] + pi^2 / 3)))
+  icc1_1 = mean(sapply(1:2, function(x) sigma_b_sq1[x] / (sigma_b_sq1[x] + pi^2 / 3)))
   
   # Create indicators for PERIOD, TRT & CLUSTER
   period = rep(0:1, each = sum(nsubjects))
@@ -270,8 +270,8 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
   while(sum(converge.vector == TRUE) != nsim){
       ## TIME == 0
       # Generate between-cluster effects for non-treatment and treatment
-      randint.ntrt.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b0[1]))
-      randint.trt.0 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b0[2]))
+      randint.ntrt.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq0[1]))
+      randint.trt.0 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq0[2]))
       
       # Create non-treatment y-value
       y0.ntrt.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.ntrt.0[x], length.out = nsubjects[x])))
@@ -287,8 +287,8 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
       
       ## TIME == 1
       # Generate between-cluster effects for non-treatment and treatment
-      randint.ntrt.1 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b1[1]))
-      randint.trt.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b1[2]))
+      randint.ntrt.1 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq1[1]))
+      randint.trt.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq1[2]))
       
       # Create non-treatment y-value
       y1.ntrt.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.ntrt.1[x], length.out = nsubjects[x])))
@@ -320,12 +320,12 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
     icc2 = (mean(c(mean(y0.ntrt), mean(y1.ntrt))) - p1) * (mean(c(mean(y0.trt), mean(y1.trt))) - p2) / sqrt((p1 * (1 - p1)) * p2 * (1 - p2))
     icc2.vector = append(icc2.vector, icc2)
     
-    # Calculate LMER.ICC (lmer: sigma_b / (sigma_b + sigma))
+    # Calculate LMER.ICC (lmer: sigma_b_sq / (sigma_b_sq + sigma))
     lmer.mod = lme4::lmer(y ~ trt + period + trt:period + (1|clust), data = sim.dat)
     lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
     lmer.icc.vector =  append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
     
-    ## Note to KK, JM: what sigma_b is Alex using here?  the one based on the baseline?
+    ## Note to KK, JM: what sigma_b_sq is Alex using here?  the one based on the baseline?
     ## The one based on the TX period?  Or the one based on the model that assumes no
     ## additional variance in the tx period?  KK's money is on option 3
     
@@ -381,7 +381,7 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
     # Governor to prevent infinite non-convergence loop
     converge.ratio = sum(converge.vector == FALSE) / sum(converge.vector == TRUE)
     if(converge.ratio > 4.0 && converge.ratio != Inf){
-      stop("WARNING! The number of non-convergent models exceeds the number of convergent models by a factor of 4. Consider modifying SIGMA_B0 and/or SIGMA_B1")
+      stop("WARNING! The number of non-convergent models exceeds the number of convergent models by a factor of 4. Consider modifying sigma_b_sq0 and/or sigma_b_sq1")
     }
   }
   
@@ -439,10 +439,10 @@ cps.did.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, p.dif
                         'lmer' = lmer.icc.vector)
   
   # Create object containing group-specific variance parameters
-  var.parms = list("Time.Point.0" = data.frame('Non.Treatment' = c("sigma_b" = sigma_b0[1]), 
-                                               'Treatment' = c("sigma_b" = sigma_b0[2])), 
-                   "Time.Point.1" = data.frame('Non.Treatment' = c("sigma_b" = sigma_b1[1]), 
-                                               'Treatment' = c("sigma_b" = sigma_b1[2])))
+  var.parms = list("Time.Point.0" = data.frame('Non.Treatment' = c("sigma_b_sq" = sigma_b_sq0[1]), 
+                                               'Treatment' = c("sigma_b_sq" = sigma_b_sq0[2])), 
+                   "Time.Point.1" = data.frame('Non.Treatment' = c("sigma_b_sq" = sigma_b_sq1[1]), 
+                                               'Treatment' = c("sigma_b_sq" = sigma_b_sq1[2])))
   
   # Check & governor for inclusion of simulated datasets
   if(all.sim.data == FALSE && (sum(converge.vector == FALSE) < sum(converge.vector == TRUE) * 0.05)){

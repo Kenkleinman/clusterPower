@@ -226,7 +226,8 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                              .packages = c("lme4", "optimx"), .inorder = FALSE) %fun% { 
                                lme4::glmer(sim.dat[,i] ~ trt + (1|clust), 
                                            family = stats::binomial(link = 'logit'),
-                                           control = lme4::glmerControl(optimizer = "optimx", calc.derivs = TRUE,
+                                           control = lme4::glmerControl(optimizer = "optimx", 
+                                                                        calc.derivs = TRUE,
                                                                         optCtrl = list(method = opt, 
                                                                                        starttests = FALSE, kkt = FALSE)))
                                }

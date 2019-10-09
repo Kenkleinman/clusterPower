@@ -24,10 +24,10 @@
 #' @param nclusters Number of clusters per treatment group; accepts integer (required).
 #' @param p1 Expected probability of outcome in non-treatment group
 #' @param p2 Expected probability of outcome in treatment group
-#' @param sigma_b Between-cluster variance; if sigma_b2 is not specified, 
+#' @param sigma_b_sq Between-cluster variance; if sigma_b_sq2 is not specified, 
 #' between cluster variances are assumed to be equal for both groups. Accepts numeric.
-#' If between cluster variances differ between treatment groups, sigma_b2 must also be specified:
-#' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
+#' If between cluster variances differ between treatment groups, sigma_b_sq2 must also be specified:
+#' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
 #' @param alpha Significance level; default = 0.05
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time, default is TRUE.
@@ -50,7 +50,7 @@
 #'   \item Significance level
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters
-#'   \item Data frame reporting sigma_b for each group
+#'   \item Data frame reporting sigma_b_sq for each group
 #'   \item Vector containing expected difference in probabilities based on user inputs
 #'   \item Data frame containing three estimates of ICC
 #'   \item Data frame with columns: "Estimate" (Estimate of treatment effect for a given simulation), 
@@ -72,7 +72,7 @@
 #' @examples 
 #' \dontrun{
 #' binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.5,
-#'                         p2 = 0.2, sigma_b = 1, sigma_b2 = 1, alpha = 0.05, 
+#'                         p2 = 0.2, sigma_b_sq = 1, sigma_b_sq2 = 1, alpha = 0.05, 
 #'                         method = 'glmm', all.sim.data = FALSE)
 #' }
 #'
@@ -81,7 +81,7 @@
 # Define function
 cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                         p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
-                        sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = 'glmm', 
+                        sigma_b_sq = NULL, sigma_b_sq2 = NULL, alpha = 0.05, method = 'glmm', 
                       quiet = TRUE, all.sim.data = FALSE, seed = NA, irgtt = FALSE){
   if (!is.na(seed)){
   set.seed(seed = seed)
@@ -112,10 +112,10 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
     expit = function(x)  1 / (1 + exp(-x))
     
     # Validate NSIM, NSUBJECTS, NCLUSTERS
-    sim.data.arg.list = list(nsim, nsubjects, nclusters, sigma_b)
+    sim.data.arg.list = list(nsim, nsubjects, nclusters, sigma_b_sq)
     sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
     if(sum(sim.data.args) > 0){
-      stop("NSIM, NSUBJECTS, NCLUSTERS & SIGMA_B must all be specified. Please review your input values.")
+      stop("NSIM, NSUBJECTS, NCLUSTERS & sigma_b_sq must all be specified. Please review your input values.")
     }
     min1.warning = " must be an integer greater than or equal to 1"
     if(!is.wholenumber(nsim) || nsim < 1){
@@ -149,20 +149,20 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
     }
     
     if(irgtt==FALSE){
-      # Validate SIGMA_B, SIGMA_B2
+      # Validate sigma_b_sq, sigma_b_sq2
       min0.warning = " must be a numeric value greater than 0"
-      if(!is.numeric(sigma_b) || sigma_b <= 0){
-        stop("SIGMA_B", min0.warning)
+      if(!is.numeric(sigma_b_sq) || sigma_b_sq <= 0){
+        stop("sigma_b_sq", min0.warning)
       }
-      if(!is.null(sigma_b2) && sigma_b2 <= 0){
-        stop("SIGMA_B2", min0.warning)
+      if(!is.null(sigma_b_sq2) && sigma_b_sq2 <= 0){
+        stop("sigma_b_sq2", min0.warning)
       }
     }
     # Set between-cluster variances
-    if(is.null(sigma_b2)){
-      sigma_b[2] = sigma_b
+    if(is.null(sigma_b_sq2)){
+      sigma_b_sq[2] = sigma_b_sq
     }else{
-      sigma_b[2] = sigma_b2
+      sigma_b_sq[2] = sigma_b_sq2
     }
     
     # Validate P1, P2, & OR1, OR2, OR.DIFF
@@ -216,8 +216,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
     #  p.diff = abs(p1 - p2)
     }
     
-    # Calculate ICC1 (sigma_b / (sigma_b + pi^2/3))
-    icc1 = mean(sapply(1:2, function(x) sigma_b[x] / (sigma_b[x] + pi^2 / 3)))
+    # Calculate ICC1 (sigma_b_sq / (sigma_b_sq + pi^2/3))
+    icc1 = mean(sapply(1:2, function(x) sigma_b_sq[x] / (sigma_b_sq[x] + pi^2 / 3)))
     
     # Create indicators for treatment group & cluster
     trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
@@ -235,8 +235,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
     ### Create simulation loop
     while(sum(converge.vector == TRUE) != nsim){
       # Generate between-cluster effects for non-treatment and treatment
-      randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
-      randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
+      randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq[1]))
+      randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq[2]))
       
       # Create non-treatment y-value
       y0.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
@@ -245,7 +245,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
       y0 = unlist(lapply(y0.prob, function(x) stats::rbinom(1, 1, x)))
       if (length(table(y0))!=2){
         warning(print("y0 is completely seperated. Repeating the random draw 1 time."))
-        randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
+        randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq[1]))
         y0.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
         y0.linpred = y0.intercept + logit.p1
         y0.prob = expit(y0.linpred)
@@ -259,7 +259,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
       y1 = unlist(lapply(y1.prob, function(x) stats::rbinom(1, 1, x)))
       if (length(table(y1))!=2){
         warning(print("y1 is completely seperated. Repeating the random draw 1 time."))
-        randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
+        randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq[2]))
         y1.intercept = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
         y1.linpred = y1.intercept + logit.p2
         y1.prob = expit(y1.linpred)
@@ -282,7 +282,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
       # ^Equation above #11 (no number); Eldridge, Ukoumunne & Carlin, 2009 (p.386)
       icc2.vector = append(icc2.vector, icc2)
       
-      # Calculate LMER.ICC (lmer: sigma_b / (sigma_b + sigma))
+      # Calculate LMER.ICC (lmer: sigma_b_sq / (sigma_b_sq + sigma))
       if(irgtt==FALSE){
         lmer.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat,
                             family = stats::binomial(link = 'logit'))
@@ -350,7 +350,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
       # Governor to prevent infinite non-convergence loop
       converge.ratio = sum(converge.vector == FALSE) / sum(converge.vector == TRUE)
       if(converge.ratio > 4.0 && converge.ratio != Inf){
-        stop("WARNING! The number of non-convergent models exceeds the number of convergent models by a factor of 4. Consider reducing SIGMA_B")
+        stop("WARNING! The number of non-convergent models exceeds the number of convergent models by a factor of 4. Consider reducing sigma_b_sq")
       }
     }
     
@@ -412,8 +412,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
     }
     
     # Create object containing group-specific variance parameters
-    var.parms = t(data.frame('Non.Treatment' = c('sigma_b' = sigma_b[1]), 
-                             'Treatment' = c('sigma_b' = sigma_b[2])))
+    var.parms = t(data.frame('Non.Treatment' = c('sigma_b_sq' = sigma_b_sq[1]), 
+                             'Treatment' = c('sigma_b_sq' = sigma_b_sq[2])))
     
     # Check & governor for inclusion of simulated datasets
     # Note: If number of non-convergent models exceeds 5% of NSIM, override ALL.SIM.DATA and output all simulated data sets

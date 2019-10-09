@@ -25,8 +25,8 @@
 #' @param nclusters Number of clusters per treatment group; accepts integer (required).
 #' @param p1 Expected probability of outcome in non-treatment group (required)
 #' @param p2 Expected probability of outcome in treatment group (required)
-#' @param sigma_b Between-cluster variance; defaults to 0. Accepts numeric.
-#' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
+#' @param sigma_b_sq Between-cluster variance; defaults to 0. Accepts numeric.
+#' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
 #' @param alpha Significance level; default = 0.05
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time, default is TRUE.
@@ -43,7 +43,7 @@
 #'   \item Significance level
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters
-#'   \item Data frame reporting sigma_b for each group
+#'   \item Data frame reporting sigma_b_sq for each group
 #'   \item Vector containing expected difference in probabilities based on user inputs
 #'   \item Data frame containing three estimates of ICC
 #'   \item Data frame with columns: "Estimate" (Estimate of treatment effect for a given simulation), 
@@ -66,7 +66,7 @@
 #' @examples 
 #' \dontrun{
 #' irgtt.binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 30, nclusters = 10, p1 = 0.5,
-#'                         p2 = 0.2, sigma_b = 0, sigma_b2 = 1, alpha = 0.05, 
+#'                         p2 = 0.2, sigma_b_sq = 0, sigma_b_sq2 = 1, alpha = 0.05, 
 #'                         all.sim.data = FALSE)
 #' }
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
@@ -76,28 +76,28 @@
 #FIXME add irgtt equation in cps.binary
 # Define function
 cps.irgtt.binary <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-                      p1 = NULL, p2 = NULL, sigma_b = 0, sigma_b2 = 0, 
+                      p1 = NULL, p2 = NULL, sigma_b_sq = 0, sigma_b_sq2 = 0, 
                       alpha = 0.05,
                       quiet = TRUE, all.sim.data = FALSE, seed = NA){
   
-  if (sigma_b == 0 & sigma_b2 == 0){
-    warning("Sigma_b in both arms is 0. This is equivalent to a t-test. Did you mean to 
-            enter a sigma_b value for the arm containing clustered observations?")
+  if (sigma_b_sq == 0 & sigma_b_sq2 == 0){
+    warning("sigma_b_sq in both arms is 0. This is equivalent to a t-test. Did you mean to 
+            enter a sigma_b_sq value for the arm containing clustered observations?")
   }
-  if (sigma_b != 0 & sigma_b2 != 0){
-    warning("Sigma_b is not zero for either arm. Did you want to use cps.binary()?")
+  if (sigma_b_sq != 0 & sigma_b_sq2 != 0){
+    warning("sigma_b_sq is not zero for either arm. Did you want to use cps.binary()?")
   }
-  if (sigma_b != 0 & sigma_b2 == 0){
+  if (sigma_b_sq != 0 & sigma_b_sq2 == 0){
     stop("Non-clustered group must be entered as the reference group.")
     nclust <- c(nclusters, 1)
   }
-  if (sigma_b2 != 0){
+  if (sigma_b_sq2 != 0){
     nclust <- c(1, nclusters)
   }
   
   sim <- cps.binary(nsim = nsim, nsubjects = nsubjects, nclusters = nclust,
                         p1 = p1, p2 = p2, or1 = NULL, or2 = NULL, or.diff = NULL, 
-                        sigma_b = sigma_b, sigma_b2 = sigma_b2, alpha = alpha, method = 'glmm', 
+                        sigma_b_sq = sigma_b_sq, sigma_b_sq2 = sigma_b_sq2, alpha = alpha, method = 'glmm', 
                         quiet = quiet, all.sim.data = all.sim.data, seed = seed, irgtt = TRUE)
   return(sim)
   }

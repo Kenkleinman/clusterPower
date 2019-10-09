@@ -182,6 +182,22 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       if (max(sigma_sq) != min(sigma_sq) & max(sigma_b_sq) != min(sigma_b_sq)){
         trt2 <- unlist(trt)
         clust2 <- unlist(clust)
+        
+        # Update simulation progress information
+        if(quiet == FALSE){
+          if(i == 1){
+            avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+            time.est = avg.iter.time * (nsim - 1) / 60
+            hr.est = time.est %/% 60
+            min.est = round(time.est %% 60, 0)
+            message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
+                           ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
+          }
+        
+        # Iterate progress bar
+        prog.bar$update(i / nsim)
+        Sys.sleep(1/100)
+        
       my.mod <- nlme::lme(y~as.factor(trt2), random = ~1+as.factor(trt2)|clust2, 
                      weights = nlme::varIdent(form = ~1|as.factor(trt2)), 
                      method = "ML",
@@ -238,6 +254,11 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   # Fit GEE (geeglm)
   if(method == 'gee'){
     data.holder = dplyr::arrange(sim.dat[[i]], clust)
+    
+    # Iterate progress bar
+    prog.bar$update(i / nsim)
+    Sys.sleep(1/100)
+    
     my.mod = geepack::geeglm(y ~ trt, data = data.holder,
                              id = clust, corstr = "exchangeable")
     model.values[[i]] = summary(my.mod)
@@ -258,21 +279,6 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     }
     }
   }
-  
-  # Update simulation progress information
-  if(quiet == FALSE){
-    if(i == 1){
-      avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-      time.est = avg.iter.time * (nsim - 1) / 60
-      hr.est = time.est %/% 60
-      min.est = round(time.est %% 60, 0)
-      message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
-                     ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
-    }
-    
-    # Iterate progress bar
-    prog.bar$update(i / nsim)
-    Sys.sleep(1/100)
     
     if(i == nsim){
       total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))

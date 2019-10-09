@@ -219,9 +219,9 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     message("Warning: LRT significance not calculable when narms<3. Use cps.binary() instead.")
   }
   
-  validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma=NA, 
-                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
-                   sigma_b2=NA, method=method, quiet=quiet, 
+  validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma_sq=NA, 
+                   sigma_b_sq=sigma_b_sq, ICC2=NA, sigma_sq2=NA, 
+                   sigma_b_sq2=NA, method=method, quiet=quiet, 
                    all.sim.data=all.sim.data, 
                    poor.fit.override=poor.fit.override, 
                    cores=cores,
@@ -293,7 +293,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     # Calculate and store power estimate & confidence intervals
       sig.val <-  ifelse(p.val < alpha, 1, 0)
       pval.power <- apply (sig.val, 2, FUN=function(x) {sum(x, na.rm=TRUE)/nsim})
-      power.parms <-  data.frame(Power = round(pval.power, 3),
+      power.parms <-  data.frame(Power = round(pval.power, 4),
                                  Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
                                                      sqrt((pval.power * (1 - pval.power)) / nsim), 3),
                                Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 

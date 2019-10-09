@@ -208,15 +208,20 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   }
 
   validateVariance(dist="norm", 
-                   difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sq, 
-                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
-                   sigma_b2=NA, method=method, quiet=quiet, 
+                   difference=means, alpha=alpha, ICC=ICC, sigma_sq=sigma_sq, 
+                   sigma_b_sq=sigma_b_sq, ICC2=NA, sigma_sq2=NA, 
+                   sigma_b_sq2=NA, method=method, quiet=quiet, 
                    all.sim.data=all.sim.data, 
                    poor.fit.override=poor.fit.override)
 
   # nclusters must be positive whole numbers
   if (sum(is.wholenumber(nclusters)==FALSE)!=0 || sum(unlist(nclusters) < 1)!=0){
     stop("nclusters must be postive integer values.")
+  }
+  if (nclusters < 20 & 
+      sum((createMissingVarianceParam(sigma_b_sq = sigma_b_sq, 
+                                      sigma_sq = sigma_sq) < 0.05) != 0)){
+    warning("WARNING: Type 1 error rate increases when ICC and nclusters are small. True power may be lower than estimates.")
   }
   # nsubjects must be positive whole numbers
   if (sum(is.wholenumber(unlist(nsubjects))==FALSE)!=0 || sum(unlist(nsubjects)< 1)!=0){

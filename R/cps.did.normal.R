@@ -21,16 +21,16 @@
 #' @param nclusters Number of clusters per group; accepts integer scalar or vector of length 2 for unequal number 
 #' of clusters per treatment group (required)
 #' @param difference Expected absolute difference in treatment effect between time points; accepts numeric (required).
-#' @param sigma Within-cluster variance; accepts numeric scalar (indicating equal within-cluster variances for both 
+#' @param sigma_sq Within-cluster variance; accepts numeric scalar (indicating equal within-cluster variances for both 
 #' treatment groups at both time points) or vector of length 4 specifying within-cluster variance for each treatment 
 #' group at each time point.
-#' @param sigma_b0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
+#' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
 #' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances
-#' @param sigma_b1 Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
+#' @param sigma_b_sq1 Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
 #' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
-#' between-cluster variances. For data simulation, SIGMA_B1 is added to SIGMA_B0, such that if SIGMA_B0 = 5 
-#' and SIGMA_B1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.
+#' between-cluster variances. For data simulation, sigma_b_sq1 is added to sigma_b_sq0, such that if sigma_b_sq0 = 5 
+#' and sigma_b_sq1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.
 #' @param alpha Significance level. Default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
@@ -70,8 +70,8 @@
 #' @examples 
 #' \dontrun{
 #' normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 150, nclusters = 6, 
-#'                                 difference = .48, sigma = 1, alpha = 0.05, 
-#'                                 sigma_b0 = .1, method = 'glmm', quiet = FALSE, 
+#'                                 difference = .48, sigma_sq = 1, alpha = 0.05, 
+#'                                 sigma_b_sq0 = .1, method = 'glmm', quiet = FALSE, 
 #'                                 all.sim.data = FALSE)
 #' }
 #' 
@@ -82,7 +82,7 @@
 #' @export
 
 cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, difference = NULL, 
-                          sigma = NULL, sigma_b0 = NULL, sigma_b1 = 0, alpha = 0.05, 
+                          sigma_sq = NULL, sigma_b_sq0 = NULL, sigma_b_sq1 = 0, alpha = 0.05, 
                           method = 'glmm', quiet = FALSE, all.sim.data = FALSE){
   
   # Create vectors to collect iteration-specific values
@@ -148,39 +148,39 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
     stop("ALPHA must be a numeric value between 0 - 1")
   }
   
-  # Validate SIGMA, SIGMA_B0, SIGMA_B1
-  sigma_b.warning = " must be a scalar (equal between-cluster variance for both treatment groups) or a vector of length 2, 
+  # Validate sigma_sq, sigma_b_sq0, sigma_b_sq1
+  sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both treatment groups) or a vector of length 2, 
          specifying between-cluster variances for each treatment group"
-  if(!is.numeric(sigma) || any(sigma < 0)){
-    stop("All values supplied to SIGMA must be numeric values > 0")
+  if(!is.numeric(sigma_sq) || any(sigma_sq < 0)){
+    stop("All values supplied to sigma_sq must be numeric values > 0")
   }
-  if(!length(sigma) %in% c(1,4)){
-    stop("SIGMA must be a scalar (equal within-cluster variance for both treatment groups at both time points) 
+  if(!length(sigma_sq) %in% c(1,4)){
+    stop("sigma_sq must be a scalar (equal within-cluster variance for both treatment groups at both time points) 
          or a vector of length 4, specifying within-cluster variances for each treatment group at each time point")
   }
-  if(!is.numeric(sigma_b0) || any(sigma_b0 < 0)){
-    stop("All values supplied to SIGMA_B0 must be numeric values > 0")
+  if(!is.numeric(sigma_b_sq0) || any(sigma_b_sq0 < 0)){
+    stop("All values supplied to sigma_b_sq0 must be numeric values > 0")
   }
-  if(!length(sigma_b0) %in% c(1,2)){
-    stop("SIGMA_B0", sigma_b.warning)
+  if(!length(sigma_b_sq0) %in% c(1,2)){
+    stop("sigma_b_sq0", sigma_b_sq.warning)
   }
-  if(!length(sigma_b1) %in% c(1,2)){
-    stop("SIGMA_B1", sigma_b.warning)
+  if(!length(sigma_b_sq1) %in% c(1,2)){
+    stop("sigma_b_sq1", sigma_b_sq.warning)
   }
-  if(!is.numeric(sigma_b1) || any(sigma_b1 < 0)){
-    stop("All values supplied to SIGMA_B1 must be numeric values >= 0")
+  if(!is.numeric(sigma_b_sq1) || any(sigma_b_sq1 < 0)){
+    stop("All values supplied to sigma_b_sq1 must be numeric values >= 0")
   }
-  # Set SIGMA, SIGMA_B0 & SIGMA_B1 (if not already set)
-  if(length(sigma) == 1){
-    sigma = rep(sigma, 4)
+  # Set sigma_sq, sigma_b_sq0 & sigma_b_sq1 (if not already set)
+  if(length(sigma_sq) == 1){
+    sigma_sq = rep(sigma_sq, 4)
   }
-  if(length(sigma_b0) == 1){
-    sigma_b0[2] = sigma_b0
+  if(length(sigma_b_sq0) == 1){
+    sigma_b_sq0[2] = sigma_b_sq0
   }
-  if(length(sigma_b1) == 1){
-    sigma_b1[2] = sigma_b1
+  if(length(sigma_b_sq1) == 1){
+    sigma_b_sq1[2] = sigma_b_sq1
   }
-  sigma_b1 = sigma_b1 + sigma_b0
+  sigma_b_sq1 = sigma_b_sq1 + sigma_b_sq0
   
   # Validate METHOD, QUIET, ALL.SIM.DATA
   if(!is.element(method, c('glmm', 'gee'))){
@@ -205,34 +205,34 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
   ### Generate simulated data
     ## TIME == 0
     # Generate between-cluster effects for non-treatment and treatment
-    randint.ntrt.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b0[1]))
-    randint.trt.0 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b0[2]))
+    randint.ntrt.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq0[1]))
+    randint.trt.0 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq0[2]))
 
     # Create non-treatment y-value
     y0.ntrt.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.ntrt.0[x], length.out = nsubjects[x])))
-    y0.ntrt.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[1]))))
+    y0.ntrt.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma_sq[1]))))
     y0.ntrt.pre = y0.ntrt.bclust + y0.ntrt.wclust + stats::rnorm(nsubjects[1:nclusters[1]])
 
     # Create treatment y-value
     y0.trt.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.trt.0[x], length.out = nsubjects[nclusters[1] + x])))
     y0.trt.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])],
-                              function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[2]))))
+                              function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma_sq[2]))))
     y0.trt.pre = y0.trt.bclust + y0.trt.wclust + stats::rnorm(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
 
     ## TIME == 1
     # Generate between-cluster effects for non-treatment and treatment
-    randint.ntrt.1 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b1[1]))
-    randint.trt.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b1[2]))
+    randint.ntrt.1 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq1[1]))
+    randint.trt.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq1[2]))
 
     # Create non-treatment y-value
     y1.ntrt.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.ntrt.1[x], length.out = nsubjects[x])))
-    y1.ntrt.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[3]))))
+    y1.ntrt.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma_sq[3]))))
     y1.ntrt.post = y1.ntrt.bclust + y1.ntrt.wclust + stats::rnorm(nsubjects[1:nclusters[1]])
 
     # Create treatment y-value
     y1.trt.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.trt.1[x], length.out = nsubjects[nclusters[1] + x])))
     y1.trt.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])],
-                              function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma[4]))))
+                              function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma_sq[4]))))
     y1.trt.post = y1.trt.bclust + y1.trt.wclust + stats::rnorm(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
 
     # Create single response vector
@@ -329,10 +329,10 @@ cps.did.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, diffe
   n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
   
   # Create object containing variance parameters for each group at each time point
-  var.parms = list("Time.Point.0" = data.frame('Non.Treatment' = c("sigma" = sigma[1], "sigma_b" = sigma_b0[1]), 
-                                                'Treatment' = c("sigma" = sigma[2], "sigma_b" = sigma_b0[2])), 
-                   "Time.Point.1" = data.frame('Non.Treatment' = c("sigma" = sigma[3], "sigma_b" = sigma_b1[1]), 
-                                            'Treatment' = c("sigma" = sigma[4], "sigma_b" = sigma_b1[2])))
+  var.parms = list("Time.Point.0" = data.frame('Non.Treatment' = c("sigma_sq" = sigma_sq[1], "sigma_b_sq" = sigma_b_sq0[1]), 
+                                                'Treatment' = c("sigma_sq" = sigma_sq[2], "sigma_b_sq" = sigma_b_sq0[2])), 
+                   "Time.Point.1" = data.frame('Non.Treatment' = c("sigma_sq" = sigma_sq[3], "sigma_b_sq" = sigma_b_sq1[1]), 
+                                            'Treatment' = c("sigma_sq" = sigma_sq[4], "sigma_b_sq" = sigma_b_sq1[2])))
   
   # Create list containing all output (class 'crtpwr') and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, "alpha" = alpha,

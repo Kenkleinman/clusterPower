@@ -23,14 +23,14 @@
 #' @param difference Expected absolute treatment effect; accepts numeric (required).
 #' At least 2 of the following must be specified:
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
-#' @param sigma Within-cluster variance; accepts numeric
-#' @param sigma_b Between-cluster variance; accepts numeric
+#' @param sigma_sq Within-cluster variance; accepts numeric
+#' @param sigma_b_sq Between-cluster variance; accepts numeric
 #' 
 #' If clusters differ between treatment groups, at least 2 of the following 
 #' must be specified:
 #' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
-#' @param sigma2 Within-cluster variance for clusters in TREATMENT group
-#' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
+#' @param sigma_sq2 Within-cluster variance for clusters in TREATMENT group
+#' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
 #' @param alpha Significance level; default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
@@ -71,7 +71,7 @@
 #' @examples 
 #' \dontrun{
 #' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 9, difference = 10,
-#'                         ICC = 0.3, sigma = 100, alpha = 0.05, method = 'glmm', 
+#'                         ICC = 0.3, sigma_sq = 100, alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
 #' @author Alexander R. Bogdan, Alexandria C. Sakrejda 
@@ -81,8 +81,8 @@
 
 
 cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, difference = NULL,
-                      ICC = NULL, sigma = NULL, sigma_b = NULL,
-                      ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL,
+                      ICC = NULL, sigma_sq = NULL, sigma_b_sq = NULL,
+                      ICC2 = NULL, sigma_sq2 = NULL, sigma_b_sq2 = NULL,
                       alpha = 0.05, method = 'glmm', quiet = FALSE,
                       all.sim.data = FALSE, seed = NA, poor.fit.override=FALSE,
                       irgtt = FALSE){
@@ -157,23 +157,23 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     stop("ALPHA must be a numeric value between 0 - 1")
   }
   
-  # Validate ICC, SIGMA, SIGMA_B, ICC2, SIGMA2, SIGMA_B2
-  parm1.arg.list = list(ICC, sigma, sigma_b)
+  # Validate ICC, sigma_sq, sigma_b_sq, ICC2, sigma_sq2, sigma_b_sq2
+  parm1.arg.list = list(ICC, sigma_sq, sigma_b_sq)
   parm1.args = unlist(lapply(parm1.arg.list, is.null))
   if(sum(parm1.args) > 1){
-    stop("At least two of the following terms must be specified: ICC, sigma, sigma_b")
+    stop("At least two of the following terms must be specified: ICC, sigma_sq, sigma_b_sq")
   }
-  if(sum(parm1.args) == 0 && ICC != sigma_b / (sigma_b + sigma)){
-    stop("At least one of the following terms has been misspecified: ICC, sigma, sigma_b")
+  if(sum(parm1.args) == 0 && ICC != sigma_b_sq / (sigma_b_sq + sigma_sq)){
+    stop("At least one of the following terms has been misspecified: ICC, sigma_sq, sigma_b_sq")
   }
-  parm2.arg.list = list(ICC2, sigma2, sigma_b2)
+  parm2.arg.list = list(ICC2, sigma_sq2, sigma_b_sq2)
   parm2.args = unlist(lapply(parm2.arg.list, is.null))
   if(sum(parm2.args) > 1 && sum(parm2.args) != 3){
     stop("At least two of the following terms must be provided to simulate treatment-specific
-         variances: ICC2, sigma2, sigma_b2")
+         variances: ICC2, sigma_sq2, sigma_b_sq2")
   }
-  if(sum(parm2.args) == 0 && ICC2 != sigma_b2 / (sigma_b2 + sigma2)){
-    stop("At least one of the following terms has been misspecified: ICC2, sigma2, sigma_b2")
+  if(sum(parm2.args) == 0 && ICC2 != sigma_b_sq2 / (sigma_b_sq2 + sigma_sq2)){
+    stop("At least one of the following terms has been misspecified: ICC2, sigma_sq2, sigma_b_sq2")
   }
   
   # Validate METHOD, QUIET, ALL.SIM.DATA
@@ -189,30 +189,30 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   }
   
   ## Create variance parameters
-  # SIGMA_B, SIGMA, ICC
-  if(!is.null(c(ICC, sigma)) && is.null(sigma_b)){
-    sigma_b = ICC * sigma / (1 - ICC)
+  # sigma_b_sq, sigma_sq, ICC
+  if(!is.null(c(ICC, sigma_sq)) && is.null(sigma_b_sq)){
+    sigma_b_sq = ICC * sigma_sq / (1 - ICC)
   }
-  if(!is.null(c(ICC, sigma_b)) && is.null(sigma)){
-    sigma = sigma_b / ICC - sigma_b
+  if(!is.null(c(ICC, sigma_b_sq)) && is.null(sigma_sq)){
+    sigma_sq = sigma_b_sq / ICC - sigma_b_sq
   }
-  if(!is.null(c(sigma, sigma_b)) && is.null(ICC)){
-    ICC = sigma_b / (sigma_b + sigma)
+  if(!is.null(c(sigma_sq, sigma_b_sq)) && is.null(ICC)){
+    ICC = sigma_b_sq / (sigma_b_sq + sigma_sq)
   }
-  # SIGMA_B2, SIGMA2, ICC2
-  if(!is.null(c(ICC2, sigma2)) && is.null(sigma_b2)){
-    sigma_b2 = ICC2 * sigma2 / (1 - ICC2)
+  # sigma_b_sq2, sigma_sq2, ICC2
+  if(!is.null(c(ICC2, sigma_sq2)) && is.null(sigma_b_sq2)){
+    sigma_b_sq2 = ICC2 * sigma_sq2 / (1 - ICC2)
   }
-  if(!is.null(c(ICC2, sigma_b2)) && is.null(sigma2)){
-    sigma2 = sigma_b2 / ICC2 - sigma_b2
+  if(!is.null(c(ICC2, sigma_b_sq2)) && is.null(sigma_sq2)){
+    sigma_sq2 = sigma_b_sq2 / ICC2 - sigma_b_sq2
   }
-  if(!is.null(c(sigma2, sigma_b2)) && is.null(ICC2)){
-    ICC2 = sigma_b2 / (sigma_b2 + sigma2)
+  if(!is.null(c(sigma_sq2, sigma_b_sq2)) && is.null(ICC2)){
+    ICC2 = sigma_b_sq2 / (sigma_b_sq2 + sigma_sq2)
   }
   
   # Set within/between cluster variances & ICC for treatment group (if not already specified)
-  sigma[2] = ifelse(!is.null(sigma2), sigma2, sigma[1])
-  sigma_b[2] = ifelse(!is.null(sigma_b2), sigma_b2, sigma_b[1])
+  sigma_sq[2] = ifelse(!is.null(sigma_sq2), sigma_sq2, sigma_sq[1])
+  sigma_b_sq[2] = ifelse(!is.null(sigma_b_sq2), sigma_b_sq2, sigma_b_sq[1])
   ICC[2] = ifelse(!is.null(ICC2), ICC2, ICC[1])
   
   # Create indicators for treatment group & cluster
@@ -223,18 +223,18 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   # Create simulation loop
   for(i in 1:nsim){
     # Generate between-cluster effects for non-treatment and treatment
-    randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
-    randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
+    randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq[1]))
+    randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq[2]))
     
     # Create non-treatment y-value
     y0.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
-    y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[1]))))
+    y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma_sq[1]))))
     y.0 = y0.bclust + y0.wclust
     
     # Create treatment y-value
     y1.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
     y1.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])], 
-                              function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma[2]))))
+                              function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma_sq[2]))))
     y.1 = y1.bclust + y1.wclust
     
     # Create single response vector
@@ -250,7 +250,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     # Fit GLMM (lmer)
     if(method == 'glmm'){
       if(irgtt == TRUE){
-        if (sigma!=sigma2 && sigma_b!=sigma_b2){
+        if (sigma_sq!=sigma_sq2 && sigma_b_sq!=sigma_b_sq2){
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
           my.mod <- nlme::lme(y~as.factor(trt2), random=~0+as.factor(trt2)|clust2, 
@@ -270,7 +270,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
         }
         
-        if (sigma==sigma2 && sigma_b!=sigma_b2){
+        if (sigma_sq==sigma_sq2 && sigma_b_sq!=sigma_b_sq2){
           my.mod <-  lmerTest::lmer(y ~ trt + (0 + as.factor(trt)|clust), REML=FALSE,
                                     data = sim.dat)
           # get the overall p-values (>Chisq)
@@ -288,7 +288,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
          }
         #if not IRGTT, then the following:
   } else {
-        if (sigma!=sigma2 && sigma_b!=sigma_b2){
+        if (sigma_sq!=sigma_sq2 && sigma_b_sq!=sigma_b_sq2){
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
           my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
@@ -308,7 +308,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
          # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
         }
         
-        if (sigma==sigma2 && sigma_b!=sigma_b2){
+        if (sigma_sq==sigma_sq2 && sigma_b_sq!=sigma_b_sq2){
           my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), REML=FALSE,
                                     data = sim.dat)
           # get the overall p-values (>Chisq)
@@ -325,7 +325,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           }
          }
         
-        if (sigma!=sigma2 && sigma_b==sigma_b2){
+        if (sigma_sq!=sigma_sq2 && sigma_b_sq==sigma_b_sq2){
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
           my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
@@ -345,7 +345,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
         }
         
-        if (sigma==sigma2 && sigma_b==sigma_b2){
+        if (sigma_sq==sigma_sq2 && sigma_b_sq==sigma_b_sq2){
           my.mod <-  lmerTest::lmer(y~trt+(1|clust), REML=FALSE, 
                                     data = sim.dat)
           # get the overall p-values (>Chisq)
@@ -435,8 +435,8 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
   
   # Create object containing group-specific variance parameters
-  var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
-                           'Treatment' = c('ICC' = ICC[2], 'sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
+  var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma_sq' = sigma_sq[1], 'sigma_b_sq' = sigma_b_sq[1]), 
+                           'Treatment' = c('ICC' = ICC[2], 'sigma_sq' = sigma_sq[2], 'sigma_b_sq' = sigma_b_sq[2])))
   
   fail <- unlist(fail.vector)
   

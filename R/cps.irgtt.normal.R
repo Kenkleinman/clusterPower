@@ -30,13 +30,13 @@
 #' of fits fail to converge.
 #' At least 2 of the following must be specified:
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
-#' @param sigma Within-cluster variance; accepts numeric
-#' #' @param sigma_b Between-cluster variance; defaults to 0. Accepts numeric.
+#' @param sigma_sq Within-cluster variance; accepts numeric
+#' @param sigma_b_sq Between-cluster variance; defaults to 0. Accepts numeric.
 #' If clusters differ between treatment groups, at least 1 of the following 
-#' must be specified: ICC2, sigma2.
+#' must be specified: ICC2, sigma_sq2.
 #' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
-#' @param sigma2 Within-cluster variance for clusters in TREATMENT group
-#' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group.
+#' @param sigma_sq2 Within-cluster variance for clusters in TREATMENT group
+#' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -67,7 +67,7 @@
 #' \dontrun{
 #' irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = c(75, 10), 
 #'                        nclusters = 5, difference = 10,
-#'                         sigma = 100, sigma_b2 = 25, alpha = 0.05,
+#'                         sigma_sq = 100, sigma_b_sq2 = 25, alpha = 0.05,
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
@@ -76,27 +76,27 @@
 
 
 cps.irgtt.normal <-  function(nsim = NULL, nsubjects = NULL, nclusters = NULL, difference = NULL,
-                      ICC = NULL, sigma = NULL, sigma_b = 0,
-                      ICC2 = ICC, sigma2 = sigma, sigma_b2 = 0,
+                      ICC = NULL, sigma_sq = NULL, sigma_b_sq = 0,
+                      ICC2 = ICC, sigma_sq2 = sigma_sq, sigma_b_sq2 = 0,
                       alpha = 0.05, method = 'glmm', quiet = FALSE,
                       all.sim.data = FALSE, seed = NA, poor.fit.override=FALSE){
-  if (sigma_b == 0 & sigma_b2 == 0){
-    warning("Sigma_b in both arms is 0. This is equivalent to a t-test. Did you mean to enter a sigma_b value for the arm containing clustered observations?")
+  if (sigma_b_sq == 0 & sigma_b_sq2 == 0){
+    warning("sigma_b_sq in both arms is 0. This is equivalent to a t-test. Did you mean to enter a sigma_b_sq value for the arm containing clustered observations?")
   }
-  if (sigma_b != 0 & sigma_b2 != 0){
-    warning("Sigma_b is not zero for either arm. Did you want to use cps.normal()?")
+  if (sigma_b_sq != 0 & sigma_b_sq2 != 0){
+    warning("sigma_b_sq is not zero for either arm. Did you want to use cps.normal()?")
   }
-  if (sigma_b != 0 & sigma_b2 == 0){
+  if (sigma_b_sq != 0 & sigma_b_sq2 == 0){
     stop("Non-clustered group must be the reference group.")
   }
-  if (sigma_b2 != 0){
+  if (sigma_b_sq2 != 0){
     nclust <- c(1, nclusters)
   }
   
   sim = cps.normal(nsim = nsim, nsubjects = nsubjects, nclusters = nclust, 
                    difference = difference, ICC = ICC, ICC2 = ICC2, 
-                   sigma = sigma, sigma2 = sigma2, alpha = alpha, 
-                   sigma_b = sigma_b, sigma_b2 = sigma_b2, 
+                   sigma_sq = sigma_sq, sigma_sq2 = sigma_sq2, alpha = alpha, 
+                   sigma_b_sq = sigma_b_sq, sigma_b_sq2 = sigma_b_sq2, 
                    method = "glmm", quiet = quiet, all.sim.data = all.sim.data,
                    seed = seed, irgtt = TRUE, poor.fit.override=poor.fit.override)
   return(sim)
