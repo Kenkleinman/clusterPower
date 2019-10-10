@@ -253,7 +253,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     }
   # get the overall p-values (>Chisq)
     model.compare <- foreach::foreach(i=1:nsim, .options.snow=opts,
-                                      .packages = "car", .inorder=FALSE) %fun% {
+                                      .packages = c("car", "optimx"), .inorder=FALSE) %fun% {
                                       car::Anova(my.mod[[i]], type="II")
                                       }
     

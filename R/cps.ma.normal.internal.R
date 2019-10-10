@@ -146,8 +146,9 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   }
   
   # Create simulation loop
+  require("optimx")  
   require(foreach)
-  foreach::foreach(i=1:nsim) %do% {
+  foreach::foreach(i=1:nsim, .packages = "optimx") %do% {
     sim.dat[[i]] = data.frame(y = NA, trt = as.factor(unlist(trt)), 
                               clust = as.factor(unlist(clust)))
     # Generate between-cluster effects for non-treatment and treatment
@@ -191,17 +192,16 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
           Sys.sleep(1/100)
         }
         
-      require("optimx")  
       my.mod <- nlme::lme(y~as.factor(trt2), random = ~1+as.factor(trt2)|clust2, 
                      weights = nlme::varIdent(form = ~1|as.factor(trt2)), 
-                     method = "ML")#,
-                     #control = nlme::lmeControl(opt = opt))
+                     method = "ML",
+                     control = nlme::lmeControl(opt = opt))
       model.values[[i]] <-  summary(my.mod)$tTable
       # get the overall p-values (>Chisq)
       null.mod <- nlme::lme(y~1, random = ~1 + as.factor(trt2)|clust2, 
                             weights = nlme::varIdent(form = ~1|as.factor(trt2)), 
-                                                   method="ML")#,
-                            #control=nlme::lmeControl(opt = opt))
+                                                   method="ML",
+                            control=nlme::lmeControl(opt = opt))
       }
       
       if (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)!=min(sigma_b_sq)){
