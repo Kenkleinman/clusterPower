@@ -46,7 +46,7 @@
 #' of fits fail to converge.
 #' @param tdist Logical; use t-distribution instead of normal distribution 
 #' for simulation values, default = FALSE.
-#' @param opt Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'bobyqa'.
+#' @param opt Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'optim'.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{estimates}{List of \code{length(nsim)} containing gee- or glmm-fitted model 
@@ -95,8 +95,6 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
 
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
-  
-  require("optimx")
   
   # Create NCLUSTERS, NARMS, from str.nsubjects
   narms = length(str.nsubjects)
@@ -186,28 +184,24 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         # Update simulation progress information
         if(quiet == FALSE){
           if(i == 1){
-            avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-            time.est = avg.iter.time * (nsim - 1) / 60
-            hr.est = time.est %/% 60
-            min.est = round(time.est %% 60, 0)
-            message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
-                           ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
+            message(paste0('Begin simulations :: Start Time: ', Sys.time()))
           }
+          # Iterate progress bar
+          prog.bar$update(i / nsim)
+          Sys.sleep(1/100)
+        }
         
-        # Iterate progress bar
-        prog.bar$update(i / nsim)
-        Sys.sleep(1/100)
-        
+      require("optimx")  
       my.mod <- nlme::lme(y~as.factor(trt2), random = ~1+as.factor(trt2)|clust2, 
                      weights = nlme::varIdent(form = ~1|as.factor(trt2)), 
-                     method = "ML",
-                     control = nlme::lmeControl(opt = opt))
+                     method = "ML")#,
+                     #control = nlme::lmeControl(opt = opt))
       model.values[[i]] <-  summary(my.mod)$tTable
       # get the overall p-values (>Chisq)
       null.mod <- nlme::lme(y~1, random = ~1 + as.factor(trt2)|clust2, 
                             weights = nlme::varIdent(form = ~1|as.factor(trt2)), 
-                                                   method="ML",
-                            control=nlme::lmeControl(opt=opt))
+                                                   method="ML")#,
+                            #control=nlme::lmeControl(opt = opt))
       }
       
       if (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)!=min(sigma_b_sq)){
@@ -289,7 +283,6 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                      "\nTotal Runtime: ", hr.est, 'Hr:', min.est, 'Min:', sec.est, 'Sec'))
     }
   }
-  } 
   
   # turn off parallel computing
   if (!exists("cores", mode = "NULL")){

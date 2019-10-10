@@ -264,7 +264,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   }
   
    # run the simulations 
-   normal.ma.rct <- cps.ma.normal.internal(nsim = nsim, 
+   normal.ma.rct <- try(cps.ma.normal.internal(nsim = nsim, 
                                            str.nsubjects = str.nsubjects, 
                                            means = means, sigma_sq = sigma_sq, 
                                            sigma_b_sq = sigma_b_sq, alpha = alpha, 
@@ -274,7 +274,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                            cores = cores,
                                            poor.fit.override = poor.fit.override,
                                            tdist = tdist,
-                                           opt = opt)
+                                           opt = opt))
    
    models <- normal.ma.rct[[1]]
    
