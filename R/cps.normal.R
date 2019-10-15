@@ -74,9 +74,11 @@
 #'                         ICC = 0.3, sigma_sq = 100, alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
+#' 
 #' @author Alexander R. Bogdan, Alexandria C. Sakrejda 
 #' (\email{acbro0@@umass.edu}), and Ken Kleinman 
 #' (\email{ken.kleinman@@gmail.com})
+#' 
 #' @export
 
 
@@ -158,6 +160,14 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   }
   
   # Validate ICC, sigma_sq, sigma_b_sq, ICC2, sigma_sq2, sigma_b_sq2
+  
+  if (isTRUE(is.null(sigma_sq2))){
+    sigma_sq2 <- sigma_sq
+  }
+  if (isTRUE(is.null(sigma_b_sq2))){
+    sigma_b_sq2 <- sigma_b_sq
+  }
+  
   parm1.arg.list = list(ICC, sigma_sq, sigma_b_sq)
   parm1.args = unlist(lapply(parm1.arg.list, is.null))
   if(sum(parm1.args) > 1){
@@ -166,6 +176,8 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   if(sum(parm1.args) == 0 && ICC != sigma_b_sq / (sigma_b_sq + sigma_sq)){
     stop("At least one of the following terms has been misspecified: ICC, sigma_sq, sigma_b_sq")
   }
+  
+  #FIXME is this being triggered?
   parm2.arg.list = list(ICC2, sigma_sq2, sigma_b_sq2)
   parm2.args = unlist(lapply(parm2.arg.list, is.null))
   if(sum(parm2.args) > 1 && sum(parm2.args) != 3){
@@ -423,9 +435,11 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   
   # Calculate and store power estimate & confidence intervals
   pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(Power = round(pval.power, 3),
-                           Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                           Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
+  
+  #FIXME use binom.test instead
+  #power.parms = data.frame(Power = round(pval.power, 3),
+  #                         Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
+  #                         Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
   # Create object containing group-specific cluster sizes
   cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 

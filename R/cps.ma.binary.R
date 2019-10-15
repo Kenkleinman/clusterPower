@@ -59,6 +59,11 @@
 #' @param seed Option to set.seed. Default is NULL.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge or 
 #' power<0.5 after 50 iterations; default = FALSE.
+#' @param low.power.override Option to override \code{stop()} if the power 
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the 
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the 
+#' calculated power is returned regardless of value. 
 #' @param cores String ("all"), NA, or scalar value indicating the number of cores 
 #' to be used for parallel computing. Default = NA (no parallel computing).
 #' @param tdist Logical value indicating whether simulated data should be 
@@ -132,6 +137,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                           cores=NA,
                           tdist=FALSE,
                           poor.fit.override = FALSE,
+                          low.power.override = FALSE,
                           opt = "optim"){
   
   # use this later to determine total elapsed time
@@ -237,6 +243,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                                           all.sim.data = all.sim.data,
                                           seed = seed,
                                           poor.fit.override = poor.fit.override,
+                                          low.power.override = low.power.override,
                                           tdist = tdist,
                                           cores = cores,
                                           opt = opt)

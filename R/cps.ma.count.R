@@ -58,8 +58,13 @@
 #' "bonferroni". See \code{?p.adjust} for additional details.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge or 
-#' power<0.5 after 50 iterations; default = FALSE.
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge; 
+#' default = FALSE.
+#' @param low.power.override Option to override \code{stop()} if the power 
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the 
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the 
+#' calculated power is returned regardless of value. 
 #' @param cores String ("all"), NA, or scalar value indicating the number of cores 
 #' to be used for parallel computing. Default = NA (no parallel computing).
 #' @param tdist Logical value indicating whether simulated data should be 
@@ -126,8 +131,8 @@
 cps.ma.count <- function(nsim = 1000, nsubjects = NULL, 
                           narms = NULL, nclusters = NULL,
                           counts = NULL, 
-                         family = "poisson",
-                         sigma_b_sq = NULL, 
+                          family = "poisson",
+                          sigma_b_sq = NULL, 
                           alpha = 0.05,
                           quiet = FALSE, method = 'glmm', 
                           multi.p.method = "bonferroni",
@@ -135,7 +140,8 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
                           cores=NA,
                           tdist=FALSE,
                           poor.fit.override = FALSE,
-                         opt = "optim"){
+                          low.power.override = FALSE,
+                          opt = "optim"){
   
   # use this later to determine total elapsed time
   start.time <- Sys.time()
@@ -231,18 +237,19 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
   
   # run the simulations 
   count.ma.rct <- cps.ma.count.internal(nsim = nsim, 
-                                          str.nsubjects = str.nsubjects, 
-                                          counts = counts,
-                                          sigma_b_sq = sigma_b_sq, 
-                                          alpha = alpha, 
-                                          quiet = quiet, method = method, 
-                                          all.sim.data = all.sim.data,
-                                          seed = seed,
-                                          poor.fit.override = poor.fit.override,
-                                          tdist = tdist,
-                                          cores = cores,
-                                          family = family,
-                                        opt = opt)
+    str.nsubjects = str.nsubjects, 
+    counts = counts,
+    sigma_b_sq = sigma_b_sq, 
+    alpha = alpha, 
+    quiet = quiet, method = method, 
+    all.sim.data = all.sim.data,
+    seed = seed,
+    poor.fit.override = poor.fit.override,
+    low.power.override = low.power.override,
+    tdist = tdist,
+    cores = cores,
+    family = family,
+    opt = opt)
   
   models <- count.ma.rct[[1]]
   

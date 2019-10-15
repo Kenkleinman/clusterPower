@@ -36,6 +36,11 @@
 #' @param seed Option to set.seed. Default is NULL.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
 #' of fits fail to converge.
+#' @param low.power.override Option to override \code{stop()} if the power 
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the 
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the 
+#' calculated power is returned regardless of value. 
 #' @param tdist Logical; use t-distribution instead of normal distribution for 
 #' simulation values, default = FALSE.
 #' @param cores A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
@@ -58,8 +63,8 @@
 #' @examples 
 #' \dontrun{
 #' 
-#' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-#' counts.example <- c(30, 55, 90)
+#' nsubjects.example <- list(c(200,200,200,250), c(150, 200, 200, 210), c(170, 200, 210))
+#' counts.example <- c(300, 550, 900)
 #' sigma_b_sq.example <- c(1, 1, 2)
 #' 
 #' count.ma.rct <- cps.ma.count.internal (nsim = 10, 
@@ -82,6 +87,7 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                     all.sim.data = FALSE, 
                                     seed = NA,
                                     poor.fit.override = FALSE,
+                                   low.power.override = FALSE,
                                     tdist = FALSE,
                                     cores = cores,
                                    opt = "optim") {
@@ -266,9 +272,24 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE, 1, 0)
     }
     if (poor.fit.override==FALSE){
-      if(sum(unlist(fail), na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations
-                                                          are singular fit: check model specifications")}
-      }
+      if(sum(unlist(fail), na.rm = TRUE)>(nsim*.25)){
+        stop("more than 25% of simulations are singular fit: check model specifications")}
+    }
+    
+    #FIXME doesn't work with foreach
+    # stop the loop if power is <0.5
+   # if (low.power.override==FALSE){
+  #    if (i > 50 & (i %% 10==0)){
+  #      temp.power.checker <- matrix(unlist(model.compare[1:i]), ncol=3, nrow=i, 
+  #                                   byrow=TRUE)
+  #      sig.val.temp <-  ifelse(temp.power.checker[,3][1:i] < alpha, 1, 0)
+  #      pval.power.temp <- sum(sig.val.temp)/i
+  #      if (pval.power.temp < 0.5){
+  #        stop(paste("Calculated power is < ", pval.power.temp, ", auto stop at simulation ", 
+  #                   i, ". Set low.power.override==TRUE to run the simulations anyway.", sep = ""))
+  #      }
+  #    }
+  #  }
     
     if (!is.na(cores) & quiet == FALSE){
       message("\r Performing null model comparisons")

@@ -60,7 +60,12 @@
 #' @param cores a string ("all") or numeric value indicating the number of cores to be 
 #' used for parallel computing. 
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
-#' of fits fail to converge or power<0.5 after 50 iterations; default = FALSE. 
+#' of fits fail to converge; default = FALSE. 
+#' @param low.power.override Option to override \code{stop()} if the power 
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the 
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the 
+#' calculated power is returned regardless of value. 
 #' @param tdist Logical; use t-distribution instead of normal distribution 
 #' for simulation values, default = FALSE.
 #' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
@@ -158,6 +163,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                         all.sim.data = FALSE, seed = NA, 
                         cores=NULL,
                         poor.fit.override = FALSE, 
+                        low.power.override = FALSE, 
                         tdist=FALSE,
                         return.all.models = FALSE,
                         opt = "optim"){
@@ -218,9 +224,14 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   if (sum(is.wholenumber(nclusters)==FALSE)!=0 || sum(unlist(nclusters) < 1)!=0){
     stop("nclusters must be postive integer values.")
   }
-  if (nclusters < 20 & 
-      sum((createMissingVarianceParam(sigma_b_sq = sigma_b_sq, 
-                                      sigma_sq = sigma_sq) < 0.05) != 0)){
+  #FIXME change this to the following conditions:
+  # obs/cluster      ICC       #clusters
+  #   <5            <.1          <20
+  #   <10           <.05         <20
+  #   <20           <.02         <20
+  #   <50           <.01         <10
+  
+  if (nclusters < 20 & sum((createMissingVarianceParam(sigma_b_sq = sigma_b_sq, sigma_sq = sigma_sq) < 0.05) != 0)){
     warning("WARNING: Type 1 error rate increases when ICC and nclusters are small. True power may be lower than estimates.")
   }
   # nsubjects must be positive whole numbers
@@ -273,6 +284,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                            seed = seed,
                                            cores = cores,
                                            poor.fit.override = poor.fit.override,
+                                           low.power.override = low.power.override,
                                            tdist = tdist,
                                            opt = opt)
    
@@ -337,11 +349,12 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
  # Calculate and store power estimate & confidence intervals
    sig.val <-  ifelse(p.val < alpha, 1, 0)
    pval.power <- apply (sig.val, 2, FUN=function(x) {sum(x, na.rm=TRUE)/nsim})
-   power.parms <-  data.frame(Power = round(pval.power, 3),
-                            Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
-                                                  sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                            Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
-                                                  sqrt((pval.power * (1 - pval.power)) / nsim), 3))
+  # FIXME use binom.test
+  # power.parms <-  data.frame(Power = round(pval.power, 3),
+  #                          Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
+  #                                                sqrt((pval.power * (1 - pval.power)) / nsim), 3),
+  #                          Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
+  #                                                sqrt((pval.power * (1 - pval.power)) / nsim), 3))
    rownames(power.parms) <- names.power
     
   # Store simulation output in data frame

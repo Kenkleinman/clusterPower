@@ -44,6 +44,11 @@
 #' computing is used.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
 #' of fits fail to converge.
+#' @param low.power.override Option to override \code{stop()} if the power 
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the 
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the 
+#' calculated power is returned regardless of value. 
 #' @param tdist Logical; use t-distribution instead of normal distribution 
 #' for simulation values, default = FALSE.
 #' @param opt Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'optim'.
@@ -78,6 +83,7 @@
 #'                               alpha = 0.05,
 #'                               quiet = FALSE, method = 'glmm', 
 #'                               seed = 123, cores = "all",
+#'                               low.power.override = FALSE,
 #'                               poor.fit.override = FALSE)
 #'                               }
 #' @export
@@ -90,6 +96,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                       seed = NA,
                       cores = "all",
                       poor.fit.override = FALSE,
+                      low.power.override = FALSE,
                       tdist=FALSE,
                       opt = "optim"){
 
@@ -261,7 +268,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
 
   model.compare[[i]] <- try(anova(my.mod, null.mod))
   # stop the loop if power is <0.5
-  if (poor.fit.override==FALSE){
+  if (low.power.override==FALSE){
     if (i > 50 & (i %% 10==0)){
     temp.power.checker <- matrix(unlist(model.compare[1:i]), ncol=6, nrow=i, 
                                  byrow=TRUE)
@@ -269,7 +276,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     pval.power.temp <- sum(sig.val.temp)/i
     if (pval.power.temp < 0.5){
       stop(paste("Calculated power is < ", pval.power.temp, ", auto stop at simulation ", 
-                 i, ". Set poor.fit.override==TRUE to ignore this error.", sep = ""))
+                 i, ". Set low.power.override==TRUE to run the simulations anyway.", sep = ""))
     }
     }
   }
