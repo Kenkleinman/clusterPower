@@ -437,9 +437,9 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
   
   #FIXME use binom.test instead
-  #power.parms = data.frame(Power = round(pval.power, 3),
-  #                         Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-  #                         Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
+  power.parms = data.frame(Power = round(pval.power, 3),
+                           Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
+                           Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
   # Create object containing group-specific cluster sizes
   cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 

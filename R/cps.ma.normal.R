@@ -350,11 +350,11 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    sig.val <-  ifelse(p.val < alpha, 1, 0)
    pval.power <- apply (sig.val, 2, FUN=function(x) {sum(x, na.rm=TRUE)/nsim})
   # FIXME use binom.test
-  # power.parms <-  data.frame(Power = round(pval.power, 3),
-  #                          Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
-  #                                                sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-  #                          Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
-  #                                                sqrt((pval.power * (1 - pval.power)) / nsim), 3))
+   power.parms <-  data.frame(Power = round(pval.power, 3),
+                          Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
+                                                  sqrt((pval.power * (1 - pval.power)) / nsim), 3),
+                            Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
+                                                  sqrt((pval.power * (1 - pval.power)) / nsim), 3))
    rownames(power.parms) <- names.power
     
   # Store simulation output in data frame
