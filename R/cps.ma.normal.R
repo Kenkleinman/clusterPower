@@ -231,9 +231,9 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   #   <20           <.02         <20
   #   <50           <.01         <10
   
-  if (nclusters < 20 & sum((createMissingVarianceParam(sigma_b_sq = sigma_b_sq, sigma_sq = sigma_sq) < 0.05) != 0)){
-    warning("WARNING: Type 1 error rate increases when ICC and nclusters are small. True power may be lower than estimates.")
-  }
+  #if (nclusters < 20 & sum((createMissingVarianceParam(sigma_b_sq = sigma_b_sq, sigma_sq = sigma_sq) < 0.05) != 0)){
+  #  warning("WARNING: Type 1 error rate increases when ICC and nclusters are small. True power may be lower than estimates.")
+  #}
   # nsubjects must be positive whole numbers
   if (sum(is.wholenumber(unlist(nsubjects))==FALSE)!=0 || sum(unlist(nsubjects)< 1)!=0){
     stop("nsubjects must be positive integer values.")
