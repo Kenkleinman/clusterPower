@@ -17,8 +17,8 @@
 #' As this function is not intended for the casual user, specifications to the 
 #' arguments are somewhat less flexible than those supplied to 
 #' \code{cps.ma.normal()}. Note that the str.nsubjects argument has a specific 
-#' structure that is somewhat verbose, but maximizes flexibility in the 
-#' applicable experimental design. 
+#' structure that is somewhat verbose but maximizes flexibility in the 
+#' experimental design. 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param str.nsubjects Number of subjects per treatment group; accepts a list 

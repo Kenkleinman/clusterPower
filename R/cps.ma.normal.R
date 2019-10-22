@@ -224,16 +224,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   if (sum(is.wholenumber(nclusters)==FALSE)!=0 || sum(unlist(nclusters) < 1)!=0){
     stop("nclusters must be postive integer values.")
   }
-  #FIXME change this to the following conditions:
-  # obs/cluster      ICC       #clusters
-  #   <5            <.1          <20
-  #   <10           <.05         <20
-  #   <20           <.02         <20
-  #   <50           <.01         <10
-  
-  #if (nclusters < 20 & sum((createMissingVarianceParam(sigma_b_sq = sigma_b_sq, sigma_sq = sigma_sq) < 0.05) != 0)){
-  #  warning("WARNING: Type 1 error rate increases when ICC and nclusters are small. True power may be lower than estimates.")
-  #}
+
   # nsubjects must be positive whole numbers
   if (sum(is.wholenumber(unlist(nsubjects))==FALSE)!=0 || sum(unlist(nsubjects)< 1)!=0){
     stop("nsubjects must be positive integer values.")
@@ -273,6 +264,9 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     stop("Length of variance parameters (sigma_sq, sigma_b_sq, ICC) 
          must equal narms, or be provided as a scalar if sigma_sq for all arms are equal.")
   }
+  
+  #type 1 error warning, see helperfxns.R
+  type1ErrTest(sigma_sq_ = sigma_sq, sigma_b_sq_ = sigma_b_sq, nsubjects_ = nsubjects)
   
    # run the simulations 
    normal.ma.rct <- cps.ma.normal.internal(nsim = nsim, 
