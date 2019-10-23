@@ -168,19 +168,6 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                         return.all.models = FALSE,
                         opt = "optim"){
 
-  # Create wholenumber function
-  is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
-  
-  # create proportion of F-test rejections fxn
-  prop_H0_rejection <- function (alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev){
-    print(paste("Proportion of F-test rejections = ", 
-        round(LRT.holder.abbrev, 3), ", CI:",
-        round(LRT.holder.abbrev - abs(stats::qnorm(alpha / 2)) * 
-                sqrt((LRT.holder.abbrev * (1 - LRT.holder.abbrev)) / nsim), 3), ", ", 
-        round(LRT.holder.abbrev + abs(stats::qnorm(alpha / 2)) * 
-                sqrt((LRT.holder.abbrev * (1 - LRT.holder.abbrev)) / nsim), 3), ".", sep=""))
-  }
-
   # create narms and nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
     # create narms and nclusters if not supplied by the user
@@ -337,19 +324,11 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    
    # Proportion of times P(>F)
    sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
-   LRT.holder.abbrev <- sum(sig.LRT)/nsim
+   LRT.holder.abbrev <- sum(sig.LRT)
    
- 
  # Calculate and store power estimate & confidence intervals
-   sig.val <-  ifelse(p.val < alpha, 1, 0)
-   pval.power <- apply (sig.val, 2, FUN=function(x) {sum(x, na.rm=TRUE)/nsim})
-  # FIXME use binom.test
-   power.parms <-  data.frame(Power = round(pval.power, 3),
-                          Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
-                                                  sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                            Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
-                                                  sqrt((pval.power * (1 - pval.power)) / nsim), 3))
-   rownames(power.parms) <- names.power
+   power.parms <- confint.calc(nsim = nsim, alpha = alpha,
+     p.val = p.val, names.power = names.power)
     
   # Store simulation output in data frame
    ma.model.est <-  data.frame(Estimates, std.error, t.val, p.val)
@@ -427,13 +406,10 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
      
      # Calculate and store power estimate & confidence intervals
      sig.val <-  ifelse(Pr < alpha, 1, 0)
-     pval.power <- apply (sig.val, 2, FUN=function(x) {sum(x, na.rm=TRUE)/nsim})
-     power.parms <-  data.frame(Power = round(pval.power, 3),
-                                Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
-                                                      sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                                Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
-                                                      sqrt((pval.power * (1 - pval.power)) / nsim), 3))
-     rownames(power.parms) <- names.power
+     pval.power <- apply (sig.val, 2, sum)
+     # Calculate and store power estimate & confidence intervals
+     power.parms <- confint.calc(nsim = nsim, alpha = alpha,
+                                 p.val = p.val, names.power = names.power)
      
      # Store GEE simulation output in data frame
      ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)
