@@ -402,14 +402,11 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
      
      # Proportion of times P(>F)
      sig.LRT <-  ifelse(LRT.holder[,3] < alpha, 1, 0)
-     LRT.holder.abbrev <- sum(sig.LRT)/nsim
+     LRT.holder.abbrev <- sum(sig.LRT)
      
      # Calculate and store power estimate & confidence intervals
-     sig.val <-  ifelse(Pr < alpha, 1, 0)
-     pval.power <- apply (sig.val, 2, sum)
-     # Calculate and store power estimate & confidence intervals
      power.parms <- confint.calc(nsim = nsim, alpha = alpha,
-                                 p.val = p.val, names.power = names.power)
+                                 p.val = LRT.holder[,3], names.power = names.power)
      
      # Store GEE simulation output in data frame
      ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)

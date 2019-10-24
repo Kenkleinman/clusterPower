@@ -71,7 +71,8 @@
 #' @examples 
 #' \dontrun{
 #' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 9, difference = 10,
-#'                         ICC = 0.3, sigma_sq = 100, alpha = 0.05, method = 'glmm', 
+#'                         ICC = 0.3, sigma_sq = 100, ICC2 = 0.2, sigma_sq2 = 80,
+#'                         alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
 #' 
@@ -107,9 +108,6 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
                                          total = nsim, clear = FALSE, width = 100)
   prog.bar$tick(0)
-  
-  # Create wholenumber function
-  is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
   
   # Validate NSIM, NCLUSTERS, NSUBJECTS
   sim.data.arg.list = list(nsim, nclusters, nsubjects, difference)
@@ -177,7 +175,6 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     stop("At least one of the following terms has been misspecified: ICC, sigma_sq, sigma_b_sq")
   }
   
-  #FIXME is this being triggered?
   parm2.arg.list = list(ICC2, sigma_sq2, sigma_b_sq2)
   parm2.args = unlist(lapply(parm2.arg.list, is.null))
   if(sum(parm2.args) > 1 && sum(parm2.args) != 3){
@@ -434,13 +431,10 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  
-  #FIXME use binom.test instead
-  power.parms = data.frame(Power = round(pval.power, 3),
-                           Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                           Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
-  
+  pval.power = sum(cps.model.est[, 'sig.val'])
+  power.parms <- confint.calc(nsim = nsim, alpha = alpha,
+                              p.val = pval.power, names.power = names.power)
+
   # Create object containing group-specific cluster sizes
   cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 
                        'Treatment' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
