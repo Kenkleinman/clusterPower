@@ -237,14 +237,16 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     means <- rep(means, narms)
   }
 
-  # supplies sigma_sq or sigma_b_sq if user supplies ICC
-  if (length(ICC)!=0){
-  if (length(sigma_sq)==0){
-    sigma_sq <- createMissingVarianceParam(sigma_b_sq = sigma_b_sq, ICC = ICC)
-  }
-  if (length(sigma_b_sq)==0){
-    sigma_b_sq <- createMissingVarianceParam(sigma_sq = sigma_sq, ICC = ICC)
-  }
+# supplies sigma_sq or sigma_b_sq if user supplies ICC
+  if (isTRUE(length(ICC)!=0)){
+    if (isTRUE(length(sigma_sq)==0 & length(sigma_b_sq)!=0)){
+      sigma_sq <- createMissingVarianceParam(sigma_b_sq = sigma_b_sq, ICC = ICC)
+      return(sigma_sq)
+    }
+    if (isTRUE(length(sigma_b_sq)==0 & length(sigma_sq)!=0)){
+      sigma_b_sq <- createMissingVarianceParam(sigma_sq = sigma_sq, ICC = ICC)
+      return(sigma_b_sq)
+    }
   }
   
   if (length(sigma_sq)!=narms){

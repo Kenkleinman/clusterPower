@@ -71,7 +71,7 @@
 #' @examples 
 #' \dontrun{
 #' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 9, difference = 10,
-#'                         ICC = 0.3, sigma_sq = 100, ICC2 = 0.2, sigma_sq2 = 80,
+#'                         ICC = 0.3, sigma_sq = 100,
 #'                         alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
@@ -148,6 +148,34 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS")
   }
   
+  ## Create variance parameters
+  # sigma_b_sq, sigma_sq, ICC
+  if(!is.null(c(ICC, sigma_sq)) && is.null(sigma_b_sq)){
+    sigma_b_sq = ICC * sigma_sq / (1 - ICC)
+  }
+  if(!is.null(c(ICC, sigma_b_sq)) && is.null(sigma_sq)){
+    sigma_sq = sigma_b_sq / ICC - sigma_b_sq
+  }
+  if(!is.null(c(sigma_sq, sigma_b_sq)) && is.null(ICC)){
+    ICC = sigma_b_sq / (sigma_b_sq + sigma_sq)
+  }
+  # sigma_b_sq2, sigma_sq2, ICC2
+  if(!is.null(c(ICC2, sigma_sq2)) && is.null(sigma_b_sq2)){
+    sigma_b_sq2 = ICC2 * sigma_sq2 / (1 - ICC2)
+  }
+  if(!is.null(c(ICC2, sigma_b_sq2)) && is.null(sigma_sq2)){
+    sigma_sq2 = sigma_b_sq2 / ICC2 - sigma_b_sq2
+  }
+  if(!is.null(c(sigma_sq2, sigma_b_sq2)) && is.null(ICC2)){
+    ICC2 = sigma_b_sq2 / (sigma_b_sq2 + sigma_sq2)
+  }
+  
+  # Set within/between cluster variances & ICC for treatment group (if not already specified)
+  sigma_sq[2] = ifelse(!is.null(sigma_sq2), sigma_sq2, sigma_sq[1])
+  sigma_b_sq[2] = ifelse(!is.null(sigma_b_sq2), sigma_b_sq2, sigma_b_sq[1])
+  ICC[2] = ifelse(!is.null(ICC2), ICC2, ICC[1])
+  
+  
   # Validate DIFFERENCE, ALPHA
   min0.warning = " must be a numeric value greater than 0"
   if(!is.numeric(difference) || difference < 0){
@@ -196,33 +224,6 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   if(!is.logical(all.sim.data)){
     stop("ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output")
   }
-  
-  ## Create variance parameters
-  # sigma_b_sq, sigma_sq, ICC
-  if(!is.null(c(ICC, sigma_sq)) && is.null(sigma_b_sq)){
-    sigma_b_sq = ICC * sigma_sq / (1 - ICC)
-  }
-  if(!is.null(c(ICC, sigma_b_sq)) && is.null(sigma_sq)){
-    sigma_sq = sigma_b_sq / ICC - sigma_b_sq
-  }
-  if(!is.null(c(sigma_sq, sigma_b_sq)) && is.null(ICC)){
-    ICC = sigma_b_sq / (sigma_b_sq + sigma_sq)
-  }
-  # sigma_b_sq2, sigma_sq2, ICC2
-  if(!is.null(c(ICC2, sigma_sq2)) && is.null(sigma_b_sq2)){
-    sigma_b_sq2 = ICC2 * sigma_sq2 / (1 - ICC2)
-  }
-  if(!is.null(c(ICC2, sigma_b_sq2)) && is.null(sigma_sq2)){
-    sigma_sq2 = sigma_b_sq2 / ICC2 - sigma_b_sq2
-  }
-  if(!is.null(c(sigma_sq2, sigma_b_sq2)) && is.null(ICC2)){
-    ICC2 = sigma_b_sq2 / (sigma_b_sq2 + sigma_sq2)
-  }
-  
-  # Set within/between cluster variances & ICC for treatment group (if not already specified)
-  sigma_sq[2] = ifelse(!is.null(sigma_sq2), sigma_sq2, sigma_sq[1])
-  sigma_b_sq[2] = ifelse(!is.null(sigma_b_sq2), sigma_b_sq2, sigma_b_sq[1])
-  ICC[2] = ifelse(!is.null(ICC2), ICC2, ICC[1])
   
   # Create indicators for treatment group & cluster
   trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 

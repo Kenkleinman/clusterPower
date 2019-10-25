@@ -56,3 +56,5 @@ f.test <- binom.test(p = 0.05, n = nsim, x = LRT.holder.abbrev,
   Ftest <- data.frame(Power, Lower.95.CI, Upper.95.CI)
   return(Ftest)
 }
+
+
