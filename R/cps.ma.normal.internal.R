@@ -153,9 +153,9 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   }
   
   # Create simulation loop
-  require("optimx")  
+  require(opt)  
   require(foreach)
-  foreach::foreach(i=1:nsim, .packages = "optimx") %do% {
+  foreach::foreach(i=1:nsim, .packages = opt) %do% {
     sim.dat[[i]] = data.frame(y = NA, trt = as.factor(unlist(trt)), 
                               clust = as.factor(unlist(clust)))
     # Generate between-cluster effects for non-treatment and treatment
