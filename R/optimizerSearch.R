@@ -21,6 +21,11 @@ set.seed(2)
 dat <- sim(nsub = 100, nclust = 100, sigma_residual2 = .2,  sig_b2 = c(.3, 1), betas = c(0,1))
 
 model <- lmer(y ~ arm + (1 + arm | clustid), data = dat)
+
+
+
+
+
 diff_optims <- allFit(model, maxfun = 1e5, parallel = 'multicore', ncpus = detectCores())
 is.OK <- sapply(diff_optims, is, "merMod")
 diff_optims.OK <- diff_optims[is.OK]
@@ -34,9 +39,8 @@ if(sum(working_indices)==0){
   print("You may still be able to use the results, but proceed with extreme caution.")
   first_fit <- NULL
 } else {
-  first_fit <- diff_optims[working_indices][[1]]
+  goodopt <- names(working_indices[working_indices==TRUE][1])
 }
-first_fit
 
 model2 <- lmer(y ~ arm + (1 + arm | clustid), data = dat, 
-               control = lmerControl(optimizer = "Nelder_Mead"))
+               control = lmerControl(optimizer = goodopt))
