@@ -146,7 +146,8 @@
 #'                                   sigma_b_sq = 1, alpha = 0.05,
 #'                                   quiet = FALSE, ICC=NULL, method = 'glmm',
 #'                                   all.sim.data = FALSE, seed = 123,
-#'                                   poor.fit.override = TRUE, cores="all")
+#'                                   poor.fit.override = TRUE, cores="all",
+#'                                   opt = "auto")
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
 #'   and Ken Kleinman (\email{ken.kleinman@@gmail.com})

@@ -210,29 +210,30 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   progress <- function(n) setTxtProgressBar(pb, n)
   opts <- list(progress=progress)
   
+  # Update simulation progress information
+  if(quiet == FALSE){
+    sim.start <- Sys.time()
+    lme4::glmer(sim.dat[,1] ~ trt + (1|clust), family = stats::poisson(link = 'log'))
+    avg.iter.time = as.numeric(difftime(Sys.time(), sim.start, units = 'secs'))
+    time.est = avg.iter.time * (nsim - 1) / 60
+    hr.est = time.est %/% 60
+    min.est = round(time.est %% 60, 0)
+    message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
+                   ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
+    # initialize progress bar
+    if (is.na(cores)){
+      prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
+                                             total = 5, clear = FALSE, show_after = 0)
+      prog.bar$tick(0)
+    }
+  }
+  if (is.na(cores) & quiet==FALSE){
+    # Iterate progress bar
+    prog.bar$update(1 / 5)
+    Sys.sleep(1/100)
+  }
+  
   if (method=="glmm"){
-    # Update simulation progress information
-    if(quiet == FALSE){
-      sim.start <- Sys.time()
-      lme4::glmer(sim.dat[,1] ~ trt + (1|clust), family = stats::poisson(link = 'log'))
-      avg.iter.time = as.numeric(difftime(Sys.time(), sim.start, units = 'secs'))
-      time.est = avg.iter.time * (nsim - 1) / 60
-      hr.est = time.est %/% 60
-      min.est = round(time.est %% 60, 0)
-      message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
-                     ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
-      # initialize progress bar
-      if (is.na(cores)){
-        prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
-                                               total = 5, clear = FALSE, show_after = 0)
-        prog.bar$tick(0)
-      }
-    }
-    if (is.na(cores) & quiet==FALSE){
-      # Iterate progress bar
-      prog.bar$update(1 / 5)
-      Sys.sleep(1/100)
-    }
     # Fit the models
     require(doParallel)
     require(foreach)
