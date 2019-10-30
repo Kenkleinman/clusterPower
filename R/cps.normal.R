@@ -171,10 +171,15 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   }
   
   # Set within/between cluster variances & ICC for treatment group (if not already specified)
-  sigma_sq[2] = ifelse(!is.null(sigma_sq2), sigma_sq2, sigma_sq[1])
-  sigma_b_sq[2] = ifelse(!is.null(sigma_b_sq2), sigma_b_sq2, sigma_b_sq[1])
-  ICC[2] = ifelse(!is.null(ICC2), ICC2, ICC[1])
-  
+  if (isTRUE(is.null(sigma_sq2))){
+    sigma_sq2 <- sigma_sq
+  }
+  if (isTRUE(is.null(sigma_b_sq2))){
+    sigma_b_sq2 <- sigma_b_sq
+  }
+  if (isTRUE(is.null(ICC2))){
+    ICC2 <- ICC
+  }
   
   # Validate DIFFERENCE, ALPHA
   min0.warning = " must be a numeric value greater than 0"
@@ -187,22 +192,15 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   
   # Validate ICC, sigma_sq, sigma_b_sq, ICC2, sigma_sq2, sigma_b_sq2
   
-  if (isTRUE(is.null(sigma_sq2))){
-    sigma_sq2 <- sigma_sq
-  }
-  if (isTRUE(is.null(sigma_b_sq2))){
-    sigma_b_sq2 <- sigma_b_sq
-  }
-  
   parm1.arg.list = list(ICC, sigma_sq, sigma_b_sq)
   parm1.args = unlist(lapply(parm1.arg.list, is.null))
   if(sum(parm1.args) > 1){
     stop("At least two of the following terms must be specified: ICC, sigma_sq, sigma_b_sq")
   }
-  if(sum(parm1.args) == 0 && ICC != sigma_b_sq / (sigma_b_sq + sigma_sq)){
+  if(isTRUE(sum(parm1.args) == 0 & (ICC != sigma_b_sq / (sigma_b_sq + sigma_sq)))){
     stop("At least one of the following terms has been misspecified: ICC, sigma_sq, sigma_b_sq")
   }
-  
+
   parm2.arg.list = list(ICC2, sigma_sq2, sigma_b_sq2)
   parm2.args = unlist(lapply(parm2.arg.list, is.null))
   if(sum(parm2.args) > 1 && sum(parm2.args) != 3){

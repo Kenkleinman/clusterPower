@@ -128,7 +128,8 @@
 #'                        quiet = FALSE, ICC=NULL, method = 'glmm', 
 #'                        all.sim.data = FALSE,
 #'                        seed = 123, cores = "all",
-#'                        poor.fit.override = FALSE)
+#'                        poor.fit.override = FALSE,
+#'                        opt = "nlm")
 #'                        
 #'  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
 #'                                    nclusters = c (10,11,10), nsubjects = 100,
@@ -137,7 +138,9 @@
 #'                                    sigma_b_sq = c(.1,.15,.1), alpha = 0.05,
 #'                                    quiet = FALSE, ICC=NULL, method = 'glmm',
 #'                                    all.sim.data = FALSE, seed = 123,
-#'                                    poor.fit.override = TRUE, cores="all")
+#'                                    poor.fit.override = TRUE, 
+#'                                    cores="all",
+#'                                    opt = "nlm")
 #' }
 #' multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
 #'                                   nclusters = 10, nsubjects = 25, 
