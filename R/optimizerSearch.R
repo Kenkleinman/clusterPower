@@ -4,7 +4,7 @@ optimizerSearch <- function(model){
   diff_optims <- allFit(model, maxfun = 1e5, parallel = 'multicore', ncpus = parallel::detectCores())
   is.OK <- sapply(diff_optims, is, "merMod")
   diff_optims.OK <- diff_optims[is.OK]
-  if (isTRUE(class(model) == "lmerMod")){
+  if (isTRUE(class(model) == "lmerMod")) {
     convergence_results <- lapply(diff_optims.OK,function(x) x@optinfo$conv$lme4$messages)
   }
   if (isTRUE(class(model) == "glmerMod")){

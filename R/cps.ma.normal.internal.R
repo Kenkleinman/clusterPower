@@ -197,7 +197,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       if (max(sigma_sq) != min(sigma_sq) & max(sigma_b_sq) != min(sigma_b_sq)){
         trt2 <- unlist(trt)
         clust2 <- unlist(clust)
-      if (opt != "nlm" && opt != "nlminb"){
+      if (opt != "nlm" && opt != "nlminb" && opt != "auto"){
         stop("opt must be either nlm or nlminb for this model type.")
       }  
       my.mod <- nlme::lme(y~as.factor(trt2), random = ~1+as.factor(trt2)|clust2, 
@@ -215,14 +215,25 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       if (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)!=min(sigma_b_sq)){
         my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), REML=FALSE,
                                   data = sim.dat[[i]])
-        if (i == 1){
-          if (opt == "auto"){
-            require("optimx")
-            goodopt <- optimizerSearch(my.mod)
-          } else {
-            goodopt <- opt
+        if (!isTRUE(class(my.mod) == "nlme")){
+          if (i == 1){
+            if (opt == "auto"){
+              require("optimx")
+              goodopt <- optimizerSearch(my.mod)
+            } else {
+              goodopt <- opt
+            }
           }
-        }
+        } 
+        if (isTRUE(class(my.mod) == "nlme")){
+          if (i == 1){
+            if (opt == "auto"){
+              goodopt <- "nlminb"
+            } else {
+              goodopt <- opt
+            }
+          }
+        } 
         my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), REML=FALSE,
                                   data = sim.dat[[i]], 
                                   lmerControl(optimizer = goodopt))

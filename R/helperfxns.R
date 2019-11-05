@@ -26,7 +26,7 @@ confint.calc <- function(nsim = nsim, alpha = alpha,
   power.parms <- list()
   for (q in 1:length(pval.power)){
     power.parms[[q]] <- binom.test(p = 0.05, n = nsim, x = pval.power[q], 
-               alternative = "greater")
+               alternative = "two.sided")
   }
   Power <- vector(length = length(pval.power))
   Lower.95.CI <- vector(length = length(pval.power))
