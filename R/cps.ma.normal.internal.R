@@ -172,8 +172,8 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     y.wclust <-  vector(mode = "list", length = narms)
     y.bclust <-  sapply(1:sum(nclusters), 
                       function(x) rep(unlist(randint)[x], length.out = unlist(str.nsubjects)[x]))
-    for (j in 1:narms){
-      y.wclust[[j]] <-  lapply(str.nsubjects[[j]], function(x) stats:: rnorm(x, mean = means[j], 
+    for (j in 1:narms) {
+      y.wclust[[j]] <-  lapply(str.nsubjects[[j]], function(x) stats::rnorm(x, mean = means[j], 
                                                                              sd = sqrt(sigma_sq[j])))
     }
 
@@ -219,7 +219,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
           if (i == 1){
             if (opt == "auto"){
               require("optimx")
-              goodopt <- optimizerSearch(my.mod)
+              goodopt <- suppressMessages(optimizerSearch(my.mod))
             } else {
               goodopt <- opt
             }
@@ -236,7 +236,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         } 
         my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), REML=FALSE,
                                   data = sim.dat[[i]], 
-                                  lmerControl(optimizer = goodopt))
+                                  lme4::lmerControl(optimizer = goodopt))
         # get the overall p-values (>Chisq)
         null.mod <- update.formula(my.mod, y ~ 1 + (1+as.factor(trt)|clust))
         # option to stop the function early if fits are singular
@@ -268,16 +268,18 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         my.mod <- lmerTest::lmer(y~trt+(1|clust), REML=FALSE, 
                                   data = sim.dat[[i]])
         if (i == 1){
-          if (opt == "auto"){
-            require("optimx")
-            goodopt <- optimizerSearch(my.mod)
-          } else {
-            goodopt <- opt
+          if (!isTRUE(class(my.mod) == "nlme")){
+            if (opt == "auto"){
+              require("optimx")
+              goodopt <- suppressMessages(optimizerSearch(my.mod))
+            } else {
+              goodopt <- opt
+            }
           }
         }
         my.mod <-  lmerTest::lmer(y~trt+(1|clust), REML=FALSE, 
                                   data = sim.dat[[i]], 
-                                  lmerControl(optimizer = goodopt))
+                                  lme4::lmerControl(optimizer = goodopt))
         # get the overall p-values (>Chisq)
         null.mod <- update.formula(my.mod, y ~ 1 + (1|clust))
         # option to stop the function early if fits are singular
