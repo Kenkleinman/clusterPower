@@ -5,10 +5,11 @@
 \title{Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.}
 \usage{
 cps.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  difference = NULL, ICC = NULL, sigma = NULL, sigma_b = NULL,
-  ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL, alpha = 0.05,
-  method = "glmm", quiet = FALSE, all.sim.data = FALSE, seed = NA,
-  poor.fit.override = FALSE, irgtt = FALSE)
+  difference = NULL, ICC = NULL, sigma_sq = NULL,
+  sigma_b_sq = NULL, ICC2 = NULL, sigma_sq2 = NULL,
+  sigma_b_sq2 = NULL, alpha = 0.05, method = "glmm", quiet = FALSE,
+  all.sim.data = FALSE, seed = NA, poor.fit.override = FALSE,
+  irgtt = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -25,18 +26,18 @@ At least 2 of the following must be specified:}
 
 \item{ICC}{Intra-cluster correlation coefficient; accepts a value between 0 - 1}
 
-\item{sigma}{Within-cluster variance; accepts numeric}
+\item{sigma_sq}{Within-cluster variance; accepts numeric}
 
-\item{sigma_b}{Between-cluster variance; accepts numeric
+\item{sigma_b_sq}{Between-cluster variance; accepts numeric
 
 If clusters differ between treatment groups, at least 2 of the following 
 must be specified:}
 
 \item{ICC2}{Intra-cluster correlation coefficient for clusters in TREATMENT group}
 
-\item{sigma2}{Within-cluster variance for clusters in TREATMENT group}
+\item{sigma_sq2}{Within-cluster variance for clusters in TREATMENT group}
 
-\item{sigma_b2}{Between-cluster variance for clusters in TREATMENT group}
+\item{sigma_b_sq2}{Between-cluster variance for clusters in TREATMENT group}
 
 \item{alpha}{Significance level; default = 0.05.}
 
@@ -99,9 +100,11 @@ and simulated data set output may also be specified.
 \examples{
 \dontrun{
 normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 9, difference = 10,
-                        ICC = 0.3, sigma = 100, alpha = 0.05, method = 'glmm', 
+                        ICC = 0.3, sigma_sq = 100,
+                        alpha = 0.05, method = 'glmm', 
                         quiet = FALSE, all.sim.data = FALSE)
 }
+
 }
 \author{
 Alexander R. Bogdan, Alexandria C. Sakrejda 

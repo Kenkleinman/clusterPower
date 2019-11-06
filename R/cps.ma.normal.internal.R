@@ -219,7 +219,8 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
           if (i == 1){
             if (opt == "auto"){
               require("optimx")
-              goodopt <- suppressMessages(optimizerSearch(my.mod))
+              goodopt <- optimizerSearch(my.mod)
+
             } else {
               goodopt <- opt
             }
@@ -271,7 +272,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
           if (!isTRUE(class(my.mod) == "nlme")){
             if (opt == "auto"){
               require("optimx")
-              goodopt <- suppressMessages(optimizerSearch(my.mod))
+              goodopt <- optimizerSearch(my.mod)
             } else {
               goodopt <- opt
             }

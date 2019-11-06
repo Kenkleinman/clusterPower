@@ -5,8 +5,8 @@
 \title{Power simulations for cluster-randomized trials: Stepped Wedge Design, Continuous Outcome.}
 \usage{
 cps.sw.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  difference = NULL, steps = NULL, sigma = NULL, sigma_b = NULL,
-  alpha = 0.05, method = "glmm", quiet = FALSE,
+  difference = NULL, steps = NULL, sigma_sq = NULL,
+  sigma_b_sq = NULL, alpha = 0.05, method = "glmm", quiet = FALSE,
   all.sim.data = FALSE)
 }
 \arguments{
@@ -26,11 +26,11 @@ Accepts positive scalar (indicating the total number of steps; clusters per step
 of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the cumulative 
 number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).}
 
-\item{sigma}{Within-cluster variance; accepts non-negative numeric scalar (indicating equal within-cluster variances for both 
+\item{sigma_sq}{Within-cluster variance; accepts non-negative numeric scalar (indicating equal within-cluster variances for both 
 treatment groups) or a vector of length 2 specifying within-cluster variances for the non-treatment and treatment groups, 
 respectively (required).}
 
-\item{sigma_b}{Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
+\item{sigma_b_sq}{Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
 between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
 between-cluster variances (required).}
 
@@ -81,7 +81,14 @@ can modify a variety of parameters to suit the simulations to their
 desired experimental situation.
 }
 \details{
-Runs power simulations for stepped wedge cluster-randomized controlled trials with continuous outcome.
+Runs power simulations for stepped wedge cluster-randomized controlled trials 
+with continuous outcome. The stepped wedge trial design is a type of cross-over
+design in which clusters change treatments in waves. Initially all the 
+clusters recieve the same standard treatment, and at the end of the trial all
+of the clusters will be recieving the treatment of interest. More than one 
+cluster can change treatments in a wave, but the order in which clusters 
+change treatments is randomly determined. The outcome of interest is assessed 
+in each cluster during each wave.
 
 Users must specify the desired number of simulations, number of subjects per 
 cluster, number of clusters per treatment arm, expected absolute difference 
@@ -92,7 +99,7 @@ set output may also be specified.
 \examples{
 \dontrun{
 normal.sw.rct = cps.sw.normal(nsim = 100, nsubjects = 50, nclusters = 30, 
-                              difference = 3, steps = 5, sigma = 100, sigma_b = 30, 
+                              difference = 3, steps = 5, sigma_sq = 100, sigma_b_sq = 30, 
                               alpha = 0.05, method = 'glmm', quiet = FALSE, 
                               all.sim.data = FALSE)
 }

@@ -5,9 +5,9 @@
 \title{Power simulations for cluster-randomized trials: Stepped Wedge Design, Binary Outcome}
 \usage{
 cps.sw.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  p.ntrt = NULL, p.trt = NULL, steps = NULL, sigma_b = NULL,
+  p.ntrt = NULL, p.trt = NULL, steps = NULL, sigma_b_sq = NULL,
   alpha = 0.05, method = "glmm", quiet = FALSE,
-  all.sim.data = FALSE)
+  all.sim.data = FALSE, opt = "L-BFGS-B")
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -27,7 +27,7 @@ Accepts positive scalar (indicating the total number of steps; clusters per step
 of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the cumulative 
 number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).}
 
-\item{sigma_b}{Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
+\item{sigma_b_sq}{Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
 between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
 between-cluster variances (required).}
 
@@ -39,6 +39,8 @@ Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); defa
 \item{quiet}{When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.}
 
 \item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
+
+\item{opt}{Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'L-BFGS-B'.}
 }
 \value{
 A list with the following components
@@ -78,7 +80,14 @@ can modify a variety of parameters to suit the simulations to their
 desired experimental situation.
 }
 \details{
-Runs power simulations for stepped wedge cluster-randomized controlled trials with a binary outcome.
+Runs power simulations for stepped wedge cluster-randomized controlled trials 
+with a binary outcome. The stepped wedge trial design is a type of cross-over
+design in which clusters change treatments in waves. Initially all the 
+clusters recieve the same standard treatment, and at the end of the trial all
+of the clusters will be recieving the treatment of interest. More than one 
+cluster can change treatments in a wave, but the order in which clusters 
+change treatments is randomly determined. The outcome of interest is assessed 
+in each cluster during each wave.
 
 Users must specify the desired number of simulations, number of subjects per 
 cluster, number of clusters per treatment arm, expected absolute difference 
@@ -90,7 +99,7 @@ set output may also be specified.
 \dontrun{
 binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 50, nclusters = 30, 
                               p.ntrt = 0.1, p.trt = 0.2, steps = 5, 
-                              sigma_b = 30, alpha = 0.05, method = 'glmm', 
+                              sigma_b_sq = 30, alpha = 0.05, method = 'glmm', 
                               quiet = FALSE, all.sim.data = FALSE)
 }
 

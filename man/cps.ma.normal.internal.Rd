@@ -8,7 +8,8 @@ cluster-randomized trials with continuous outcome.}
 cps.ma.normal.internal(nsim = 1000, str.nsubjects = NULL,
   means = NULL, sigma_sq = NULL, sigma_b_sq = NULL, alpha = 0.05,
   quiet = FALSE, method = "glmm", all.sim.data = FALSE, seed = NA,
-  cores = "all", poor.fit.override = FALSE, tdist = FALSE)
+  cores = "all", poor.fit.override = FALSE,
+  low.power.override = FALSE, tdist = FALSE, opt = "optim")
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -47,8 +48,16 @@ computing is used.}
 \item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
 of fits fail to converge.}
 
+\item{low.power.override}{Option to override \code{stop()} if the power 
+is less than 0.5 after the first 50 simulations and every ten simulations
+thereafter. On function execution stop, the actual power is printed in the 
+stop message. Default = FALSE. When TRUE, this check is ignored and the 
+calculated power is returned regardless of value.}
+
 \item{tdist}{Logical; use t-distribution instead of normal distribution 
 for simulation values, default = FALSE.}
+
+\item{opt}{Option to fit with a different optimizer (using the package \textit{optimx}).}
 }
 \value{
 A list with the following components:
@@ -85,8 +94,8 @@ simulated data set output may also be specified.
 As this function is not intended for the casual user, specifications to the 
 arguments are somewhat less flexible than those supplied to 
 \code{cps.ma.normal()}. Note that the str.nsubjects argument has a specific 
-structure that is somewhat verbose, but maximizes flexibility in the 
-applicable experimental design.
+structure that is somewhat verbose but maximizes flexibility in the 
+experimental design.
 }
 \examples{
 \dontrun{
@@ -103,7 +112,9 @@ multi.cps.normal.models <- cps.ma.normal.internal (nsim = 100,
                               alpha = 0.05,
                               quiet = FALSE, method = 'glmm', 
                               seed = 123, cores = "all",
-                              poor.fit.override = FALSE)
+                              low.power.override = FALSE,
+                              poor.fit.override = FALSE, 
+                              opt = "nlm")
                               }
 }
 \author{

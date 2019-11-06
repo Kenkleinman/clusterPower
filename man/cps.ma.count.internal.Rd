@@ -8,7 +8,8 @@ cps.ma.count.internal(nsim = 1000, str.nsubjects = NULL,
   counts = NULL, family = "poisson", sigma_b_sq = NULL,
   alpha = 0.05, quiet = FALSE, method = "glmm",
   all.sim.data = FALSE, seed = NA, poor.fit.override = FALSE,
-  tdist = FALSE, cores = cores)
+  low.power.override = FALSE, tdist = FALSE, cores = cores,
+  opt = "optim")
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -42,11 +43,18 @@ default = FALSE.}
 \item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
 of fits fail to converge.}
 
+\item{low.power.override}{Option to override \code{stop()} if the power 
+is less than 0.5 after the first 50 simulations and every ten simulations
+thereafter. On function execution stop, the actual power is printed in the 
+stop message. Default = FALSE. When TRUE, this check is ignored and the 
+calculated power is returned regardless of value.}
+
 \item{tdist}{Logical; use t-distribution instead of normal distribution for 
 simulation values, default = FALSE.}
 
 \item{cores}{A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
-When this option is set to NA, no parallel computing is used.}
+When this option is set to NA, no parallel computing is used.
+ @param opt Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'optim'.}
 }
 \value{
 A list with the following components:
@@ -83,8 +91,8 @@ specified.
 \examples{
 \dontrun{
 
-nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-counts.example <- c(30, 55, 90)
+nsubjects.example <- list(c(200,200,200,250), c(150, 200, 200, 210), c(170, 200, 210))
+counts.example <- c(300, 550, 900)
 sigma_b_sq.example <- c(1, 1, 2)
 
 count.ma.rct <- cps.ma.count.internal (nsim = 10, 

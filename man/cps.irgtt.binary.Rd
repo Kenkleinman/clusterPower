@@ -6,8 +6,8 @@
 randomized group treatment trials.}
 \usage{
 cps.irgtt.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  p1 = NULL, p2 = NULL, sigma_b = 0, sigma_b2 = 0, alpha = 0.05,
-  quiet = TRUE, all.sim.data = FALSE, seed = NA)
+  p1 = NULL, p2 = NULL, sigma_b_sq = 0, sigma_b_sq2 = 0,
+  alpha = 0.05, quiet = TRUE, all.sim.data = FALSE, seed = NA)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -20,9 +20,9 @@ cps.irgtt.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
 
 \item{p2}{Expected probability of outcome in treatment group (required)}
 
-\item{sigma_b}{Between-cluster variance; defaults to 0. Accepts numeric.}
+\item{sigma_b_sq}{Between-cluster variance; defaults to 0. Accepts numeric.}
 
-\item{sigma_b2}{Between-cluster variance for clusters in TREATMENT group}
+\item{sigma_b_sq2}{Between-cluster variance for clusters in TREATMENT group}
 
 \item{alpha}{Significance level; default = 0.05}
 
@@ -45,7 +45,7 @@ A list with the following components
   \item Significance level
   \item Vector containing user-defined cluster sizes
   \item Vector containing user-defined number of clusters
-  \item Data frame reporting sigma_b for each group
+  \item Data frame reporting sigma_b_sq for each group
   \item Vector containing expected difference in probabilities based on user inputs
   \item Data frame containing three estimates of ICC
   \item Data frame with columns: "Estimate" (Estimate of treatment effect for a given simulation), 
@@ -82,7 +82,7 @@ P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 \examples{
 \dontrun{
 irgtt.binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 30, nclusters = 10, p1 = 0.5,
-                        p2 = 0.2, sigma_b = 0, sigma_b2 = 1, alpha = 0.05, 
+                        p2 = 0.2, sigma_b_sq = 0, sigma_b_sq2 = 1, alpha = 0.05, 
                         all.sim.data = FALSE)
 }
 }

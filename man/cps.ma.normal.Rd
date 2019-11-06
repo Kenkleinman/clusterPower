@@ -10,8 +10,8 @@ cps.ma.normal(nsim = 1000, nsubjects = NULL, narms = NULL,
   sigma_b_sq = NULL, alpha = 0.05, quiet = FALSE, ICC = NULL,
   method = "glmm", multi.p.method = "bonferroni",
   all.sim.data = FALSE, seed = NA, cores = NULL,
-  poor.fit.override = FALSE, tdist = FALSE,
-  return.all.models = FALSE)
+  poor.fit.override = FALSE, low.power.override = FALSE,
+  tdist = FALSE, return.all.models = FALSE, opt = "optim")
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -64,7 +64,13 @@ default = FALSE.}
 used for parallel computing.}
 
 \item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
-of fits fail to converge or power<0.5 after 50 iterations; default = FALSE.}
+of fits fail to converge; default = FALSE.}
+
+\item{low.power.override}{Option to override \code{stop()} if the power 
+is less than 0.5 after the first 50 simulations and every ten simulations
+thereafter. On function execution stop, the actual power is printed in the 
+stop message. Default = FALSE. When TRUE, this check is ignored and the 
+calculated power is returned regardless of value.}
 
 \item{tdist}{Logical; use t-distribution instead of normal distribution 
 for simulation values, default = FALSE.}
@@ -72,6 +78,8 @@ for simulation values, default = FALSE.}
 \item{return.all.models}{Logical; Returns all of the fitted models, the simulated data,
 the overall model comparisons, and the convergence report vector. This is equivalent
 to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.}
+
+\item{opt}{Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'optim'.}
 }
 \value{
 A list with the following components:
@@ -156,7 +164,8 @@ multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.exampl
                        quiet = FALSE, ICC=NULL, method = 'glmm', 
                        all.sim.data = FALSE,
                        seed = 123, cores = "all",
-                       poor.fit.override = FALSE)
+                       poor.fit.override = FALSE,
+                       opt = "nlm")
                        
  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
                                    nclusters = c (10,11,10), nsubjects = 100,
@@ -165,7 +174,9 @@ multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.exampl
                                    sigma_b_sq = c(.1,.15,.1), alpha = 0.05,
                                    quiet = FALSE, ICC=NULL, method = 'glmm',
                                    all.sim.data = FALSE, seed = 123,
-                                   poor.fit.override = TRUE, cores="all")
+                                   poor.fit.override = TRUE, 
+                                   cores="all",
+                                   opt = "nlm")
 }
 multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
                                   nclusters = 10, nsubjects = 25, 
@@ -174,7 +185,8 @@ multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
                                   sigma_b_sq = 1, alpha = 0.05,
                                   quiet = FALSE, ICC=NULL, method = 'glmm',
                                   all.sim.data = FALSE, seed = 123,
-                                  poor.fit.override = TRUE, cores="all")
+                                  poor.fit.override = TRUE, cores="all",
+                                  opt = "auto")
 
 }
 \author{

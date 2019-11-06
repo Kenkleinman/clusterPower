@@ -5,8 +5,8 @@
 \title{Power simulations for cluster-randomized trials: Simple Designs, Count Outcome.}
 \usage{
 cps.count(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  c1 = NULL, c2 = NULL, c.diff = NULL, sigma_b = NULL,
-  sigma_b2 = NULL, family = "poisson", analysis = "poisson",
+  c1 = NULL, c2 = NULL, c.diff = NULL, sigma_b_sq = NULL,
+  sigma_b_sq2 = NULL, family = "poisson", analysis = "poisson",
   method = "glmm", alpha = 0.05, quiet = FALSE,
   all.sim.data = FALSE, irgtt = FALSE, seed = NA)
 }
@@ -24,11 +24,11 @@ At least 2 of the following 3 arguments must be specified:}
 
 \item{c.diff}{Expected difference in outcome count between groups, defined as c.diff = c1 - c2}
 
-\item{sigma_b}{Between-cluster variance; if sigma_b2 is not specified, 
+\item{sigma_b_sq}{Between-cluster variance; if sigma_b_sq2 is not specified, 
 between cluster variances are assumed to be equal between groups. Accepts numeric
 If between cluster variances differ between treatment groups, the following must also be specified:}
 
-\item{sigma_b2}{Between-cluster variance for clusters in TREATMENT group}
+\item{sigma_b_sq2}{Between-cluster variance for clusters in TREATMENT group}
 
 \item{family}{Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'}
 
@@ -89,7 +89,7 @@ while the function is running.
 \examples{
 \dontrun{
 count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 36, c1 = 100,
-                      c2 = 200, sigma_b = 1, family = 'poisson', analysis = 'poisson',
+                      c2 = 200, sigma_b_sq = 1, family = 'poisson', analysis = 'poisson',
                       method = 'glmm', alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
 }
 

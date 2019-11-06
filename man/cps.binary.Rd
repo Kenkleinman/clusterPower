@@ -6,8 +6,9 @@
 \usage{
 cps.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
   p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL,
-  sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = "glmm",
-  quiet = TRUE, all.sim.data = FALSE, seed = NA, irgtt = FALSE)
+  sigma_b_sq = NULL, sigma_b_sq2 = NULL, alpha = 0.05,
+  method = "glmm", quiet = TRUE, all.sim.data = FALSE, seed = NA,
+  irgtt = FALSE)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -26,11 +27,11 @@ cps.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
 
 \item{or.diff}{Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2}
 
-\item{sigma_b}{Between-cluster variance; if sigma_b2 is not specified, 
+\item{sigma_b_sq}{Between-cluster variance; if sigma_b_sq2 is not specified, 
 between cluster variances are assumed to be equal for both groups. Accepts numeric.
-If between cluster variances differ between treatment groups, sigma_b2 must also be specified:}
+If between cluster variances differ between treatment groups, sigma_b_sq2 must also be specified:}
 
-\item{sigma_b2}{Between-cluster variance for clusters in TREATMENT group}
+\item{sigma_b_sq2}{Between-cluster variance for clusters in TREATMENT group}
 
 \item{alpha}{Significance level; default = 0.05}
 
@@ -55,7 +56,7 @@ A list with the following components
   \item Significance level
   \item Vector containing user-defined cluster sizes
   \item Vector containing user-defined number of clusters
-  \item Data frame reporting sigma_b for each group
+  \item Data frame reporting sigma_b_sq for each group
   \item Vector containing expected difference in probabilities based on user inputs
   \item Data frame containing three estimates of ICC
   \item Data frame with columns: "Estimate" (Estimate of treatment effect for a given simulation), 
@@ -92,7 +93,7 @@ P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 \examples{
 \dontrun{
 binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.5,
-                        p2 = 0.2, sigma_b = 1, sigma_b2 = 1, alpha = 0.05, 
+                        p2 = 0.2, sigma_b_sq = 1, sigma_b_sq2 = 1, alpha = 0.05, 
                         method = 'glmm', all.sim.data = FALSE)
 }
 
