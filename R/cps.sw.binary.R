@@ -40,7 +40,7 @@
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
-#' @param opt Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'L-BFGS-B'.
+#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'L-BFGS-B'.
 #' 
 #' @return A list with the following components
 #' \itemize{
