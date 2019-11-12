@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-The clusterPower package calculates power using analytical and simulation approaches for a wide range of cluster-randomized trial designs:
+The clusterPower package calculates power using analytical and/or simulation approaches for a wide range of cluster-randomized trial designs:
 
 1. Simple two-arm comparison designs
 2. Difference in difference designs
@@ -25,19 +25,20 @@ The clusterPower package calculates power using analytical and simulation approa
 4. Stepped wedge designs
 5. Multi-arm trial designs 
 
-Cluster-randomized trials are a common clinical trial design, often even a required design for study validity. Investigators may choose cluster randomization design for convenience, for practical reasons, or from statistical necessity. In cluster-randomized trials, subjects that are administratively grouped together are all randomized to the same study treatment. For example, all the patients of each clinic involved in a trial may be grouped within the same treatment or control arm. In this case, the clinic "cluster" is randomized to the treatment arm, which determines the treatment group of each participant therein.
+Cluster-randomized trials are a common clinical trial design, often even a required design for study validity. Investigators may choose cluster randomization design for convenience, for practical reasons, or from necessity. In cluster-randomized trials, subjects that are administratively grouped together are all randomized to the same study treatment. For example, all the patients of each clinic involved in a trial may be grouped within the same treatment or control arm. In this case, the clinic "cluster" is randomized to the treatment arm, which determines the treatment group of each participant who attends that clinic.
 
 "Statistical power" is usually defined as the probability of rejecting the null hypothesis given that some particular alternative hypothesis is true. All trials must have accurate power and sample size calculations for practical, economic, and ethical reasons---it is ethically unjustifiable to randomize more subjects than necessary to yield sufficient power, and equally unjustifiable to expose subjects to the potential for harm in an underpowered trial. 
 
 However, for cluster-randomized trials, power calculations are complex, relying on approximations, and/or on more assumptions than simpler designs and closed-form solutions may not exist. Many available routines are crude approximations, and few are available in free software or in webapps for people without highly technical statistical training. This document introduces you to clusterPower's basic set of tools, and shows you how to implement them with your trial design.
 
 #### ICC considerations
-  Investigators should proceed cautiously when transferring intracluster correlation coefficient (ICC) from previous studies. This statistic, commonly denoted as $\rho$, is---in general terms---a metric for assessing the impact of clustering in cluster randomized trials. The ICC represents the proportion of total variability due to cluster-level variability, in other words, the similarity of individuals within a clusters for the outcome. The equation for the ICC is $\sigma_{b}^2/(\sigma_{b}^2+\sigma^2) for normal outcomes, but different methods may be used to determine the ICC. In fact, the definition of ICC may vary depending on the setting and data structure, the model adopted, and the type of outcome. Notably, extrapolating sample size or power esimates using the ICC for observed dichotomous outcomes may be particularly fraught (@eldridge2009intra and @@gatsonis2017methods). Make sure you understand how previous investigators determined their ICC values before attempting to apply this measure in clusterPower.
+  Investigators should proceed cautiously when transferring intracluster correlation coefficient (ICC) from previous studies. This statistic, commonly denoted as $\rho$, is---in general terms---a metric for assessing the impact of clustering in cluster randomized trials. The ICC represents the proportion of total variability due to cluster-level variability. The equation for the ICC is $\sigma_{b}^2/(\sigma_{b}^2+\sigma^2)$ for normal outcomes. For other outcome distributions, e.g., for dichotomous outcomes, the definition of ICC may not be clear. Notably, extrapolating sample size or power esimates using the ICC for observed dichotomous outcomes may be particularly fraught (@eldridge2009intra and @@gatsonis2017methods).  For this reasor, we prefer to specificy models using natural parameters such as the variance of the random effects.  If you use the ICC for non-normal outcomes, make sure you understand how previous investigators determined their ICC values before applying their statistics in your calculations.
 
 ------------------------
+
 ### Outcome types
 
-This package is focused on calculating effect and sample size-related parameters for cluster randomized trials in which two or more interventions are compared with respect to continuous, binary, or categorical (poisson-distributed) outcomes. Incidence rate and time-to-event outcome variables are also potential outcome structures which may influence how effective sample size or cluster number is calculated. See @GAO201541 for more details on methodological approaches for different outcome types.
+This package is focused on calculating effect and sample size-related parameters for cluster randomized trials in which two or more interventions are compared with respect to continuous, binary, or count (Poisson-distributed) outcomes. Incidence rate and time-to-event outcome variables are also potential outcome structures which may influence how effective sample size or cluster number is calculated. See @GAO201541 for more details on methodological approaches for different outcome types.
 
 
 ### Analytic vs. simulation approaches
@@ -53,7 +54,7 @@ where $df=2(N-1)$, $\lambda=d/[2(1+(N-1)\rho))/MN]^{\frac{1}{2}}$, $d=(\mu_{1}-\
 
 (check definition of $M$, also shown as "cluster sizes")
 
-When clusters differ in size or the study outcome is non-normal, power can instead be estimated by simulation. The procedure entails simulating data under the alternative, evaluate whether the null hypothesis was rejected, and repeat, thereby the proportion of rejections observed is the estimate of power. As opposed to the analytic approach shown in the previous paragraph, a basic algorithm for assessing power for a normal outcome across two arms using a $K$-fold simulation approach is as follows:
+When clusters differ in size or the study outcome is non-normal, power can instead be estimated by simulation.  (Approximate analytic results may also exist.)  This procedure entails simulating data under the alternative, evaluating whether the null hypothesis was rejected, and repeating.  The proportion of rejections observed is an estimate of power. As opposed to the analytic approach shown in the previous paragraph, a basic algorithm for assessing power for a normal outcome across two arms using a $K$-fold simulation approach is as follows:
 
 1. Sample cluster sizes $M_{i}$
 2. Sample random effects $b_{i}$
@@ -63,7 +64,7 @@ When clusters differ in size or the study outcome is non-normal, power can inste
 4. Perform data analysis, record whether null hypothesis was rejected.
 5. Repeat previous steps $K$ times.
 
-Power is estimated by $\sum r_{k}/K$, where $r_{k}=1$ if the null was rejected in iteration $k$. The confidence interval (CI) for the simulated power approximation is calculated based on binomial distribution properties. The approach can be modified to accomidate poisson or dichotomous outcomes, and to adjust for differing cluster sizes, which poses an advantage of resampling methodology over some analytical approaches.
+Power is estimated by $\sum r_{k}/K$, where $r_{k}=1$ if the null was rejected in iteration $k$. The confidence interval (CI) for the simulated power approximation is calculated based on binomial distribution properties. The approach can be easily modified to accomidate Poisson or dichotomous outcomes, and to adjust for differing cluster sizes, which marks an advantage of resampling methodology over some analytical approaches.
   
 
  
@@ -71,11 +72,13 @@ Power is estimated by $\sum r_{k}/K$, where $r_{k}=1$ if the null was rejected i
 
 ## Simple two-arm comparison designs
 
+In a simple two-arm parallel design setting, our random effects model looks like this:
+
 \begin{equation}
 y_{itj}= \beta_{0}+x_{ij}\beta_{1}+b_{i}+e_{ij}
 \end{equation}
 
-where $i$ indicates a cluster, $j$ indicates a subject within the cluster, and $x_{ij}=1$ if subject $ij$ is in the treatment group and 0 if not.  The error term $e_{ij}$ is assumed to be distributed normal with mean = 0 and variance 2, while $b_{i}$, uncorrelated with $e_{ij}$, is assumed to be normal with mean 0 and variance $b_{2}$.  
+where $i$ indicates a cluster, $j$ indicates a subject within the cluster, and $x_{ij}=1$ if subject $ij$ is in the treatment group and 0 if not.  The error term $e_{ij}$ is assumed to be distributed normal with mean = 0 and variance $\sigma^2$, while $b_{i}$, uncorrelated with $e_{ij}$, is assumed to be normal with mean 0 and variance $\sigma_b^{2}$.  For assessing power by simulation, we determine whether $H_0: \beta_1=0$ is rejected or not.
 
 -----------------------
 
@@ -86,7 +89,9 @@ In this design, all clusters are observed in a baseline period, then some cluste
 y_{itj}= \beta_{0}+x_{itj}\beta_{1}+p_{itj}\beta_{2}+x_{itj}p_{itj}\beta_{3}+b_{i}+e_{ij}
 \end{equation}
 
-where $t$ indexes period (baseline or intervention) and $x_{itj}=1$ if cluster $i$ is in the treatment group and $p_{itj}=1$ if time $t$ is in the intervention period, and $0$ otherwise. Notably, $\beta_{3}$ is the difference in period effect in the treatment group relative to the non-treatment group.
+where $t$ indexes period (baseline or intervention) and $x_{itj}=1$ if cluster $i$ is in the treatment group and $p_{itj}=1$ if time $t$ is in the intervention period, and $0$ otherwise. Notably, $\beta_{3}$ is the difference in period effect in the treatment group relative to the non-treatment group.  For assessing power by simulation, we determine whether $H_0: \beta_3=0$ is rejected or not.
+
+NOTE TO KK-- ADD IN THE EXTRA RANDOM EFFECT FOR THE SECOND TIME POINT???
 
 -----------------------
 
@@ -98,15 +103,18 @@ In the other RCT designs discussed here, nesting of individuals within clusters 
 y_{ij}= \beta_{0}+x_{ij}\beta_{1}+x_{ij}b_{i1}+e_{ij}
 \end{equation}
 
-i.e., exactly as the simple two arm trial with different between-cluster variances per arm, except that the between-group variance in one arm may be 0, because there are no groups. $x_{ij}$ is included as a treatment indicator.
+i.e., exactly as the simple two arm trial with different between-cluster variances per arm, except that the between-group variance in one arm may be 0, because there are no groups. $x_{ij}$ is included as a treatment indicator.  As in the parallel treatment group design, for assessing power by simulation, we determine whether $H_0: \beta_1=0$ is rejected or not.
 
 -----------------------
 
 ## Stepped wedge designs
 
-In an SWT, participants in the treatment arm begin the intervention in groups at different times. Clusters typically switch from control to intervention only, with the intervention continued until the end of the study. The stepped wedge trial design is a type of cross-over trial in which clusters switch treatments in waves. Initially all the clusters recieve the same standard treatment, and at the end of the trial all of the clusters recieve the treatment of interest. More than one cluster can change treatments in a wave, but the order in which clusters change treatments is randomly determined. During each wave, the outcome of interest is assessed for all clusters.
+In an stepped wedge trial, all participants typically receive the intervention.  However, participants in the treatment arm begin the intervention in groups at different times, with the intervention continued until the end of the study. The stepped wedge trial design is a type of cross-over trial in which clusters switch treatments in waves. Initially all the clusters recieve the same standard treatment, and at the end of the trial all of the clusters recieve the treatment of interest. More than one cluster can change treatments in a wave, but the order in which clusters change treatments is randomly determined. During each wave, the outcome of interest is assessed for all clusters.
 
 (eqn) [see @hussey2007design].
+
+JM-- Please add equation!! And a statement about how we do simulation!
+
 
 
 -----------------------
@@ -118,6 +126,9 @@ Frequently investigators need to design trials with three, four, or more arms. F
 \begin{equation}
 y^{-1}(\mu_{ij})= \beta_{0}+x_{1ij}\beta_{1}+x_{2ij}\beta_{2}+...x_{(k-1)ij}\beta_{(k-1)}+b_{i}+e_{ij}
 \end{equation}
+
+Here, $x_{rij}$ is an indicator variable identifying whether subject $ij$ is in treatment group $r$ or not.  For assessing power by simulation, we determine whether $H_0: \beta_1= \beta_2= \cdots \beta_{k-1}=0$ is rejected or not, and we can also examine individual $\beta$s.
+
 
 
 -----------------------
