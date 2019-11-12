@@ -68,7 +68,7 @@ thereafter. On function execution stop, the actual power is printed in the
 stop message. Default = FALSE. When TRUE, this check is ignored and the 
 calculated power is returned regardless of value.}
 
-\item{opt}{Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'optim'.}
+\item{opt}{Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.}
 }
 \value{
 A list with the following components:
