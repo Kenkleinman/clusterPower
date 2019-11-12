@@ -20,11 +20,16 @@ type1ErrTest <- function(sigma_sq_, sigma_b_sq_, nsubjects_){
 
 #calculate the confidence intervals using binomial exact test
 confint.calc <- function(nsim = nsim, alpha = alpha,
-  p.val = p.val, names.power = names.power){
+  p.val = p.val, names.power = names.power) {
   sig.val <-  ifelse(p.val < alpha, 1, 0)
-  pval.power <- apply (sig.val, 2, FUN = sum)
+  if (isTRUE(is.data.frame(sig.val))) {
+    pval.power <- apply(sig.val, 2, FUN = sum)
+  }
+  if (isTRUE(is.vector(sig.val))) {
+    pval.power <- sum(sig.val)
+  }
   power.parms <- list()
-  for (q in 1:length(pval.power)){
+  for (q in 1:length(pval.power)) {
     power.parms[[q]] <- binom.test(p = 0.05, n = nsim, x = pval.power[q], 
                alternative = "two.sided")
   }

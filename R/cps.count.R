@@ -243,12 +243,6 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
         if(analysis == 'neg.binom'){
           my.mod = lme4::glmer.nb(y ~ trt + (1|clust), data = sim.dat)
         }
-        glmm.values = summary(my.mod)$coefficient
-        est.vector = append(est.vector, glmm.values['trt1', 'Estimate'])
-        se.vector = append(se.vector, glmm.values['trt1', 'Std. Error'])
-        stat.vector = append(stat.vector, glmm.values['trt1', 'z value'])
-        pval.vector = append(pval.vector, glmm.values['trt1', 'Pr(>|z|)'])  
-        fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
       } else {
         if(analysis == 'poisson'){
          # require("optimx")
@@ -329,11 +323,21 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
                            p.value = as.vector(unlist(pval.vector)))
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
+  
+  # Proportion of times P(>F)
+ # sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
+#  LRT.holder.abbrev <- sum(sig.LRT)
+  
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(power = round(pval.power, 3),
-                           lower.95.ci = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                           upper.95.ci = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
+  power.parms <- confint.calc(nsim = nsim, alpha = alpha,
+                              p.val = unlist(pval.vector), 
+                              names.power = "trt")
+  
+  # Calculate and store power estimate & confidence intervals
+ # pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
+#  power.parms = data.frame(power = round(pval.power, 3),
+#                           lower.95.ci = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
+#                           upper.95.ci = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
   # Create object containing inputs
   c1.c2.rr = round(exp(log(c1) - log(c2)), 3)
