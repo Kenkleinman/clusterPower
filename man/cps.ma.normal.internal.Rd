@@ -57,7 +57,7 @@ calculated power is returned regardless of value.}
 \item{tdist}{Logical; use t-distribution instead of normal distribution 
 for simulation values, default = FALSE.}
 
-\item{opt}{Option to fit with a different optimizer (using the package \textit{optimx}).}
+\item{opt}{Option to fit with a different optimizer (using the package \code{optimx}).}
 }
 \value{
 A list with the following components:

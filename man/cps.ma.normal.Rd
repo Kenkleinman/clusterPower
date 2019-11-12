@@ -79,7 +79,7 @@ for simulation values, default = FALSE.}
 the overall model comparisons, and the convergence report vector. This is equivalent
 to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.}
 
-\item{opt}{Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'optim'.}
+\item{opt}{Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.}
 }
 \value{
 A list with the following components:

@@ -71,7 +71,7 @@
 #' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
 #' the overall model comparisons, and the convergence report vector. This is equivalent
 #' to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.
-#' @param opt Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'optim'.
+#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{

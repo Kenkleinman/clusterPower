@@ -51,7 +51,7 @@
 #' calculated power is returned regardless of value. 
 #' @param tdist Logical; use t-distribution instead of normal distribution 
 #' for simulation values, default = FALSE.
-#' @param opt Option to fit with a different optimizer (using the package \textit{optimx}).
+#' @param opt Option to fit with a different optimizer (using the package \code{optimx}).
 #' @return A list with the following components:
 #' \describe{
 #'   \item{estimates}{List of \code{length(nsim)} containing gee- or glmm-fitted model 

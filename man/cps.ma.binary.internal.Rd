@@ -49,7 +49,7 @@ simulation values, default = FALSE.}
 \item{cores}{A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
 When this option is set to NA, no parallel computing is used.}
 
-\item{opt}{Option to fit with a different optimizer (using the package \textit{optimx}). Default is 'optim'.}
+\item{opt}{Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.}
 }
 \value{
 A list with the following components:
