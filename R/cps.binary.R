@@ -83,7 +83,8 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                         p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
                         sigma_b_sq = NULL, sigma_b_sq2 = NULL, alpha = 0.05, method = 'glmm', 
                       quiet = TRUE, all.sim.data = FALSE, seed = NA, irgtt = FALSE){
-  if (!is.na(seed)){
+
+    if (!is.na(seed)){
   set.seed(seed = seed)
   }
     # Create objects to collect iteration-specific values
@@ -377,12 +378,11 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                              Test.statistic = as.vector(unlist(stat.vector)),
                              p.value = as.vector(unlist(pval.vector)), 
                              converge = as.vector(unlist(converge.vector)))
-    cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
+    #cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
     
     # Calculate and store power estimate & confidence intervals
-    pval.power = sum(cps.model.est[, 'sig.val'])
     power.parms <- confint.calc(nsim = nsim, alpha = alpha,
-                                p.val = pval.power, names.power = "trt")
+                                p.val = cps.model.est[, 'p.value'], names.power = "trt")
     
     # Create object containing inputs
     p1.p2.or = round(p1 / (1 - p1) / (p2 / (1 - p2)), 3) 
