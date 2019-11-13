@@ -72,7 +72,7 @@
 #' @examples 
 #' \dontrun{
 #' binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.5,
-#'                         p2 = 0.2, sigma_b_sq = 1, sigma_b_sq2 = 1, alpha = 0.05, 
+#'                         p2 = 0.5, sigma_b_sq = 8, sigma_b_sq2 = 10, alpha = 0.05, 
 #'                         method = 'glmm', all.sim.data = FALSE)
 #' }
 #'
@@ -302,16 +302,17 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
         model.converge = try(my.mod)
         converge.ind = is.null(model.converge@optinfo$conv$lme4$messages)
         converge.vector = append(converge.vector, converge.ind)
-        if(converge.ind == FALSE){
+        if (!isTRUE(converge.ind)){
           model.id = paste0("Model ", length(converge.vector))
           warning.list[model.id] = list(model.converge@optinfo$conv$lme4$messages)
-        }
+        } else {
         glmm.values = summary(my.mod)$coefficient
         est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
         se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
         stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
         pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
         fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+        }
       }
       # Fit GEE (geeglm)
       if(method == 'gee'){
@@ -379,12 +380,9 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
     cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
     
     # Calculate and store power estimate & confidence intervals
-    # pval.data = subset(cps.model.est, converge == TRUE)
-    pval.data = cps.model.est[cps.model.est$converge == TRUE,]
-    pval.power = sum(pval.data[, 'sig.val']) / nrow(pval.data)
-    power.parms = data.frame(power = round(pval.power, 3),
-                             lower.95.ci = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                             upper.95.ci = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
+    pval.power = sum(cps.model.est[, 'sig.val'])
+    power.parms <- confint.calc(nsim = nsim, alpha = alpha,
+                                p.val = pval.power, names.power = "trt")
     
     # Create object containing inputs
     p1.p2.or = round(p1 / (1 - p1) / (p2 / (1 - p2)), 3) 
@@ -431,7 +429,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                                      "model.estimates" = cps.model.est, 
                                      "sim.data" = simulated.datasets, 
                                      "warning.list" = warning.list,
-                                     "convergence.error" = fail.vector), class = 'crtpwr')
+                                     "convergence.error" = ifelse(as.vector(unlist(cps.model.est['converge'])), 0, 1), class = 'crtpwr'))
     } else {
     complete.output = structure(list("overview" = summary.message, "nsim" = nsim, 
                                        "power" = power.parms, "method" = long.method, 
@@ -441,7 +439,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                                        "model.estimates" = cps.model.est, 
                                        "sim.data" = simulated.datasets, 
                                        "warning.list" = warning.list,
-                                       "convergence.error" = fail.vector), class = 'crtpwr')
+                                       "convergence.error" = ifelse(as.vector(unlist(cps.model.est['converge'])), 0, 1), class = 'crtpwr'))
     }
     return(complete.output)
     }

@@ -130,7 +130,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   }
   
   # Set cluster sizes for treatment arm (if not already specified)
-  if(length(nclusters) == 1){
+  if (length(nclusters) == 1){
     nclusters[2] = nclusters[1]
   }
   
@@ -231,18 +231,18 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   # Create simulation loop
   for(i in 1:nsim){
     # Generate between-cluster effects for non-treatment and treatment
-    randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq[1]))
-    randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq[2]))
+    randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq))
+    randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq2))
     
     # Create non-treatment y-value
     y0.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
-    y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma_sq[1]))))
+    y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma_sq))))
     y.0 = y0.bclust + y0.wclust
     
     # Create treatment y-value
     y1.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
     y1.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])], 
-                              function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma_sq[2]))))
+                              function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma_sq2))))
     y.1 = y1.bclust + y1.wclust
     
     # Create single response vector
@@ -432,7 +432,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   # Calculate and store power estimate & confidence intervals
   pval.power = sum(cps.model.est[, 'sig.val'])
   power.parms <- confint.calc(nsim = nsim, alpha = alpha,
-                              p.val = pval.power, names.power = names.power)
+                              p.val = pval.power, names.power = "trt")
 
   # Create object containing group-specific cluster sizes
   cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 
@@ -443,7 +443,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   
   # Create object containing group-specific variance parameters
   var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma_sq' = sigma_sq[1], 'sigma_b_sq' = sigma_b_sq[1]), 
-                           'Treatment' = c('ICC' = ICC[2], 'sigma_sq' = sigma_sq[2], 'sigma_b_sq' = sigma_b_sq[2])))
+                           'Treatment' = c('ICC' = ICC2, 'sigma_sq' = sigma_sq2, 'sigma_b_sq' = sigma_b_sq)))
   
   fail <- unlist(fail.vector)
   
