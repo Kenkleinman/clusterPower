@@ -87,7 +87,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
-  fail.vector = NULL
+  converge.vector = NULL
   simulated.datasets = list()
   start.time = Sys.time()
   
@@ -261,7 +261,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
       se.vector = append(se.vector, glmm.values['trt1', 'Std. Error'])
       stat.vector = append(stat.vector, glmm.values['trt1', 'z value'])
       pval.vector = append(pval.vector, glmm.values['trt1', 'Pr(>|z|)'])
-      fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+      converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
     }
     # Fit GEE (geeglm)
     if(method == 'gee'){
@@ -320,24 +320,14 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
                            Std.err = as.vector(unlist(se.vector)),
                            Test.statistic = as.vector(unlist(stat.vector)),
-                           p.value = as.vector(unlist(pval.vector)))
-  cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
-  
-  
-  # Proportion of times P(>F)
- # sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
-#  LRT.holder.abbrev <- sum(sig.LRT)
+                           p.value = as.vector(unlist(pval.vector)),
+                           converge = as.vector(unlist(converge.vector)))
   
   # Calculate and store power estimate & confidence intervals
+  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
   power.parms <- confint.calc(nsim = nsim, alpha = alpha,
-                              p.val = unlist(pval.vector), 
+                              p.val = cps.model.temp[, 'p.value'], 
                               names.power = "trt")
-  
-  # Calculate and store power estimate & confidence intervals
- # pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-#  power.parms = data.frame(power = round(pval.power, 3),
-#                           lower.95.ci = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-#                           upper.95.ci = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
   
   # Create object containing inputs
   c1.c2.rr = round(exp(log(c1) - log(c2)), 3)
@@ -369,7 +359,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
                                    "dist.parms" = dist.parms, "alpha" = alpha, "cluster.sizes" = cluster.sizes, 
                                    "n.clusters" = n.clusters, "variance.parms" = var.parms, "inputs" = inputs, 
                                    "model.estimates" = cps.model.est, "sim.data" = simulated.datasets,
-                                   "convergence.error" = fail.vector), 
+                                   "convergence" = converge.vector), 
                               class = 'crtpwr')
   
   return(complete.output)

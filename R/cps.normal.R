@@ -71,7 +71,7 @@
 #' @examples 
 #' \dontrun{
 #' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 9, difference = 10,
-#'                         ICC = 0.3, sigma_sq = 100,
+#'                         ICC = 0.3, sigma_sq = 20,
 #'                         alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
@@ -100,7 +100,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
-  fail.vector = NULL
+  converge.vector = NULL
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -275,7 +275,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
           se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
           stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
-          # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
         }
         
         if (sigma_sq==sigma_sq2 && sigma_b_sq!=sigma_b_sq2){
@@ -288,10 +288,10 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
           se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
           stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
           # option to stop the function early if fits are singular
           if (poor.fit.override==FALSE){
-            if(sum(fail.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+            if(sum(converge.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
           }
          }
         #if not IRGTT, then the following:
@@ -313,7 +313,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
           se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
           stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
-         # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
         }
         
         if (sigma_sq==sigma_sq2 && sigma_b_sq!=sigma_b_sq2){
@@ -326,10 +326,10 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
           se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
           stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
           # option to stop the function early if fits are singular
           if (poor.fit.override==FALSE){
-            if(sum(fail.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+            if(sum(converge.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
           }
          }
         
@@ -350,7 +350,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
           se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
           stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
-          # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
         }
         
         if (sigma_sq==sigma_sq2 && sigma_b_sq==sigma_b_sq2){
@@ -363,10 +363,10 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
           se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
           stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
           # option to stop the function early if fits are singular
           if (poor.fit.override==FALSE){
-            if(sum(fail.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+            if(sum(converge.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
           }
         } 
       }
@@ -426,14 +426,15 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
                            Std.err = as.vector(unlist(se.vector)),
                            Test.statistic = as.vector(unlist(stat.vector)),
-                           p.value = as.vector(unlist(pval.vector)))
-  cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
+                           p.value = as.vector(unlist(pval.vector)),
+                           converge = as.vector(unlist(converge.vector)))
   
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val'])
+  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
   power.parms <- confint.calc(nsim = nsim, alpha = alpha,
-                              p.val = pval.power, names.power = "trt")
-
+                              p.val = cps.model.temp[, 'p.value'], 
+                              names.power = c("trt"))
+  
   # Create object containing group-specific cluster sizes
   cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 
                        'Treatment' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
@@ -445,12 +446,12 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma_sq' = sigma_sq[1], 'sigma_b_sq' = sigma_b_sq[1]), 
                            'Treatment' = c('ICC' = ICC2, 'sigma_sq' = sigma_sq2, 'sigma_b_sq' = sigma_b_sq)))
   
-  fail <- unlist(fail.vector)
+  fail <- unlist(converge.vector)
   
   # Create list containing all output (class 'crtpwr') and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                   "inputs" = difference, "model.estimates" = cps.model.est, "convergence.error" = fail, "sim.data" = simulated.datasets), 
+                                   "inputs" = difference, "model.estimates" = cps.model.est, "convergence" = fail, "sim.data" = simulated.datasets), 
                               class = 'crtpwr')
   return(complete.output)
   }

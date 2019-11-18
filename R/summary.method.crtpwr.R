@@ -18,7 +18,7 @@ setMethod("summary",
         cat("   Treatment (n =", object[['n.clusters']][2], "):", format(object[['cluster.sizes']][[2]][1:10]), "...\n", sep = " ") 
       }
       cat("\nConvergence Errors:\n")
-      print(object[['convergence.error']])
+      print(object[['convergence']])
       cat(paste("\nMethod:", object[['method']], "\n"))
       cat("\n")
     }

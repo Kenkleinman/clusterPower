@@ -96,7 +96,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
     converge.vector = NULL
     icc2.vector = NULL
     lmer.icc.vector = NULL
-    fail.vector = NULL
+    converge.vector = NULL
     simulated.datasets = list()
     warning.list = list()
     start.time = Sys.time()
@@ -312,7 +312,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
         se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
         stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
         pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
-        fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+        converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
         }
       }
       # Fit GEE (geeglm)
@@ -378,11 +378,11 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                              Test.statistic = as.vector(unlist(stat.vector)),
                              p.value = as.vector(unlist(pval.vector)), 
                              converge = as.vector(unlist(converge.vector)))
-    #cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
-    
+
     # Calculate and store power estimate & confidence intervals
+    cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
     power.parms <- confint.calc(nsim = nsim, alpha = alpha,
-                                p.val = cps.model.est[, 'p.value'], names.power = "trt")
+                                p.val = cps.model.temp[, 'p.value'], names.power = "trt")
     
     # Create object containing inputs
     p1.p2.or = round(p1 / (1 - p1) / (p2 / (1 - p2)), 3) 
@@ -429,7 +429,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                                      "model.estimates" = cps.model.est, 
                                      "sim.data" = simulated.datasets, 
                                      "warning.list" = warning.list,
-                                     "convergence.error" = ifelse(as.vector(unlist(cps.model.est['converge'])), 0, 1), class = 'crtpwr'))
+                                     "convergence" = as.vector(unlist(cps.model.est['converge'])), 0, 1))
     } else {
     complete.output = structure(list("overview" = summary.message, "nsim" = nsim, 
                                        "power" = power.parms, "method" = long.method, 
@@ -439,7 +439,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                                        "model.estimates" = cps.model.est, 
                                        "sim.data" = simulated.datasets, 
                                        "warning.list" = warning.list,
-                                       "convergence.error" = ifelse(as.vector(unlist(cps.model.est['converge'])), 0, 1), class = 'crtpwr'))
+                                       "convergence" = as.vector(unlist(cps.model.est['converge'])), 0, 1))
     }
     return(complete.output)
     }
