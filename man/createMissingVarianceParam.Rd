@@ -4,8 +4,7 @@
 \alias{createMissingVarianceParam}
 \title{Calculates ICC, sigma_sq, or sigma_b_sq from the other 2 variables.}
 \usage{
-createMissingVarianceParam(ICC = NULL, sigma_sq = NULL,
-  sigma_b_sq = NULL)
+createMissingVarianceParam(ICC = NULL, sigma_sq = NULL, sigma_b_sq = NULL)
 }
 \arguments{
 \item{ICC}{Intra-cluster correlation coefficient; accepts a vector of length \code{narms} with values between 0 - 1.}

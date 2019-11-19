@@ -5,10 +5,22 @@
 \title{Power simulations for cluster-randomized trials: Individually randomized
 group treatment trial designs, count outcome.}
 \usage{
-cps.irgtt.count(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  c1 = NULL, c2 = NULL, c.diff = NULL, sigma_b_sq = 0,
-  sigma_b_sq2 = 0, family = "poisson", analysis = "poisson",
-  alpha = 0.05, quiet = FALSE, all.sim.data = FALSE, seed = NA)
+cps.irgtt.count(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  c1 = NULL,
+  c2 = NULL,
+  c.diff = NULL,
+  sigma_b_sq = 0,
+  sigma_b_sq2 = 0,
+  family = "poisson",
+  analysis = "poisson",
+  alpha = 0.05,
+  quiet = FALSE,
+  all.sim.data = FALSE,
+  seed = NA
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}

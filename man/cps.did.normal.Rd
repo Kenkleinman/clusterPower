@@ -4,10 +4,19 @@
 \alias{cps.did.normal}
 \title{Power simulations for cluster-randomized trials: Difference in Difference Design, Continuous Outcome.}
 \usage{
-cps.did.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  difference = NULL, sigma_sq = NULL, sigma_b_sq0 = NULL,
-  sigma_b_sq1 = 0, alpha = 0.05, method = "glmm", quiet = FALSE,
-  all.sim.data = FALSE)
+cps.did.normal(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  difference = NULL,
+  sigma_sq = NULL,
+  sigma_b_sq0 = NULL,
+  sigma_b_sq1 = 0,
+  alpha = 0.05,
+  method = "glmm",
+  quiet = FALSE,
+  all.sim.data = FALSE
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}

@@ -4,12 +4,23 @@
 \alias{cps.ma.count.internal}
 \title{Model fits for simulations for multi-arm designs with count outcome.}
 \usage{
-cps.ma.count.internal(nsim = 1000, str.nsubjects = NULL,
-  counts = NULL, family = "poisson", sigma_b_sq = NULL,
-  alpha = 0.05, quiet = FALSE, method = "glmm",
-  all.sim.data = FALSE, seed = NA, poor.fit.override = FALSE,
-  low.power.override = FALSE, tdist = FALSE, cores = cores,
-  opt = "optim")
+cps.ma.count.internal(
+  nsim = 1000,
+  str.nsubjects = NULL,
+  counts = NULL,
+  family = "poisson",
+  sigma_b_sq = NULL,
+  alpha = 0.05,
+  quiet = FALSE,
+  method = "glmm",
+  all.sim.data = FALSE,
+  seed = NA,
+  poor.fit.override = FALSE,
+  low.power.override = FALSE,
+  tdist = FALSE,
+  cores = cores,
+  opt = "optim"
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}

@@ -5,11 +5,23 @@
 \title{Power simulations for cluster-randomized trials: validating ICC, 
 sigma_sq, and sigma_b_sq inputs.}
 \usage{
-validateVariance(dist = NULL, difference = NULL, alpha = alpha,
-  ICC = ICC, sigma_sq = sigma_sq, sigma_b_sq = sigma_b_sq,
-  ICC2 = NA, sigma_sq2 = NA, sigma_b_sq2 = NA, method = method,
-  quiet = quiet, all.sim.data = all.sim.data,
-  poor.fit.override = poor.fit.override, cores = NA, probs = NA)
+validateVariance(
+  dist = NULL,
+  difference = NULL,
+  alpha = alpha,
+  ICC = ICC,
+  sigma_sq = sigma_sq,
+  sigma_b_sq = sigma_b_sq,
+  ICC2 = NA,
+  sigma_sq2 = NA,
+  sigma_b_sq2 = NA,
+  method = method,
+  quiet = quiet,
+  all.sim.data = all.sim.data,
+  poor.fit.override = poor.fit.override,
+  cores = NA,
+  probs = NA
+)
 }
 \arguments{
 \item{dist}{String indicating outcome distribution. Takes one of "norm", 

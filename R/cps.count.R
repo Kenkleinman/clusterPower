@@ -68,7 +68,7 @@
 #' \dontrun{
 #' count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 36, c1 = 100,
 #'                       c2 = 200, sigma_b_sq = 1, family = 'poisson', analysis = 'poisson',
-#'                       method = 'glmm', alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
+#'                       method = 'glmm', alpha = 0.05, quiet = FALSE, all.sim.data = FALSE)
 #' }
 #'
 #' @export

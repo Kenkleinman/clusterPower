@@ -4,10 +4,20 @@
 \alias{cps.sw.binary}
 \title{Power simulations for cluster-randomized trials: Stepped Wedge Design, Binary Outcome}
 \usage{
-cps.sw.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  p.ntrt = NULL, p.trt = NULL, steps = NULL, sigma_b_sq = NULL,
-  alpha = 0.05, method = "glmm", quiet = FALSE,
-  all.sim.data = FALSE, opt = "L-BFGS-B")
+cps.sw.binary(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  p.ntrt = NULL,
+  p.trt = NULL,
+  steps = NULL,
+  sigma_b_sq = NULL,
+  alpha = 0.05,
+  method = "glmm",
+  quiet = FALSE,
+  all.sim.data = FALSE,
+  opt = "L-BFGS-B"
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}

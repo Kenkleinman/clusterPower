@@ -5,11 +5,24 @@
 \title{Simulation-based power estimation for continuous outcome individually 
 randomized group treatment trials.}
 \usage{
-cps.irgtt.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  difference = NULL, ICC = NULL, sigma_sq = NULL, sigma_b_sq = 0,
-  ICC2 = ICC, sigma_sq2 = sigma_sq, sigma_b_sq2 = 0, alpha = 0.05,
-  method = "glmm", quiet = FALSE, all.sim.data = FALSE, seed = NA,
-  poor.fit.override = FALSE)
+cps.irgtt.normal(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  difference = NULL,
+  ICC = NULL,
+  sigma_sq = NULL,
+  sigma_b_sq = 0,
+  ICC2 = ICC,
+  sigma_sq2 = sigma_sq,
+  sigma_b_sq2 = 0,
+  alpha = 0.05,
+  method = "glmm",
+  quiet = FALSE,
+  all.sim.data = FALSE,
+  seed = NA,
+  poor.fit.override = FALSE
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}

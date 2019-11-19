@@ -4,10 +4,19 @@
 \alias{cps.sw.normal}
 \title{Power simulations for cluster-randomized trials: Stepped Wedge Design, Continuous Outcome.}
 \usage{
-cps.sw.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  difference = NULL, steps = NULL, sigma_sq = NULL,
-  sigma_b_sq = NULL, alpha = 0.05, method = "glmm", quiet = FALSE,
-  all.sim.data = FALSE)
+cps.sw.normal(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  difference = NULL,
+  steps = NULL,
+  sigma_sq = NULL,
+  sigma_b_sq = NULL,
+  alpha = 0.05,
+  method = "glmm",
+  quiet = FALSE,
+  all.sim.data = FALSE
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}

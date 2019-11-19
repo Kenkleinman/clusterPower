@@ -4,9 +4,19 @@
 \alias{cpa.binary}
 \title{Power calculations for simple cluster randomized trials, binary outcome}
 \usage{
-cpa.binary(alpha = 0.05, power = 0.8, n = NA, m = NA, CV = 0,
-  p1 = NA, p2 = NA, ICC = NA, pooled = FALSE, p1inc = TRUE,
-  tol = .Machine$double.eps^0.25)
+cpa.binary(
+  alpha = 0.05,
+  power = 0.8,
+  n = NA,
+  m = NA,
+  CV = 0,
+  p1 = NA,
+  p2 = NA,
+  ICC = NA,
+  pooled = FALSE,
+  p1inc = TRUE,
+  tol = .Machine$double.eps^0.25
+)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a

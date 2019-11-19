@@ -329,7 +329,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                         c("Sum Sq", "Mean Sq", "NumDF", "DenDF", "F value", "P(>F)")))
    
    # Proportion of times P(>F)
-   sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
+   sig.LRT <-  ifelse(LRT.holder[,3] < alpha, 1, 0)
    LRT.holder.abbrev <- sum(sig.LRT)
    
  # Calculate and store power estimate & confidence intervals
@@ -349,7 +349,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                               "overall.power" <- LRT.holder,
                               "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
                               "sim.data" <-  normal.ma.rct[[3]], 
-                              "failed.to.converge" <-  normal.ma.rct[[4]])
+                              "convergence" <-  normal.ma.rct[[4]])
    } 
    if (return.all.models == TRUE) {
      complete.output <-  list("power" <-  power.parms[-1,],
@@ -360,7 +360,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
      } else {
      complete.output <-  list("power" <-  power.parms[-1,],
                               "overall.power" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
-                              "proportion.failed.to.converge" <- normal.ma.rct[[3]])
+                              "convergence" <- normal.ma.rct[[3]])
    }
    return(complete.output)
  }
@@ -412,7 +412,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
      
      # Calculate and store power estimate & confidence intervals
      power.parms <- confint.calc(nsim = nsim, alpha = alpha,
-                                 p.val = LRT.holder[,3], names.power = names.power)
+                                 p.val = Pr, names.power = names.power)
      
      # Store GEE simulation output in data frame
      ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)

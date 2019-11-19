@@ -4,11 +4,24 @@
 \alias{cps.binary}
 \title{Power simulations for cluster-randomized trials: Simple Designs, Binary Outcome.}
 \usage{
-cps.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL,
-  sigma_b_sq = NULL, sigma_b_sq2 = NULL, alpha = 0.05,
-  method = "glmm", quiet = TRUE, all.sim.data = FALSE, seed = NA,
-  irgtt = FALSE)
+cps.binary(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  p1 = NULL,
+  p2 = NULL,
+  or1 = NULL,
+  or2 = NULL,
+  or.diff = NULL,
+  sigma_b_sq = NULL,
+  sigma_b_sq2 = NULL,
+  alpha = 0.05,
+  method = "glmm",
+  quiet = TRUE,
+  all.sim.data = FALSE,
+  seed = NA,
+  irgtt = FALSE
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -92,8 +105,8 @@ P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 }
 \examples{
 \dontrun{
-binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.5,
-                        p2 = 0.2, sigma_b_sq = 1, sigma_b_sq2 = 1, alpha = 0.05, 
+binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.8,
+                        p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
                         method = 'glmm', all.sim.data = FALSE)
 }
 

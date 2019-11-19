@@ -4,12 +4,25 @@
 \alias{cps.normal}
 \title{Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.}
 \usage{
-cps.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  difference = NULL, ICC = NULL, sigma_sq = NULL,
-  sigma_b_sq = NULL, ICC2 = NULL, sigma_sq2 = NULL,
-  sigma_b_sq2 = NULL, alpha = 0.05, method = "glmm", quiet = FALSE,
-  all.sim.data = FALSE, seed = NA, poor.fit.override = FALSE,
-  irgtt = FALSE)
+cps.normal(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  difference = NULL,
+  ICC = NULL,
+  sigma_sq = NULL,
+  sigma_b_sq = NULL,
+  ICC2 = NULL,
+  sigma_sq2 = NULL,
+  sigma_b_sq2 = NULL,
+  alpha = 0.05,
+  method = "glmm",
+  quiet = FALSE,
+  all.sim.data = FALSE,
+  seed = NA,
+  poor.fit.override = FALSE,
+  irgtt = FALSE
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -99,8 +112,8 @@ and simulated data set output may also be specified.
 }
 \examples{
 \dontrun{
-normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 9, difference = 10,
-                        ICC = 0.3, sigma_sq = 100,
+normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 9, difference = 3.75,
+                        ICC = 0.3, sigma_sq = 20,
                         alpha = 0.05, method = 'glmm', 
                         quiet = FALSE, all.sim.data = FALSE)
 }

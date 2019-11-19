@@ -4,11 +4,24 @@
 \alias{cps.count}
 \title{Power simulations for cluster-randomized trials: Simple Designs, Count Outcome.}
 \usage{
-cps.count(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  c1 = NULL, c2 = NULL, c.diff = NULL, sigma_b_sq = NULL,
-  sigma_b_sq2 = NULL, family = "poisson", analysis = "poisson",
-  method = "glmm", alpha = 0.05, quiet = FALSE,
-  all.sim.data = FALSE, irgtt = FALSE, seed = NA)
+cps.count(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  c1 = NULL,
+  c2 = NULL,
+  c.diff = NULL,
+  sigma_b_sq = NULL,
+  sigma_b_sq2 = NULL,
+  family = "poisson",
+  analysis = "poisson",
+  method = "glmm",
+  alpha = 0.05,
+  quiet = FALSE,
+  all.sim.data = FALSE,
+  irgtt = FALSE,
+  seed = NA
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -90,7 +103,7 @@ while the function is running.
 \dontrun{
 count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 36, c1 = 100,
                       c2 = 200, sigma_b_sq = 1, family = 'poisson', analysis = 'poisson',
-                      method = 'glmm', alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
+                      method = 'glmm', alpha = 0.05, quiet = FALSE, all.sim.data = FALSE)
 }
 
 }

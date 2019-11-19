@@ -4,11 +4,23 @@
 \alias{cps.did.binary}
 \title{Power simulations for cluster-randomized trials: Difference in Difference, Binary Outcome.}
 \usage{
-cps.did.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  p.diff = NULL, p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL,
-  or.diff = NULL, sigma_b_sq0 = NULL, sigma_b_sq1 = 0,
-  alpha = 0.05, method = "glmm", quiet = TRUE,
-  all.sim.data = FALSE)
+cps.did.binary(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  p.diff = NULL,
+  p1 = NULL,
+  p2 = NULL,
+  or1 = NULL,
+  or2 = NULL,
+  or.diff = NULL,
+  sigma_b_sq0 = NULL,
+  sigma_b_sq1 = 0,
+  alpha = 0.05,
+  method = "glmm",
+  quiet = TRUE,
+  all.sim.data = FALSE
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}

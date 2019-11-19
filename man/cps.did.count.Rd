@@ -4,11 +4,22 @@
 \alias{cps.did.count}
 \title{Power simulations for cluster-randomized trials: Difference in Difference, Count Outcome.}
 \usage{
-cps.did.count(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  c1 = NULL, c2 = NULL, c.diff = NULL, sigma_b_sq0 = NULL,
-  sigma_b_sq1 = 0, family = "poisson", analysis = "poisson",
-  method = "glmm", alpha = 0.05, quiet = FALSE,
-  all.sim.data = FALSE)
+cps.did.count(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  c1 = NULL,
+  c2 = NULL,
+  c.diff = NULL,
+  sigma_b_sq0 = NULL,
+  sigma_b_sq1 = 0,
+  family = "poisson",
+  analysis = "poisson",
+  method = "glmm",
+  alpha = 0.05,
+  quiet = FALSE,
+  all.sim.data = FALSE
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}

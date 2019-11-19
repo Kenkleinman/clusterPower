@@ -4,11 +4,22 @@
 \alias{cps.sw.count}
 \title{Power simulations for cluster-randomized trials: Stepped Wedge Design, Count Outcome}
 \usage{
-cps.sw.count(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  c.ntrt = NULL, c.trt = NULL, steps = NULL, sigma_b_sq = NULL,
-  alpha = 0.05, family = "poisson", analysis = "poisson",
-  method = "glmm", quiet = FALSE, all.sim.data = FALSE,
-  opt = "L-BFGS-B")
+cps.sw.count(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  c.ntrt = NULL,
+  c.trt = NULL,
+  steps = NULL,
+  sigma_b_sq = NULL,
+  alpha = 0.05,
+  family = "poisson",
+  analysis = "poisson",
+  method = "glmm",
+  quiet = FALSE,
+  all.sim.data = FALSE,
+  opt = "L-BFGS-B"
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}

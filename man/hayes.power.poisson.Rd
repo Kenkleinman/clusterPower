@@ -5,8 +5,15 @@
 \title{An implementation of power calculations for cluster-randomized study based
 on the coefficient of variation.}
 \usage{
-hayes.power.poisson(n.clusters, period.effect, btw.clust.var,
-  at.risk.params, cluster.size, effect.size, alpha = 0.05)
+hayes.power.poisson(
+  n.clusters,
+  period.effect,
+  btw.clust.var,
+  at.risk.params,
+  cluster.size,
+  effect.size,
+  alpha = 0.05
+)
 }
 \arguments{
 \item{n.clusters}{number of clusters}

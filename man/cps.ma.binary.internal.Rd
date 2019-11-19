@@ -4,11 +4,22 @@
 \alias{cps.ma.binary.internal}
 \title{Model fits for simulations for multi-arm designs with dichotomous outcome.}
 \usage{
-cps.ma.binary.internal(nsim = 1000, str.nsubjects = NULL,
-  probs = NULL, sigma_b_sq = NULL, alpha = 0.05, quiet = FALSE,
-  method = "glmm", all.sim.data = FALSE, seed = NA,
-  poor.fit.override = FALSE, low.power.override = FALSE,
-  tdist = FALSE, cores = cores, opt = "optim")
+cps.ma.binary.internal(
+  nsim = 1000,
+  str.nsubjects = NULL,
+  probs = NULL,
+  sigma_b_sq = NULL,
+  alpha = 0.05,
+  quiet = FALSE,
+  method = "glmm",
+  all.sim.data = FALSE,
+  seed = NA,
+  poor.fit.override = FALSE,
+  low.power.override = FALSE,
+  tdist = FALSE,
+  cores = cores,
+  opt = "optim"
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}

@@ -5,12 +5,25 @@
 \title{Simulation-based power estimation for binary outcome multi-arm 
 cluster-randomized trials.}
 \usage{
-cps.ma.binary(nsim = 1000, nsubjects = NULL, narms = NULL,
-  nclusters = NULL, probs = NULL, sigma_b_sq = NULL, alpha = 0.05,
-  quiet = FALSE, method = "glmm", multi.p.method = "bonferroni",
-  all.sim.data = FALSE, seed = NA, cores = NA, tdist = FALSE,
-  poor.fit.override = FALSE, low.power.override = FALSE,
-  opt = "optim")
+cps.ma.binary(
+  nsim = 1000,
+  nsubjects = NULL,
+  narms = NULL,
+  nclusters = NULL,
+  probs = NULL,
+  sigma_b_sq = NULL,
+  alpha = 0.05,
+  quiet = FALSE,
+  method = "glmm",
+  multi.p.method = "bonferroni",
+  all.sim.data = FALSE,
+  seed = NA,
+  cores = NA,
+  tdist = FALSE,
+  poor.fit.override = FALSE,
+  low.power.override = FALSE,
+  opt = "optim"
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}

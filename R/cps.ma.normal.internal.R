@@ -62,10 +62,9 @@
 #'   data frames, each containing three columns: "y" (Simulated response value),  
 #'                   "trt" (Indicator for treatment group), and 
 #'                   "clust" (Indicator for cluster).}
-#'   \item{failed.to.converge}{A vector of length \code{nsim} consisting of 1 and 0 
-#'   (when all.sim.data = TRUE) or a string (when all.sim.data = FALSE) 
+#'   \item{converged}{A logical vector of length \code{nsim} (when all.sim.data = TRUE) or a string (when all.sim.data = FALSE) 
 #'   indicating the percent of model fits that produced a "singular fit" or "failed to converge" warning message;
-#'           When a model fails to converge, failed.to.converge == 1, otherwise 0.}
+#'           When a model fails to converge, failed.to.converge == FALSE, otherwise TRUE.}
 #' }
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}, Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @examples 
@@ -114,7 +113,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                          total = nsim, clear = FALSE, width = 100)
   
   # This container keeps track of how many models failed to converge
-  fail <- rep(NA, nsim)
+  converge.vector <- rep(NA, nsim)
   
   # Create a container for the simulated.dataset and model output
   sim.dat = vector(mode = "list", length = nsim)
@@ -219,7 +218,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
           if (i == 1){
             if (opt == "auto"){
               require("optimx")
-              goodopt <- optimizerSearch(my.mod)
+              goodopt <- clusterPower::optimizerSearch(my.mod)
 
             } else {
               goodopt <- opt
@@ -241,9 +240,9 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         # get the overall p-values (>Chisq)
         null.mod <- update.formula(my.mod, y ~ 1 + (1+as.factor(trt)|clust))
         # option to stop the function early if fits are singular
-        fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
+        converge.vector[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) 
         if (poor.fit.override==FALSE){
-          if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+          if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
         }
       }
       
@@ -272,7 +271,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
           if (!isTRUE(class(my.mod) == "nlme")){
             if (opt == "auto"){
               require("optimx")
-              goodopt <- optimizerSearch(my.mod)
+              goodopt <- clusterPower::optimizerSearch(my.mod)
             } else {
               goodopt <- opt
             }
@@ -284,9 +283,9 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         # get the overall p-values (>Chisq)
         null.mod <- update.formula(my.mod, y ~ 1 + (1|clust))
         # option to stop the function early if fits are singular
-        fail[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) 
+        converge.vector[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) 
         if (poor.fit.override==FALSE){
-          if(sum(fail, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+          if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
         }
       } 
       
@@ -336,11 +335,11 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     complete.output.internal <-  list("estimates" = model.values,
                                       "model.comparisons" = try(model.compare),
                                       "sim.data" = sim.dat,
-                                      "failed.to.converge"= fail)
+                                      "converged" = converge.vector)
   } else {
     complete.output.internal <-  list("estimates" = model.values,
                                       "model.comparisons" = try(model.compare),
-                                    "failed.to.converge" =  paste((sum(fail)/nsim)*100, "% did not converge", sep=""))
+                                    "converged" =  paste((sum(isTRUE(converge.vector))/nsim)*100, "% did not converge", sep=""))
   }
   
   # turn off parallel computing

@@ -5,11 +5,23 @@
 \title{Runs and returns simulations and model fits for multi-arm 
 cluster-randomized trials with continuous outcome.}
 \usage{
-cps.ma.normal.internal(nsim = 1000, str.nsubjects = NULL,
-  means = NULL, sigma_sq = NULL, sigma_b_sq = NULL, alpha = 0.05,
-  quiet = FALSE, method = "glmm", all.sim.data = FALSE, seed = NA,
-  cores = "all", poor.fit.override = FALSE,
-  low.power.override = FALSE, tdist = FALSE, opt = "optim")
+cps.ma.normal.internal(
+  nsim = 1000,
+  str.nsubjects = NULL,
+  means = NULL,
+  sigma_sq = NULL,
+  sigma_b_sq = NULL,
+  alpha = 0.05,
+  quiet = FALSE,
+  method = "glmm",
+  all.sim.data = FALSE,
+  seed = NA,
+  cores = "all",
+  poor.fit.override = FALSE,
+  low.power.override = FALSE,
+  tdist = FALSE,
+  opt = "optim"
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -70,10 +82,9 @@ A list with the following components:
   data frames, each containing three columns: "y" (Simulated response value),  
                   "trt" (Indicator for treatment group), and 
                   "clust" (Indicator for cluster).}
-  \item{failed.to.converge}{A vector of length \code{nsim} consisting of 1 and 0 
-  (when all.sim.data = TRUE) or a string (when all.sim.data = FALSE) 
+  \item{converged}{A logical vector of length \code{nsim} (when all.sim.data = TRUE) or a string (when all.sim.data = FALSE) 
   indicating the percent of model fits that produced a "singular fit" or "failed to converge" warning message;
-          When a model fails to converge, failed.to.converge == 1, otherwise 0.}
+          When a model fails to converge, failed.to.converge == FALSE, otherwise TRUE.}
 }
 }
 \description{

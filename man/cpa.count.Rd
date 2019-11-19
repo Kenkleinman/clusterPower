@@ -4,8 +4,17 @@
 \alias{cpa.count}
 \title{Power calculations for simple cluster randomized trials, count outcome}
 \usage{
-cpa.count(alpha = 0.05, power = 0.8, n = NA, m = NA, r1 = NA,
-  r2 = NA, CV = NA, r1inc = TRUE, tol = .Machine$double.eps^0.25)
+cpa.count(
+  alpha = 0.05,
+  power = 0.8,
+  n = NA,
+  m = NA,
+  r1 = NA,
+  r2 = NA,
+  CV = NA,
+  r1inc = TRUE,
+  tol = .Machine$double.eps^0.25
+)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a

@@ -71,8 +71,8 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.5,
-#'                         p2 = 0.5, sigma_b_sq = 8, sigma_b_sq2 = 10, alpha = 0.05, 
+#' binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.8,
+#'                         p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
 #'                         method = 'glmm', all.sim.data = FALSE)
 #' }
 #'
@@ -312,7 +312,6 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
         se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
         stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
         pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
-        converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
         }
       }
       # Fit GEE (geeglm)
@@ -326,7 +325,6 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
         se.vector = append(se.vector, gee.values['trt', 'Std.err'])
         stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
         pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
-        converge.vector = append(converge.vector, TRUE)
       }
       
       # Update simulation progress information
@@ -350,7 +348,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
       Sys.sleep(1/100)
       
       # Governor to prevent infinite non-convergence loop
-      converge.ratio = sum(converge.vector == FALSE) / sum(converge.vector == TRUE)
+      converge.ratio <- sum(converge.vector == FALSE) / sum(converge.vector == TRUE)
       if(converge.ratio > 4.0 && converge.ratio != Inf){
         stop("WARNING! The number of non-convergent models exceeds the number of convergent models by a factor of 4. Consider reducing sigma_b_sq")
       }
@@ -429,7 +427,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                                      "model.estimates" = cps.model.est, 
                                      "sim.data" = simulated.datasets, 
                                      "warning.list" = warning.list,
-                                     "convergence" = as.vector(unlist(cps.model.est['converge'])), 0, 1))
+                                     "convergence" = converge.vector))
     } else {
     complete.output = structure(list("overview" = summary.message, "nsim" = nsim, 
                                        "power" = power.parms, "method" = long.method, 
@@ -439,7 +437,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                                        "model.estimates" = cps.model.est, 
                                        "sim.data" = simulated.datasets, 
                                        "warning.list" = warning.list,
-                                       "convergence" = as.vector(unlist(cps.model.est['converge'])), 0, 1))
+                                       "convergence" = convergence.vector))
     }
     return(complete.output)
     }

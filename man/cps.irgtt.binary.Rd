@@ -5,9 +5,19 @@
 \title{Simulation-based power estimation for binary outcome individually 
 randomized group treatment trials.}
 \usage{
-cps.irgtt.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  p1 = NULL, p2 = NULL, sigma_b_sq = 0, sigma_b_sq2 = 0,
-  alpha = 0.05, quiet = TRUE, all.sim.data = FALSE, seed = NA)
+cps.irgtt.binary(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  p1 = NULL,
+  p2 = NULL,
+  sigma_b_sq = 0,
+  sigma_b_sq2 = 0,
+  alpha = 0.05,
+  quiet = TRUE,
+  all.sim.data = FALSE,
+  seed = NA
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}

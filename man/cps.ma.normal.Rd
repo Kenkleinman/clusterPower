@@ -5,13 +5,28 @@
 \title{Simulation-based power estimation for continuous outcome multi-arm 
 cluster-randomized trials.}
 \usage{
-cps.ma.normal(nsim = 1000, nsubjects = NULL, narms = NULL,
-  nclusters = NULL, means = NULL, sigma_sq = NULL,
-  sigma_b_sq = NULL, alpha = 0.05, quiet = FALSE, ICC = NULL,
-  method = "glmm", multi.p.method = "bonferroni",
-  all.sim.data = FALSE, seed = NA, cores = NULL,
-  poor.fit.override = FALSE, low.power.override = FALSE,
-  tdist = FALSE, return.all.models = FALSE, opt = "optim")
+cps.ma.normal(
+  nsim = 1000,
+  nsubjects = NULL,
+  narms = NULL,
+  nclusters = NULL,
+  means = NULL,
+  sigma_sq = NULL,
+  sigma_b_sq = NULL,
+  alpha = 0.05,
+  quiet = FALSE,
+  ICC = NULL,
+  method = "glmm",
+  multi.p.method = "bonferroni",
+  all.sim.data = FALSE,
+  seed = NA,
+  cores = NULL,
+  poor.fit.override = FALSE,
+  low.power.override = FALSE,
+  tdist = FALSE,
+  return.all.models = FALSE,
+  opt = "optim"
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}

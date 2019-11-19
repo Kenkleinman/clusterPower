@@ -4,9 +4,18 @@
 \alias{crtpwr.2propD}
 \title{Power calculations for  difference-in-difference cluster randomized trials, binary outcome}
 \usage{
-crtpwr.2propD(alpha = 0.05, power = 0.8, nclusters = NA,
-  nsubjects = NA, p = NA, d = NA, icc = NA, rho_c = NA,
-  rho_s = NA, tol = .Machine$double.eps^0.25)
+crtpwr.2propD(
+  alpha = 0.05,
+  power = 0.8,
+  nclusters = NA,
+  nsubjects = NA,
+  p = NA,
+  d = NA,
+  icc = NA,
+  rho_c = NA,
+  rho_s = NA,
+  tol = .Machine$double.eps^0.25
+)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a
