@@ -111,7 +111,7 @@
 #'   Vector of length \code{nsim} denoting whether 
 #'   or not a simulation glmm fit triggered a "singular fit" 
 #'   or "non-convergence" error, produced only when 
-#'   method == "glmm" & all.sim.data==TRUE.
+#'   method = "glmm" & all.sim.data=TRUE.
 #'   }
 #'   }
 #'          
@@ -144,13 +144,13 @@
 #' }
 #' multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
 #'                                   nclusters = 10, nsubjects = 25, 
-#'                                   means = c(22.1, 21, 22.5),
+#'                                   means = c(22.0, 21.5, 22.3),
 #'                                   sigma_sq = 1, 
 #'                                   sigma_b_sq = 1, alpha = 0.05,
 #'                                   quiet = FALSE, ICC=NULL, method = 'glmm',
 #'                                   all.sim.data = FALSE, seed = 123,
 #'                                   poor.fit.override = TRUE, cores="all",
-#'                                   opt = "auto")
+#'                                   opt = "auto", low.power.override = TRUE)
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
 #'   and Ken Kleinman (\email{ken.kleinman@@gmail.com})
@@ -329,7 +329,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                         c("Sum Sq", "Mean Sq", "NumDF", "DenDF", "F value", "P(>F)")))
    
    # Proportion of times P(>F)
-   sig.LRT <-  ifelse(LRT.holder[,3] < alpha, 1, 0)
+   sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
    LRT.holder.abbrev <- sum(sig.LRT)
    
  # Calculate and store power estimate & confidence intervals

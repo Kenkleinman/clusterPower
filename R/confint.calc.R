@@ -17,7 +17,6 @@
 #' 
 #' @export
 
-
 confint.calc <- function(nsim = nsim, alpha = alpha,
                          p.val = p.val, names.power = names.power) {
   sig.val <-  ifelse(p.val < alpha, 1, 0)
