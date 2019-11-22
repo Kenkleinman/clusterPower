@@ -136,7 +136,7 @@ A list with the following components:
   Vector of length \code{nsim} denoting whether 
   or not a simulation glmm fit triggered a "singular fit" 
   or "non-convergence" error, produced only when 
-  method == "glmm" & all.sim.data==TRUE.
+  method = "glmm" & all.sim.data=TRUE.
   }
   }
 }
@@ -184,7 +184,7 @@ multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.exampl
                        
  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
                                    nclusters = c (10,11,10), nsubjects = 100,
-                                   means = c(21, 21, 21.4),
+                                   means = c(22.0, 21.2, 21.4),
                                    sigma_sq = c(1,1,.9), 
                                    sigma_b_sq = c(.1,.15,.1), alpha = 0.05,
                                    quiet = FALSE, ICC=NULL, method = 'glmm',
@@ -195,13 +195,13 @@ multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.exampl
 }
 multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
                                   nclusters = 10, nsubjects = 25, 
-                                  means = c(22.1, 21, 22.5),
-                                  sigma_sq = 1, 
-                                  sigma_b_sq = 1, alpha = 0.05,
+                                  means = c(22.0, 21.0, 22.5),
+                                  sigma_sq = .1, 
+                                  sigma_b_sq = .1, alpha = 0.05,
                                   quiet = FALSE, ICC=NULL, method = 'glmm',
                                   all.sim.data = FALSE, seed = 123,
                                   poor.fit.override = TRUE, cores="all",
-                                  opt = "auto")
+                                  opt = "auto", low.power.override = TRUE)
 
 }
 \author{
