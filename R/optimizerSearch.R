@@ -20,6 +20,9 @@ optimizerSearch <- function(model){
   diff_optims <- try(lme4::allFit(model, maxfun = 1e5, 
     parallel = 'multicore', 
     ncpus = parallel::detectCores()))
+  if (class(diff_optims) == "try-error"){
+    stop("optimizerSearch is not compatible with this model structure.")
+  }
   is.OK <- sapply(diff_optims, is, "merMod")
   diff_optims.OK <- diff_optims[is.OK]
   convergence_results <- lapply(diff_optims.OK, 

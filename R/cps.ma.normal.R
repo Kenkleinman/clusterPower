@@ -145,12 +145,12 @@
 #' multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
 #'                                   nclusters = 10, nsubjects = 25, 
 #'                                   means = c(22.0, 21.0, 22.5),
-#'                                   sigma_sq = .1, 
-#'                                   sigma_b_sq = .1, alpha = 0.05,
+#'                                   sigma_sq = 1, 
+#'                                   sigma_b_sq = 1, alpha = 0.05,
 #'                                   quiet = FALSE, ICC=NULL, method = 'glmm',
 #'                                   all.sim.data = FALSE, seed = 123,
 #'                                   poor.fit.override = TRUE, cores="all",
-#'                                   opt = "auto", low.power.override = TRUE)
+#'                                   opt = "auto")
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
 #'   and Ken Kleinman (\email{ken.kleinman@@gmail.com})
