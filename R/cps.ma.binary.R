@@ -286,8 +286,6 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     }
     
     # Calculate and store power estimate & confidence intervals
-      sig.val <-  ifelse(p.val < alpha, 1, 0)
-      pval.power <- apply(sig.val, 2, sum)
       power.parms <- confint.calc(nsim = nsim, alpha = alpha,
                                   p.val = p.val, names.power = names.power)
 
@@ -396,15 +394,16 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
       complete.output <-  list("power" <-  power.parms[-1,],
                                "model.estimates" <-  ma.model.est, 
                                "overall.power" <- LRT.holder,
-                               "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
-                                                                         LRT.holder.abbrev=LRT.holder.abbrev),
+                               "overall.power2" <- try(prop_H0_rejection(alpha = alpha, nsim = nsim, 
+                                                                         LRT.holder.abbrev = LRT.holder.abbrev),
                                "sim.data" <-  binary.ma.rct[[3]]))
     } else {
     complete.output <-  list("power" <-  power.parms[-1,],
                              "model.estimates" <-  ma.model.est, 
                              "overall.power" <- LRT.holder,
-                             "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
-                                                                       LRT.holder.abbrev=LRT.holder.abbrev)))
+                             "overall.power2" <- try(prop_H0_rejection(alpha = alpha, 
+                               nsim = nsim, 
+                               LRT.holder.abbrev = LRT.holder.abbrev)))
   }# end of return options
     # assign special class
     class(complete.output) <- c("multiarm", "list")

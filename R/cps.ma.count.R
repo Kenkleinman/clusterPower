@@ -374,8 +374,6 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
     LRT.holder.abbrev <- sum(sig.LRT)/nsim
     
     # Calculate and store power estimate & confidence intervals
-    sig.val <-  ifelse(Pr < alpha, 1, 0)
-    pval.power <- apply (sig.val, 2, FUN=function(x) {sum(x, na.rm=TRUE)/nsim})
     power.parms <- confint.calc(nsim = nsim, alpha = alpha,
                                 p.val = p.val, names.power = names.power)
     

@@ -25,7 +25,7 @@ cps.ma.normal(
   low.power.override = FALSE,
   tdist = FALSE,
   return.all.models = FALSE,
-  opt = "optim"
+  opt = "nloptwrap"
 )
 }
 \arguments{
@@ -94,7 +94,7 @@ for simulation values, default = FALSE.}
 the overall model comparisons, and the convergence report vector. This is equivalent
 to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.}
 
-\item{opt}{Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.}
+\item{opt}{Option to fit with a different optimizer (using the package \code{optimx}). Default is 'nloptwrap'.}
 }
 \value{
 A list with the following components:
@@ -102,7 +102,9 @@ A list with the following components:
   \item{power}{
   Data frame with columns "Power" (Estimated statistical power), 
                "lower.95.ci" (Lower 95\% confidence interval bound), 
-               "upper.95.ci" (Upper 95\% confidence interval bound).
+               "upper.95.ci" (Upper 95\% confidence interval bound). 
+               Note that non-convergent models are returned for review, 
+               but not included in this calculation.
                }
   \item{model.estimates}{
   Produced only when all.sim.data=TRUE, data frame with columns 
@@ -119,7 +121,7 @@ A list with the following components:
   results.
   }
   \item{overall.power.summary}{
-  Overall power of model compared to H0.
+  Overall power of model compared to H0. Omits non-convergent models.
   }
   \item{simulated.data}{
   List of \code{nsim} data frames, each containing: 
@@ -168,40 +170,41 @@ examples provided below for a demonstration of the various input options.
 }
 \examples{
 \dontrun{
-nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-means.example <- c(22, 21, 21.5)
-sigma_sq.example <- c(1, 1, 0.9)
+nsubjects.example <- list(c(200,200,200,250), c(150, 200, 200, 210), 
+c(170, 200, 210))
+means.example <- c(0, 21, 21.5)
+sigma_sq.example <- c(1, 1.2, 0.9)
 sigma_b_sq.example <- c(0.1, 0.15, 0.1)
 
 multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.example, 
                        means = means.example, sigma_sq = sigma_sq.example, 
                        sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
                        quiet = FALSE, ICC=NULL, method = 'glmm', 
-                       all.sim.data = FALSE,
+                       all.sim.data = TRUE,
                        seed = 123, cores = "all",
                        poor.fit.override = FALSE,
                        opt = "nlm")
                        
  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
-                                   nclusters = c (10,11,10), nsubjects = 100,
-                                   means = c(22.0, 21.2, 21.4),
-                                   sigma_sq = c(1,1,.9), 
-                                   sigma_b_sq = c(.1,.15,.1), alpha = 0.05,
+                                   nclusters = c(10,11,10), nsubjects = 25,
+                                   means = c(24, 21.2, 21.4),
+                                   sigma_sq = c(1.2, 1, 1.9), 
+                                   sigma_b_sq = c(0.5, 1, 0.75),
                                    quiet = FALSE, ICC=NULL, method = 'glmm',
                                    all.sim.data = FALSE, seed = 123,
                                    poor.fit.override = TRUE, 
                                    cores="all",
-                                   opt = "nlm")
+                                   opt = "nlminb")
 }
 multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
                                   nclusters = 10, nsubjects = 25, 
                                   means = c(22.0, 21.0, 22.5),
-                                  sigma_sq = .1, 
-                                  sigma_b_sq = .1, alpha = 0.05,
+                                  sigma_sq = 1, 
+                                  sigma_b_sq = 1, alpha = 0.05,
                                   quiet = FALSE, ICC=NULL, method = 'glmm',
                                   all.sim.data = FALSE, seed = 123,
                                   poor.fit.override = TRUE, cores="all",
-                                  opt = "auto", low.power.override = TRUE)
+                                  opt = "auto")
 
 }
 \author{

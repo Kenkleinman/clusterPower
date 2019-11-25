@@ -63,7 +63,9 @@ A list with the following components
   \item Number of simulations
   \item Data frame with columns "Power" (Estimated statistical power), 
                "lower.95.ci" (Lower 95% confidence interval bound), 
-               "upper.95.ci" (Upper 95% confidence interval bound)
+               "upper.95.ci" (Upper 95% confidence interval bound).
+               Note that non-convergent models are returned for review, 
+               but not included in this calculation.
   \item Analytic method used for power estimation
   \item Data frame containing families for distribution and analysis of simulated data
   \item Significance level
