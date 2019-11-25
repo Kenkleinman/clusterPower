@@ -291,7 +291,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
 
     
     # Store simulation output in data frame
-    ma.model.est <-  data.frame(Estimates, std.error, z.val, p.val)
+    ma.model.est <-  data.frame(Estimates, std.error, z.val, p.val, binary.ma.rct[[3]])
     ma.model.est <- ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))] 
     
     # performance messages
@@ -396,7 +396,7 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                                "overall.power" <- LRT.holder,
                                "overall.power2" <- try(prop_H0_rejection(alpha = alpha, nsim = nsim, 
                                                                          LRT.holder.abbrev = LRT.holder.abbrev),
-                               "sim.data" <-  binary.ma.rct[[3]]))
+                               "sim.data" <-  binary.ma.rct[[4]]))
     } else {
     complete.output <-  list("power" <-  power.parms[-1,],
                              "model.estimates" <-  ma.model.est, 

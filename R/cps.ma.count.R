@@ -295,7 +295,7 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
                                 p.val = p.val, names.power = names.power)
     
     # Store simulation output in data frame
-    ma.model.est <-  data.frame(Estimates, std.error, z.val, p.val)
+    ma.model.est <-  data.frame(Estimates, std.error, z.val, p.val, count.ma.rct[[3]])
     ma.model.est <- ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))] 
     
     # performance messages
@@ -399,7 +399,7 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
                                "overall.power" <- LRT.holder,
                                "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
                                                                          LRT.holder.abbrev=LRT.holder.abbrev),
-                                                       "sim.data" <-  count.ma.rct[[3]]))
+                                                       "sim.data" <-  count.ma.rct[[4]]))
     } else {
       complete.output <-  list("power" <-  power.parms[-1,],
                                "model.estimates" <-  ma.model.est, 

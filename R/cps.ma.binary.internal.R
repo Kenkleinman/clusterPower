@@ -245,12 +245,12 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     }
     
     # option to stop the function early if fits are singular
-    fail <- foreach::foreach(i=1:nsim, .packages = "lme4", .inorder=FALSE) %fun% {
+    converged <- foreach::foreach(i=1:nsim, .packages = "lme4", .inorder=FALSE) %fun% {
                              ifelse(any( grepl("fail", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE |
-                                      any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE, 1, 0)
+                                      any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE)
                            }
     if (poor.fit.override==FALSE){
-      if(sum(unlist(fail), na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations
+      if(sum(unlist(converged), na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations
                                                 are singular fit: check model specifications")}
     }
     
@@ -377,12 +377,12 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   if(all.sim.data == TRUE){
     complete.output.internal <-  list("estimates" = model.values,
                                       "model.comparisons" = model.compare,
-                                      "sim.data" = data.frame(trt, clust, sim.dat),
-                                      "failed.to.converge"= unlist(fail))
+                                      "converged" = unlist(converged),
+                                      "sim.data" = data.frame(trt, clust, sim.dat))
   } else {
     complete.output.internal <-  list("estimates" = model.values,
                                       "model.comparisons" = model.compare,
-                                      "failed.to.converge" =  paste((sum(unlist(fail))/nsim)*100, 
+                                      "converged" =  paste(1-(sum(unlist(converged))/nsim)*100, 
                                                                     "% did not converge", sep=""))
   }
   return(complete.output.internal)
