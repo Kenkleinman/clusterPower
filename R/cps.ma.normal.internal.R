@@ -242,7 +242,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         # get the overall p-values (>Chisq)
         null.mod <- update.formula(my.mod, y ~ 1 + (1+as.factor(trt)|clust))
         # option to stop the function early if fits are singular
-        converge.vector[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages)) == TRUE, FALSE, TRUE) 
+        converge.vector[i] <- ifelse(isTrue(any( grepl("singular", my.mod@optinfo$conv$lme4$messages))), FALSE, TRUE) 
         if (poor.fit.override==FALSE){
           if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
         }
@@ -287,7 +287,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         # get the overall p-values (>Chisq)
         null.mod <- update.formula(my.mod, y ~ 1 + (1|clust))
         # option to stop the function early if fits are singular
-        converge.vector[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) 
+        converge.vector[i] <- ifelse(isTrue(any(grepl("singular", my.mod@optinfo$conv$lme4$messages))), FALSE, TRUE) 
         if (poor.fit.override==FALSE){
           if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
         }
