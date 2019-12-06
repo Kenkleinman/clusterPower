@@ -202,13 +202,15 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       my.mod <- nlme::lme(y~as.factor(trt2), random = ~1+as.factor(trt2)|clust2, 
                      weights = nlme::varIdent(form = ~1|as.factor(trt2)), 
                      method = "ML",
-                     control = nlme::nlmeControl(opt = opt))
+                     control = nlme::nlmeControl(opt = opt, niterEM = 100,
+                                                 msMaxIter = 100))
       model.values[[i]] <-  summary(my.mod)$tTable
       # get the overall p-values (>Chisq)
       null.mod <- nlme::lme(y~1, random = ~1 + as.factor(trt2)|clust2, 
                             weights = nlme::varIdent(form = ~1|as.factor(trt2)), 
                                                    method="ML",
-                            control=nlme::nlmeControl(opt = opt))
+                            control=nlme::nlmeControl(opt = opt, niterEM = 100,
+                                                      msMaxIter = 100))
       }
       
       if (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)!=min(sigma_b_sq)){
@@ -255,13 +257,15 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         my.mod <- nlme::lme(y~as.factor(trt2), random = ~1|clust2, 
                             weights=nlme::varIdent(form = ~1|as.factor(trt2)), 
                             method="ML",
-                            control=nlme::nlmeControl(opt = opt))
+                            control=nlme::nlmeControl(opt = opt, niterEM = 100, 
+                                                      msMaxIter = 100))
         model.values[[i]] <-  summary(my.mod)$tTable
         # get the overall p-values (>Chisq)
         null.mod <- nlme::lme(y~1, random=~1|clust2,  
                               weights=nlme::varIdent(form = ~1|as.factor(trt2)), 
                               method="ML",
-                              control=nlme::nlmeControl(opt = opt))
+                              control=nlme::nlmeControl(opt = opt, niterEM = 100, 
+                                                        msMaxIter = 100))
       }
       
       if (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)==min(sigma_b_sq)){

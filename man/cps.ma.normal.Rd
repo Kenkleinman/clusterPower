@@ -170,9 +170,9 @@ examples provided below for a demonstration of the various input options.
 }
 \examples{
 \dontrun{
-nsubjects.example <- list(c(200,200,200,250), c(150, 200, 200, 210), 
-c(170, 200, 210))
-means.example <- c(0, 21, 21.5)
+nsubjects.example <- list(c(20,20,20,25, 15, 20, 20, 21, 17, 20, 21), 
+  c(20,20,23,25, 15, 20, 15, 21, 17, 27, 21), c(40, 25, 40, 27, 50, 15))
+means.example <- c(0, 21, 10)
 sigma_sq.example <- c(1, 1.2, 0.9)
 sigma_b_sq.example <- c(0.1, 0.15, 0.1)
 
@@ -180,10 +180,10 @@ multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.exampl
                        means = means.example, sigma_sq = sigma_sq.example, 
                        sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
                        quiet = FALSE, ICC=NULL, method = 'glmm', 
-                       all.sim.data = TRUE,
+                       all.sim.data = FALSE,
                        seed = 123, cores = "all",
                        poor.fit.override = FALSE,
-                       opt = "nlm")
+                       opt = "nlminb")
                        
  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
                                    nclusters = c(10,11,10), nsubjects = 25,

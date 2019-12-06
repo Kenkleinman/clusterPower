@@ -277,21 +277,6 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         stop("more than 25% of simulations are singular fit: check model specifications")}
     }
     
-    #FIXME doesn't work with foreach
-    # stop the loop if power is <0.5
-   # if (low.power.override==FALSE){
-  #    if (i > 50 & (i %% 10==0)){
-  #      temp.power.checker <- matrix(unlist(model.compare[1:i]), ncol=3, nrow=i, 
-  #                                   byrow=TRUE)
-  #      sig.val.temp <-  ifelse(temp.power.checker[,3][1:i] < alpha, 1, 0)
-  #      pval.power.temp <- sum(sig.val.temp)/i
-  #      if (pval.power.temp < 0.5){
-  #        stop(paste("Calculated power is < ", pval.power.temp, ", auto stop at simulation ", 
-  #                   i, ". Set low.power.override==TRUE to run the simulations anyway.", sep = ""))
-  #      }
-  #    }
-  #  }
-    
     if (!is.na(cores) & quiet == FALSE){
       message("\r Performing null model comparisons")
     }
