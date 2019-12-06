@@ -242,7 +242,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         # get the overall p-values (>Chisq)
         null.mod <- update.formula(my.mod, y ~ 1 + (1+as.factor(trt)|clust))
         # option to stop the function early if fits are singular
-        converge.vector[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) 
+        converge.vector[i] <- ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages)) == TRUE, FALSE, TRUE) 
         if (poor.fit.override==FALSE){
           if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
         }
@@ -338,12 +338,12 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   if(all.sim.data == TRUE){
     complete.output.internal <-  list("estimates" = model.values,
                                       "model.comparisons" = try(model.compare),
-                                      "sim.data" = sim.dat,
-                                      "converged" = converge.vector)
+                                      "converged" = converge.vector,
+                                      "sim.data" = sim.dat)
   } else {
     complete.output.internal <-  list("estimates" = model.values,
                                       "model.comparisons" = try(model.compare),
-                                    "converged" =  paste((sum(isTRUE(converge.vector))/nsim)*100, "% did not converge", sep=""))
+                                      "converged" = converge.vector)
   }
   
   # turn off parallel computing

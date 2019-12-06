@@ -335,9 +335,15 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
    LRT.holder.abbrev <- sum(sig.LRT)
    
+   cps.model.temp <- data.frame(unlist(normal.ma.rct[[3]]), p.val)
+   
+   
+   cps.model.temp2 <- dplyr::filter(cps.model.temp, converge == TRUE)
+   
  # Calculate and store power estimate & confidence intervals
    power.parms <- confint.calc(nsim = nsim, alpha = alpha,
-     p.val = p.val, names.power = names.power)
+     p.val = as.vector(cps.model.temp2[,2:length(cps.model.temp2)]), 
+     names.power = names.power)
     
   # Store simulation output in data frame
    ma.model.est <-  data.frame(Estimates, std.error, t.val, p.val)
@@ -351,8 +357,8 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                               "model.estimates" <-  ma.model.est, 
                               "overall.power" <- LRT.holder,
                               "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
-                              "sim.data" <-  normal.ma.rct[[3]], 
-                              "convergence" <-  normal.ma.rct[[4]])
+                              "sim.data" <-  normal.ma.rct[[4]], 
+                              "convergence" <-  normal.ma.rct[[3]])
    } 
    if (return.all.models == TRUE) {
      complete.output <-  list("power" <-  power.parms[-1,],
