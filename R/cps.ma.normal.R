@@ -124,8 +124,8 @@
 #' \dontrun{
 #' nsubjects.example <- list(c(20,20,20,20, 20, 75, 20, 20, 20, 75), 
 #'   c(20, 20, 25, 25, 25, 25, 25, 25), c(40, 25, 40, 20, 20, 20, 20, 20))
-#' means.example <- c(0, 21, 10)
-#' sigma_sq.example <- c(1, 1.2, 0.9)
+#' means.example <- c(5, 10, 1)
+#' sigma_sq.example <- c(2, 1.2, 2.9)
 #' sigma_b_sq.example <- c(1.1, 1.15, 1.1)
 #' 
 #' multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.example, 
