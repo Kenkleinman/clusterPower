@@ -25,6 +25,9 @@
 #' with each vector containing the number of subjects per cluster. See the 
 #' examples provided below for a demonstration of the various input options.
 #' 
+#' Non-convergent models are not included in the calculation of exact confidence 
+#' intervals, except in cases where \code{sigma_sq} is unequal.
+#' 
 #' @param narms Integer value representing the number of arms. 
 #' @param nclusters An integer or vector of integers representing the number 
 #' of clusters in each arm.
@@ -119,11 +122,11 @@
 #'          
 #' @examples 
 #' \dontrun{
-#' nsubjects.example <- list(c(20,20,20,25, 15, 20, 20, 21, 17, 20, 21), 
-#'   c(20,20,23,25, 15, 20, 15, 21, 17, 27, 21), c(40, 25, 40, 27, 50, 15))
+#' nsubjects.example <- list(c(20,20,20,20, 20, 75, 20, 20, 20, 75), 
+#'   c(20, 20, 25, 25, 25, 25, 25, 25), c(40, 25, 40, 20, 20, 20, 20, 20))
 #' means.example <- c(0, 21, 10)
 #' sigma_sq.example <- c(1, 1.2, 0.9)
-#' sigma_b_sq.example <- c(0.1, 0.15, 0.1)
+#' sigma_b_sq.example <- c(1.1, 1.15, 1.1)
 #' 
 #' multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.example, 
 #'                        means = means.example, sigma_sq = sigma_sq.example, 
@@ -336,8 +339,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    LRT.holder.abbrev <- sum(sig.LRT)
    
    cps.model.temp <- data.frame(unlist(normal.ma.rct[[3]]), p.val)
-   
-   
+   colnames(cps.model.temp)[1] <- "converge"
    cps.model.temp2 <- dplyr::filter(cps.model.temp, converge == TRUE)
    
  # Calculate and store power estimate & confidence intervals

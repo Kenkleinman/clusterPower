@@ -113,7 +113,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                          total = nsim, clear = FALSE, width = 100)
   
   # This container keeps track of how many models failed to converge
-  converge.vector <- rep(NA, nsim)
+  converge.vector <- rep(TRUE, nsim)
   
   # Create a container for the simulated.dataset and model output
   sim.dat = vector(mode = "list", length = nsim)
@@ -199,18 +199,23 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       if (opt != "nlm" && opt != "nlminb" && opt != "auto"){
         stop("opt must be either nlm or nlminb for this model type.")
       }  
-      my.mod <- nlme::lme(y~as.factor(trt2), random = ~1+as.factor(trt2)|clust2, 
+      my.mod <- try(nlme::lme(y~as.factor(trt2), random = ~1+as.factor(trt2)|clust2, 
                      weights = nlme::varIdent(form = ~1|as.factor(trt2)), 
                      method = "ML",
                      control = nlme::nlmeControl(opt = opt, niterEM = 100,
-                                                 msMaxIter = 100))
-      model.values[[i]] <-  summary(my.mod)$tTable
+                                                 msMaxIter = 100)))
+      model.values[[i]] <-  try(summary(my.mod)$tTable)
       # get the overall p-values (>Chisq)
-      null.mod <- nlme::lme(y~1, random = ~1 + as.factor(trt2)|clust2, 
+      null.mod <- try(nlme::lme(y~1, random = ~1 + as.factor(trt2)|clust2, 
                             weights = nlme::varIdent(form = ~1|as.factor(trt2)), 
                                                    method="ML",
                             control=nlme::nlmeControl(opt = opt, niterEM = 100,
-                                                      msMaxIter = 100))
+                                                      msMaxIter = 100)))
+      converge.vector[i] <- ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE) 
+      if (poor.fit.override==FALSE){
+        if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")
+        }
+      }
       }
       
       if (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)!=min(sigma_b_sq)){
@@ -242,7 +247,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         # get the overall p-values (>Chisq)
         null.mod <- update.formula(my.mod, y ~ 1 + (1+as.factor(trt)|clust))
         # option to stop the function early if fits are singular
-        converge.vector[i] <- ifelse(isTrue(any( grepl("singular", my.mod@optinfo$conv$lme4$messages))), FALSE, TRUE) 
+        converge.vector[i] <- ifelse(isTRUE(any( grepl("singular", my.mod@optinfo$conv$lme4$messages))), FALSE, TRUE) 
         if (poor.fit.override==FALSE){
           if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
         }
@@ -254,18 +259,23 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         if (opt != "nlm" && opt != "nlminb"){
           stop("opt must be either nlm or nlminb for this model type.")
         }  
-        my.mod <- nlme::lme(y~as.factor(trt2), random = ~1|clust2, 
+        my.mod <- try(nlme::lme(y~as.factor(trt2), random = ~1|clust2, 
                             weights=nlme::varIdent(form = ~1|as.factor(trt2)), 
                             method="ML",
                             control=nlme::nlmeControl(opt = opt, niterEM = 100, 
-                                                      msMaxIter = 100))
-        model.values[[i]] <-  summary(my.mod)$tTable
+                                                      msMaxIter = 100)))
+        model.values[[i]] <-  try(summary(my.mod)$tTable)
         # get the overall p-values (>Chisq)
-        null.mod <- nlme::lme(y~1, random=~1|clust2,  
+        null.mod <- try(nlme::lme(y~1, random=~1|clust2,  
                               weights=nlme::varIdent(form = ~1|as.factor(trt2)), 
                               method="ML",
                               control=nlme::nlmeControl(opt = opt, niterEM = 100, 
-                                                        msMaxIter = 100))
+                                                        msMaxIter = 100)))
+        converge.vector[i] <- ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE) 
+        if (poor.fit.override==FALSE){
+          if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")
+          }
+        }
       }
       
       if (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)==min(sigma_b_sq)){
@@ -287,7 +297,7 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
         # get the overall p-values (>Chisq)
         null.mod <- update.formula(my.mod, y ~ 1 + (1|clust))
         # option to stop the function early if fits are singular
-        converge.vector[i] <- ifelse(isTrue(any(grepl("singular", my.mod@optinfo$conv$lme4$messages))), FALSE, TRUE) 
+        converge.vector[i] <- ifelse(isTRUE(any(grepl("singular", my.mod@optinfo$conv$lme4$messages))), FALSE, TRUE) 
         if (poor.fit.override==FALSE){
           if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
         }
@@ -336,12 +346,12 @@ cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
 
   ## Output objects
   if(all.sim.data == TRUE){
-    complete.output.internal <-  list("estimates" = model.values,
+    complete.output.internal <-  list("estimates" = try(model.values),
                                       "model.comparisons" = try(model.compare),
                                       "converged" = converge.vector,
                                       "sim.data" = sim.dat)
   } else {
-    complete.output.internal <-  list("estimates" = model.values,
+    complete.output.internal <-  list("estimates" = try(model.values),
                                       "model.comparisons" = try(model.compare),
                                       "converged" = converge.vector)
   }
