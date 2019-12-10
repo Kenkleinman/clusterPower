@@ -13,6 +13,9 @@
 #' between-cluster variance; significance level, analytic method, progress updates, 
 #' and simulated data set output may also be specified.
 #' 
+#' Non-convergent models are not included in the calculation of exact confidence 
+#' intervals.
+#' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes, both groups), 

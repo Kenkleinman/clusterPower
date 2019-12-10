@@ -28,6 +28,9 @@
 #' this function stops execution early if estimated power < 0.5 or more 
 #' than 25\% of models produce a singular fit or non-convergence warning 
 #' message, unless \code{poor.fit.override = TRUE}.
+#'
+#' Non-convergent models are not included in the calculation of exact confidence 
+#' intervals.
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster (required); accepts an 

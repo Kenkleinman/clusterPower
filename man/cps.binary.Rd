@@ -105,6 +105,9 @@ The following equations are used to estimate intra-cluster correltation coeffici
 P_h: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \pi^{2}/3}}
 P_c: \deqn{ICC = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_{j}\pi_{h}}{\sqrt{\pi_{j}(1 - \pi_{j})\pi_{h}(1 - \pi_{h})}}}
 P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
+
+Non-convergent models are not included in the calculation of exact confidence 
+intervals.
 }
 \examples{
 \dontrun{

@@ -19,6 +19,9 @@
 #' P_c: \deqn{ICC = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_{j}\pi_{h}}{\sqrt{\pi_{j}(1 - \pi_{j})\pi_{h}(1 - \pi_{h})}}}
 #' P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 #' 
+#' Non-convergent models are not included in the calculation of exact confidence 
+#' intervals.
+#' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
 #' @param nclusters Number of clusters per treatment group; accepts integer (required).

@@ -149,6 +149,9 @@ copying data across cores also may take some time. For time-savings,
 this function stops execution early if estimated power < 0.5 or more 
 than 25\% of models produce a singular fit or non-convergence warning 
 message, unless \code{poor.fit.override = TRUE}.
+
+Non-convergent models are not included in the calculation of exact confidence 
+intervals.
 }
 \examples{
 \dontrun{

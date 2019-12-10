@@ -111,6 +111,9 @@ cluster, number of clusters per treatment arm, expected absolute difference
 between treatments, two of the following: ICC, within-cluster variance, or 
 between-cluster variance; significance level, analytic method, progress updates, 
 and simulated data set output may also be specified.
+
+Non-convergent models are not included in the calculation of exact confidence 
+intervals.
 }
 \examples{
 \dontrun{

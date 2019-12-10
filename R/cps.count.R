@@ -14,6 +14,9 @@
 #' analytic method, and whether or not progress updates should be displayed 
 #' while the function is running.
 #' 
+#' Non-convergent models are not included in the calculation of exact confidence 
+#' intervals.
+#' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts a single integer or a vector of 2 integers (if nsubjects differs between arms) (required). 

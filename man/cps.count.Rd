@@ -100,6 +100,9 @@ two of the following: expected count in non-treatment group, expected count
 in treatment group, difference in counts between groups; significance level, 
 analytic method, and whether or not progress updates should be displayed 
 while the function is running.
+
+Non-convergent models are not included in the calculation of exact confidence 
+intervals.
 }
 \examples{
 \dontrun{
