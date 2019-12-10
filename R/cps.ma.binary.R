@@ -30,6 +30,9 @@
 #' than 25\% of models produce a singular fit or non-convergence warning 
 #' message, unless \code{poor.fit.override = TRUE}.
 #' 
+#' Non-convergent models are not included in the calculation of exact confidence 
+#' intervals.
+#' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster (required); accepts an 
 #' integer if all are equal and \code{narms} and \code{nclusters} are provided. 
@@ -285,10 +288,14 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
       LRT.holder.abbrev <- sum(sig.LRT)
     }
     
+    cps.model.temp <- data.frame(unlist(binary.ma.rct[[3]]), p.val)
+    colnames(cps.model.temp)[1] <- "converge"
+    cps.model.temp2 <- dplyr::filter(cps.model.temp, isTRUE(converge))
+    
     # Calculate and store power estimate & confidence intervals
-      power.parms <- confint.calc(nsim = nsim, alpha = alpha,
-                                  p.val = p.val, names.power = names.power)
-
+    power.parms <- confint.calc(nsim = nsim, alpha = alpha,
+                                p.val = as.vector(cps.model.temp2[,2:length(cps.model.temp2)]), 
+                                names.power = names.power)
     
     # Store simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, z.val, p.val, binary.ma.rct[[3]])

@@ -291,9 +291,16 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
     # Calculate and store power estimate & confidence intervals
     sig.val <-  ifelse(p.val < alpha, 1, 0)
     pval.power <- apply(sig.val, 2, sum)
-    power.parms <- confint.calc(nsim = nsim, alpha = alpha,
-                                p.val = p.val, names.power = names.power)
     
+    cps.model.temp <- data.frame(unlist(count.ma.rct[[3]]), p.val)
+    colnames(cps.model.temp)[1] <- "converge"
+    cps.model.temp2 <- dplyr::filter(cps.model.temp, isTRUE(converge))
+    
+    # Calculate and store power estimate & confidence intervals
+    power.parms <- confint.calc(nsim = nsim, alpha = alpha,
+                                p.val = as.vector(cps.model.temp2[,2:length(cps.model.temp2)]), 
+                                names.power = names.power)
+
     # Store simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, z.val, p.val, count.ma.rct[[3]])
     ma.model.est <- ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))] 

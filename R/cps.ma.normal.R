@@ -26,7 +26,7 @@
 #' examples provided below for a demonstration of the various input options.
 #' 
 #' Non-convergent models are not included in the calculation of exact confidence 
-#' intervals, except in cases where \code{sigma_sq} is unequal.
+#' intervals.
 #' 
 #' @param narms Integer value representing the number of arms. 
 #' @param nclusters An integer or vector of integers representing the number 
