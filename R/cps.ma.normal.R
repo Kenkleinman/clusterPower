@@ -329,16 +329,27 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    colnames(p.val) <- names.pval
    
    # Organize the LRT output
-   LRT.holder <- matrix(unlist(normal.ma.rct[[2]]), ncol=6, nrow=nsim, 
-                        byrow=TRUE, 
-                        dimnames = list(seq(1:nsim), 
-                                        c("Sum Sq", "Mean Sq", "NumDF", "DenDF", "F value", "P(>F)")))
+   if ((max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)==min(sigma_b_sq)) | 
+       (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)!=min(sigma_b_sq))){
+     LRT.holder <- matrix(unlist(normal.ma.rct[[2]]), ncol=6, nrow=nsim, 
+       byrow=TRUE, 
+       dimnames = list(seq(1:nsim), 
+       c("Sum Sq", "Mean Sq", "NumDF", "DenDF", "F value", "P(>F)")))
+     sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
+   } else {
+     LRT.holder <- as.vector(rep(NA, nsim))
+     LRT.holder[i] <- for (i in 1:nsim){normal.ma.rct[[2]][[i]][,8]}
+     sig.LRT <-  ifelse(LRT.holder < alpha, 1, 0)
+   }
+   print(normal.ma.rct[[2]])
+   print(LRT.holder)
+   print(sig.LRT)
    
    # Proportion of times P(>F)
-   sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
+
    LRT.holder.abbrev <- sum(sig.LRT)
    
-   cps.model.temp <- data.frame(unlist(normal.ma.rct[[3]]), p.val)
+   cps.model.temp <- rbind(unlist(normal.ma.rct[[3]]), p.val)
    colnames(cps.model.temp)[1] <- "converge"
    cps.model.temp2 <- dplyr::filter(cps.model.temp, converge == TRUE)
    
