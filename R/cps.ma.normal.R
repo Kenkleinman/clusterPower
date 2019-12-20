@@ -124,8 +124,8 @@
 #' \dontrun{
 #' nsubjects.example <- list(c(20,20,20,20, 20, 75, 20, 20, 20, 75), 
 #'   c(20, 20, 25, 25, 25, 25, 25, 25), c(40, 25, 40, 20, 20, 20, 20, 20))
-#' means.example <- c(5, 10, 1)
-#' sigma_sq.example <- c(2, 1.2, 2.9)
+#' means.example <- c(1, 1.75, 0)
+#' sigma_sq.example <- c(2, 1.2, 2)
 #' sigma_b_sq.example <- c(1.1, 1.15, 1.1)
 #' 
 #' multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.example, 
@@ -139,7 +139,7 @@
 #'                        
 #'  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
 #'                                    nclusters = c(10,11,10), nsubjects = 25,
-#'                                    means = c(24, 21.2, 21.4),
+#'                                    means = c(1, 0.25, 1.75),
 #'                                    sigma_sq = c(1.2, 1, 1.9), 
 #'                                    sigma_b_sq = c(0.5, 1, 0.75),
 #'                                    quiet = FALSE, ICC=NULL, method = 'glmm',
@@ -338,7 +338,6 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
      sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
    } else {
      LRT.holder <- as.vector(rep(NA, nsim))
-     print(normal.ma.rct[[2]][i])
      for (i in 1:nsim){
        LRT.holder[i] <- na.omit(normal.ma.rct[[2]][[i]][,9])}
      sig.LRT <-  ifelse(LRT.holder < alpha, 1, 0)
@@ -348,9 +347,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
 
    LRT.holder.abbrev <- sum(sig.LRT)
    
-   print(normal.ma.rct[[3]][1])
-   print(rbind(unlist(normal.ma.rct[[3]]), p.val))
-   cps.model.temp <- rbind(unlist(normal.ma.rct[[3]]), p.val)
+   cps.model.temp <- data.frame(cbind(unlist(normal.ma.rct[[3]]), p.val))
    colnames(cps.model.temp)[1] <- "converge"
    cps.model.temp2 <- dplyr::filter(cps.model.temp, converge == TRUE)
    
@@ -460,7 +457,6 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                   alpha=alpha, nsim=nsim, 
                                   LRT.holder.abbrev=LRT.holder.abbrev))
      }
-     print("a nice lil break")
      return(complete.output)
    }
 }
