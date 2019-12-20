@@ -338,17 +338,18 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
      sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
    } else {
      LRT.holder <- as.vector(rep(NA, nsim))
-     LRT.holder[i] <- for (i in 1:nsim){normal.ma.rct[[2]][[i]][,8]}
+     print(normal.ma.rct[[2]][i])
+     for (i in 1:nsim){
+       LRT.holder[i] <- na.omit(normal.ma.rct[[2]][[i]][,9])}
      sig.LRT <-  ifelse(LRT.holder < alpha, 1, 0)
    }
-   print(normal.ma.rct[[2]])
-   print(LRT.holder)
-   print(sig.LRT)
    
    # Proportion of times P(>F)
 
    LRT.holder.abbrev <- sum(sig.LRT)
    
+   print(normal.ma.rct[[3]][1])
+   print(rbind(unlist(normal.ma.rct[[3]]), p.val))
    cps.model.temp <- rbind(unlist(normal.ma.rct[[3]]), p.val)
    colnames(cps.model.temp)[1] <- "converge"
    cps.model.temp2 <- dplyr::filter(cps.model.temp, converge == TRUE)
@@ -459,6 +460,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                   alpha=alpha, nsim=nsim, 
                                   LRT.holder.abbrev=LRT.holder.abbrev))
      }
+     print("a nice lil break")
      return(complete.output)
    }
 }
