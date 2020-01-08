@@ -1,4 +1,4 @@
-#' Power calculations for multi-arm cluster randomized trials, continuous outcome
+#' Power calculations for multi-arm, parallel arm cluster randomized trials with continuous (assumed Normal) outcome
 #'
 #' Wrapper function for crtpwr.nmean() to compute the power of the 
 #' overall F-test for a multi-arm cluster randomized trial with a 
@@ -6,16 +6,28 @@
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{narms}, \code{n},
 #'   \code{m}, \code{vara}, \code{varc}, and \code{vare}  must be passed as \code{NA}.
+#'   
+#'   The function will return the solution for the this omitted parameter of interest.
+#'   
 #'   Note that \code{alpha} and \code{power} have non-\code{NA}
 #'   defaults, so if those are the parameters of interest they must be
 #'   explicitly passed as \code{NA}.
 #'   
+#'The terms below can be discussed based on the mixed effects model:
+#'  \deqn{y_{ij} = \beta_0 + \sum_{k=2}^{A} \beta_i I(k=i) + b_i + e_{ij}}
+#'  
+#'  where eqn{i} indexes treatment arm, \eqn{I(fn) = 1} if \eqn{fn} is true.  In this case,
+#'  between-cluster variance is the variance of \eqn{b_i}, often denoted \eqn{\sigma_b} and
+#'  the within-cluster variance is the variance of \eqn{e_{ij}}, often denoted \eqn{\sigma}.
+#'  (The intracluster correlation coefficient or ICC is a function of these two natural
+#'  parameters of the model.)
+#'   
 #' Assuming a balanced design, the between-arm variance \eqn{\sigma_a^2} (corresponding to
 #'   the function argument \code{vara}) can be estimated using the formula: 
 #'   
-#'   \deqn{\sigma_a^2 = \sum\limits_{i=1}^{n_a}(\mu_i - \mu)^2/(n_a-1)}
+#'   \deqn{\sigma_a^2 = \sum\limits_{i=1}^{A}(\mu_i - \mu)^2/(A-1)}
 #'   
-#'   where \eqn{n_a} is the number of arms, \eqn{\mu_i} is the estimate of the \eqn{i}-th arm
+#'   where \eqn{A} is the number of arms, \eqn{\mu_i} is the estimate of the \eqn{i}-th arm
 #'   mean, and \eqn{\mu} is the estimate of the overall mean of the outcome. This 
 #'   variance can be computed in R using the \code{var} function and a vector of arm means.
 #'   For example, suppose the estimated means for a three-arm trial were 74, 80, and 86 Then the

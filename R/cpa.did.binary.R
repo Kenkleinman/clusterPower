@@ -1,4 +1,4 @@
-#' Power calculations for  difference-in-difference cluster randomized trials, binary outcome
+#' Power calculations for  difference-in-difference cluster randomized trials, dichotomous outcome
 #'
 #' Wrapper function that uses crtpwr.2propD() to compute the power 
 #' of a difference-in-difference cluster randomized trial design 

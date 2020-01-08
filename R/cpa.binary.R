@@ -1,4 +1,4 @@
-#' Power calculations for simple cluster randomized trials, binary outcome
+#' Analytic power calculations for parallel arm cluster-randomized trials with dichotomous outcomes
 #'
 #' Wrapper function that uses crtpwr.2prop to compute the power of 
 #' a simple cluster randomized trial with a binary outcome,
@@ -8,16 +8,16 @@
 #' @section Authors:
 #' Alexandria Sakrejda, Jonathan Moyer (\email{jon.moyer@@gmail.com}), 
 #' Ken Kleinman (\email{ken.kleinman@@gmail.com})
-#' @param alpha The level of significance of the test, the probability of a
+#' @param alpha The level of significance of the test to be applied, the probability of a
 #'   Type I error.
 #' @param power The power of the test, 1 minus the probability of a Type II
 #'   error.
 #' @param n The number of clusters per condition. It must be greater than 1.
-#' @param m The mean of the cluster sizes.
+#' @param m The mean of the number of observations per cluster (mean cluster size).
 #' @param CV The coefficient of variation of the cluster sizes. When \code{cv} = 0,
-#'   the clusters all have the same size.
-#' @param p1 The expected proportion in the treatment group.
-#' @param p2 The proportion in the control group.
+#'   the clusters all have the same size, or the same number of observations.
+#' @param p1 The expected proportion with the outcome in the treatment group.
+#' @param p2 The expected proportion with the outcome in the control group.
 #' @param ICC The intraclass correlation.
 #' @param pooled Logical indicating if pooled standard error should be used.
 #' @param p1inc Logical indicating if p1 is expected to be greater than p2.

@@ -1,4 +1,4 @@
-#' Power calculations for simple cluster randomized trials, count outcome
+#' Analytic power calculations for parallel arm cluster-randomized trials with count outcomes
 #'
 #' Wrapper function that uses crtpwr.2rate to compute the power of a 
 #' simple cluster randomized trial with a count outcome,
