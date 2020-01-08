@@ -4,18 +4,9 @@
 \alias{crtpwr.2meanCA}
 \title{Power calculations for simple cluster randomized trials, continuous outcome with covariate adjustment}
 \usage{
-crtpwr.2meanCA(
-  alpha = 0.05,
-  power = 0.8,
-  nclusters = NA,
-  nsubjects = NA,
-  d = NA,
-  icc = NA,
-  varw = NA,
-  covdf = NA,
-  rho_b = NA,
-  tol = .Machine$double.eps^0.25
-)
+crtpwr.2meanCA(alpha = 0.05, power = 0.8, nclusters = NA,
+  nsubjects = NA, d = NA, icc = NA, vart = NA, covdf = NA,
+  rho_b = NA, tol = .Machine$double.eps^0.25)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a
@@ -32,7 +23,7 @@ error.}
 
 \item{icc}{The intraclass correlation.}
 
-\item{varw}{The within-cluster variation.}
+\item{vart}{The total variance of the outcome.}
 
 \item{covdf}{The degrees of freedom used by the cluster-level covariates. If \code{covdf} is 0,
 the value of \code{rho_b} must be 0 as well.}
@@ -51,7 +42,7 @@ cluster-level covariates, or determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-  \code{d}, \code{icc}, \code{varw}, \code{covdf}, and \code{rho_b} must be passed as \code{NA}.
+  \code{d}, \code{icc}, \code{vart}, \code{covdf}, and \code{rho_b} must be passed as \code{NA}.
   Note that \code{alpha} and \code{power} have non-\code{NA}
   defaults, so if those are the parameters of interest they must be
   explicitly passed as \code{NA}.
@@ -77,7 +68,7 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
 # power = 0.8, 10 observations per cluster, a difference of 1 unit,  icc = 0.1,
 # a variance of 5 units, adjusting for 1 covariate, and a between-cluster correlation of 0.7:
-crtpwr.2meanCA(nsubjects=10 ,d=1, icc=.1, varw=5, covdf=1, rho_b=.7)
+crtpwr.2meanCA(nsubjects=10 ,d=1, icc=.1, vart=5, covdf=1, rho_b=.7)
 # 
 # The result, showimg nclusters of greater than 12, suggests 13 clusters per
 # condition should be used.

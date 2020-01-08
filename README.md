@@ -7,4 +7,3 @@ clusterPower
 
 clusterPower: power and sample size calculations for cluster-randomized trials, using both closed form and Monte Carlo methods
 
-
