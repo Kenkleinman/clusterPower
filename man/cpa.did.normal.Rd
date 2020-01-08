@@ -4,10 +4,19 @@
 \alias{cpa.did.normal}
 \title{Power calculations for difference-in-difference cluster randomized trials, continuous outcome}
 \usage{
-cpa.did.normal(alpha = 0.05, power = 0.8, n = NA, m = NA,
-  difference.control = NA, difference.intervention = NA, ICC = NA,
-  rho_c = NA, rho_s = NA, vart = NA,
-  tol = .Machine$double.eps^0.25)
+cpa.did.normal(
+  alpha = 0.05,
+  power = 0.8,
+  n = NA,
+  m = NA,
+  difference.control = NA,
+  difference.intervention = NA,
+  ICC = NA,
+  rho_c = NA,
+  rho_s = NA,
+  vart = NA,
+  tol = .Machine$double.eps^0.25
+)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a

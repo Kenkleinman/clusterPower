@@ -5,10 +5,23 @@
 \title{Runs and returns simulations and model fits for multi-arm 
 cluster-randomized trials with continuous outcome.}
 \usage{
-cps.ma.normal.internal(nsim = 1000, str.nsubjects = NULL,
-  means = NULL, sigma_sq = NULL, sigma_b_sq = NULL, alpha = 0.05,
-  quiet = FALSE, method = "glmm", all.sim.data = FALSE, seed = NA,
-  cores = "all", poor.fit.override = FALSE, tdist = FALSE)
+cps.ma.normal.internal(
+  nsim = 1000,
+  str.nsubjects = NULL,
+  means = NULL,
+  sigma_sq = NULL,
+  sigma_b_sq = NULL,
+  alpha = 0.05,
+  quiet = FALSE,
+  method = "glmm",
+  all.sim.data = FALSE,
+  seed = NA,
+  cores = "all",
+  poor.fit.override = FALSE,
+  low.power.override = FALSE,
+  tdist = FALSE,
+  opt = "optim"
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -47,8 +60,16 @@ computing is used.}
 \item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
 of fits fail to converge.}
 
+\item{low.power.override}{Option to override \code{stop()} if the power 
+is less than 0.5 after the first 50 simulations and every ten simulations
+thereafter. On function execution stop, the actual power is printed in the 
+stop message. Default = FALSE. When TRUE, this check is ignored and the 
+calculated power is returned regardless of value.}
+
 \item{tdist}{Logical; use t-distribution instead of normal distribution 
 for simulation values, default = FALSE.}
+
+\item{opt}{Option to fit with a different optimizer (using the package \code{optimx}).}
 }
 \value{
 A list with the following components:
@@ -61,10 +82,9 @@ A list with the following components:
   data frames, each containing three columns: "y" (Simulated response value),  
                   "trt" (Indicator for treatment group), and 
                   "clust" (Indicator for cluster).}
-  \item{failed.to.converge}{A vector of length \code{nsim} consisting of 1 and 0 
-  (when all.sim.data = TRUE) or a string (when all.sim.data = FALSE) 
+  \item{converged}{A logical vector of length \code{nsim} (when all.sim.data = TRUE) or a string (when all.sim.data = FALSE) 
   indicating the percent of model fits that produced a "singular fit" or "failed to converge" warning message;
-          When a model fails to converge, failed.to.converge == 1, otherwise 0.}
+          When a model fails to converge, failed.to.converge == FALSE, otherwise TRUE.}
 }
 }
 \description{
@@ -85,8 +105,8 @@ simulated data set output may also be specified.
 As this function is not intended for the casual user, specifications to the 
 arguments are somewhat less flexible than those supplied to 
 \code{cps.ma.normal()}. Note that the str.nsubjects argument has a specific 
-structure that is somewhat verbose, but maximizes flexibility in the 
-applicable experimental design.
+structure that is somewhat verbose but maximizes flexibility in the 
+experimental design.
 }
 \examples{
 \dontrun{
@@ -103,7 +123,9 @@ multi.cps.normal.models <- cps.ma.normal.internal (nsim = 100,
                               alpha = 0.05,
                               quiet = FALSE, method = 'glmm', 
                               seed = 123, cores = "all",
-                              poor.fit.override = FALSE)
+                              low.power.override = FALSE,
+                              poor.fit.override = FALSE, 
+                              opt = "nlm")
                               }
 }
 \author{

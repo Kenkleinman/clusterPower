@@ -4,10 +4,19 @@
 \alias{cps.did.normal}
 \title{Power simulations for cluster-randomized trials: Difference in Difference Design, Continuous Outcome.}
 \usage{
-cps.did.normal(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  difference = NULL, sigma = NULL, sigma_b0 = NULL, sigma_b1 = 0,
-  alpha = 0.05, method = "glmm", quiet = FALSE,
-  all.sim.data = FALSE)
+cps.did.normal(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  difference = NULL,
+  sigma_sq = NULL,
+  sigma_b_sq0 = NULL,
+  sigma_b_sq1 = 0,
+  alpha = 0.05,
+  method = "glmm",
+  quiet = FALSE,
+  all.sim.data = FALSE
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -21,18 +30,18 @@ of clusters per treatment group (required)}
 
 \item{difference}{Expected absolute difference in treatment effect between time points; accepts numeric (required).}
 
-\item{sigma}{Within-cluster variance; accepts numeric scalar (indicating equal within-cluster variances for both 
+\item{sigma_sq}{Within-cluster variance; accepts numeric scalar (indicating equal within-cluster variances for both 
 treatment groups at both time points) or vector of length 4 specifying within-cluster variance for each treatment 
 group at each time point.}
 
-\item{sigma_b0}{Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
+\item{sigma_b_sq0}{Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
 between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
 between-cluster variances}
 
-\item{sigma_b1}{Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
+\item{sigma_b_sq1}{Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
 between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
-between-cluster variances. For data simulation, SIGMA_B1 is added to SIGMA_B0, such that if SIGMA_B0 = 5 
-and SIGMA_B1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.}
+between-cluster variances. For data simulation, sigma_b_sq1 is added to sigma_b_sq0, such that if sigma_b_sq0 = 5 
+and sigma_b_sq1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.}
 
 \item{alpha}{Significance level. Default = 0.05.}
 
@@ -93,8 +102,8 @@ and simulated data set output may also be specified.
 \examples{
 \dontrun{
 normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 150, nclusters = 6, 
-                                difference = .48, sigma = 1, alpha = 0.05, 
-                                sigma_b0 = .1, method = 'glmm', quiet = FALSE, 
+                                difference = .48, sigma_sq = 1, alpha = 0.05, 
+                                sigma_b_sq0 = .1, method = 'glmm', quiet = FALSE, 
                                 all.sim.data = FALSE)
 }
 

@@ -26,7 +26,7 @@ test_that("continuous case matches CRTSize", {
                                              nclusters = NA, nsubjects = 150,
                                              icc = .05, vart = 1, method = "weighted", 
                                              tol = .Machine$double.eps^0.25, d=0.4804988)), 0), 
-               round(n4means(delta=0.4804988, sigma=1, m=150, ICC=0.05)$n),0)
+               round(CRTSize::n4means(delta=0.4804988, sigma=1, m=150, ICC=0.05)$n),0)
 })
 
 # compare simulation and analytic methods for continuous outcomes
@@ -68,7 +68,7 @@ test_that("binary case matches CRTSize::n4props", {
   expect_equal(ceiling(as.numeric(crtpwr.2prop(alpha = 0.05, power = 0.8, 
                                              nclusters = NA, nsubjects = 150, cv = 0, 
                                              p1 = .1, p2 = .2, icc = .05))), 
-               ceiling(n4props(pe=.2, pc=.1, m=150, ICC=.05)$n-1))
+               ceiling(CRTSize::n4props(pe=.2, pc=.1, m=150, ICC=.05)$n-1))
 })
 
 # compare simulation and analytic methods for binary outcomes
@@ -101,7 +101,7 @@ test_that("incidence rate outcomes matches CRTSize::n4incidence", {
   expect_equal(ceiling(as.numeric(crtpwr.2rate(alpha = 0.05, power = 0.8, 
                                                nclusters = NA, py = 1000, 
                                                r1 = 0.01, r2 = 0.005, cvb = 0.25))), 
-               ceiling(n4incidence(le=0.01, lc=0.005, m=1000, t=1, CV=0.25)$n))
+               ceiling(CRTSize::n4incidence(le=0.01, lc=0.005, m=1000, t=1, CV=0.25)$n))
 })
 
 # compare simulation and analytic methods for poisson outcomes
@@ -196,7 +196,6 @@ test_that("DID binary simulation and analytic methods give similar power estimat
 # SW normal/binary/count
 # Multi-arm normal/binary/count
 
-# NOTE: most of these don't exist yet.
 
 
 

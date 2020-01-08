@@ -4,9 +4,17 @@
 \alias{crtpwr.2rate}
 \title{Power calculations for simple cluster randomized trials, count outcome}
 \usage{
-crtpwr.2rate(alpha = 0.05, power = 0.8, nclusters = NA, py = NA,
-  r1 = NA, r2 = NA, cvb = NA, r1inc = TRUE,
-  tol = .Machine$double.eps^0.25)
+crtpwr.2rate(
+  alpha = 0.05,
+  power = 0.8,
+  nclusters = NA,
+  py = NA,
+  r1 = NA,
+  r2 = NA,
+  cvb = NA,
+  r1inc = TRUE,
+  tol = .Machine$double.eps^0.25
+)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a

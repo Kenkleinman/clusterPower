@@ -3,13 +3,25 @@
 \name{validateVariance}
 \alias{validateVariance}
 \title{Power simulations for cluster-randomized trials: validating ICC, 
-sigma, and sigma_b inputs.}
+sigma_sq, and sigma_b_sq inputs.}
 \usage{
-validateVariance(dist = NULL, difference = NULL, alpha = alpha,
-  ICC = ICC, sigma = sigma_sq, sigma_b = sigma_b_sq, ICC2 = NA,
-  sigma2 = NA, sigma_b2 = NA, method = method, quiet = quiet,
-  all.sim.data = all.sim.data, poor.fit.override = poor.fit.override,
-  cores = NA, probs = NA)
+validateVariance(
+  dist = NULL,
+  difference = NULL,
+  alpha = alpha,
+  ICC = ICC,
+  sigma_sq = sigma_sq,
+  sigma_b_sq = sigma_b_sq,
+  ICC2 = NA,
+  sigma_sq2 = NA,
+  sigma_b_sq2 = NA,
+  method = method,
+  quiet = quiet,
+  all.sim.data = all.sim.data,
+  poor.fit.override = poor.fit.override,
+  cores = NA,
+  probs = NA
+)
 }
 \arguments{
 \item{dist}{String indicating outcome distribution. Takes one of "norm", 
@@ -22,17 +34,17 @@ validateVariance(dist = NULL, difference = NULL, alpha = alpha,
 \item{ICC}{Intra-cluster correlation coefficient; accepts a vector of 
 length \code{narms} with values between 0 - 1.}
 
-\item{sigma}{Within-cluster variance; accepts numeric}
+\item{sigma_sq}{Within-cluster variance; accepts numeric}
 
-\item{sigma_b}{Between-cluster variance; accepts numeric}
+\item{sigma_b_sq}{Between-cluster variance; accepts numeric}
 
 \item{ICC2}{Intra-cluster correlation coefficient for clusters in the 
 treatment group (used in 2-arm simulation methods only).}
 
-\item{sigma2}{Within-cluster variance for clusters in treatment group
+\item{sigma_sq2}{Within-cluster variance for clusters in treatment group
 (used in 2-arm simulation methods only).}
 
-\item{sigma_b2}{Between-cluster variance for clusters in treatment group 
+\item{sigma_b_sq2}{Between-cluster variance for clusters in treatment group 
 (used in 2-arm simulation methods only).}
 
 \item{method}{Analytical method, either Generalized Linear Mixed Effects 
@@ -69,8 +81,8 @@ properly.
 \dontrun{
 
 validateVariance(dist="norm", difference=30, alpha=0.05, ICC=0.2, 
-                  sigma=100, sigma_b=25, ICC2=0.5, sigma2=120, 
-                  sigma_b2=120, method=c("glmm", "gee"), quiet=FALSE, 
+                  sigma_sq=100, sigma_b_sq=25, ICC2=0.5, sigma_sq2=120, 
+                  sigma_b_sq2=120, method=c("glmm", "gee"), quiet=FALSE, 
                   all.sim.data=FALSE, poor.fit.override=TRUE)
 
 }

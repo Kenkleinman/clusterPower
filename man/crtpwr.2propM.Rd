@@ -4,9 +4,17 @@
 \alias{crtpwr.2propM}
 \title{Power calculations for simple cluster randomized trials with matching, binary outcome}
 \usage{
-crtpwr.2propM(alpha = 0.05, power = 0.8, nclusters = NA,
-  nsubjects = NA, p1 = NA, p2 = NA, cvm = 0, p1inc = TRUE,
-  tol = .Machine$double.eps^0.25)
+crtpwr.2propM(
+  alpha = 0.05,
+  power = 0.8,
+  nclusters = NA,
+  nsubjects = NA,
+  p1 = NA,
+  p2 = NA,
+  cvm = 0,
+  p1inc = TRUE,
+  tol = .Machine$double.eps^0.25
+)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a

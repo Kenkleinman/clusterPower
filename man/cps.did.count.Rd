@@ -4,11 +4,22 @@
 \alias{cps.did.count}
 \title{Power simulations for cluster-randomized trials: Difference in Difference, Count Outcome.}
 \usage{
-cps.did.count(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  c1 = NULL, c2 = NULL, c.diff = NULL, sigma_b0 = NULL,
-  sigma_b1 = 0, family = "poisson", analysis = "poisson",
-  method = "glmm", alpha = 0.05, quiet = FALSE,
-  all.sim.data = FALSE)
+cps.did.count(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  c1 = NULL,
+  c2 = NULL,
+  c.diff = NULL,
+  sigma_b_sq0 = NULL,
+  sigma_b_sq1 = 0,
+  family = "poisson",
+  analysis = "poisson",
+  method = "glmm",
+  alpha = 0.05,
+  quiet = FALSE,
+  all.sim.data = FALSE
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -24,14 +35,14 @@ At least 2 of the following 3 arguments must be specified:}
 
 \item{c.diff}{Expected difference in outcome count between groups, defined as c.diff = c1 - c2}
 
-\item{sigma_b0}{Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
+\item{sigma_b_sq0}{Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
 between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
 between-cluster variances}
 
-\item{sigma_b1}{Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
+\item{sigma_b_sq1}{Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
 between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
-between-cluster variances. For data simulation, SIGMA_B1 is added to SIGMA_B0, such that if SIGMA_B0 = 5 
-and SIGMA_B1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.}
+between-cluster variances. For data simulation, sigma_b_sq1 is added to sigma_b_sq0, such that if sigma_b_sq0 = 5 
+and sigma_b_sq1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.}
 
 \item{family}{Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'}
 
@@ -99,7 +110,7 @@ while the function is running.
 \examples{
 \dontrun{
 did.count.sim = cps.did.count(nsim = 100, nsubjects = 50, nclusters = 6, c1 = 100, 
-                              c2 = 25, sigma_b0 = c(10, 15), sigma_b1 = c(12, 18), 
+                              c2 = 25, sigma_b_sq0 = c(10, 15), sigma_b_sq1 = c(12, 18), 
                               family = 'poisson', analysis = 'poisson', method = 'glmm', 
                               alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
 }

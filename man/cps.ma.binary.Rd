@@ -5,11 +5,25 @@
 \title{Simulation-based power estimation for binary outcome multi-arm 
 cluster-randomized trials.}
 \usage{
-cps.ma.binary(nsim = 1000, nsubjects = NULL, narms = NULL,
-  nclusters = NULL, probs = NULL, sigma_b_sq = NULL, alpha = 0.05,
-  quiet = FALSE, method = "glmm", multi.p.method = "bonferroni",
-  all.sim.data = FALSE, seed = NA, cores = NA, tdist = FALSE,
-  poor.fit.override = FALSE)
+cps.ma.binary(
+  nsim = 1000,
+  nsubjects = NULL,
+  narms = NULL,
+  nclusters = NULL,
+  probs = NULL,
+  sigma_b_sq = NULL,
+  alpha = 0.05,
+  quiet = FALSE,
+  method = "glmm",
+  multi.p.method = "bonferroni",
+  all.sim.data = FALSE,
+  seed = NA,
+  cores = NA,
+  tdist = FALSE,
+  poor.fit.override = FALSE,
+  low.power.override = FALSE,
+  opt = "optim"
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -60,6 +74,14 @@ Default = FALSE.}
 
 \item{poor.fit.override}{Option to override \code{stop()} if more than 25\% of fits fail to converge or 
 power<0.5 after 50 iterations; default = FALSE.}
+
+\item{low.power.override}{Option to override \code{stop()} if the power 
+is less than 0.5 after the first 50 simulations and every ten simulations
+thereafter. On function execution stop, the actual power is printed in the 
+stop message. Default = FALSE. When TRUE, this check is ignored and the 
+calculated power is returned regardless of value.}
+
+\item{opt}{Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.}
 }
 \value{
 A list with the following components:
@@ -124,6 +146,9 @@ copying data across cores also may take some time. For time-savings,
 this function stops execution early if estimated power < 0.5 or more 
 than 25\% of models produce a singular fit or non-convergence warning 
 message, unless \code{poor.fit.override = TRUE}.
+
+Non-convergent models are not included in the calculation of exact confidence 
+intervals.
 }
 \examples{
 \dontrun{

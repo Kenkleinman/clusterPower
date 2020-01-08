@@ -13,6 +13,9 @@
 #' between-cluster variance; significance level, analytic method, progress updates, 
 #' and simulated data set output may also be specified.
 #' 
+#' Non-convergent models are not included in the calculation of exact confidence 
+#' intervals.
+#' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes, both groups), 
@@ -23,14 +26,14 @@
 #' @param difference Expected absolute treatment effect; accepts numeric (required).
 #' At least 2 of the following must be specified:
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
-#' @param sigma Within-cluster variance; accepts numeric
-#' @param sigma_b Between-cluster variance; accepts numeric
+#' @param sigma_sq Within-cluster variance; accepts numeric
+#' @param sigma_b_sq Between-cluster variance; accepts numeric
 #' 
 #' If clusters differ between treatment groups, at least 2 of the following 
 #' must be specified:
 #' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
-#' @param sigma2 Within-cluster variance for clusters in TREATMENT group
-#' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
+#' @param sigma_sq2 Within-cluster variance for clusters in TREATMENT group
+#' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
 #' @param alpha Significance level; default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
@@ -48,7 +51,9 @@
 #'   \item Number of simulations
 #'   \item Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound)
+#'                "upper.95.ci" (Upper 95% confidence interval bound).
+#'                Note that non-convergent models are returned for review, 
+#'                but not included in this calculation.
 #'   \item Analytic method used for power estimation
 #'   \item Significance level
 #'   \item Vector containing user-defined cluster sizes
@@ -70,19 +75,22 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 9, difference = 10,
-#'                         ICC = 0.3, sigma = 100, alpha = 0.05, method = 'glmm', 
+#' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 9, difference = 3.75,
+#'                         ICC = 0.3, sigma_sq = 20,
+#'                         alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
+#' 
 #' @author Alexander R. Bogdan, Alexandria C. Sakrejda 
 #' (\email{acbro0@@umass.edu}), and Ken Kleinman 
 #' (\email{ken.kleinman@@gmail.com})
+#' 
 #' @export
 
 
 cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, difference = NULL,
-                      ICC = NULL, sigma = NULL, sigma_b = NULL,
-                      ICC2 = NULL, sigma2 = NULL, sigma_b2 = NULL,
+                      ICC = NULL, sigma_sq = NULL, sigma_b_sq = NULL,
+                      ICC2 = NULL, sigma_sq2 = NULL, sigma_b_sq2 = NULL,
                       alpha = 0.05, method = 'glmm', quiet = FALSE,
                       all.sim.data = FALSE, seed = NA, poor.fit.override=FALSE,
                       irgtt = FALSE){
@@ -97,7 +105,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
-  fail.vector = NULL
+  converge.vector = NULL
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -105,9 +113,6 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
                                          total = nsim, clear = FALSE, width = 100)
   prog.bar$tick(0)
-  
-  # Create wholenumber function
-  is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
   
   # Validate NSIM, NCLUSTERS, NSUBJECTS
   sim.data.arg.list = list(nsim, nclusters, nsubjects, difference)
@@ -130,7 +135,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   }
   
   # Set cluster sizes for treatment arm (if not already specified)
-  if(length(nclusters) == 1){
+  if (length(nclusters) == 1){
     nclusters[2] = nclusters[1]
   }
   
@@ -148,6 +153,39 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS")
   }
   
+  ## Create variance parameters
+  # sigma_b_sq, sigma_sq, ICC
+  if(!is.null(c(ICC, sigma_sq)) && is.null(sigma_b_sq)){
+    sigma_b_sq = ICC * sigma_sq / (1 - ICC)
+  }
+  if(!is.null(c(ICC, sigma_b_sq)) && is.null(sigma_sq)){
+    sigma_sq = sigma_b_sq / ICC - sigma_b_sq
+  }
+  if(!is.null(c(sigma_sq, sigma_b_sq)) && is.null(ICC)){
+    ICC = sigma_b_sq / (sigma_b_sq + sigma_sq)
+  }
+  # sigma_b_sq2, sigma_sq2, ICC2
+  if(!is.null(c(ICC2, sigma_sq2)) && is.null(sigma_b_sq2)){
+    sigma_b_sq2 = ICC2 * sigma_sq2 / (1 - ICC2)
+  }
+  if(!is.null(c(ICC2, sigma_b_sq2)) && is.null(sigma_sq2)){
+    sigma_sq2 = sigma_b_sq2 / ICC2 - sigma_b_sq2
+  }
+  if(!is.null(c(sigma_sq2, sigma_b_sq2)) && is.null(ICC2)){
+    ICC2 = sigma_b_sq2 / (sigma_b_sq2 + sigma_sq2)
+  }
+  
+  # Set within/between cluster variances & ICC for treatment group (if not already specified)
+  if (isTRUE(is.null(sigma_sq2))){
+    sigma_sq2 <- sigma_sq
+  }
+  if (isTRUE(is.null(sigma_b_sq2))){
+    sigma_b_sq2 <- sigma_b_sq
+  }
+  if (isTRUE(is.null(ICC2))){
+    ICC2 <- ICC
+  }
+  
   # Validate DIFFERENCE, ALPHA
   min0.warning = " must be a numeric value greater than 0"
   if(!is.numeric(difference) || difference < 0){
@@ -157,23 +195,25 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     stop("ALPHA must be a numeric value between 0 - 1")
   }
   
-  # Validate ICC, SIGMA, SIGMA_B, ICC2, SIGMA2, SIGMA_B2
-  parm1.arg.list = list(ICC, sigma, sigma_b)
+  # Validate ICC, sigma_sq, sigma_b_sq, ICC2, sigma_sq2, sigma_b_sq2
+  
+  parm1.arg.list = list(ICC, sigma_sq, sigma_b_sq)
   parm1.args = unlist(lapply(parm1.arg.list, is.null))
   if(sum(parm1.args) > 1){
-    stop("At least two of the following terms must be specified: ICC, sigma, sigma_b")
+    stop("At least two of the following terms must be specified: ICC, sigma_sq, sigma_b_sq")
   }
-  if(sum(parm1.args) == 0 && ICC != sigma_b / (sigma_b + sigma)){
-    stop("At least one of the following terms has been misspecified: ICC, sigma, sigma_b")
+  if(isTRUE(sum(parm1.args) == 0 & (ICC != sigma_b_sq / (sigma_b_sq + sigma_sq)))){
+    stop("At least one of the following terms has been misspecified: ICC, sigma_sq, sigma_b_sq")
   }
-  parm2.arg.list = list(ICC2, sigma2, sigma_b2)
+
+  parm2.arg.list = list(ICC2, sigma_sq2, sigma_b_sq2)
   parm2.args = unlist(lapply(parm2.arg.list, is.null))
   if(sum(parm2.args) > 1 && sum(parm2.args) != 3){
     stop("At least two of the following terms must be provided to simulate treatment-specific
-         variances: ICC2, sigma2, sigma_b2")
+         variances: ICC2, sigma_sq2, sigma_b_sq2")
   }
-  if(sum(parm2.args) == 0 && ICC2 != sigma_b2 / (sigma_b2 + sigma2)){
-    stop("At least one of the following terms has been misspecified: ICC2, sigma2, sigma_b2")
+  if(sum(parm2.args) == 0 && ICC2 != sigma_b_sq2 / (sigma_b_sq2 + sigma_sq2)){
+    stop("At least one of the following terms has been misspecified: ICC2, sigma_sq2, sigma_b_sq2")
   }
   
   # Validate METHOD, QUIET, ALL.SIM.DATA
@@ -188,33 +228,6 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     stop("ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output")
   }
   
-  ## Create variance parameters
-  # SIGMA_B, SIGMA, ICC
-  if(!is.null(c(ICC, sigma)) && is.null(sigma_b)){
-    sigma_b = ICC * sigma / (1 - ICC)
-  }
-  if(!is.null(c(ICC, sigma_b)) && is.null(sigma)){
-    sigma = sigma_b / ICC - sigma_b
-  }
-  if(!is.null(c(sigma, sigma_b)) && is.null(ICC)){
-    ICC = sigma_b / (sigma_b + sigma)
-  }
-  # SIGMA_B2, SIGMA2, ICC2
-  if(!is.null(c(ICC2, sigma2)) && is.null(sigma_b2)){
-    sigma_b2 = ICC2 * sigma2 / (1 - ICC2)
-  }
-  if(!is.null(c(ICC2, sigma_b2)) && is.null(sigma2)){
-    sigma2 = sigma_b2 / ICC2 - sigma_b2
-  }
-  if(!is.null(c(sigma2, sigma_b2)) && is.null(ICC2)){
-    ICC2 = sigma_b2 / (sigma_b2 + sigma2)
-  }
-  
-  # Set within/between cluster variances & ICC for treatment group (if not already specified)
-  sigma[2] = ifelse(!is.null(sigma2), sigma2, sigma[1])
-  sigma_b[2] = ifelse(!is.null(sigma_b2), sigma_b2, sigma_b[1])
-  ICC[2] = ifelse(!is.null(ICC2), ICC2, ICC[1])
-  
   # Create indicators for treatment group & cluster
   trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
           rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
@@ -223,18 +236,18 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   # Create simulation loop
   for(i in 1:nsim){
     # Generate between-cluster effects for non-treatment and treatment
-    randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
-    randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
+    randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq))
+    randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq2))
     
     # Create non-treatment y-value
     y0.bclust = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
-    y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma[1]))))
+    y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x) stats::rnorm(x, mean = 0, sd = sqrt(sigma_sq))))
     y.0 = y0.bclust + y0.wclust
     
     # Create treatment y-value
     y1.bclust = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
     y1.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])], 
-                              function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma[2]))))
+                              function(x) stats::rnorm(x, mean = difference, sd = sqrt(sigma_sq2))))
     y.1 = y1.bclust + y1.wclust
     
     # Create single response vector
@@ -250,7 +263,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
     # Fit GLMM (lmer)
     if(method == 'glmm'){
       if(irgtt == TRUE){
-        if (sigma!=sigma2 && sigma_b!=sigma_b2){
+        if (sigma_sq!=sigma_sq2 && sigma_b_sq!=sigma_b_sq2){
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
           my.mod <- nlme::lme(y~as.factor(trt2), random=~0+as.factor(trt2)|clust2, 
@@ -267,10 +280,10 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
           se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
           stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
-          # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
         }
         
-        if (sigma==sigma2 && sigma_b!=sigma_b2){
+        if (sigma_sq==sigma_sq2 && sigma_b_sq!=sigma_b_sq2){
           my.mod <-  lmerTest::lmer(y ~ trt + (0 + as.factor(trt)|clust), REML=FALSE,
                                     data = sim.dat)
           # get the overall p-values (>Chisq)
@@ -280,15 +293,15 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
           se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
           stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
           # option to stop the function early if fits are singular
           if (poor.fit.override==FALSE){
-            if(sum(fail.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+            if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
           }
          }
         #if not IRGTT, then the following:
   } else {
-        if (sigma!=sigma2 && sigma_b!=sigma_b2){
+        if (sigma_sq!=sigma_sq2 && sigma_b_sq!=sigma_b_sq2){
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
           my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
@@ -305,10 +318,10 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
           se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
           stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
-         # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
         }
         
-        if (sigma==sigma2 && sigma_b!=sigma_b2){
+        if (sigma_sq==sigma_sq2 && sigma_b_sq!=sigma_b_sq2){
           my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), REML=FALSE,
                                     data = sim.dat)
           # get the overall p-values (>Chisq)
@@ -318,14 +331,14 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
           se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
           stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
           # option to stop the function early if fits are singular
           if (poor.fit.override==FALSE){
-            if(sum(fail.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+            if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
           }
          }
         
-        if (sigma!=sigma2 && sigma_b==sigma_b2){
+        if (sigma_sq!=sigma_sq2 && sigma_b_sq==sigma_b_sq2){
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
           my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
@@ -342,10 +355,10 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
           se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
           stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
-          # fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
         }
         
-        if (sigma==sigma2 && sigma_b==sigma_b2){
+        if (sigma_sq==sigma_sq2 && sigma_b_sq==sigma_b_sq2){
           my.mod <-  lmerTest::lmer(y~trt+(1|clust), REML=FALSE, 
                                     data = sim.dat)
           # get the overall p-values (>Chisq)
@@ -355,10 +368,10 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
           se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
           stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
           # option to stop the function early if fits are singular
           if (poor.fit.override==FALSE){
-            if(sum(fail.vector, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
+            if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
           }
         } 
       }
@@ -418,14 +431,14 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
                            Std.err = as.vector(unlist(se.vector)),
                            Test.statistic = as.vector(unlist(stat.vector)),
-                           p.value = as.vector(unlist(pval.vector)))
-  cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
+                           p.value = as.vector(unlist(pval.vector)),
+                           converge = as.vector(unlist(converge.vector)))
   
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(Power = round(pval.power, 3),
-                           Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                           Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
+  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  power.parms <- confint.calc(nsim = nsim, alpha = alpha,
+                              p.val = cps.model.temp[, 'p.value'], 
+                              names.power = c("trt"))
   
   # Create object containing group-specific cluster sizes
   cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 
@@ -435,15 +448,15 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
   
   # Create object containing group-specific variance parameters
-  var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma' = sigma[1], 'sigma_b' = sigma_b[1]), 
-                           'Treatment' = c('ICC' = ICC[2], 'sigma' = sigma[2], 'sigma_b' = sigma_b[2])))
+  var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma_sq' = sigma_sq[1], 'sigma_b_sq' = sigma_b_sq[1]), 
+                           'Treatment' = c('ICC' = ICC2, 'sigma_sq' = sigma_sq2, 'sigma_b_sq' = sigma_b_sq)))
   
-  fail <- unlist(fail.vector)
+  fail <- unlist(converge.vector)
   
   # Create list containing all output (class 'crtpwr') and return
   complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, "alpha" = alpha,
                                    "cluster.sizes" = cluster.sizes, "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                   "inputs" = difference, "model.estimates" = cps.model.est, "convergence.error" = fail, "sim.data" = simulated.datasets), 
+                                   "inputs" = difference, "model.estimates" = cps.model.est, "convergence" = fail, "sim.data" = simulated.datasets), 
                               class = 'crtpwr')
   return(complete.output)
   }

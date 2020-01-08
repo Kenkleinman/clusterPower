@@ -5,13 +5,28 @@
 \title{Simulation-based power estimation for continuous outcome multi-arm 
 cluster-randomized trials.}
 \usage{
-cps.ma.normal(nsim = 1000, nsubjects = NULL, narms = NULL,
-  nclusters = NULL, means = NULL, sigma_sq = NULL,
-  sigma_b_sq = NULL, alpha = 0.05, quiet = FALSE, ICC = NULL,
-  method = "glmm", multi.p.method = "bonferroni",
-  all.sim.data = FALSE, seed = NA, cores = NULL,
-  poor.fit.override = FALSE, tdist = FALSE,
-  return.all.models = FALSE)
+cps.ma.normal(
+  nsim = 1000,
+  nsubjects = NULL,
+  narms = NULL,
+  nclusters = NULL,
+  means = NULL,
+  sigma_sq = NULL,
+  sigma_b_sq = NULL,
+  alpha = 0.05,
+  quiet = FALSE,
+  ICC = NULL,
+  method = "glmm",
+  multi.p.method = "bonferroni",
+  all.sim.data = FALSE,
+  seed = NA,
+  cores = NULL,
+  poor.fit.override = FALSE,
+  low.power.override = FALSE,
+  tdist = FALSE,
+  return.all.models = FALSE,
+  opt = "nloptwrap"
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -64,7 +79,13 @@ default = FALSE.}
 used for parallel computing.}
 
 \item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
-of fits fail to converge or power<0.5 after 50 iterations; default = FALSE.}
+of fits fail to converge; default = FALSE.}
+
+\item{low.power.override}{Option to override \code{stop()} if the power 
+is less than 0.5 after the first 50 simulations and every ten simulations
+thereafter. On function execution stop, the actual power is printed in the 
+stop message. Default = FALSE. When TRUE, this check is ignored and the 
+calculated power is returned regardless of value.}
 
 \item{tdist}{Logical; use t-distribution instead of normal distribution 
 for simulation values, default = FALSE.}
@@ -72,6 +93,8 @@ for simulation values, default = FALSE.}
 \item{return.all.models}{Logical; Returns all of the fitted models, the simulated data,
 the overall model comparisons, and the convergence report vector. This is equivalent
 to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.}
+
+\item{opt}{Option to fit with a different optimizer (using the package \code{optimx}). Default is 'nloptwrap'.}
 }
 \value{
 A list with the following components:
@@ -79,7 +102,9 @@ A list with the following components:
   \item{power}{
   Data frame with columns "Power" (Estimated statistical power), 
                "lower.95.ci" (Lower 95\% confidence interval bound), 
-               "upper.95.ci" (Upper 95\% confidence interval bound).
+               "upper.95.ci" (Upper 95\% confidence interval bound). 
+               Note that non-convergent models are returned for review, 
+               but not included in this calculation.
                }
   \item{model.estimates}{
   Produced only when all.sim.data=TRUE, data frame with columns 
@@ -96,7 +121,7 @@ A list with the following components:
   results.
   }
   \item{overall.power.summary}{
-  Overall power of model compared to H0.
+  Overall power of model compared to H0. Omits non-convergent models.
   }
   \item{simulated.data}{
   List of \code{nsim} data frames, each containing: 
@@ -113,7 +138,7 @@ A list with the following components:
   Vector of length \code{nsim} denoting whether 
   or not a simulation glmm fit triggered a "singular fit" 
   or "non-convergence" error, produced only when 
-  method == "glmm" & all.sim.data==TRUE.
+  method = "glmm" & all.sim.data=TRUE.
   }
   }
 }
@@ -142,13 +167,17 @@ users can provide these values with the arguments \code{narms},
 designs, the user may provide a list of vectors with one vector per arm,
 with each vector containing the number of subjects per cluster. See the 
 examples provided below for a demonstration of the various input options.
+
+Non-convergent models are not included in the calculation of exact confidence 
+intervals.
 }
 \examples{
 \dontrun{
-nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-means.example <- c(22, 21, 21.5)
-sigma_sq.example <- c(1, 1, 0.9)
-sigma_b_sq.example <- c(0.1, 0.15, 0.1)
+nsubjects.example <- list(c(20,20,20,20, 20, 75, 20, 20, 20, 75), 
+  c(20, 20, 25, 25, 25, 25, 25, 25), c(40, 25, 40, 20, 20, 20, 20, 20))
+means.example <- c(5, 10, 1)
+sigma_sq.example <- c(2, 1.2, 2.9)
+sigma_b_sq.example <- c(1.1, 1.15, 1.1)
 
 multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.example, 
                        means = means.example, sigma_sq = sigma_sq.example, 
@@ -156,25 +185,29 @@ multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.exampl
                        quiet = FALSE, ICC=NULL, method = 'glmm', 
                        all.sim.data = FALSE,
                        seed = 123, cores = "all",
-                       poor.fit.override = FALSE)
+                       poor.fit.override = FALSE,
+                       opt = "nlminb")
                        
  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
-                                   nclusters = c (10,11,10), nsubjects = 100,
-                                   means = c(21, 21, 21.4),
-                                   sigma_sq = c(1,1,.9), 
-                                   sigma_b_sq = c(.1,.15,.1), alpha = 0.05,
+                                   nclusters = c(10,11,10), nsubjects = 25,
+                                   means = c(24, 21.2, 21.4),
+                                   sigma_sq = c(1.2, 1, 1.9), 
+                                   sigma_b_sq = c(0.5, 1, 0.75),
                                    quiet = FALSE, ICC=NULL, method = 'glmm',
                                    all.sim.data = FALSE, seed = 123,
-                                   poor.fit.override = TRUE, cores="all")
+                                   poor.fit.override = TRUE, 
+                                   cores="all",
+                                   opt = "nlminb")
 }
 multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
                                   nclusters = 10, nsubjects = 25, 
-                                  means = c(22.1, 21, 22.5),
+                                  means = c(22.0, 21.0, 22.5),
                                   sigma_sq = 1, 
                                   sigma_b_sq = 1, alpha = 0.05,
                                   quiet = FALSE, ICC=NULL, method = 'glmm',
                                   all.sim.data = FALSE, seed = 123,
-                                  poor.fit.override = TRUE, cores="all")
+                                  poor.fit.override = TRUE, cores="all",
+                                  opt = "auto")
 
 }
 \author{

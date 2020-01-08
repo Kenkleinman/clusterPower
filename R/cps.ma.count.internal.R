@@ -36,10 +36,16 @@
 #' @param seed Option to set.seed. Default is NULL.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
 #' of fits fail to converge.
+#' @param low.power.override Option to override \code{stop()} if the power 
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the 
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the 
+#' calculated power is returned regardless of value. 
 #' @param tdist Logical; use t-distribution instead of normal distribution for 
 #' simulation values, default = FALSE.
 #' @param cores A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to NA, no parallel computing is used.
+#'  @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -57,8 +63,8 @@
 #' @examples 
 #' \dontrun{
 #' 
-#' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-#' counts.example <- c(30, 55, 90)
+#' nsubjects.example <- list(c(200,200,200,250), c(150, 200, 200, 210), c(170, 200, 210))
+#' counts.example <- c(300, 550, 900)
 #' sigma_b_sq.example <- c(1, 1, 2)
 #' 
 #' count.ma.rct <- cps.ma.count.internal (nsim = 10, 
@@ -81,18 +87,22 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                     all.sim.data = FALSE, 
                                     seed = NA,
                                     poor.fit.override = FALSE,
+                                   low.power.override = FALSE,
                                     tdist = FALSE,
-                                    cores=cores){
+                                    cores = cores,
+                                   opt = "optim") {
   
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
+  
+  require("optimx")
   
   # Create NCLUSTERS, NARMS, from str.nsubjects
   narms = length(str.nsubjects)
   nclusters = sapply(str.nsubjects, length)
   
   # This container keeps track of how many models failed to converge
-  fail <- rep(NA, nsim)
+  converged <- rep(NA, nsim)
   
   # Create a container for the simulated.dataset and model output
   sim.dat = vector(mode = "list", length = nsim)
@@ -200,29 +210,30 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   progress <- function(n) setTxtProgressBar(pb, n)
   opts <- list(progress=progress)
   
+  # Update simulation progress information
+  if(quiet == FALSE){
+    sim.start <- Sys.time()
+    lme4::glmer(sim.dat[,1] ~ trt + (1|clust), family = stats::poisson(link = 'log'))
+    avg.iter.time = as.numeric(difftime(Sys.time(), sim.start, units = 'secs'))
+    time.est = avg.iter.time * (nsim - 1) / 60
+    hr.est = time.est %/% 60
+    min.est = round(time.est %% 60, 0)
+    message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
+                   ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
+    # initialize progress bar
+    if (is.na(cores)){
+      prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
+                                             total = 5, clear = FALSE, show_after = 0)
+      prog.bar$tick(0)
+    }
+  }
+  if (is.na(cores) & quiet==FALSE){
+    # Iterate progress bar
+    prog.bar$update(1 / 5)
+    Sys.sleep(1/100)
+  }
+  
   if (method=="glmm"){
-    # Update simulation progress information
-    if(quiet == FALSE){
-      sim.start <- Sys.time()
-      lme4::glmer(sim.dat[,1] ~ trt + (1|clust), family = stats::poisson(link = 'log'))
-      avg.iter.time = as.numeric(difftime(Sys.time(), sim.start, units = 'secs'))
-      time.est = avg.iter.time * (nsim - 1) / 60
-      hr.est = time.est %/% 60
-      min.est = round(time.est %% 60, 0)
-      message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
-                     ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
-      # initialize progress bar
-      if (is.na(cores)){
-        prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
-                                               total = 5, clear = FALSE, show_after = 0)
-        prog.bar$tick(0)
-      }
-    }
-    if (is.na(cores) & quiet==FALSE){
-      # Iterate progress bar
-      prog.bar$update(1 / 5)
-      Sys.sleep(1/100)
-    }
     # Fit the models
     require(doParallel)
     require(foreach)
@@ -232,15 +243,21 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     }
     if(family == 'poisson'){
       my.mod <- foreach::foreach(i=1:nsim, .options.snow=opts, 
-                               .packages = "lme4", .inorder=FALSE) %fun% { 
+                               .packages = c("lme4", "optimx"), .inorder=FALSE) %fun% { 
                                  lme4::glmer(sim.dat[,i] ~ trt + (1|clust), 
-                                             family = stats::poisson(link = 'log'))
+                                             family = stats::poisson(link = 'log'),
+                                             control = lme4::glmerControl(optimizer = "optimx", calc.derivs = TRUE,
+                                                                          optCtrl = list(method = opt, 
+                                                                                         starttests = FALSE, kkt = FALSE)))
                                }
     }
     if(family == 'neg.binom'){
       my.mod <- foreach::foreach(i=1:nsim, .options.snow=opts, 
-                                 .packages = "lme4", .inorder=FALSE) %fun% { 
-                                   lme4::glmer.nb(sim.dat[,i] ~ trt + (1|clust))
+                                 .packages = c("lme4", "optimx"), .inorder=FALSE) %fun% { 
+                                   lme4::glmer.nb(sim.dat[,i] ~ trt + (1|clust),
+                                                  control = lme4::glmerControl(optimizer = "optimx", calc.derivs = TRUE,
+                                                                               optCtrl = list(method = opt, 
+                                                                                              starttests = FALSE, kkt = FALSE)))
                                  }
     }
     
@@ -251,14 +268,14 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     }
     
     # option to stop the function early if fits are singular
-    fail <- foreach::foreach(i=1:nsim, .packages = "lme4", .inorder=FALSE) %fun% {
+    converged <- foreach::foreach(i=1:nsim, .packages = "lme4", .inorder=FALSE) %fun% {
       ifelse(any( grepl("fail", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE |
-               any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE, 1, 0)
+               any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE)
     }
     if (poor.fit.override==FALSE){
-      if(sum(unlist(fail), na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations
-                                                          are singular fit: check model specifications")}
-      }
+      if(sum(unlist(converged), na.rm = TRUE)>(nsim*.25)){
+        stop("more than 25% of simulations are singular fit: check model specifications")}
+    }
     
     if (!is.na(cores) & quiet == FALSE){
       message("\r Performing null model comparisons")
@@ -378,12 +395,12 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   if(all.sim.data == TRUE){
     complete.output.internal <-  list("estimates" = model.values,
                                    "model.comparisons" = model.compare,
-                                   "sim.data" = data.frame(trt, clust, sim.dat),
-                                   "failed.to.converge"= unlist(fail))
+                                   "converged"= unlist(converged),
+                                   "sim.data" = data.frame(trt, clust, sim.dat))
   } else {
     complete.output.internal <-  list("estimates" = model.values,
                                   "model.comparisons" = model.compare,
-                                   "failed.to.converge" =  paste((sum(unlist(fail))/nsim)*100, 
+                                   "converged" =  paste(1-(sum(unlist(converged))/nsim)*100, 
                                        "% did not converge", sep=""))
   }
   return(complete.output.internal)

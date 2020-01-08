@@ -30,6 +30,9 @@
 #' than 25\% of models produce a singular fit or non-convergence warning 
 #' message, unless \code{poor.fit.override = TRUE}.
 #' 
+#' Non-convergent models are not included in the calculation of exact confidence 
+#' intervals.
+#' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster (required); accepts an 
 #' integer if all are equal and \code{narms} and \code{nclusters} are provided. 
@@ -59,11 +62,17 @@
 #' @param seed Option to set.seed. Default is NULL.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge or 
 #' power<0.5 after 50 iterations; default = FALSE.
+#' @param low.power.override Option to override \code{stop()} if the power 
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the 
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the 
+#' calculated power is returned regardless of value. 
 #' @param cores String ("all"), NA, or scalar value indicating the number of cores 
 #' to be used for parallel computing. Default = NA (no parallel computing).
 #' @param tdist Logical value indicating whether simulated data should be 
 #' drawn from a t-distribution rather than the normal distribution. 
 #' Default = FALSE.
+#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{Data frame with columns "power" (Estimated statistical power), 
@@ -130,54 +139,43 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                           all.sim.data = FALSE, seed = NA, 
                           cores=NA,
                           tdist=FALSE,
-                          poor.fit.override = FALSE){
+                          poor.fit.override = FALSE,
+                          low.power.override = FALSE,
+                          opt = "optim"){
   
   # use this later to determine total elapsed time
   start.time <- Sys.time()
-  # Create wholenumber function
-  is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
- 
-    # create proportion of F-test rejections fxn
-    prop_H0_rejection <- function (alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev, test="F"){
-      print(paste("Proportion of ", test, " significance-test rejections = ", 
-                  round(LRT.holder.abbrev, 3), ", CI:",
-                  round(LRT.holder.abbrev - abs(stats::qnorm(alpha / 2)) * 
-                          sqrt((LRT.holder.abbrev * (1 - LRT.holder.abbrev)) / nsim), 3), ", ", 
-                  round(LRT.holder.abbrev + abs(stats::qnorm(alpha / 2)) * 
-                          sqrt((LRT.holder.abbrev * (1 - LRT.holder.abbrev)) / nsim), 3), ".", sep=""))
-    }
    
+    # create narms and nclusters if not provided directly by user
+    if (isTRUE(is.list(nsubjects))) {
+      # create narms and nclusters if not supplied by the user
+      if (is.null(narms)) {
+        narms <- length(nsubjects)
+      }
+      if (is.null(nclusters)) {
+        nclusters <- vapply(nsubjects, length, 0)
+      }
+    }
+    if (length(nclusters) == 1 & !isTRUE(is.list(nsubjects))) {
+      nclusters <- rep(nclusters, narms)
+    }
+    if (length(nclusters) > 1 & length(nsubjects) == 1) {
+      narms <- length(nclusters)
+    }
+    
   # input validation steps
   if(!is.wholenumber(nsim) || nsim < 1 || length(nsim)>1){
     stop("nsim must be a positive integer of length 1.")
   }
-  if (exists("nsubjects", mode = "any")==FALSE){
+  if (isTRUE(is.null(nsubjects))){
     stop("nsubjects must be specified. See ?cps.ma.binary for help.")
   }
-  if (length(nsubjects)==1 & exists("nclusters", mode = "numeric")==FALSE){
+  if (length(nsubjects)==1 & !isTRUE(is.numeric(nclusters))){
     stop("When nsubjects is scalar, user must supply nclusters (clusters per arm)")
   }
   if (length(nsubjects)==1 & length(nclusters)==1 & 
-      exists("narms", mode = "numeric")==FALSE){
+      !isTRUE(is.numeric(narms))){
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
-  }
-  
-  # create narms and nclusters if not provided directly by user
-  if (exists("nsubjects", mode = "list")==TRUE){
-    # create narms and nclusters if not supplied by the user
-    if (exists("narms", mode = "numeric")==FALSE){
-      narms <- length(nsubjects)
-    }
-    if (exists("nclusters", mode = "numeric")==FALSE){
-      nclusters <- vapply(nsubjects, length, 0)
-    }
-  }
- 
-  if(length(nclusters)==1 & (exists("nsubjects", mode = "list")==FALSE)){
-    nclusters <- rep(nclusters, narms)
-  }
-  if(length(nclusters)>1 & length(nsubjects)==1){
-    narms <- length(nclusters)
   }
  
   # nclusters must be whole numbers
@@ -218,9 +216,9 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     message("Warning: LRT significance not calculable when narms<3. Use cps.binary() instead.")
   }
   
-  validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma=NA, 
-                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
-                   sigma_b2=NA, method=method, quiet=quiet, 
+  validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma_sq=NA, 
+                   sigma_b_sq=sigma_b_sq, ICC2=NA, sigma_sq2=NA, 
+                   sigma_b_sq2=NA, method=method, quiet=quiet, 
                    all.sim.data=all.sim.data, 
                    poor.fit.override=poor.fit.override, 
                    cores=cores,
@@ -236,8 +234,10 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                                           all.sim.data = all.sim.data,
                                           seed = seed,
                                           poor.fit.override = poor.fit.override,
+                                          low.power.override = low.power.override,
                                           tdist = tdist,
-                                          cores = cores)
+                                          cores = cores,
+                                          opt = opt)
   
   models <- binary.ma.rct[[1]]
 
@@ -285,21 +285,20 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     
     # Proportion of times P(>F)
       sig.LRT <-  ifelse(LRT.holder[,3] < alpha, 1, 0)
-      LRT.holder.abbrev <- sum(sig.LRT)/nsim
+      LRT.holder.abbrev <- sum(sig.LRT)
     }
     
+    cps.model.temp <- data.frame(unlist(binary.ma.rct[[3]]), p.val)
+    colnames(cps.model.temp)[1] <- "converge"
+    cps.model.temp2 <- dplyr::filter(cps.model.temp, isTRUE(converge))
+    
     # Calculate and store power estimate & confidence intervals
-      sig.val <-  ifelse(p.val < alpha, 1, 0)
-      pval.power <- apply (sig.val, 2, FUN=function(x) {sum(x, na.rm=TRUE)/nsim})
-      power.parms <-  data.frame(Power = round(pval.power, 3),
-                                 Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
-                                                     sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                               Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
-                                                     sqrt((pval.power * (1 - pval.power)) / nsim), 3))
-      rownames(power.parms) <- names.power
+    power.parms <- confint.calc(nsim = nsim, alpha = alpha,
+                                p.val = as.vector(cps.model.temp2[,2:length(cps.model.temp2)]), 
+                                names.power = names.power)
     
     # Store simulation output in data frame
-    ma.model.est <-  data.frame(Estimates, std.error, z.val, p.val)
+    ma.model.est <-  data.frame(Estimates, std.error, z.val, p.val, binary.ma.rct[[3]])
     ma.model.est <- ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))] 
     
     # performance messages
@@ -319,13 +318,13 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                                "model.estimates" <-  ma.model.est, 
                                "overall.power" <- LRT.holder,
                                "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
-                                                                     LRT.holder.abbrev=LRT.holder.abbrev, test="Wald")),
+                                                                     LRT.holder.abbrev=LRT.holder.abbrev)),
                                "sim.data" <-  binary.ma.rct[[3]], 
                                "failed.to.converge" <-  binary.ma.rct[[4]])
     } else {
       complete.output <-  list("power" <-  power.parms[-1,],
                                "overall.power" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
-                                                                    LRT.holder.abbrev=LRT.holder.abbrev, test="Wald")),
+                                                                    LRT.holder.abbrev=LRT.holder.abbrev)),
                                "proportion.failed.to.converge" <- binary.ma.rct[[3]])
     }
     return(complete.output)
@@ -380,12 +379,8 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     # Calculate and store power estimate & confidence intervals
     sig.val <-  ifelse(Pr < alpha, 1, 0)
     pval.power <- apply (sig.val, 2, FUN=function(x) {sum(x, na.rm=TRUE)/nsim})
-    power.parms <-  data.frame(Power = round(pval.power, 3),
-                               Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
-                                                     sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                               Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
-                                                     sqrt((pval.power * (1 - pval.power)) / nsim), 3))
-    rownames(power.parms) <- names.power
+    power.parms <- confint.calc(nsim = nsim, alpha = alpha,
+                                p.val = p.val, names.power = names.power)
     
     # Store GEE simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)
@@ -406,15 +401,16 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
       complete.output <-  list("power" <-  power.parms[-1,],
                                "model.estimates" <-  ma.model.est, 
                                "overall.power" <- LRT.holder,
-                               "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
-                                                                         LRT.holder.abbrev=LRT.holder.abbrev),
-                               "sim.data" <-  binary.ma.rct[[3]]))
+                               "overall.power2" <- try(prop_H0_rejection(alpha = alpha, nsim = nsim, 
+                                                                         LRT.holder.abbrev = LRT.holder.abbrev),
+                               "sim.data" <-  binary.ma.rct[[4]]))
     } else {
     complete.output <-  list("power" <-  power.parms[-1,],
                              "model.estimates" <-  ma.model.est, 
                              "overall.power" <- LRT.holder,
-                             "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
-                                                                       LRT.holder.abbrev=LRT.holder.abbrev)))
+                             "overall.power2" <- try(prop_H0_rejection(alpha = alpha, 
+                               nsim = nsim, 
+                               LRT.holder.abbrev = LRT.holder.abbrev)))
   }# end of return options
     # assign special class
     class(complete.output) <- c("multiarm", "list")

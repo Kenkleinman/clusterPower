@@ -5,10 +5,22 @@
 \title{Power simulations for cluster-randomized trials: Individually randomized
 group treatment trial designs, count outcome.}
 \usage{
-cps.irgtt.count(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  c1 = NULL, c2 = NULL, c.diff = NULL, sigma_b = 0, sigma_b2 = 0,
-  family = "poisson", analysis = "poisson", alpha = 0.05,
-  quiet = FALSE, all.sim.data = FALSE, seed = NA)
+cps.irgtt.count(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  c1 = NULL,
+  c2 = NULL,
+  c.diff = NULL,
+  sigma_b_sq = 0,
+  sigma_b_sq2 = 0,
+  family = "poisson",
+  analysis = "poisson",
+  alpha = 0.05,
+  quiet = FALSE,
+  all.sim.data = FALSE,
+  seed = NA
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -24,10 +36,10 @@ At least 2 of the following 3 arguments must be specified:}
 
 \item{c.diff}{Expected difference in outcome count between groups, defined as c.diff = c1 - c2}
 
-\item{sigma_b}{Between-cluster variance; defaults to 0. Accepts numeric.
+\item{sigma_b_sq}{Between-cluster variance; defaults to 0. Accepts numeric.
 If between cluster variances differ between treatment groups, the following must also be specified:}
 
-\item{sigma_b2}{Between-cluster variance for clusters in TREATMENT group}
+\item{sigma_b_sq2}{Between-cluster variance for clusters in TREATMENT group}
 
 \item{family}{Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'}
 
@@ -88,7 +100,7 @@ while the function is running.
 \examples{
 \dontrun{
 count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(400, 50), nclusters = c(1, 60), c1 = 1000,
-                      c2 = 2500, sigma_b2 = 1, family = 'poisson', analysis = 'poisson',
+                      c2 = 2500, sigma_b_sq2 = 1, family = 'poisson', analysis = 'poisson',
                       alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
 }
 

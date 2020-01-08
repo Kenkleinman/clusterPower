@@ -25,6 +25,9 @@
 #' with each vector containing the number of subjects per cluster. See the 
 #' examples provided below for a demonstration of the various input options.
 #' 
+#' Non-convergent models are not included in the calculation of exact confidence 
+#' intervals.
+#' 
 #' @param narms Integer value representing the number of arms. 
 #' @param nclusters An integer or vector of integers representing the number 
 #' of clusters in each arm.
@@ -60,18 +63,26 @@
 #' @param cores a string ("all") or numeric value indicating the number of cores to be 
 #' used for parallel computing. 
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
-#' of fits fail to converge or power<0.5 after 50 iterations; default = FALSE. 
+#' of fits fail to converge; default = FALSE. 
+#' @param low.power.override Option to override \code{stop()} if the power 
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the 
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the 
+#' calculated power is returned regardless of value. 
 #' @param tdist Logical; use t-distribution instead of normal distribution 
 #' for simulation values, default = FALSE.
 #' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
 #' the overall model comparisons, and the convergence report vector. This is equivalent
 #' to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.
+#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'nloptwrap'.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{
 #'   Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95\% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95\% confidence interval bound).
+#'                "upper.95.ci" (Upper 95\% confidence interval bound). 
+#'                Note that non-convergent models are returned for review, 
+#'                but not included in this calculation.
 #'                }
 #'   \item{model.estimates}{
 #'   Produced only when all.sim.data=TRUE, data frame with columns 
@@ -88,7 +99,7 @@
 #'   results.
 #'   }
 #'   \item{overall.power.summary}{
-#'   Overall power of model compared to H0.
+#'   Overall power of model compared to H0. Omits non-convergent models.
 #'   }
 #'   \item{simulated.data}{
 #'   List of \code{nsim} data frames, each containing: 
@@ -105,16 +116,17 @@
 #'   Vector of length \code{nsim} denoting whether 
 #'   or not a simulation glmm fit triggered a "singular fit" 
 #'   or "non-convergence" error, produced only when 
-#'   method == "glmm" & all.sim.data==TRUE.
+#'   method = "glmm" & all.sim.data=TRUE.
 #'   }
 #'   }
 #'          
 #' @examples 
 #' \dontrun{
-#' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-#' means.example <- c(22, 21, 21.5)
-#' sigma_sq.example <- c(1, 1, 0.9)
-#' sigma_b_sq.example <- c(0.1, 0.15, 0.1)
+#' nsubjects.example <- list(c(20,20,20,20, 20, 75, 20, 20, 20, 75), 
+#'   c(20, 20, 25, 25, 25, 25, 25, 25), c(40, 25, 40, 20, 20, 20, 20, 20))
+#' means.example <- c(1, 1.75, 0)
+#' sigma_sq.example <- c(2, 1.2, 2)
+#' sigma_b_sq.example <- c(1.1, 1.15, 1.1)
 #' 
 #' multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.example, 
 #'                        means = means.example, sigma_sq = sigma_sq.example, 
@@ -122,25 +134,29 @@
 #'                        quiet = FALSE, ICC=NULL, method = 'glmm', 
 #'                        all.sim.data = FALSE,
 #'                        seed = 123, cores = "all",
-#'                        poor.fit.override = FALSE)
+#'                        poor.fit.override = FALSE,
+#'                        opt = "nlminb")
 #'                        
 #'  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
-#'                                    nclusters = c (10,11,10), nsubjects = 100,
-#'                                    means = c(21, 21, 21.4),
-#'                                    sigma_sq = c(1,1,.9), 
-#'                                    sigma_b_sq = c(.1,.15,.1), alpha = 0.05,
+#'                                    nclusters = c(10,11,10), nsubjects = 25,
+#'                                    means = c(1, 0.25, 1.75),
+#'                                    sigma_sq = c(1.2, 1, 1.9), 
+#'                                    sigma_b_sq = c(0.5, 1, 0.75),
 #'                                    quiet = FALSE, ICC=NULL, method = 'glmm',
 #'                                    all.sim.data = FALSE, seed = 123,
-#'                                    poor.fit.override = TRUE, cores="all")
+#'                                    poor.fit.override = TRUE, 
+#'                                    cores="all",
+#'                                    opt = "nlminb")
 #' }
 #' multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
 #'                                   nclusters = 10, nsubjects = 25, 
-#'                                   means = c(22.1, 21, 22.5),
+#'                                   means = c(22.0, 21.0, 22.5),
 #'                                   sigma_sq = 1, 
 #'                                   sigma_b_sq = 1, alpha = 0.05,
 #'                                   quiet = FALSE, ICC=NULL, method = 'glmm',
 #'                                   all.sim.data = FALSE, seed = 123,
-#'                                   poor.fit.override = TRUE, cores="all")
+#'                                   poor.fit.override = TRUE, cores="all",
+#'                                   opt = "auto")
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
 #'   and Ken Kleinman (\email{ken.kleinman@@gmail.com})
@@ -157,64 +173,55 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                         all.sim.data = FALSE, seed = NA, 
                         cores=NULL,
                         poor.fit.override = FALSE, 
+                        low.power.override = FALSE, 
                         tdist=FALSE,
-                        return.all.models = FALSE){
+                        return.all.models = FALSE,
+                        opt = "nloptwrap"){
 
-  # Create wholenumber function
-  is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
-  
-  # create proportion of F-test rejections fxn
-  prop_H0_rejection <- function (alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev){
-    print(paste("Proportion of F-test rejections = ", 
-        round(LRT.holder.abbrev, 3), ", CI:",
-        round(LRT.holder.abbrev - abs(stats::qnorm(alpha / 2)) * 
-                sqrt((LRT.holder.abbrev * (1 - LRT.holder.abbrev)) / nsim), 3), ", ", 
-        round(LRT.holder.abbrev + abs(stats::qnorm(alpha / 2)) * 
-                sqrt((LRT.holder.abbrev * (1 - LRT.holder.abbrev)) / nsim), 3), ".", sep=""))
+  # create narms and nclusters if not provided directly by user
+  if (isTRUE(is.list(nsubjects))) {
+    # create narms and nclusters if not supplied by the user
+    if (is.null(narms)) {
+      narms <- length(nsubjects)
+    }
+    if (is.null(nclusters)) {
+      nclusters <- vapply(nsubjects, length, 0)
+    }
   }
-  
+  if (length(nclusters) == 1 & !isTRUE(is.list(nsubjects))) {
+    nclusters <- rep(nclusters, narms)
+  }
+  if (length(nclusters) > 1 & length(nsubjects) == 1) {
+    narms <- length(nclusters)
+  }
+    
   # input validation steps
   if(!is.wholenumber(nsim) || nsim < 1 || length(nsim)>1){
     stop("nsim must be a positive integer of length 1.")
   }
-  if (exists("nsubjects", mode = "any")==FALSE){
+  if (is.null(nsubjects)){
     stop("nsubjects must be specified. See ?cps.ma.normal for help.")
   }
-  if (length(nsubjects)==1 & exists("nclusters", mode = "numeric")==FALSE){
+  if (length(nsubjects) == 1 & !isTRUE(is.numeric(nclusters))) {
     stop("When nsubjects is scalar, user must supply nclusters (clusters per arm)")
   }
-  if (length(nsubjects)==1 & length(nclusters)==1 & 
-      exists("narms", mode = "numeric")==FALSE){
+  if (length(nsubjects) == 1 & length(nclusters)==1 & 
+      !isTRUE(is.list(narms))) {
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
 
   validateVariance(dist="norm", 
-                   difference=means, alpha=alpha, ICC=ICC, sigma=sigma_sq, 
-                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA, 
-                   sigma_b2=NA, method=method, quiet=quiet, 
+                   difference=means, alpha=alpha, ICC=ICC, sigma_sq=sigma_sq, 
+                   sigma_b_sq=sigma_b_sq, ICC2=NA, sigma_sq2=NA, 
+                   sigma_b_sq2=NA, method=method, quiet=quiet, 
                    all.sim.data=all.sim.data, 
                    poor.fit.override=poor.fit.override)
 
-  # create narms and nclusters if not provided directly by user
-  if (exists("nsubjects", mode = "list")==TRUE){
-    # create narms and nclusters if not supplied by the user
-    if (exists("narms", mode = "numeric")==FALSE){
-      narms <- length(nsubjects)
-    }
-    if (exists("nclusters", mode = "numeric")==FALSE){
-      nclusters <- vapply(nsubjects, length, 0)
-    }
-  }
-  if(length(nclusters)==1 & exists("nsubjects", mode = "list")==FALSE){
-    nclusters <- rep(nclusters, narms)
-  }
-  if(length(nclusters)>1 & length(nsubjects)==1){
-    narms <- length(nclusters)
-  }
   # nclusters must be positive whole numbers
   if (sum(is.wholenumber(nclusters)==FALSE)!=0 || sum(unlist(nclusters) < 1)!=0){
     stop("nclusters must be postive integer values.")
   }
+
   # nsubjects must be positive whole numbers
   if (sum(is.wholenumber(unlist(nsubjects))==FALSE)!=0 || sum(unlist(nsubjects)< 1)!=0){
     stop("nsubjects must be positive integer values.")
@@ -240,21 +247,26 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
     means <- rep(means, narms)
   }
 
-  # supplies sigma_sq or sigma_b_sq if user supplies ICC
-  if (exists("ICC", mode = "numeric")==TRUE){
-  if (exists("sigma_sq", mode = "numeric")==FALSE){
-    sigma_sq <- createMissingVarianceParam(sigma_b_sq = sigma_b_sq, ICC = ICC)
-  }
-  if (exists("sigma_b_sq", mode = "numeric")==FALSE){
-    sigma_b_sq <- createMissingVarianceParam(sigma_sq = sigma_sq, ICC = ICC)
-  }
+# supplies sigma_sq or sigma_b_sq if user supplies ICC
+  if (isTRUE(length(ICC)!=0)){
+    if (isTRUE(length(sigma_sq)==0 & length(sigma_b_sq)!=0)){
+      sigma_sq <- createMissingVarianceParam(sigma_b_sq = sigma_b_sq, ICC = ICC)
+      return(sigma_sq)
+    }
+    if (isTRUE(length(sigma_b_sq)==0 & length(sigma_sq)!=0)){
+      sigma_b_sq <- createMissingVarianceParam(sigma_sq = sigma_sq, ICC = ICC)
+      return(sigma_b_sq)
+    }
   }
   
   if (length(sigma_sq)!=narms){
     stop("Length of variance parameters (sigma_sq, sigma_b_sq, ICC) 
          must equal narms, or be provided as a scalar if sigma_sq for all arms are equal.")
   }
-
+  
+  #type 1 error warning, see helperfxns.R
+  type1ErrTest(sigma_sq_ = sigma_sq, sigma_b_sq_ = sigma_b_sq, nsubjects_ = nsubjects)
+  
    # run the simulations 
    normal.ma.rct <- cps.ma.normal.internal(nsim = nsim, 
                                            str.nsubjects = str.nsubjects, 
@@ -263,9 +275,11 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                            quiet = quiet, method = method, 
                                            all.sim.data = all.sim.data,
                                            seed = seed,
-                                           cores=cores,
+                                           cores = cores,
                                            poor.fit.override = poor.fit.override,
-                                           tdist = tdist)
+                                           low.power.override = low.power.override,
+                                           tdist = tdist,
+                                           opt = opt)
    
    models <- normal.ma.rct[[1]]
    
@@ -276,14 +290,14 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    t.val = matrix(NA, nrow = nsim, ncol = narms)
    p.val = matrix(NA, nrow = nsim, ncol = narms)
  
-  if(max(sigma_sq)!=min(sigma_sq)){
-    for (i in 1:nsim){
-      Estimates[i,] <- models[[i]][,1]
-      std.error[i,] <- models[[i]][,2]
-      t.val[i,] <- models[[i]][,4]
-      p.val[i,] <- models[[i]][,5]
+  if(max(sigma_sq) != min(sigma_sq)) {
+    for (i in 1:nsim) {
+      Estimates[i,] <- models[[i]][20][[1]][,1]
+      std.error[i,] <- models[[i]][20][[1]][,2]
+      t.val[i,] <- models[[i]][20][[1]][,4]
+      p.val[i,] <- models[[i]][20][[1]][,5]
     }
-    keep.names <- rownames(models[[1]])
+    keep.names <- rownames(models[[1]][20][[1]])
   } else {
    for (i in 1:nsim){
      Estimates[i,] <- models[[i]][[10]][,1]
@@ -315,25 +329,32 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
    colnames(p.val) <- names.pval
    
    # Organize the LRT output
-   LRT.holder <- matrix(unlist(normal.ma.rct[[2]]), ncol=6, nrow=nsim, 
-                        byrow=TRUE, 
-                        dimnames = list(seq(1:nsim), 
-                                        c("Sum Sq", "Mean Sq", "NumDF", "DenDF", "F value", "P(>F)")))
+   if ((max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)==min(sigma_b_sq)) | 
+       (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)!=min(sigma_b_sq))){
+     LRT.holder <- matrix(unlist(normal.ma.rct[[2]]), ncol=6, nrow=nsim, 
+       byrow=TRUE, 
+       dimnames = list(seq(1:nsim), 
+       c("Sum Sq", "Mean Sq", "NumDF", "DenDF", "F value", "P(>F)")))
+     sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
+   } else {
+     LRT.holder <- as.vector(rep(NA, nsim))
+     for (i in 1:nsim){
+       LRT.holder[i] <- na.omit(normal.ma.rct[[2]][[i]][,9])}
+     sig.LRT <-  ifelse(LRT.holder < alpha, 1, 0)
+   }
    
    # Proportion of times P(>F)
-   sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
-   LRT.holder.abbrev <- sum(sig.LRT)/nsim
+
+   LRT.holder.abbrev <- sum(sig.LRT)
    
- 
+   cps.model.temp <- data.frame(cbind(unlist(normal.ma.rct[[3]]), p.val))
+   colnames(cps.model.temp)[1] <- "converge"
+   cps.model.temp2 <- dplyr::filter(cps.model.temp, converge == TRUE)
+   
  # Calculate and store power estimate & confidence intervals
-   sig.val <-  ifelse(p.val < alpha, 1, 0)
-   pval.power <- apply (sig.val, 2, FUN=function(x) {sum(x, na.rm=TRUE)/nsim})
-   power.parms <-  data.frame(Power = round(pval.power, 3),
-                            Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
-                                                  sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                            Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
-                                                  sqrt((pval.power * (1 - pval.power)) / nsim), 3))
-   rownames(power.parms) <- names.power
+   power.parms <- confint.calc(nsim = nsim, alpha = alpha,
+     p.val = as.vector(cps.model.temp2[,2:length(cps.model.temp2)]), 
+     names.power = names.power)
     
   # Store simulation output in data frame
    ma.model.est <-  data.frame(Estimates, std.error, t.val, p.val)
@@ -347,8 +368,8 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                               "model.estimates" <-  ma.model.est, 
                               "overall.power" <- LRT.holder,
                               "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
-                              "sim.data" <-  normal.ma.rct[[3]], 
-                              "failed.to.converge" <-  normal.ma.rct[[4]])
+                              "sim.data" <-  normal.ma.rct[[4]], 
+                              "convergence" <-  normal.ma.rct[[3]])
    } 
    if (return.all.models == TRUE) {
      complete.output <-  list("power" <-  power.parms[-1,],
@@ -359,7 +380,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
      } else {
      complete.output <-  list("power" <-  power.parms[-1,],
                               "overall.power" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
-                              "proportion.failed.to.converge" <- normal.ma.rct[[3]])
+                              "convergence" <- normal.ma.rct[[3]])
    }
    return(complete.output)
  }
@@ -406,18 +427,12 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                           c("Df", "X2", "P(>|Chi|)")))
      
      # Proportion of times P(>F)
-     sig.LRT <-  ifelse(LRT.holder[,3] < alpha, 1, 0)
-     LRT.holder.abbrev <- sum(sig.LRT)/nsim
+     sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
+     LRT.holder.abbrev <- sum(sig.LRT)
      
      # Calculate and store power estimate & confidence intervals
-     sig.val <-  ifelse(Pr < alpha, 1, 0)
-     pval.power <- apply (sig.val, 2, FUN=function(x) {sum(x, na.rm=TRUE)/nsim})
-     power.parms <-  data.frame(Power = round(pval.power, 3),
-                                Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * 
-                                                      sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                                Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * 
-                                                      sqrt((pval.power * (1 - pval.power)) / nsim), 3))
-     rownames(power.parms) <- names.power
+     power.parms <- confint.calc(nsim = nsim, alpha = alpha,
+                                 p.val = Pr, names.power = names.power)
      
      # Store GEE simulation output in data frame
      ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)

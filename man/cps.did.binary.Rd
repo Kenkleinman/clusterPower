@@ -4,10 +4,23 @@
 \alias{cps.did.binary}
 \title{Power simulations for cluster-randomized trials: Difference in Difference, Binary Outcome.}
 \usage{
-cps.did.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  p.diff = NULL, p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL,
-  or.diff = NULL, sigma_b0 = NULL, sigma_b1 = 0, alpha = 0.05,
-  method = "glmm", quiet = TRUE, all.sim.data = FALSE)
+cps.did.binary(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  p.diff = NULL,
+  p1 = NULL,
+  p2 = NULL,
+  or1 = NULL,
+  or2 = NULL,
+  or.diff = NULL,
+  sigma_b_sq0 = NULL,
+  sigma_b_sq1 = 0,
+  alpha = 0.05,
+  method = "glmm",
+  quiet = TRUE,
+  all.sim.data = FALSE
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -30,14 +43,14 @@ At least 2 of the following 3 arguments must be specified when using expected od
 
 \item{or.diff}{Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2}
 
-\item{sigma_b0}{Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
+\item{sigma_b_sq0}{Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
 between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
 between-cluster variances}
 
-\item{sigma_b1}{Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
+\item{sigma_b_sq1}{Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
 between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
-between-cluster variances. For data simulation, SIGMA_B1 is added to SIGMA_B0, such that if SIGMA_B0 = 5 
-and SIGMA_B1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.}
+between-cluster variances. For data simulation, sigma_b_sq1 is added to sigma_b_sq0, such that if sigma_b_sq0 = 5 
+and sigma_b_sq1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.}
 
 \item{alpha}{Significance level. Default = 0.05}
 
@@ -60,7 +73,7 @@ A list with the following components
   \item Significance level
   \item Vector containing user-defined cluster sizes
   \item Vector containing user-defined number of clusters
-  \item Data frame reporting sigma_b for each group at each time point
+  \item Data frame reporting sigma_b_sq for each group at each time point
   \item Vector containing expected difference in probabilities based on user inputs
   \item Data frame with columns: 
                   "Period" (Pre/Post-treatment indicator), 
@@ -108,7 +121,7 @@ P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 \examples{
 \dontrun{
 did.binary.sim = cps.did.binary(nsim = 100, nsubjects = 50, nclusters = 6, 
-                                p1 = 0.4, p2 = 0.2, sigma_b0 = 10, alpha = 0.05,
+                                p1 = 0.4, p2 = 0.2, sigma_b_sq0 = 10, alpha = 0.05,
                                 method = 'glmm', all.sim.data = FALSE)
 }
 

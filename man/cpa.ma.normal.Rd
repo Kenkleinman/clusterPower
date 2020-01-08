@@ -4,9 +4,17 @@
 \alias{cpa.ma.normal}
 \title{Power calculations for multi-arm cluster randomized trials, continuous outcome}
 \usage{
-cpa.ma.normal(alpha = 0.05, power = 0.8, narms = NA, n = NA,
-  m = NA, vara = NA, varc = NA, vare = NA,
-  tol = .Machine$double.eps^0.25)
+cpa.ma.normal(
+  alpha = 0.05,
+  power = 0.8,
+  narms = NA,
+  n = NA,
+  m = NA,
+  vara = NA,
+  varc = NA,
+  vare = NA,
+  tol = .Machine$double.eps^0.25
+)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a

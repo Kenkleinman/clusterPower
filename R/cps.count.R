@@ -14,6 +14,9 @@
 #' analytic method, and whether or not progress updates should be displayed 
 #' while the function is running.
 #' 
+#' Non-convergent models are not included in the calculation of exact confidence 
+#' intervals.
+#' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts a single integer or a vector of 2 integers (if nsubjects differs between arms) (required). 
@@ -22,10 +25,10 @@
 #' @param c1 Expected outcome count in non-treatment group
 #' @param c2 Expected outcome count in treatment group
 #' @param c.diff Expected difference in outcome count between groups, defined as c.diff = c1 - c2
-#' @param sigma_b Between-cluster variance; if sigma_b2 is not specified, 
+#' @param sigma_b_sq Between-cluster variance; if sigma_b_sq2 is not specified, 
 #' between cluster variances are assumed to be equal between groups. Accepts numeric
 #' If between cluster variances differ between treatment groups, the following must also be specified:
-#' @param sigma_b2 Between-cluster variance for clusters in TREATMENT group
+#' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
 #' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
 #' @param analysis Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'
@@ -40,7 +43,9 @@
 #'   \item Number of simulations
 #'   \item Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound)
+#'                "upper.95.ci" (Upper 95% confidence interval bound).
+#'                Note that non-convergent models are returned for review, 
+#'                but not included in this calculation.
 #'   \item Analytic method used for power estimation
 #'   \item Data frame containing families for distribution and analysis of simulated data
 #'   \item Significance level
@@ -67,15 +72,15 @@
 #' @examples 
 #' \dontrun{
 #' count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 36, c1 = 100,
-#'                       c2 = 200, sigma_b = 1, family = 'poisson', analysis = 'poisson',
-#'                       method = 'glmm', alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
+#'                       c2 = 200, sigma_b_sq = 1, family = 'poisson', analysis = 'poisson',
+#'                       method = 'glmm', alpha = 0.05, quiet = FALSE, all.sim.data = FALSE)
 #' }
 #'
 #' @export
 
 # Define function
 cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL, c2 = NULL, 
-                     c.diff = NULL, sigma_b = NULL, sigma_b2 = NULL, family = 'poisson', 
+                     c.diff = NULL, sigma_b_sq = NULL, sigma_b_sq2 = NULL, family = 'poisson', 
                      analysis = 'poisson', method = 'glmm', alpha = 0.05, quiet = FALSE, 
                      all.sim.data = FALSE, irgtt = FALSE, seed = NA){
   
@@ -87,7 +92,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
-  fail.vector = NULL
+  converge.vector = NULL
   simulated.datasets = list()
   start.time = Sys.time()
   
@@ -100,10 +105,10 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
   
   # Validate NSIM, NSUBJECTS, NCLUSTERS
-  sim.data.arg.list = list(nsim, nclusters, nsubjects, sigma_b)
+  sim.data.arg.list = list(nsim, nclusters, nsubjects, sigma_b_sq)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if(sum(sim.data.args) > 0){
-    stop("NSIM, NSUBJECTS, NCLUSTERS & SIGMA_B must all be specified. Please review your input values.")
+    stop("NSIM, NSUBJECTS, NCLUSTERS & sigma_b_sq must all be specified. Please review your input values.")
   }
   min1.warning = " must be an integer greater than or equal to 1"
   if(!is.wholenumber(nsim) || nsim < 1){
@@ -133,14 +138,14 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS")
   }
   
-  # Validate SIGMA_B, SIGMA_B2, ALPHA
+  # Validate sigma_b_sq, sigma_b_sq2, ALPHA
   if (irgtt==FALSE){
     min0.warning = " must be a numeric value greater than 0"
-    if(!is.numeric(sigma_b) || sigma_b <= 0){
-      stop("SIGMA_B", min0.warning)
+    if(!is.numeric(sigma_b_sq) || sigma_b_sq <= 0){
+      stop("sigma_b_sq", min0.warning)
     }
-    if(!is.null(sigma_b2) && sigma_b2 <= 0){
-      stop("SIGMA_B2", min0.warning)
+    if(!is.null(sigma_b_sq2) && sigma_b_sq2 <= 0){
+      stop("sigma_b_sq2", min0.warning)
     }
   }
   if(!is.numeric(alpha) || alpha < 0 || alpha > 1){
@@ -184,10 +189,10 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   if(is.null(c.diff)){
     c.diff = c1 - c2
   }
-  if(is.null(sigma_b2)){
-    sigma_b[2] = sigma_b
+  if(is.null(sigma_b_sq2)){
+    sigma_b_sq[2] = sigma_b_sq
   }else{
-    sigma_b[2] = sigma_b2
+    sigma_b_sq[2] = sigma_b_sq2
   }
   
   # Create indicators for treatment group & cluster
@@ -198,8 +203,8 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   # Create simulation loop
   for(i in 1:nsim){
     # Generate between-cluster effects for non-treatment and treatment
-    randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b[1]))
-    randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b[2]))
+    randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq[1]))
+    randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq[2]))
     
     # Create non-treatment y-value
     y0.intercept <- rep(randint.0, each = nsubjects[1])
@@ -243,12 +248,6 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
         if(analysis == 'neg.binom'){
           my.mod = lme4::glmer.nb(y ~ trt + (1|clust), data = sim.dat)
         }
-        glmm.values = summary(my.mod)$coefficient
-        est.vector = append(est.vector, glmm.values['trt1', 'Estimate'])
-        se.vector = append(se.vector, glmm.values['trt1', 'Std. Error'])
-        stat.vector = append(stat.vector, glmm.values['trt1', 'z value'])
-        pval.vector = append(pval.vector, glmm.values['trt1', 'Pr(>|z|)'])  
-        fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
       } else {
         if(analysis == 'poisson'){
          # require("optimx")
@@ -267,7 +266,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
       se.vector = append(se.vector, glmm.values['trt1', 'Std. Error'])
       stat.vector = append(stat.vector, glmm.values['trt1', 'z value'])
       pval.vector = append(pval.vector, glmm.values['trt1', 'Pr(>|z|)'])
-      fail.vector = append(fail.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, 1, 0) )
+      converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
     }
     # Fit GEE (geeglm)
     if(method == 'gee'){
@@ -326,14 +325,14 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
                            Std.err = as.vector(unlist(se.vector)),
                            Test.statistic = as.vector(unlist(stat.vector)),
-                           p.value = as.vector(unlist(pval.vector)))
-  cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
+                           p.value = as.vector(unlist(pval.vector)),
+                           converge = as.vector(unlist(converge.vector)))
   
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(power = round(pval.power, 3),
-                           lower.95.ci = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3),
-                           upper.95.ci = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((pval.power * (1 - pval.power)) / nsim), 3))
+  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  power.parms <- confint.calc(nsim = nsim, alpha = alpha,
+                              p.val = cps.model.temp[, 'p.value'], 
+                              names.power = "trt")
   
   # Create object containing inputs
   c1.c2.rr = round(exp(log(c1) - log(c2)), 3)
@@ -351,8 +350,8 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
                             "Treatment" = c("n.clust" = nclusters[2])))
   
   # Create object containing group-specific variance parameters
-  var.parms = t(data.frame('Non.Treatment' = c('sigma_b' = sigma_b[1]), 
-                           'Treatment' = c('sigma_b' = sigma_b[2])))
+  var.parms = t(data.frame('Non.Treatment' = c('sigma_b_sq' = sigma_b_sq[1]), 
+                           'Treatment' = c('sigma_b_sq' = sigma_b_sq[2])))
   
   # Create object containing FAMILY & REGRESSION parameters
   dist.parms = rbind('Family:' = paste0(switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'), ' distribution'), 
@@ -365,7 +364,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
                                    "dist.parms" = dist.parms, "alpha" = alpha, "cluster.sizes" = cluster.sizes, 
                                    "n.clusters" = n.clusters, "variance.parms" = var.parms, "inputs" = inputs, 
                                    "model.estimates" = cps.model.est, "sim.data" = simulated.datasets,
-                                   "convergence.error" = fail.vector), 
+                                   "convergence" = converge.vector), 
                               class = 'crtpwr')
   
   return(complete.output)

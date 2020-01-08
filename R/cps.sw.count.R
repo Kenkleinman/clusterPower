@@ -5,7 +5,14 @@
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
 #' 
-#' Runs power simulations for stepped wedge cluster-randomized controlled trials with a count outcome.
+#' Runs power simulations for stepped wedge cluster-randomized controlled trials 
+#' with a count outcome. The stepped wedge trial design is a type of cross-over
+#' design in which clusters change treatments in waves. Initially all the 
+#' clusters recieve the same standard treatment, and at the end of the trial all
+#' of the clusters will be recieving the treatment of interest. More than one 
+#' cluster can change treatments in a wave, but the order in which clusters 
+#' change treatments is randomly determined. The outcome of interest is assessed 
+#' in each cluster during each wave.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
 #' cluster, number of clusters per treatment arm, expected absolute difference 
@@ -25,7 +32,7 @@
 #' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
 #' of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the cumulative 
 #' number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).
-#' @param sigma_b Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
+#' @param sigma_b_sq Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
 #' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances (required).
 #' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
@@ -35,6 +42,7 @@
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'L-BFGS-B'.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -69,7 +77,7 @@
 #' @examples 
 #' \dontrun{
 #' count.sw.rct = cps.sw.count(nsim = 100, nsubjects = 50, nclusters = 30, 
-#'                               c.ntrt = 3, c.trt = 5, steps = 5, sigma_b = 20, 
+#'                               c.ntrt = 3, c.trt = 5, steps = 5, sigma_b_sq = 20, 
 #'                               alpha = 0.05, family = 'poisson', analysis = 'poisson', 
 #'                               method = 'glmm', quiet = FALSE, all.sim.data = FALSE)
 #' }
@@ -81,9 +89,9 @@
 #' @export
 
 cps.sw.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c.ntrt = NULL, 
-                        c.trt = NULL, steps = NULL, sigma_b = NULL, alpha = 0.05, 
+                        c.trt = NULL, steps = NULL, sigma_b_sq = NULL, alpha = 0.05, 
                         family = 'poisson', analysis = 'poisson', method = 'glmm', 
-                        quiet = FALSE, all.sim.data = FALSE){
+                        quiet = FALSE, all.sim.data = FALSE, opt = 'L-BFGS-B'){
   
   # Create vectors to collect iteration-specific values
   est.vector = NULL
@@ -164,22 +172,22 @@ cps.sw.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c.ntrt 
   # Create vector to store group means at each time point
   values.vector = cbind(c(rep(0, length(step.index) * 2)))
   
-  # Validate SIGMA_B
-  sigma_b.warning = " must be a scalar (equal between-cluster variance for both treatment and non-treatment groups) 
+  # Validate sigma_b_sq
+  sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both treatment and non-treatment groups) 
   or a vector of length 2, specifying unique between-cluster variances for the treatment and non-treatment groups."
-  if(!is.numeric(sigma_b) || any(sigma_b < 0)){
-    stop("All values supplied to SIGMA_B must be numeric values >= 0")
+  if(!is.numeric(sigma_b_sq) || any(sigma_b_sq < 0)){
+    stop("All values supplied to sigma_b_sq must be numeric values >= 0")
   }
-  if(!length(sigma_b) %in% c(1, 2)){
-    stop("SIGMA_B", sigma_b.warning)
+  if(!length(sigma_b_sq) %in% c(1, 2)){
+    stop("sigma_b_sq", sigma_b_sq.warning)
   }
-  # Set SIGMA_B (if not already set)
-  # Note: If user-defined, SIGMA_B[2] is additive
-  if(length(sigma_b) == 2){
-    sigma_b[2] = sigma_b[1] + sigma_b[2]
+  # Set sigma_b_sq (if not already set)
+  # Note: If user-defined, sigma_b_sq[2] is additive
+  if(length(sigma_b_sq) == 2){
+    sigma_b_sq[2] = sigma_b_sq[1] + sigma_b_sq[2]
   }
-  if(length(sigma_b) == 1){
-    sigma_b[2] = sigma_b
+  if(length(sigma_b_sq) == 1){
+    sigma_b_sq[2] = sigma_b_sq
   }
   
   # Validate ALPHA, FAMILY, ANALYSIS, METHOD, QUIET, ALL.SIM.DATA
@@ -229,12 +237,15 @@ cps.sw.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c.ntrt 
   log.c.ntrt = log(c.ntrt)
   log.c.trt = log(c.trt)
   
+  if(method == 'glmm'){
+    require('optimx')
+  }
   
   ## Create simulation & analysis loop
   for (i in 1:nsim){
     # Create vectors of cluster effects
-    ntrt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b[1]))
-    trt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b[2]))
+    ntrt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b_sq[1]))
+    trt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b_sq[2]))
     ntrt.linpred = ntrt.cluster.effects + log.c.ntrt
     trt.linpred = trt.cluster.effects + log.c.trt
     
@@ -288,7 +299,11 @@ cps.sw.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c.ntrt 
     # Fit GLMM (lmer)
     if(method == 'glmm'){
       if(analysis == 'poisson'){
-        my.mod = lme4::glmer(y ~ trt + time.point + (1|clust), data = sim.dat, family = stats::poisson(link = 'log'))
+        my.mod = lme4::glmer(y ~ trt + time.point + (1|clust), data = sim.dat, 
+                             family = stats::poisson(link = 'log'),
+                             control = lme4::glmerControl(optimizer = "optimx", calc.derivs = FALSE,
+                                                          optCtrl = list(method = opt, 
+                                                                         starttests = FALSE, kkt = FALSE)))
       }
       if(analysis == 'neg.binom'){
         my.mod = lme4::glmer.nb(y ~ trt + time.point + (1|clust), data = sim.dat)
@@ -379,8 +394,8 @@ cps.sw.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c.ntrt 
   n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
   
   # Create object containing variance parameters for each group at each time point
-  var.parms = t(data.frame('Non.Treatment' = c('sigma_b' = sigma_b[1]), 
-                           'Treatment' = c('sigma_b' = sigma_b[2])))
+  var.parms = t(data.frame('Non.Treatment' = c('sigma_b_sq' = sigma_b_sq[1]), 
+                           'Treatment' = c('sigma_b_sq' = sigma_b_sq[2])))
   
   # Create object containing FAMILY & REGRESSION parameters
   dist.parms = rbind('Family:' = paste0(switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'), ' distribution'), 

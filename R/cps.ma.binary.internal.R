@@ -32,10 +32,16 @@
 #' @param seed Option to set.seed. Default is NULL.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
 #' of fits fail to converge.
+#' @param low.power.override Option to override \code{stop()} if the power 
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the 
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the 
+#' calculated power is returned regardless of value. 
 #' @param tdist Logical; use t-distribution instead of normal distribution for 
 #' simulation values, default = FALSE.
 #' @param cores A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to NA, no parallel computing is used.
+#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -74,8 +80,10 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                     all.sim.data = FALSE, 
                                     seed = NA,
                                     poor.fit.override = FALSE,
+                                    low.power.override = FALSE,
                                     tdist = FALSE,
-                                    cores=cores){
+                                    cores = cores,
+                                    opt = "optim"){
   
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
@@ -219,11 +227,16 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     if (!is.na(cores) & quiet == FALSE){
       message("Fitting models")
     }
-    my.mod <- foreach::foreach(i=1:nsim, .options.snow=opts, 
-                             .packages = "lme4", .inorder=FALSE) %fun% { 
+    
+    my.mod <- foreach::foreach(i=1:nsim, .options.snow = opts, 
+                             .packages = c("lme4", "optimx"), .inorder = FALSE) %fun% { 
                                lme4::glmer(sim.dat[,i] ~ trt + (1|clust), 
-                                           family = stats::binomial(link = 'logit'))
-                             }
+                                           family = stats::binomial(link = 'logit'),
+                                           control = lme4::glmerControl(optimizer = "optimx", 
+                                                                        calc.derivs = TRUE,
+                                                                        optCtrl = list(method = opt, 
+                                                                                       starttests = FALSE, kkt = FALSE)))
+                               }
     
     if (is.na(cores) & quiet==FALSE){
       # Iterate progress bar
@@ -232,13 +245,27 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     }
     
     # option to stop the function early if fits are singular
-    fail <- foreach::foreach(i=1:nsim, .packages = "lme4", .inorder=FALSE) %fun% {
+    converged <- foreach::foreach(i=1:nsim, .packages = "lme4", .inorder=FALSE) %fun% {
                              ifelse(any( grepl("fail", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE |
-                                      any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE, 1, 0)
+                                      any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE)
                            }
     if (poor.fit.override==FALSE){
-      if(sum(unlist(fail), na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations
+      if(sum(unlist(converged), na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations
                                                 are singular fit: check model specifications")}
+    }
+    
+    # stop the loop if power is <0.5
+    if (low.power.override==FALSE){
+      if (i > 50 & (i %% 10==0)){
+        temp.power.checker <- matrix(unlist(model.compare[1:i]), ncol=3, nrow=i, 
+                                     byrow=TRUE)
+        sig.val.temp <-  ifelse(temp.power.checker[,3][1:i] < alpha, 1, 0)
+        pval.power.temp <- sum(sig.val.temp)/i
+        if (pval.power.temp < 0.5){
+          stop(paste("Calculated power is < ", pval.power.temp, ", auto stop at simulation ", 
+                     i, ". Set low.power.override==TRUE to run the simulations anyway.", sep = ""))
+        }
+      }
     }
 
     if (!is.na(cores) & quiet == FALSE){
@@ -246,7 +273,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     }
   # get the overall p-values (>Chisq)
     model.compare <- foreach::foreach(i=1:nsim, .options.snow=opts,
-                                      .packages = "car", .inorder=FALSE) %fun% {
+                                      .packages = c("car", "optimx"), .inorder=FALSE) %fun% {
                                       car::Anova(my.mod[[i]], type="II")
                                       }
     
@@ -350,12 +377,12 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   if(all.sim.data == TRUE){
     complete.output.internal <-  list("estimates" = model.values,
                                       "model.comparisons" = model.compare,
-                                      "sim.data" = data.frame(trt, clust, sim.dat),
-                                      "failed.to.converge"= unlist(fail))
+                                      "converged" = unlist(converged),
+                                      "sim.data" = data.frame(trt, clust, sim.dat))
   } else {
     complete.output.internal <-  list("estimates" = model.values,
                                       "model.comparisons" = model.compare,
-                                      "failed.to.converge" =  paste((sum(unlist(fail))/nsim)*100, 
+                                      "converged" =  paste(1-(sum(unlist(converged))/nsim)*100, 
                                                                     "% did not converge", sep=""))
   }
   return(complete.output.internal)

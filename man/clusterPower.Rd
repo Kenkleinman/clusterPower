@@ -3,7 +3,6 @@
 \docType{package}
 \name{clusterPower}
 \alias{clusterPower}
-\alias{clusterPower-package}
 \title{clusterPower: doing various power analysis calculations for cluster randomized trials.}
 \description{
 clusterPower: doing various power analysis calculations for cluster randomized trials.

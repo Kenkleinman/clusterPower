@@ -7,19 +7,53 @@
 \alias{make.base.data}
 \title{Power simulations for cluster-randomized crossover study designs.}
 \usage{
-power.sim.normal(n.sim = 10, effect.size, alpha = 0.05, n.clusters,
-  n.periods, cluster.size, btw.clust.var, indiv.var = NULL, ICC = NULL,
-  period.effect, period.var, estimation.function, permute = FALSE,
-  verbose = FALSE)
+power.sim.normal(
+  n.sim = 10,
+  effect.size,
+  alpha = 0.05,
+  n.clusters,
+  n.periods,
+  cluster.size,
+  btw.clust.var,
+  indiv.var = NULL,
+  ICC = NULL,
+  period.effect,
+  period.var,
+  estimation.function,
+  permute = FALSE,
+  verbose = FALSE
+)
 
-power.sim.binomial(n.sim = 10, effect.size, alpha = 0.05, n.clusters,
-  n.periods, cluster.size, btw.clust.var, period.effect, period.var,
-  estimation.function, permute = FALSE, verbose = FALSE)
+power.sim.binomial(
+  n.sim = 10,
+  effect.size,
+  alpha = 0.05,
+  n.clusters,
+  n.periods,
+  cluster.size,
+  btw.clust.var,
+  period.effect,
+  period.var,
+  estimation.function,
+  permute = FALSE,
+  verbose = FALSE
+)
 
-power.sim.poisson(n.sim = 10, effect.size, alpha = 0.05, n.clusters,
-  n.periods, cluster.size, btw.clust.var, period.effect, period.var,
-  estimation.function, at.risk.params, permute = FALSE,
-  verbose = FALSE)
+power.sim.poisson(
+  n.sim = 10,
+  effect.size,
+  alpha = 0.05,
+  n.clusters,
+  n.periods,
+  cluster.size,
+  btw.clust.var,
+  period.effect,
+  period.var,
+  estimation.function,
+  at.risk.params,
+  permute = FALSE,
+  verbose = FALSE
+)
 
 make.base.data(n.obs, n.clusters, cluster.size, n.periods)
 }

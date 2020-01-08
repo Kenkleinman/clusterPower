@@ -4,9 +4,18 @@
 \alias{cpa.did.binary}
 \title{Power calculations for  difference-in-difference cluster randomized trials, binary outcome}
 \usage{
-cpa.did.binary(alpha = 0.05, power = 0.8, n = NA, m = NA, p = NA,
-  did = NA, ICC = NA, rho_c = NA, rho_s = NA,
-  tol = .Machine$double.eps^0.25)
+cpa.did.binary(
+  alpha = 0.05,
+  power = 0.8,
+  n = NA,
+  m = NA,
+  p = NA,
+  did = NA,
+  ICC = NA,
+  rho_c = NA,
+  rho_s = NA,
+  tol = .Machine$double.eps^0.25
+)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a

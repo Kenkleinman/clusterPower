@@ -4,10 +4,24 @@
 \alias{cps.binary}
 \title{Power simulations for cluster-randomized trials: Simple Designs, Binary Outcome.}
 \usage{
-cps.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-  p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL,
-  sigma_b = NULL, sigma_b2 = NULL, alpha = 0.05, method = "glmm",
-  quiet = TRUE, all.sim.data = FALSE, seed = NA, irgtt = FALSE)
+cps.binary(
+  nsim = NULL,
+  nsubjects = NULL,
+  nclusters = NULL,
+  p1 = NULL,
+  p2 = NULL,
+  or1 = NULL,
+  or2 = NULL,
+  or.diff = NULL,
+  sigma_b_sq = NULL,
+  sigma_b_sq2 = NULL,
+  alpha = 0.05,
+  method = "glmm",
+  quiet = TRUE,
+  all.sim.data = FALSE,
+  seed = NA,
+  irgtt = FALSE
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -26,11 +40,11 @@ cps.binary(nsim = NULL, nsubjects = NULL, nclusters = NULL,
 
 \item{or.diff}{Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2}
 
-\item{sigma_b}{Between-cluster variance; if sigma_b2 is not specified, 
+\item{sigma_b_sq}{Between-cluster variance; if sigma_b_sq2 is not specified, 
 between cluster variances are assumed to be equal for both groups. Accepts numeric.
-If between cluster variances differ between treatment groups, sigma_b2 must also be specified:}
+If between cluster variances differ between treatment groups, sigma_b_sq2 must also be specified:}
 
-\item{sigma_b2}{Between-cluster variance for clusters in TREATMENT group}
+\item{sigma_b_sq2}{Between-cluster variance for clusters in TREATMENT group}
 
 \item{alpha}{Significance level; default = 0.05}
 
@@ -50,12 +64,15 @@ A list with the following components
   \item Character string indicating total number of simulations, simulation type, and number of convergent models
   \item Number of simulations
   \item Data frame with columns "Power" (Estimated statistical power), 
-  "lower.95.ci" (Lower 95% confidence interval bound), "upper.95.ci" (Upper 95% confidence interval bound)
+  "lower.95.ci" (Lower 95% confidence interval bound), 
+  "upper.95.ci" (Upper 95% confidence interval bound),
+  Note that non-convergent models are returned for review, 
+  but not included in this calculation.
   \item Analytic method used for power estimation
   \item Significance level
   \item Vector containing user-defined cluster sizes
   \item Vector containing user-defined number of clusters
-  \item Data frame reporting sigma_b for each group
+  \item Data frame reporting sigma_b_sq for each group
   \item Vector containing expected difference in probabilities based on user inputs
   \item Data frame containing three estimates of ICC
   \item Data frame with columns: "Estimate" (Estimate of treatment effect for a given simulation), 
@@ -88,11 +105,14 @@ The following equations are used to estimate intra-cluster correltation coeffici
 P_h: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \pi^{2}/3}}
 P_c: \deqn{ICC = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_{j}\pi_{h}}{\sqrt{\pi_{j}(1 - \pi_{j})\pi_{h}(1 - \pi_{h})}}}
 P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
+
+Non-convergent models are not included in the calculation of exact confidence 
+intervals.
 }
 \examples{
 \dontrun{
-binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.5,
-                        p2 = 0.2, sigma_b = 1, sigma_b2 = 1, alpha = 0.05, 
+binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.8,
+                        p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
                         method = 'glmm', all.sim.data = FALSE)
 }
 

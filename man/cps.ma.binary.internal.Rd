@@ -4,10 +4,22 @@
 \alias{cps.ma.binary.internal}
 \title{Model fits for simulations for multi-arm designs with dichotomous outcome.}
 \usage{
-cps.ma.binary.internal(nsim = 1000, str.nsubjects = NULL,
-  probs = NULL, sigma_b_sq = NULL, alpha = 0.05, quiet = FALSE,
-  method = "glmm", all.sim.data = FALSE, seed = NA,
-  poor.fit.override = FALSE, tdist = FALSE, cores = cores)
+cps.ma.binary.internal(
+  nsim = 1000,
+  str.nsubjects = NULL,
+  probs = NULL,
+  sigma_b_sq = NULL,
+  alpha = 0.05,
+  quiet = FALSE,
+  method = "glmm",
+  all.sim.data = FALSE,
+  seed = NA,
+  poor.fit.override = FALSE,
+  low.power.override = FALSE,
+  tdist = FALSE,
+  cores = cores,
+  opt = "optim"
+)
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
@@ -36,11 +48,19 @@ default = FALSE.}
 \item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
 of fits fail to converge.}
 
+\item{low.power.override}{Option to override \code{stop()} if the power 
+is less than 0.5 after the first 50 simulations and every ten simulations
+thereafter. On function execution stop, the actual power is printed in the 
+stop message. Default = FALSE. When TRUE, this check is ignored and the 
+calculated power is returned regardless of value.}
+
 \item{tdist}{Logical; use t-distribution instead of normal distribution for 
 simulation values, default = FALSE.}
 
 \item{cores}{A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
 When this option is set to NA, no parallel computing is used.}
+
+\item{opt}{Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.}
 }
 \value{
 A list with the following components:

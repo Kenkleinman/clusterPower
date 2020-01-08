@@ -4,9 +4,18 @@
 \alias{cpa.normal}
 \title{Power calculations for simple cluster randomized trials, continuous outcome}
 \usage{
-cpa.normal(alpha = 0.05, power = 0.8, n = NA, m = NA, cv = 0,
-  difference = NA, ICC = NA, vart = NA, method = c("taylor",
-  "weighted"), tol = .Machine$double.eps^0.25)
+cpa.normal(
+  alpha = 0.05,
+  power = 0.8,
+  n = NA,
+  m = NA,
+  cv = 0,
+  difference = NA,
+  ICC = NA,
+  vart = NA,
+  method = c("taylor", "weighted"),
+  tol = .Machine$double.eps^0.25
+)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a

@@ -4,9 +4,17 @@
 \alias{crtpwr.2meanM}
 \title{Power calculations for simple cluster randomized trials with matching, continuous outcome}
 \usage{
-crtpwr.2meanM(alpha = 0.05, power = 0.8, nclusters = NA,
-  nsubjects = NA, d = NA, icc = NA, vart = NA, rho_m = NA,
-  tol = .Machine$double.eps^0.25)
+crtpwr.2meanM(
+  alpha = 0.05,
+  power = 0.8,
+  nclusters = NA,
+  nsubjects = NA,
+  d = NA,
+  icc = NA,
+  vart = NA,
+  rho_m = NA,
+  tol = .Machine$double.eps^0.25
+)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a
