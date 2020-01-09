@@ -36,7 +36,7 @@
 #' @examples 
 #' # Find the required number of control subjects for an IRGTT with alpha = 0.05, power = 0.80,
 #' # nclusters = 10, nsubjects = 10, d = 0.5 units, varu = 0.1, vare = 0.9, varr = 1.
-#' crtpwr.irgtt.mean(nclusters=10, nsubjects = 10, d = 0.5, varu = 0.1, vare = 0.9, varr = 1)
+#' cpa.irgtt.normal(nclusters=10, nsubjects = 10, d = 0.5, varu = 0.1, vare = 0.9, varr = 1)
 #' # 
 #' # The result, ncontrols = 77.81084, suggests 78 subjects in the control arm should be recruited.
 #' # This means that the total number of subjects in the study is nclusters*nsubjects + ncontrols = 10*10 + 78 = 178.
@@ -47,10 +47,10 @@
 #' 
 #' @export
 
-crtpwr.irgtt.mean <- function(alpha = 0.05, power = 0.80, nclusters = NA,
-                              nsubjects = NA, ncontrols = NA, d = NA, 
-                              varu = NA, vare = NA, varr = NA,
-                              tol = .Machine$double.eps^0.25){
+cpa.irgtt.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
+                             nsubjects = NA, ncontrols = NA, d = NA, 
+                             varu = NA, vare = NA, varr = NA,
+                             tol = .Machine$double.eps^0.25){
   
   # list of needed inputs
   needlist <- list(alpha, power, nclusters, nsubjects, ncontrols, d, varu, vare, varr)
