@@ -65,9 +65,10 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = c(75, 10), 
-#'                        nclusters = 5, difference = 10,
-#'                         sigma_sq = 100, sigma_b_sq2 = 25, alpha = 0.05,
+#' irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = 10, 
+#'                        nclusters = 10, difference = .5,
+#'                         sigma_sq = 1, sigma_sq2 = 0.9, 
+#'                         sigma_b_sq2 = 0.1, alpha = 0.05,
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
