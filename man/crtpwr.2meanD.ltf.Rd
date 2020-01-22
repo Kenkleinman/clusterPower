@@ -4,10 +4,20 @@
 \alias{crtpwr.2meanD.ltf}
 \title{Power calculations for difference-in-difference cluster randomized trials accounting for loss to and gain at follow-up, continuous outcome}
 \usage{
-crtpwr.2meanD.ltf(alpha = 0.05, power = 0.8, nclusters = NA,
-  nsubjects = NA, d = NA, icc = NA, rho_c = NA, rho_s = NA,
-  vart = NA, ltf = c(0, 0), gtf = ltf,
-  tol = .Machine$double.eps^0.25)
+crtpwr.2meanD.ltf(
+  alpha = 0.05,
+  power = 0.8,
+  nclusters = NA,
+  nsubjects = NA,
+  d = NA,
+  icc = NA,
+  rho_c = NA,
+  rho_s = NA,
+  vart = NA,
+  ltf = c(0, 0),
+  gtf = ltf,
+  tol = .Machine$double.eps^0.25
+)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a
