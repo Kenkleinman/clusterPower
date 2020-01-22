@@ -4,9 +4,18 @@
 \alias{crtpwr.2meanCA}
 \title{Power calculations for simple cluster randomized trials, continuous outcome with covariate adjustment}
 \usage{
-crtpwr.2meanCA(alpha = 0.05, power = 0.8, nclusters = NA,
-  nsubjects = NA, d = NA, icc = NA, vart = NA, covdf = NA,
-  rho_b = NA, tol = .Machine$double.eps^0.25)
+crtpwr.2meanCA(
+  alpha = 0.05,
+  power = 0.8,
+  nclusters = NA,
+  nsubjects = NA,
+  d = NA,
+  icc = NA,
+  vart = NA,
+  covdf = NA,
+  rho_b = NA,
+  tol = .Machine$double.eps^0.25
+)
 }
 \arguments{
 \item{alpha}{The level of significance of the test, the probability of a
