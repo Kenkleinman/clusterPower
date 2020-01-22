@@ -44,7 +44,7 @@
 #' # Find the required number of clusters switching to intervention at each time point for a trial 
 #' # with alpha = 0.05, power = 0.80, nsubjects = 50, ntimes = 5, d = 1.5 units, icc = 0.2,
 #' # rho_c = 0.80, rho_s = 0.50, and vart = 16 square-units.
-#' crtpwr.sw(nsubjects = 50, ntimes = 5, d = 1.5, icc = 0.2, rho_c = 0.80, rho_s = 0.50, vart = 16)
+#' cpa.sw.normal(nsubjects = 50, ntimes = 5, d = 1.5, icc = 0.2, rho_c = 0.80, rho_s = 0.50, vart = 16)
 #' # 
 #' # The result, nclusters = 2.134918, suggests 3 clusters switching per time point should be used. This
 #' # means that the total number of clusters in the study is nclusters*ntimes = 3*5 = 15.
@@ -58,11 +58,11 @@
 #'   
 #' @export
 
-crtpwr.sw <- function(alpha = 0.05, power = 0.80, nclusters = NA,
-                      nsubjects = NA, ntimes = NA, d = NA, icc = NA,
-                      rho_c = NA, rho_s = NA,
-                      vart = NA,
-                      tol = .Machine$double.eps^0.25){
+cpa.sw.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
+                          nsubjects = NA, ntimes = NA, d = NA, icc = NA,
+                          rho_c = NA, rho_s = NA,
+                          vart = NA,
+                          tol = .Machine$double.eps^0.25){
   
   # list of needed inputs
   needlist <- list(alpha, power, nclusters, nsubjects, ntimes, d, icc, rho_c, rho_s, vart)

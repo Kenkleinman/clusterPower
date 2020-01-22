@@ -36,7 +36,7 @@
 #' @examples 
 #' # Find the required number of subjects per intervention cluster an IRGTT with alpha = 0.05,
 #' power = 0.80, nclusters = 23, ncontrols = 146, icc = 0.05, p.e = 0.397, and p.c = 0.243.
-#' crtpwr.irgtt.prop(nclusters=23, ncontrols = 146, icc = 0.05, p.e = 0.397, p.c = 0.243)
+#' cpa.irgtt.binary(nclusters=23, ncontrols = 146, icc = 0.05, p.e = 0.397, p.c = 0.243)
 #' # 
 #' # The result, nsubjects = 7.96624, suggests 8 subjects per cluster in the intervention arm should be recruited.
 #' # This means that the total number of subjects in the study is nclusters*nsubjects + ncontrols = 23*8 + 146 = 330.
@@ -47,10 +47,10 @@
 #' 
 #' @export
 
-crtpwr.irgtt.prop <- function(alpha = 0.05, power = 0.80, nclusters = NA,
-                              nsubjects = NA, ncontrols = NA, 
-                              icc = NA, p.e = NA, p.c = NA,
-                              tol = .Machine$double.eps^0.25){
+cpa.irgtt.binary <- function(alpha = 0.05, power = 0.80, nclusters = NA,
+                             nsubjects = NA, ncontrols = NA, 
+                             icc = NA, p.e = NA, p.c = NA,
+                             tol = .Machine$double.eps^0.25){
   
   # list of needed inputs
   needlist <- list(alpha, power, nclusters, nsubjects, ncontrols, icc, p.e, p.c)
@@ -123,8 +123,8 @@ crtpwr.irgtt.prop <- function(alpha = 0.05, power = 0.80, nclusters = NA,
   # calculate p.e
   if (is.na(p.e)) {
     p.e <- stats::uniroot(function(p.e) eval(pwr) - power,
-                            interval = c(1e-10, 1 - 1e-10),
-                            tol = tol)$root
+                          interval = c(1e-10, 1 - 1e-10),
+                          tol = tol)$root
   }
   
   # calculate p.c
@@ -133,7 +133,7 @@ crtpwr.irgtt.prop <- function(alpha = 0.05, power = 0.80, nclusters = NA,
                           interval = c(1e-10, 1 - 1e-10),
                           tol = tol)$root
   }
-
+  
   structure(get(target), names = target)
 }
 
