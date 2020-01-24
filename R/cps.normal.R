@@ -105,7 +105,8 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
-  converge.vector = NULL
+  # This container keeps track of how many models failed to converge
+  converge.vector <- rep(TRUE, nsim)
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -266,21 +267,21 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
         if (sigma_sq!=sigma_sq2 && sigma_b_sq!=sigma_b_sq2){
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
-          my.mod <- nlme::lme(y~as.factor(trt2), random=~0+as.factor(trt2)|clust2, 
+          my.mod <- try(nlme::lme(y~as.factor(trt2), random=~0+as.factor(trt2)|clust2, 
                               weights=nlme::varIdent(form=~1|as.factor(trt2)), 
                               method="ML",
-                              control=nlme::lmeControl(opt='optim'))
+                              control=nlme::lmeControl(opt='optim')))
           glmm.values <-  summary(my.mod)$tTable
           # get the overall p-values (>Chisq)
-          null.mod <- nlme::lme(y~1, random=~0+as.factor(trt2)|clust2, 
+          null.mod <- try(nlme::lme(y~1, random=~0+as.factor(trt2)|clust2, 
                                 weights=nlme::varIdent(form=~1|as.factor(trt2)), 
                                 method="ML",
-                                control=nlme::lmeControl(opt='optim'))
+                                control=nlme::lmeControl(opt='optim')))
           pval.vector = append(pval.vector, glmm.values['as.factor(trt2)1', 'p-value'])
           est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
           se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
           stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
-          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
+          converge.vector[i] <- ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE)
         }
         
         if (sigma_sq==sigma_sq2 && sigma_b_sq!=sigma_b_sq2){
@@ -304,21 +305,21 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
         if (sigma_sq!=sigma_sq2 && sigma_b_sq!=sigma_b_sq2){
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
-          my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
+          my.mod <- try(nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
                               weights=nlme::varIdent(form=~1|as.factor(trt2)), 
                               method="ML",
-                              control=nlme::lmeControl(opt='optim'))
+                              control=nlme::lmeControl(opt='optim')))
           glmm.values <-  summary(my.mod)$tTable
           # get the overall p-values (>Chisq)
-          null.mod <- nlme::lme(y~1, random=~1+as.factor(trt2)|clust2, 
+          null.mod <- try(nlme::lme(y~1, random=~1+as.factor(trt2)|clust2, 
                                 weights=nlme::varIdent(form=~1|as.factor(trt2)), 
                                 method="ML",
-                                control=nlme::lmeControl(opt='optim'))
+                                control=nlme::lmeControl(opt='optim')))
           pval.vector = append(pval.vector, glmm.values['as.factor(trt2)1', 'p-value'])
           est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
           se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
           stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
-          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
+          converge.vector[i] <- ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE) 
         }
         
         if (sigma_sq==sigma_sq2 && sigma_b_sq!=sigma_b_sq2){
@@ -341,21 +342,21 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
         if (sigma_sq!=sigma_sq2 && sigma_b_sq==sigma_b_sq2){
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
-          my.mod <- nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
+          my.mod <- try(nlme::lme(y~as.factor(trt2), random=~1+as.factor(trt2)|clust2, 
                               weights=nlme::varIdent(form=~1|as.factor(trt2)),
                               method="ML",
-                              control=nlme::lmeControl(opt='optim'))
+                              control=nlme::lmeControl(opt='optim')))
           glmm.values <-  summary(my.mod)$tTable
           # get the overall p-values (>Chisq)
-          null.mod <- nlme::lme(y~1, random=~1+as.factor(trt2)|clust2, 
+          null.mod <- try(nlme::lme(y~1, random=~1+as.factor(trt2)|clust2, 
                                 weights=nlme::varIdent(form=~1|as.factor(trt2)),
                                 method="ML",
-                                control=nlme::lmeControl(opt='optim'))
+                                control=nlme::lmeControl(opt='optim')))
           pval.vector = append(pval.vector, glmm.values['as.factor(trt2)1', 'p-value'])
           est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
           se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
           stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
-          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
+          converge.vector[i] <- ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE) 
         }
         
         if (sigma_sq==sigma_sq2 && sigma_b_sq==sigma_b_sq2){
