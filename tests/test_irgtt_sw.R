@@ -23,7 +23,7 @@ context("IRGTT outcome accuracy")
 test_that("analytic normal irgtt case matches simulated method irgtt case", {
   expect_equal(as.numeric(cps.irgtt.normal(nsim = 100, 
                                            nsubjects = c(100, 10),
-                                           nclusters = 30, 
+                                           nclusters = 15, 
                                            difference = .5,
                                            sigma_sq = 1, 
                                            sigma_sq2 = 0.9, 

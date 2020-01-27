@@ -450,7 +450,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   
   # Create object containing group-specific variance parameters
   var.parms = t(data.frame('Non.Treatment' = c('ICC' = ICC[1], 'sigma_sq' = sigma_sq[1], 'sigma_b_sq' = sigma_b_sq[1]), 
-                           'Treatment' = c('ICC' = ICC2, 'sigma_sq' = sigma_sq2, 'sigma_b_sq' = sigma_b_sq)))
+                           'Treatment' = c('ICC' = ICC2, 'sigma_sq' = sigma_sq2, 'sigma_b_sq' = sigma_b_sq2)))
   
   fail <- unlist(converge.vector)
   
