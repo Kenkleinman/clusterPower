@@ -22,8 +22,8 @@ context("IRGTT outcome accuracy")
 # compare analytic to simulation methods
 test_that("analytic normal irgtt case matches simulated method irgtt case", {
   expect_equal(as.numeric(cps.irgtt.normal(nsim = 100, 
-                                           nsubjects = 10,
-                                           nclusters = 10, 
+                                           nsubjects = c(100, 10),
+                                           nclusters = 30, 
                                            difference = .5,
                                            sigma_sq = 1, 
                                            sigma_sq2 = 0.9, 
@@ -31,8 +31,8 @@ test_that("analytic normal irgtt case matches simulated method irgtt case", {
                                            alpha = 0.05,
                                            quiet = FALSE, 
                                            all.sim.data = FALSE)), 
-               as.numeric(cpa.irgtt.normal(nclusters = 10, 
-                                           nsubjects = 10, 
+               as.numeric(cpa.irgtt.normal(nclusters = 100, 
+                                           nsubjects = c(100, 10), 
                                            d = 0.5, 
                                            varu = 0.1, 
                                            vare = 0.9, 
