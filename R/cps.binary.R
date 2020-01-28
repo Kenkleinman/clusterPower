@@ -443,7 +443,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                                        "model.estimates" = cps.model.est, 
                                        "sim.data" = simulated.datasets, 
                                        "warning.list" = warning.list,
-                                       "convergence" = convergence.vector))
+                                       "convergence" = converge.vector))
     }
     return(complete.output)
     }
