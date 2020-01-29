@@ -69,6 +69,7 @@ test_that("analytic normal irgtt case matches a constant", {
                                                   power = NA), 2)),
                0.76)})
 
+#--------------------------------- IRGTT BINARY OUTCOME
 
 # compare analytic to simulation methods (binary)
 test_that("analytic binary irgtt case matches simulated method binary irgtt case", {
@@ -113,3 +114,34 @@ test_that("analytic binary irgtt case matches a constant", {
                                                   p.c = 0.3, 
                                                   power = NA), 2)),
                0.79)})
+
+
+###############################################
+######  STEPPED-WEDGE METHODS TESTING   #######
+###############################################
+
+#--------------------------------- SW NORMAL OUTCOME
+
+context("SW outcome accuracy")
+
+# compare analytic to simulation methods (normal)
+test_that("analytic normal SW case matches simulated method normal SW case", {
+  expect_equal(signif(as.numeric(cps.sw.normal(nsim = 100, nsubjects = 50, nclusters = 30, 
+                                               difference = 1.75, steps = 5, sigma_sq = 100, sigma_b_sq = 30, 
+                                               alpha = 0.05, method = 'glmm', quiet = FALSE, 
+                                               all.sim.data = FALSE)$power$Power), 1), 
+               as.numeric(signif(
+                 
+                 cpa.sw.normal(nsubjects = 50, 
+                               nclusters = 300, 
+                               ntimes = 5, 
+                               d = 1.75, 
+                               icc = 0.5, 
+                               rho_c = 100, 
+                               rho_s = 30, 
+                               vart = 130, 
+                               power = NA)
+                 
+               ), 1)))})
+
+
