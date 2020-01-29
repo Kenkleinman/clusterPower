@@ -29,6 +29,21 @@ crtpwr.2meanD.safe <- function(alpha,power,nclusters,nsubjects,d,icc,rho_c,rho_s
   res
 }
 
+cpa.sw.normal.safe <- function(alpha,power,nclusters,nsubjects,ntimes,d,icc,rho_c,rho_s,vart){
+  # make safe version
+  fun <- safely(cpa.sw.normal, otherwise = NA)
+  # store result
+  res <- fun(alpha,power,nclusters,nsubjects,ntimes,d,icc,rho_c,rho_s,vart)
+  # if res$error NULL, set to NA, otherwise set to message
+  if(is.null(res$error)){
+    res$error = 'None'
+  } else {
+    res$error <- res$error$message
+  }
+  res
+}
+
+
 crtpwr.2meanD.ltf.safe <- function(alpha,power,nclusters,nsubjects,d,icc,rho_c,rho_s,vart,ltf.0,ltf.1,replace){
   # make safe version
   fun <- safely(crtpwr.2meanD.ltf, otherwise = NA)
