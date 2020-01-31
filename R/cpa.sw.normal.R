@@ -34,7 +34,8 @@
 #'   designs.
 #' @param rho_s The individual autocorrelation, the correlation between two outcome measurements
 #'   in the same individual at different times. In a purely cross-sectional design (new subjects are
-#'   obtained at each time point), this value should be 0.
+#'   obtained at each time point), this value should be 0. For a cohort design (the same subjects are
+#'   observed at each time point), this value will be greater than 0.
 #' @param vart The total variation of the outcome (the sum of variances from cluster and individual
 #'   level random effects).
 #' @param tol Numerical tolerance used in root finding. The default provides
@@ -43,11 +44,12 @@
 #' @examples 
 #' # Find the required number of clusters switching to intervention at each time point for a trial 
 #' # with alpha = 0.05, power = 0.80, nsubjects = 50, ntimes = 5, d = 1.5 units, icc = 0.2,
-#' # rho_c = 0.80, rho_s = 0.50, and vart = 16 square-units.
-#' cpa.sw.normal(nsubjects = 50, ntimes = 5, d = 1.5, icc = 0.2, rho_c = 0.80, rho_s = 0.50, vart = 16)
+#' # rho_c = 0.80, rho_s = 0, and vart = 16 square-units. Note that because rho_s = 0, this is a 
+#' # cross-sectional design.
+#' cpa.sw.normal(nsubjects = 50, ntimes = 5, d = 1.5, icc = 0.2, rho_c = 0.80, rho_s = 0, vart = 16)
 #' # 
-#' # The result, nclusters = 2.134918, suggests 3 clusters switching per time point should be used. This
-#' # means that the total number of clusters in the study is nclusters*ntimes = 3*5 = 15.
+#' # The result, nclusters = 1.288772, suggests 2 clusters switching per time point should be used. This
+#' # means that the total number of clusters in the study is nclusters*ntimes = 2*5 = 10.
 #' 
 #' @references Hooper, R., Teerenstra, S., Hoop, E., and Eldridge, S. (2016)
 #'   Sample size calculation for stepped wedge and other longitudinal cluster
@@ -92,14 +94,14 @@ cpa.sw.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
     
     VIF <-DEFFr*DEFFc
     
-    # zcrit <- qnorm(alpha/2, lower.tail = FALSE)
-    # zstat <- abs(d)/sqrt( 4*vart/(nclusters*nsubjects*ntimes)*VIF )
-    # pnorm(zcrit, zstat, lower.tail = FALSE)
+    zcrit <- qnorm(alpha/2, lower.tail = FALSE)
+    zstat <- abs(d)/sqrt( 4*vart/(nclusters*nsubjects*ntimes)*VIF )
+    pnorm(zcrit, zstat, lower.tail = FALSE)
     
-    tcrit <- qt(alpha/2, ntimes*nclusters - (ntimes + 2), lower.tail = FALSE)
-    ncp <- abs(d)/sqrt( 4*vart/(nclusters*nsubjects*ntimes)*VIF )
-    pt(tcrit, ntimes*nclusters - (ntimes + 2), ncp, lower.tail = FALSE)#+
-    #pt(-tcrit, 2*(nclusters - 1), ncp, lower.tail = TRUE)
+    # tcrit <- qt(alpha/2, ntimes*nclusters - (ntimes + 2), lower.tail = FALSE)
+    # ncp <- abs(d)/sqrt( 4*vart/(nclusters*nsubjects*ntimes)*VIF )
+    # pt(tcrit, ntimes*nclusters - (ntimes + 2), ncp, lower.tail = FALSE)#+
+    # #pt(-tcrit, 2*(nclusters - 1), ncp, lower.tail = TRUE)
     
     
   })

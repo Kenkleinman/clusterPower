@@ -51,6 +51,20 @@ rho_stext <- 'Within subject correlation (rho_s)'
 rho_stooltip <- 'The correlation between baseline and post-test outcomes at the subject level. For a purely cross-sectional design, this value should be 0.'
 
 # -----------------------------------------------------------------------------
+# specific to SW:
+rho_cSWtext <- 'Within cluster correlation (rho_c)'
+rho_cSWtooltip <- 'The correlation over time between outcomes at the cluster level. Used in both cohort and cross-sectional designs. A value of "0" is a conservative estimate.'
+
+rho_sSWtext <- 'Within subject correlation (rho_s)'
+rho_sSWtooltip <- 'The correlation overtime between outcomes at the subject level. For a purely cross-sectional design, this value should be 0.'
+
+ntimestext <- "Number of time points (ntimes)"
+ntimestooltip <- "Number of time points (not counting baseline)"
+
+nclustersSWtext <- 'Clusters per arm (nclusters)'
+nclustersSWtooltip <- 'The number of clusters shifting to treatment at each time point.'
+
+# -----------------------------------------------------------------------------
 # specific to 2meanDltf:
 ltf_0text <- 'Control LTF rate (ltf_0)'
 ltf_0tooltip <- 'Proportion of controls lost to follow-up.'
