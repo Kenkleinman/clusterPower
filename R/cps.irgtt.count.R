@@ -18,7 +18,8 @@
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
-#' @param nclusters Number of clusters per treatment group; accepts integer (required).
+#' @param nclusters Number of clusters in the treatment group; accepts integer (required). 
+#' Treatment group cluster size defaults to 1.
 #' At least 2 of the following 3 arguments must be specified:
 #' @param c1 Expected outcome count in non-treatment group
 #' @param c2 Expected outcome count in treatment group
@@ -66,9 +67,9 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(400, 50), nclusters = c(1, 60), c1 = 1000,
+#' count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(400, 10), nclusters = 60, c1 = 1000,
 #'                       c2 = 2500, sigma_b_sq2 = 1, family = 'poisson', analysis = 'poisson',
-#'                       alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
+#'                       alpha = 0.05, quiet = FALSE, all.sim.data = FALSE)
 #' }
 #'
 #' @export

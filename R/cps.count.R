@@ -125,7 +125,12 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   }
   # Set cluster sizes for treatment arm (if not already specified)
   if(length(nclusters) == 1){
+    if (isTRUE(irgtt = TRUE)){
+      nclusters[2] = nclusters[1]
+      nclusters[1] = 1
+    } else {
     nclusters[2] = nclusters[1]
+    }
   }
   # Set sample sizes for each cluster (if not already specified)
   if(length(nsubjects) == 1){
@@ -252,7 +257,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
         if(analysis == 'poisson'){
          # require("optimx")
           my.mod <- lme4::glmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
-                               family = stats::poisson(link = 'log')#,                                
+                               family = stats::poisson(link = 'log'),                                
                               # control = lme4::glmerControl(optimizer = "optimx", 
           #                                                  optCtrl = list(method= "nlminb"))
           )
