@@ -13,6 +13,7 @@ cpa.irgtt.binary(
   icc = NA,
   p.e = NA,
   p.c = NA,
+  decrease = TRUE,
   tol = .Machine$double.eps^0.25
 )
 }
@@ -35,6 +36,10 @@ two individuals from the same cluster in the intervention arm.}
 \item{p.e}{The expected probability of the outcome in the intervention arm.}
 
 \item{p.c}{The expected probability of the outcome in the control arm.}
+
+\item{decrease}{Whether or not the proportion in the intervention arm is expected to be
+less than the proportion in the control arm. If TRUE it is assumed p.e < p.c, while FALSE implies
+p.e > p.c.}
 
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}
