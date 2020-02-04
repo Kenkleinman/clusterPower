@@ -35,6 +35,7 @@
 #' @param alpha Significance level. Default = 0.05.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
+#' @param optimizer Option to fit with a different optimizer (using the package \code{optimx}). Defaults to L-BFGS-B.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -71,9 +72,11 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 36, c1 = 100,
-#'                       c2 = 200, sigma_b_sq = 1, family = 'poisson', analysis = 'poisson',
-#'                       method = 'glmm', alpha = 0.05, quiet = FALSE, all.sim.data = FALSE)
+#' count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 36, 
+#'                       c1 = 100, c2 = 200, sigma_b_sq = 1, 
+#'                       family = 'poisson', analysis = 'poisson',
+#'                       method = 'glmm', alpha = 0.05, quiet = FALSE, 
+#'                       all.sim.data = FALSE, optimizer = "L-BFGS-B")
 #' }
 #'
 #' @export
@@ -82,7 +85,7 @@
 cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL, c2 = NULL, 
                      c.diff = NULL, sigma_b_sq = NULL, sigma_b_sq2 = NULL, family = 'poisson', 
                      analysis = 'poisson', method = 'glmm', alpha = 0.05, quiet = FALSE, 
-                     all.sim.data = FALSE, irgtt = FALSE, seed = NA){
+                     all.sim.data = FALSE, irgtt = FALSE, seed = NA, optimizer = "L-BFGS-B"){
   
   if (!is.na(seed)){
     set.seed(seed = seed)
@@ -125,7 +128,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   }
   # Set cluster sizes for treatment arm (if not already specified)
   if(length(nclusters) == 1){
-    if (isTRUE(irgtt = TRUE)){
+    if (irgtt == TRUE){
       nclusters[2] = nclusters[1]
       nclusters[1] = 1
     } else {
@@ -243,27 +246,61 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     }
     
     # Fit GLMM (lmer)
-    if(method == 'glmm'){
-      if(irgtt == FALSE){
-        if(analysis == 'poisson'){
-          require("optimx")
+    if (method == 'glmm') {
+      if (i == 1){
+        require("optimx")
+        if (isTRUE(optimizer == "auto")) {
+          if (irgtt == FALSE) {
+            if (analysis == 'poisson') {
+              my.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat, 
+                                   family = stats::poisson(link = 'log'))
+            }
+            if (analysis == 'neg.binom') {
+              my.mod = lme4::glmer.nb(y ~ trt + (1|clust), data = sim.dat)
+            }
+          }
+          if (irgtt == TRUE){
+            if (analysis == 'poisson') {
+              my.mod <- lme4::glmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
+                                    family = stats::poisson(link = 'log'))
+            }
+            if (analysis == 'neg.binom') { # this is not tested
+              my.mod = lme4::glmer.nb(y ~ trt + (0 + trt|clust), data = sim.dat)
+            }        
+          }
+          goodopt <- optimizerSearch(my.mod)
+        } else {
+        goodopt <- optimizer
+    }
+  }
+      if (irgtt == FALSE){
+        if (analysis == 'poisson'){
           my.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat, 
-                               family = stats::poisson(link = 'log'))
+                               family = stats::poisson(link = 'log'),
+                               control = lme4::glmerControl(optimizer = "optimx", 
+                                                            optCtrl = list(method = goodopt, 
+                                                                           starttests = FALSE, kkt = FALSE)))
         }
         if(analysis == 'neg.binom'){
-          my.mod = lme4::glmer.nb(y ~ trt + (1|clust), data = sim.dat)
+          my.mod = lme4::glmer.nb(y ~ trt + (1|clust), data = sim.dat, 
+                                  control = lme4::glmerControl(optimizer = "optimx", 
+                                                               optCtrl = list(method = goodopt,
+                                                                              starttests = FALSE, kkt = FALSE)))
         }
       } else {
         if(analysis == 'poisson'){
-         # require("optimx")
           my.mod <- lme4::glmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
                                family = stats::poisson(link = 'log'),                                
-                              # control = lme4::glmerControl(optimizer = "optimx", 
-          #                                                  optCtrl = list(method= "nlminb"))
+                               control = lme4::glmerControl(optimizer = "optimx", 
+                                                            optCtrl = list(method = goodopt,
+                                                                           starttests = FALSE, kkt = FALSE))
           )
         }
         if(analysis == 'neg.binom'){ # this is not tested
-          my.mod = lme4::glmer.nb(y ~ trt + (0 + trt|clust), data = sim.dat)
+          my.mod = lme4::glmer.nb(y ~ trt + (0 + trt|clust), data = sim.dat,
+                                  control = lme4::glmerControl(optimizer = "optimx", 
+                                                               optCtrl = list(method = goodopt,
+                                                                              starttests = FALSE, kkt = FALSE)))
         }        
       }
       glmm.values = summary(my.mod)$coefficient
@@ -371,7 +408,6 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
                                    "model.estimates" = cps.model.est, "sim.data" = simulated.datasets,
                                    "convergence" = converge.vector), 
                               class = 'crtpwr')
-  
   return(complete.output)
   }
 

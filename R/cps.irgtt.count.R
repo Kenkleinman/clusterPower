@@ -33,6 +33,7 @@
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE.
 #' @param seed Option to set seed. Default is NA.
+#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Defaults to L-BFGS-B.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -67,9 +68,11 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(400, 10), nclusters = 60, c1 = 1000,
-#'                       c2 = 2500, sigma_b_sq2 = 1, family = 'poisson', analysis = 'poisson',
-#'                       alpha = 0.05, quiet = FALSE, all.sim.data = FALSE)
+#' count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(500, 10), nclusters = 50, 
+#'                              c1 = 85, c2 = 450, sigma_b_sq2 = 1, 
+#'                              family = 'poisson', analysis = 'poisson',
+#'                              alpha = 0.05, quiet = FALSE, all.sim.data = FALSE, 
+#'                              opt = 'bobyqa')
 #' }
 #'
 #' @export
@@ -78,7 +81,7 @@
 cps.irgtt.count <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL, c2 = NULL, 
                      c.diff = NULL, sigma_b_sq = 0, sigma_b_sq2 = 0, family = 'poisson', 
                      analysis = 'poisson', alpha = 0.05, quiet = FALSE, 
-                     all.sim.data = FALSE, seed = NA){
+                     all.sim.data = FALSE, seed = NA, opt = "L-BFGS-B"){
   
   if (sigma_b_sq == 0 & sigma_b_sq2 == 0){
     warning("sigma_b_sq in both arms is 0. This is equivalent to a t-test. Did you mean to 
@@ -98,6 +101,6 @@ cps.irgtt.count <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 
   sim <- cps.count(nsim = nsim, nsubjects = nsubjects, nclusters = nclusters, c1 = c1, c2 = c2, 
                    c.diff = c.diff, sigma_b_sq = sigma_b_sq, sigma_b_sq2 = sigma_b_sq2, family = family, 
                    analysis = analysis, method = 'glmm', alpha = alpha, quiet = quiet, 
-                   all.sim.data = all.sim.data, seed = seed, irgtt = TRUE)
+                   all.sim.data = all.sim.data, seed = seed, irgtt = TRUE, opt = opt)
   return(sim)
   }
