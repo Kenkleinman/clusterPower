@@ -15,6 +15,9 @@ names2mean <- c("alpha","power","nclusters","nsubjects","cv","d","icc","vart","m
 names2meanD <- c("alpha","power","nclusters","nsubjects","d","icc","rho_c","rho_s","vart")
 names2meanM <- c("alpha","power","nclusters","nsubjects","d","icc","vart","rho_m")
 namesnmean <- c("alpha","power","narms","nclusters","nsubjects","vara","varc","vare")
+
+namesSW <- c("alpha","power","nclusters","nsubjects","ntimes","d", "icc", "rho_c","rho_s","vart")
+
 names2prop <- c("alpha","power","nclusters","nsubjects","cv","p1","p2","icc","pooled","p1inc")
 names2propD <- c("alpha","power","nclusters","nsubjects","p","d","icc","rho_c","rho_s")
 names2propM <- c("alpha","power","nclusters","nsubjects","p1","p2","cvm","p1inc")
@@ -157,6 +160,74 @@ ui <- function(request){
              ),
              column(10,
                     make_table_and_graph("2meanD", names2meanD)
+             ) # end column(10,...
+    ), # end tabPanel("Continuous DID ...
+    #-----------------------------------------------------------------------------------------------------------
+    tabPanel("Stepped Wedge",
+             column(2,
+                    #----------------------------------------------------------
+                    fluidRow(textInput("alphaSW", alphatext,
+                                       value = "0.05", width = "100%")),
+                    bsTooltip("alphaSW", alphatooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("powerSW", powertext,
+                                       value = "", width = "100%")),
+                    bsTooltip("powerSW", powertooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("dSW", dtext,
+                                       value = "", width = "100%")),
+                    bsTooltip("dSW", dDtooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("ntimesSW", ntimestext,
+                                       value = "", width = "100%")),
+                    bsTooltip("ntimesSW", ntimestooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("nclustersSW", nclustersSWtext,
+                                       value = "", width = "100%")),
+                    bsTooltip("nclustersSW", nclustersSWtooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("nsubjectsSW", nsubjectstext,
+                                       value = "", width = "100%")),
+                    bsTooltip("nsubjectsSW", nsubjectstooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("iccSW", icctext,
+                                       value = "", width = "100%")),
+                    bsTooltip("iccSW", icctooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("rho_cSW", rho_cSWtext,
+                                       value = "", width = "100%")),
+                    bsTooltip("rho_cSW", rho_ctooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("rho_sSW", rho_sSWtext,
+                                       value = "", width = "100%")),
+                    bsTooltip("rho_sSW", rho_stooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("vartSW", varttext,
+                                       value = "", width = "100%")),
+                    bsTooltip("vartSW", varttooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(
+                      column(6, style='padding:0px;', actionButton("defaultSW", defaulttext, width = "100%")),
+                      column(6, style='padding:0px;', actionButton("clearSW", clearalltext, width = "100%"))
+                    ),
+                    fluidRow(
+                      column(12, style='padding: 0px;', actionButton("calcSW", calctext, width = "100%",
+                                                                     style = umass)),
+                      fluidRow(column(12, credittext))
+                    )
+             ),
+             column(10,
+                    make_table_and_graph("SW", namesSW)
              ) # end column(10,...
     ), # end tabPanel("Continuous DID ...
     #-----------------------------------------------------------------------------------------------------------
@@ -801,6 +872,150 @@ server <- function(input, output, session){
   },
   width = reactive({input$width2meanD}),
   height = reactive({input$height2meanD})
+  )
+  
+  #----------------------------------------------------------------------------
+  # Stepped Wedge
+  #----------------------------------------------------------------------------
+  
+  # reset SW inputs to default values
+  observeEvent(
+    input$defaultSW,
+    {
+      updateTextInput(session, inputId = "alphaSW", value = "0.05")
+      updateTextInput(session, inputId = "powerSW", value = "")
+      updateTextInput(session, inputId = "dSW", value = "")
+      updateTextInput(session, inputId = "nclustersSW", value = "")
+      updateTextInput(session, inputId = "nsubjectsSW", value = "")
+      updateTextInput(session, inputId = "ntimesSW", value = "")
+      updateTextInput(session, inputId = "iccSW", value = "")
+      updateTextInput(session, inputId = "rho_cSW", value = "")
+      updateTextInput(session, inputId = "rho_sSW", value = "")
+      updateTextInput(session, inputId = "vartSW", value = "")
+    }
+  ) # end observeEvent(input$defaultSW ...
+  
+  
+  # clear SW inputs 
+  observeEvent(
+    input$clearSW,
+    {
+      updateTextInput(session, inputId = "alphaSW", value = "")
+      updateTextInput(session, inputId = "powerSW", value = "")
+      updateTextInput(session, inputId = "rho_cSW", value = "")
+      updateTextInput(session, inputId = "rho_sSW", value = "")
+      updateTextInput(session, inputId = "nclustersSW", value = "")
+      updateTextInput(session, inputId = "nsubjectsSW", value = "")
+      updateTextInput(session, inputId = "ntimesSW", value = "")
+      updateTextInput(session, inputId = "dSW", value = "")
+      updateTextInput(session, inputId = "iccSW", value = "")
+      updateTextInput(session, inputId = "vartSW", value = "")
+    }
+  ) # end observeEvent(input$clearSW ...
+  
+  # create SW data
+  resSW <- eventReactive(
+    input$calcSW,
+    {
+      # convert inputs to numeric vectors
+      alpha <- make_sequence(isolate(input$alphaSW))
+      power <- make_sequence(isolate(input$powerSW))
+      nclusters <- make_sequence(isolate(input$nclustersSW))
+      nsubjects <- make_sequence(isolate(input$nsubjectsSW))
+      ntimes <- make_sequence(isolate(input$ntimesSW))
+      d <- make_sequence(isolate(input$dSW))
+      icc <- make_sequence(isolate(input$iccSW))
+      rho_c <- make_sequence(isolate(input$rho_cSW))
+      rho_s <- make_sequence(isolate(input$rho_sSW))
+      vart <- make_sequence(isolate(input$vartSW))
+      
+      if(!is.na(power)){
+        validate(
+          need(power >= 0 & power <= 1,
+               powervalidmsg)
+        )
+      }
+      
+      if(!is.na(alpha)){
+        validate(
+          need(alpha >= 0 & alpha <= 1,
+               alphavalidmsg)
+        )
+      }
+      
+      
+      # create a table of input values
+      tab <- expand.grid(alpha,
+                         power,
+                         nclusters,
+                         nsubjects,
+                         ntimes,
+                         d,
+                         icc,
+                         rho_c,
+                         rho_s,
+                         vart,
+                         stringsAsFactors = FALSE)
+      
+      # record the column index of the target parameter
+      needind <- which(is.na(tab[1,]))
+      # validate that only one input is blank
+      validate(
+        need(length(needind) == 1,
+             "Exactly one of 'alpha', 'power', 'd', 'ntimes', 'nclusters', 'nsubjects', 'icc', 'rho_c', 'rho_s', and 'vart' must be left blank."
+        )
+      )
+      names(tab) <- namesSW
+      target <- namesSW[needind]
+      
+      # apply function over table of input values
+      temp <-pmap_df(tab, cpa.sw.normal.safe)
+      
+      tab[[target]] <- signif(temp$result, 4)
+      tab$error <- map_chr(temp$error, shorten_error, target = target)
+      
+      # make a column to store target variable for use in graphing
+      tab$target <- target
+      
+      # check to see if there are errors, if so, set maxcol to 10 to show error in datatable
+      # if not, set colmax to 9 so that error column not displayed
+      #tab$colmax <- ifelse(sum(!is.na(resSW()$error) != 0, 10, 9))
+      
+      # convert all input values to factors for ggplot
+      mutate_if(tab, !(names(tab) %in% c(target,"error","target")), factor)
+    })
+  
+  # create SW output table
+  output$tableSW <- DT::renderDataTable(
+    resSW()[, 1:11],
+    server = FALSE,
+    extensions = 'Buttons',
+    filter = 'top',
+    options = list(
+      # create the button
+      dom = 'fBrtlip',
+      buttons = list(list(extend = 'csv', filename = paste('data-SW-', Sys.time(), sep=''), text = 'Download')),
+      #autoWidth = TRUE,
+      columnDefs = list(list(className = 'dt-center', targets = '_all'),
+                        list(width = '500px', targets = 11)),
+      pageLength = 10,
+      lengthMenu =  list(c(10, 25, 100, -1), list('10', '25', '100', 'All')) 
+    )
+  )
+  
+  # update graph UI
+  observeEvent(resSW(),
+               {
+                 update_graph_ui(session, resSW(), "SW", namesSW)
+               })
+  
+  # create SW graph
+  output$graphSW <- renderPlot({
+    create_graph(resSW(), input$xSW, input$ySW, input$groupSW,
+                 input$lsizeSW, input$psizeSW, input$rowSW, input$colSW)
+  },
+  width = reactive({input$widthSW}),
+  height = reactive({input$heightSW})
   )
   
   #----------------------------------------------------------------------------

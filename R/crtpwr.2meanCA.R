@@ -4,7 +4,7 @@
 #' cluster-level covariates, or determine parameters to obtain a target power.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-#'   \code{d}, \code{icc}, \code{varw}, \code{covdf}, and \code{rho_b} must be passed as \code{NA}.
+#'   \code{d}, \code{icc}, \code{vart}, \code{covdf}, and \code{rho_b} must be passed as \code{NA}.
 #'   Note that \code{alpha} and \code{power} have non-\code{NA}
 #'   defaults, so if those are the parameters of interest they must be
 #'   explicitly passed as \code{NA}.
@@ -30,7 +30,7 @@
 #' @param nsubjects The mean of the cluster sizes, or a vector of cluster sizes for one arm.
 #' @param d The difference in condition means.
 #' @param icc The intraclass correlation.
-#' @param varw The within-cluster variation.
+#' @param vart The total variance of the outcome.
 #' @param covdf The degrees of freedom used by the cluster-level covariates. If \code{covdf} is 0,
 #'   the value of \code{rho_b} must be 0 as well.
 #' @param rho_b The between-cluster residual correlation between the outcome and the covariates.
@@ -41,7 +41,7 @@
 #' # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
 #' # power = 0.8, 10 observations per cluster, a difference of 1 unit,  icc = 0.1,
 #' # a variance of 5 units, adjusting for 1 covariate, and a between-cluster correlation of 0.7:
-#' crtpwr.2meanCA(nsubjects=10 ,d=1, icc=.1, varw=5, covdf=1, rho_b=.7)
+#' crtpwr.2meanCA(nsubjects=10 ,d=1, icc=.1, vart=5, covdf=1, rho_b=.7)
 #' # 
 #' # The result, showimg nclusters of greater than 12, suggests 13 clusters per
 #' # condition should be used.
@@ -51,7 +51,7 @@
 
 crtpwr.2meanCA <- function(alpha = 0.05, power = 0.80, nclusters = NA,
                            nsubjects = NA, d = NA, icc = NA,
-                           varw = NA, covdf = NA, rho_b = NA,
+                           vart = NA, covdf = NA, rho_b = NA,
                            tol = .Machine$double.eps^0.25){
   
   # if nsubjects is a vector, 
@@ -72,13 +72,13 @@ crtpwr.2meanCA <- function(alpha = 0.05, power = 0.80, nclusters = NA,
   }
   
   # list of needed inputs
-  needlist <- list(alpha, power, nclusters, nsubjects, d, icc, varw, covdf, rho_b)
-  neednames <- c("alpha", "power", "nclusters", "nsubjects", "d", "icc", "varw", "covdf", "rho_b", "rho_w")
+  needlist <- list(alpha, power, nclusters, nsubjects, d, icc, vart, covdf, rho_b)
+  neednames <- c("alpha", "power", "nclusters", "nsubjects", "d", "icc", "vart", "covdf", "rho_b", "rho_w")
   needind <- which(unlist(lapply(needlist, is.na)))
   # check to see that exactly one needed param is NA
   
   if (length(needind) != 1) {
-    neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'd', 'icc', 'varw', 'covdf', and 'rho_b' must be NA."
+    neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'd', 'icc', 'vart', 'covdf', and 'rho_b' must be NA."
     stop(neederror)
   } 
   
@@ -92,7 +92,7 @@ crtpwr.2meanCA <- function(alpha = 0.05, power = 0.80, nclusters = NA,
     
     tcrit <- qt(alpha/2, 2*(nclusters - 1) - covdf, lower.tail = FALSE)
     
-    ncp <- abs(d)/sqrt(2*varw*DEFF/(nclusters*nsubjects))
+    ncp <- abs(d)/sqrt(2*vart*DEFF/(nclusters*nsubjects))
     
     pt(tcrit, 2*(nclusters - 1) - covdf, ncp, lower.tail = FALSE) #+ pt(-tcrit, 2*(nclusters - 1), ncp, lower.tail = TRUE)
   })
@@ -137,9 +137,9 @@ crtpwr.2meanCA <- function(alpha = 0.05, power = 0.80, nclusters = NA,
                           tol = tol)$root
   }
   
-  # calculate varw
-  if (is.na(varw)) {
-    varw <- stats::uniroot(function(varw) eval(pwr) - power,
+  # calculate vart
+  if (is.na(vart)) {
+    vart <- stats::uniroot(function(vart) eval(pwr) - power,
                            interval = c(1e-10, 1e+07),
                            tol = tol, extendInt = "downX")$root
   }
@@ -163,7 +163,7 @@ crtpwr.2meanCA <- function(alpha = 0.05, power = 0.80, nclusters = NA,
   # method <- paste("Clustered two-sample t-test power calculation: ", target, sep = "")
   # note <- "'nclusters' is the number of clusters in each group and 'nsubjects' is the number of individuals in each cluster."
   # structure(list(alpha = alpha, power = power, nclusters = nclusters, nsubjects = nsubjects, cv = cv, d = d,
-  #                icc = icc, varw = varw, note = note, method = method),
+  #                icc = icc, vart = vart, note = note, method = method),
   #           class = "power.htest")
   
 }

@@ -108,7 +108,7 @@ set output may also be specified.
 \examples{
 \dontrun{
 normal.sw.rct = cps.sw.normal(nsim = 100, nsubjects = 50, nclusters = 30, 
-                              difference = 3, steps = 5, sigma_sq = 100, sigma_b_sq = 30, 
+                              difference = 1.75, steps = 5, sigma_sq = 100, sigma_b_sq = 30, 
                               alpha = 0.05, method = 'glmm', quiet = FALSE, 
                               all.sim.data = FALSE)
 }

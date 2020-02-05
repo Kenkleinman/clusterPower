@@ -312,6 +312,11 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
         if (!isTRUE(converge.ind)){
           model.id = paste0("Model ", length(converge.vector))
           warning.list[model.id] = list(model.converge@optinfo$conv$lme4$messages)
+          glmm.values = NA
+          est.vector = append(est.vector, NA)
+          se.vector = append(se.vector, NA)
+          stat.vector = append(stat.vector, NA)
+          pval.vector = append(pval.vector, NA)
         } else {
         glmm.values = summary(my.mod)$coefficient
         est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
@@ -443,7 +448,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                                        "model.estimates" = cps.model.est, 
                                        "sim.data" = simulated.datasets, 
                                        "warning.list" = warning.list,
-                                       "convergence" = convergence.vector))
+                                       "convergence" = converge.vector))
     }
     return(complete.output)
     }
