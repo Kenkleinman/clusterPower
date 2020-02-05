@@ -14,9 +14,9 @@
 #'   explicitly passed as \code{NA}.
 #'   
 #'The terms below can be discussed based on the mixed effects model:
-#'  \deqn{y_{ij} = \beta_0 + \sum_{k=2}^{A} \beta_i I(k=i) + b_i + e_{ij}}
+#'  \deqn{y_{ij} = \beta_0 + \sum_{k=2}^{A} \beta_i I(k=i) + b_i + e_{ij}}{\beta_0 + \sum\beta_i I(k=i) + b_i + e_i}
 #'  
-#'  where eqn{i} indexes treatment arm, \eqn{I(fn) = 1} if \eqn{fn} is true.  In this case,
+#'  where \eqn{i} indexes treatment arm, \eqn{I(fn) = 1} if \eqn{fn} is true.  In this case,
 #'  between-cluster variance is the variance of \eqn{b_i}, often denoted \eqn{\sigma_b} and
 #'  the within-cluster variance is the variance of \eqn{e_{ij}}, often denoted \eqn{\sigma}.
 #'  (The intracluster correlation coefficient or ICC is a function of these two natural
