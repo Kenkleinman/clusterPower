@@ -2,7 +2,7 @@
 % Please edit documentation in R/cpa.did.binary.R
 \name{cpa.did.binary}
 \alias{cpa.did.binary}
-\title{Power calculations for  difference-in-difference cluster randomized trials, binary outcome}
+\title{Power calculations for  difference-in-difference cluster randomized trials, dichotomous outcome}
 \usage{
 cpa.did.binary(
   alpha = 0.05,

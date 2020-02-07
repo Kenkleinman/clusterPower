@@ -9,9 +9,9 @@ cpa.normal(
   power = 0.8,
   nclusters = NA,
   nsubjects = NA,
-  cv = 0,
+  CV = 0,
   d = NA,
-  icc = NA,
+  ICC = NA,
   vart = NA,
   method = c("taylor", "weighted"),
   tol = .Machine$double.eps^0.25
@@ -28,12 +28,12 @@ error.}
 
 \item{nsubjects}{The mean of the cluster sizes, or a vector of cluster sizes for one arm.}
 
-\item{cv}{The coefficient of variation of the cluster sizes. When \code{cv} = 0,
+\item{CV}{The coefficient of variation of the cluster sizes. When \code{CV} = 0,
 the clusters all have the same size.}
 
 \item{d}{The difference in condition means.}
 
-\item{icc}{The intraclass correlation.}
+\item{ICC}{The intraclass correlation.}
 
 \item{vart}{The total variation of the outcome (the sum of within- and between-cluster variation).}
 
@@ -53,12 +53,12 @@ or determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-  \code{cv}, \code{d}, \code{icc}, and \code{vart}  must be passed as \code{NA}.
-  Note that \code{alpha}, \code{power}, and \code{cv} have non-\code{NA}
+  \code{CV}, \code{d}, \code{ICC}, and \code{vart}  must be passed as \code{NA}.
+  Note that \code{alpha}, \code{power}, and \code{CV} have non-\code{NA}
   defaults, so if those are the parameters of interest they must be
   explicitly passed as \code{NA}.
   
-If \code{nsubjects} is a vector the values, \code{nclusters} and \code{cv} will be recalculated
+If \code{nsubjects} is a vector the values, \code{nclusters} and \code{CV} will be recalculated
    using the values in \code{nsubjects}. If \code{nsubjects} is a vector and \code{method} is
    "taylor", the exact relative efficiency will be calculated as described in
    van Breukelen et al (2007).
@@ -80,8 +80,8 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = .05, 
 # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
-# of 1 unit,  icc = 0.1 and   a variance of five units.
-cpa.normal(nsubjects=10 ,d=1, icc=.1, vart=5)
+# of 1 unit,  ICC = 0.1 and   a variance of five units.
+cpa.normal(nsubjects=10 ,d=1, ICC=.1, vart=5)
 # 
 # The result, showimg nclusters of greater than 15, suggests 16 clusters per 
 # condition should be used.

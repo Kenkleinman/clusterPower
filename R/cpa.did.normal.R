@@ -4,7 +4,7 @@
 #' or determine parameters to obtain a target power.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-#'   \code{d}, \code{icc}, \code{rho_c}, \code{rho_s}, and \code{vart}
+#'   \code{d}, \code{ICC}, \code{rho_c}, \code{rho_s}, and \code{vart}
 #'   must be passed as \code{NA}. Note that \code{alpha} and\code{power}
 #'   have non-\code{NA} defaults, so if those are the parameters of 
 #'   interest they must be explicitly passed as \code{NA}.
@@ -29,7 +29,7 @@
 #' @param nclusters The number of clusters per condition. It must be greater than 1.
 #' @param nsubjects The mean of the cluster sizes, or a vector of cluster sizes for one arm.
 #' @param d The difference in mean change between conditions (i.e. "difference-in-difference").
-#' @param icc The intraclass correlation.
+#' @param ICC The intraclass correlation.
 #' @param rho_c The correlation between baseline and post-test outcomes at the
 #'   cluster level. This value can be used in both cross-sectional and cohort
 #'   designs. If this quantity is unknown, a value of 0 is a conservative estimate.
@@ -43,9 +43,9 @@
 #' @return The computed argument.
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
-#' # power = 0.80, nsubjects = 100, d = 0.50 units, icc = 0.05, rho_c = 0.50, rho_s = 0.70,
+#' # power = 0.80, nsubjects = 100, d = 0.50 units, ICC = 0.05, rho_c = 0.50, rho_s = 0.70,
 #' # and vart = 1 unit.
-#' cpa.did.normal(nsubjects = 100 , d = 0.5, icc = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
+#' cpa.did.normal(nsubjects = 100 , d = 0.5, ICC = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
 #' # 
 #' # The result, nclusters = 4.683358, suggests 5 clusters per condition should be used.
 #' 
@@ -58,7 +58,7 @@
 #' @export
 
 cpa.did.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
-                          nsubjects = NA, d = NA, icc = NA,
+                          nsubjects = NA, d = NA, ICC = NA,
                           rho_c = NA, rho_s = NA,
                           vart = NA,
                           tol = .Machine$double.eps^0.25){
@@ -73,14 +73,14 @@ cpa.did.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
   }
   
   # list of needed inputs
-  needlist <- list(alpha, power, nclusters, nsubjects, d, icc, rho_c, rho_s, vart)
-  neednames <- c("alpha", "power", "nclusters", "nsubjects", "d", "icc",
+  needlist <- list(alpha, power, nclusters, nsubjects, d, ICC, rho_c, rho_s, vart)
+  neednames <- c("alpha", "power", "nclusters", "nsubjects", "d", "ICC",
                  "rho_c", "rho_s", "vart")
   needind <- which(unlist(lapply(needlist, is.na)))
   # check to see that exactly one needed param is NA
   
   if (length(needind) != 1) {
-    neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'd', 'icc', 'rho_c', 'rho_s', and 'vart' must be NA."
+    neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'd', 'ICC', 'rho_c', 'rho_s', and 'vart' must be NA."
     stop(neederror)
   } 
   
@@ -90,8 +90,8 @@ cpa.did.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
   pwr <- quote({
     
     # variance inflation
-    DEFF <- 1 + (nsubjects - 1)*icc
-    r <- (nsubjects*icc/DEFF)*rho_c + ((1 - icc)/DEFF)*rho_s
+    DEFF <- 1 + (nsubjects - 1)*ICC
+    r <- (nsubjects*ICC/DEFF)*rho_c + ((1 - ICC)/DEFF)*rho_s
     # VIF <- DEFF*(1 - r^2)
     VIF <- DEFF*2*(1 - r)
     
@@ -136,9 +136,9 @@ cpa.did.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
                         tol = tol, extendInt = "upX")$root
   }
   
-  # calculate icc
-  if (is.na(icc)){
-    icc <- stats::uniroot(function(icc) eval(pwr) - power,
+  # calculate ICC
+  if (is.na(ICC)){
+    ICC <- stats::uniroot(function(ICC) eval(pwr) - power,
                           interval = c(1e-07, 1 - 1e-07),
                           tol = tol)$root
   }

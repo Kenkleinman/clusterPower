@@ -12,7 +12,7 @@ cpa.binary(
   cv = 0,
   p1 = NA,
   p2 = NA,
-  icc = NA,
+  ICC = NA,
   pooled = FALSE,
   p1inc = TRUE,
   tol = .Machine$double.eps^0.25
@@ -36,7 +36,7 @@ the clusters all have the same size.}
 
 \item{p2}{The proportion in the control group.}
 
-\item{icc}{The intraclass correlation.}
+\item{ICC}{The intraclass correlation.}
 
 \item{pooled}{Logical indicating if pooled standard error should be used.}
 
@@ -76,8 +76,8 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = .05, 
 # power = 0.8, 10 observations per cluster, no variation in cluster size, probability
-# in condition 1 of .1 and condition 2 of .2, and icc = 0.1.
-cpa.binary(nsubjects=10 ,p1=.1, p2=.2, icc=.1)
+# in condition 1 of .1 and condition 2 of .2, and ICC = 0.1.
+cpa.binary(nsubjects=10 ,p1=.1, p2=.2, ICC=.1)
 # 
 # The result, showimg nclusters of greater than 37, suggests 38 clusters per 
 # condition should be used.

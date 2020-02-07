@@ -29,7 +29,7 @@
 #'   the clusters all have the same size.
 #' @param p1 The expected proportion in the treatment group.
 #' @param p2 The proportion in the control group.
-#' @param icc The intraclass correlation.
+#' @param ICC The intraclass correlation.
 #' @param pooled Logical indicating if pooled standard error should be used.
 #' @param p1inc Logical indicating if p1 is expected to be greater than p2.
 #' @param tol Numerical tolerance used in root finding. The default provides
@@ -38,8 +38,8 @@
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, probability
-#' # in condition 1 of .1 and condition 2 of .2, and icc = 0.1.
-#' cpa.binary(nsubjects=10 ,p1=.1, p2=.2, icc=.1)
+#' # in condition 1 of .1 and condition 2 of .2, and ICC = 0.1.
+#' cpa.binary(nsubjects=10 ,p1=.1, p2=.2, ICC=.1)
 #' # 
 #' # The result, showimg nclusters of greater than 37, suggests 38 clusters per 
 #' # condition should be used.
@@ -54,7 +54,7 @@
 cpa.binary <- function(alpha = 0.05, power = 0.80,
                          nclusters = NA, nsubjects = NA, cv = 0,
                          p1 = NA, p2 = NA,
-                         icc = NA, pooled = FALSE,
+                         ICC = NA, pooled = FALSE,
                          p1inc = TRUE,
                          tol = .Machine$double.eps^0.25){
   
@@ -62,18 +62,18 @@ cpa.binary <- function(alpha = 0.05, power = 0.80,
     stop("'nclusters' must be greater than 1.")
   }
   
-  needlist <- list(alpha, power, nclusters, nsubjects, cv, p1, p2, icc)
-  neednames <- c("alpha", "power", "nclusters", "nsubjects", "cv", "p1", "p2", "icc")
+  needlist <- list(alpha, power, nclusters, nsubjects, cv, p1, p2, ICC)
+  neednames <- c("alpha", "power", "nclusters", "nsubjects", "cv", "p1", "p2", "ICC")
   needind <- which(unlist(lapply(needlist, is.na))) # find NA index
   
   if (length(needind) != 1) {
-    stop("Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'cv', 'p1', 'p2', or 'icc' must be NA.")
+    stop("Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'cv', 'p1', 'p2', or 'ICC' must be NA.")
   }
   
   target <- neednames[needind]
   
   pwr <- quote({
-    DEFF <- 1 + ((cv^2 + 1)*nsubjects - 1)*icc
+    DEFF <- 1 + ((cv^2 + 1)*nsubjects - 1)*ICC
     if (pooled) {
       p <- (p1+p2)/2
       sdd <- sqrt(p*(1 - p)*2*DEFF/(nclusters*nsubjects))
@@ -146,9 +146,9 @@ cpa.binary <- function(alpha = 0.05, power = 0.80,
                          tol = tol, extendInt = "downX")$root
   }
   
-  # calculate icc
-  if (is.na(icc)){
-    icc <- stats::uniroot(function(icc) eval(pwr) - power,
+  # calculate ICC
+  if (is.na(ICC)){
+    ICC <- stats::uniroot(function(ICC) eval(pwr) - power,
                           interval = c(1e-07, 1 - 1e-7),
                           tol = tol)$root
   }
@@ -160,7 +160,7 @@ cpa.binary <- function(alpha = 0.05, power = 0.80,
   # structure(list(nclusters = nclusters, nsubjects = nsubjects, cv = cv,
   #                p1 = p1, p1dec = p1dec, p1inc = p1inc,
   #                p2 = p2, p2dec = p2dec, p2inc = p2inc,
-  #                icc = icc, alpha = alpha, power = power,
+  #                ICC = ICC, alpha = alpha, power = power,
   #                note = note, method = method),
   #           class = "power.htest")
   

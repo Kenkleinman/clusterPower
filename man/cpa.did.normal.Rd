@@ -10,7 +10,7 @@ cpa.did.normal(
   nclusters = NA,
   nsubjects = NA,
   d = NA,
-  icc = NA,
+  ICC = NA,
   rho_c = NA,
   rho_s = NA,
   vart = NA,
@@ -30,7 +30,7 @@ error.}
 
 \item{d}{The difference in mean change between conditions (i.e. "difference-in-difference").}
 
-\item{icc}{The intraclass correlation.}
+\item{ICC}{The intraclass correlation.}
 
 \item{rho_c}{The correlation between baseline and post-test outcomes at the
 cluster level. This value can be used in both cross-sectional and cohort
@@ -55,7 +55,7 @@ or determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-  \code{d}, \code{icc}, \code{rho_c}, \code{rho_s}, and \code{vart}
+  \code{d}, \code{ICC}, \code{rho_c}, \code{rho_s}, and \code{vart}
   must be passed as \code{NA}. Note that \code{alpha} and\code{power}
   have non-\code{NA} defaults, so if those are the parameters of 
   interest they must be explicitly passed as \code{NA}.
@@ -79,9 +79,9 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
-# power = 0.80, nsubjects = 100, d = 0.50 units, icc = 0.05, rho_c = 0.50, rho_s = 0.70,
+# power = 0.80, nsubjects = 100, d = 0.50 units, ICC = 0.05, rho_c = 0.50, rho_s = 0.70,
 # and vart = 1 unit.
-cpa.did.normal(nsubjects = 100 , d = 0.5, icc = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
+cpa.did.normal(nsubjects = 100 , d = 0.5, ICC = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
 # 
 # The result, nclusters = 4.683358, suggests 5 clusters per condition should be used.
 

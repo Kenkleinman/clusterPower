@@ -2,16 +2,16 @@
 % Please edit documentation in R/cpa.count.R
 \name{cpa.count}
 \alias{cpa.count}
-\title{Power calculations for simple cluster randomized trials, count outcome}
+\title{Analytic power calculations for parallel arm cluster-randomized trials with count outcomes}
 \usage{
 cpa.count(
   alpha = 0.05,
   power = 0.8,
   nclusters = NA,
-  py = NA,
+  nsubjects = NA,
   r1 = NA,
   r2 = NA,
-  cvb = NA,
+  CVB = NA,
   r1inc = TRUE,
   tol = .Machine$double.eps^0.25
 )
@@ -25,13 +25,13 @@ error.}
 
 \item{nclusters}{The number of clusters per condition. It must be greater than 1.}
 
-\item{py}{The number of person-years of observation per cluster.}
+\item{nsubjects}{The number of person-years of observation per cluster.}
 
 \item{r1}{The expected mean event rate per unit time in the treatment group.}
 
 \item{r2}{The mean event rate per unit time in the control group.}
 
-\item{cvb}{The between-cluster coefficient of variation.}
+\item{CVB}{The between-cluster coefficient of variation.}
 
 \item{r1inc}{Logical indicating if r1 is expected to be greater than r2. This is
 only important to specify if one of r1 or r2 is NA.}
@@ -63,8 +63,8 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
 # power = 0.80, 10 person-years per cluster, rate in condition 1 of 0.10 
-# and condition 2 of 0.20, and cvb = 0.10.
-cpa.count(py=10, r1=0.10, r2=0.20, cvb=0.10)
+# and condition 2 of 0.20, and CVB = 0.10.
+cpa.count(nsubjects=10, r1=0.10, r2=0.20, CVB=0.10)
 # 
 # The result, showimg nclusters of greater than 24, suggests 25 clusters per
 # condition should be used.

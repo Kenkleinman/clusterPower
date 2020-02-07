@@ -4,12 +4,12 @@
 #' or determine parameters to obtain a target power.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-#'   \code{cv}, \code{d}, \code{icc}, and \code{vart}  must be passed as \code{NA}.
-#'   Note that \code{alpha}, \code{power}, and \code{cv} have non-\code{NA}
+#'   \code{CV}, \code{d}, \code{ICC}, and \code{vart}  must be passed as \code{NA}.
+#'   Note that \code{alpha}, \code{power}, and \code{CV} have non-\code{NA}
 #'   defaults, so if those are the parameters of interest they must be
 #'   explicitly passed as \code{NA}.
 #'   
-#' If \code{nsubjects} is a vector the values, \code{nclusters} and \code{cv} will be recalculated
+#' If \code{nsubjects} is a vector the values, \code{nclusters} and \code{CV} will be recalculated
 #'    using the values in \code{nsubjects}. If \code{nsubjects} is a vector and \code{method} is
 #'    "taylor", the exact relative efficiency will be calculated as described in
 #'    van Breukelen et al (2007).
@@ -30,10 +30,10 @@
 #'   error.
 #' @param nclusters The number of clusters per condition. It must be greater than 1.
 #' @param nsubjects The mean of the cluster sizes, or a vector of cluster sizes for one arm.
-#' @param cv The coefficient of variation of the cluster sizes. When \code{cv} = 0,
+#' @param CV The coefficient of variation of the cluster sizes. When \code{CV} = 0,
 #'   the clusters all have the same size.
 #' @param d The difference in condition means.
-#' @param icc The intraclass correlation.
+#' @param ICC The intraclass correlation.
 #' @param vart The total variation of the outcome (the sum of within- and between-cluster variation).
 #' @param method The method for calculating variance inflation due to unequal cluster
 #'   sizes. Either a method based on Taylor approximation of relative efficiency 
@@ -44,8 +44,8 @@
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
-#' # of 1 unit,  icc = 0.1 and   a variance of five units.
-#' cpa.normal(nsubjects=10 ,d=1, icc=.1, vart=5)
+#' # of 1 unit,  ICC = 0.1 and   a variance of five units.
+#' cpa.normal(nsubjects=10 ,d=1, ICC=.1, vart=5)
 #' # 
 #' # The result, showimg nclusters of greater than 15, suggests 16 clusters per 
 #' # condition should be used.
@@ -61,8 +61,8 @@
 #' @export
 
 cpa.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
-                         nsubjects = NA, cv = 0,
-                         d = NA, icc = NA,
+                         nsubjects = NA, CV = 0,
+                         d = NA, ICC = NA,
                          vart = NA,
                          method = c("taylor", "weighted"),
                          tol = .Machine$double.eps^0.25){
@@ -74,7 +74,7 @@ cpa.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
     nvec <- nsubjects
     nsubjects <- mean(nvec)
     nsd <- stats::sd(nvec)
-    cv <- nsd/nsubjects
+    CV <- nsd/nsubjects
     nclusters <- length(nvec)
   }
   
@@ -84,13 +84,13 @@ cpa.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
   
   
   # list of needed inputs
-  needlist <- list(alpha, power, nclusters, nsubjects, cv, d, icc, vart)
-  neednames <- c("alpha", "power", "nclusters", "nsubjects", "cv", "d", "icc", "vart")
+  needlist <- list(alpha, power, nclusters, nsubjects, CV, d, ICC, vart)
+  neednames <- c("alpha", "power", "nclusters", "nsubjects", "CV", "d", "ICC", "vart")
   needind <- which(unlist(lapply(needlist, is.na)))
   # check to see that exactly one needed param is NA
   
   if (length(needind) != 1) {
-    neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'cv', 'd', 'icc' and 'vart' must be NA."
+    neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'CV', 'd', 'ICC' and 'vart' must be NA."
     stop(neederror)
   } 
   
@@ -103,21 +103,21 @@ cpa.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
     # if nvec exists, calcuate exact relative efficiency
     if (exists("nvec")) {
       if(method == "taylor"){
-        a <- (1 - icc)/icc
-        DEFF <- 1 + (nsubjects - 1)*icc
+        a <- (1 - ICC)/ICC
+        DEFF <- 1 + (nsubjects - 1)*ICC
         RE <- ((nsubjects + a)/nsubjects)*(sum((nvec/(nvec+a)))/nclusters) # exact relative efficiency
         VIF <- DEFF*RE
       } else{
-        VIF <- 1 + ((cv^2 + 1)*nsubjects - 1)*icc
+        VIF <- 1 + ((CV^2 + 1)*nsubjects - 1)*ICC
       }
     } else if(!is.na(nsubjects)){
       if(method == "taylor"){
-        DEFF <- 1 + (nsubjects - 1)*icc
-        L <- nsubjects*icc/DEFF
-        REt <- 1/(1 - cv^2*L*(1 - L)) # taylor approximation
+        DEFF <- 1 + (nsubjects - 1)*ICC
+        L <- nsubjects*ICC/DEFF
+        REt <- 1/(1 - CV^2*L*(1 - L)) # taylor approximation
         VIF <- DEFF*REt
       } else {
-        VIF <- 1 + ((cv^2 + 1)*nsubjects - 1)*icc
+        VIF <- 1 + ((CV^2 + 1)*nsubjects - 1)*ICC
       }
     }
     
@@ -154,9 +154,9 @@ cpa.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
                                 tol = tol, extendInt = "upX")$root
   }
   
-  # calculate cv
-  if (is.na(cv)) {
-    cv <- stats::uniroot(function(cv) eval(pwr) - power,
+  # calculate CV
+  if (is.na(CV)) {
+    CV <- stats::uniroot(function(CV) eval(pwr) - power,
                          interval = c(1e-10, 1e+07),
                          tol = tol, extendInt = "downX")$root
   }
@@ -168,9 +168,9 @@ cpa.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
                         tol = tol, extendInt = "upX")$root
   }
   
-  # calculate icc
-  if (is.na(icc)){
-    icc <- stats::uniroot(function(icc) eval(pwr) - power,
+  # calculate ICC
+  if (is.na(ICC)){
+    ICC <- stats::uniroot(function(ICC) eval(pwr) - power,
                           interval = c(1e-07, 1 - 1e-07),
                           tol = tol)$root
   }
@@ -186,8 +186,8 @@ cpa.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
   
   # method <- paste("Clustered two-sample t-test power calculation: ", target, sep = "")
   # note <- "'nclusters' is the number of clusters in each group and 'nsubjects' is the number of individuals in each cluster."
-  # structure(list(alpha = alpha, power = power, nclusters = nclusters, nsubjects = nsubjects, cv = cv, d = d,
-  #                icc = icc, vart = vart, note = note, method = method),
+  # structure(list(alpha = alpha, power = power, nclusters = nclusters, nsubjects = nsubjects, CV = CV, d = d,
+  #                ICC = ICC, vart = vart, note = note, method = method),
   #           class = "power.htest")
   
 }

@@ -18,10 +18,10 @@
 #' @param power The power of the test, 1 minus the probability of a Type II
 #'   error.
 #' @param nclusters The number of clusters per condition. It must be greater than 1.
-#' @param py The number of person-years of observation per cluster.
+#' @param nsubjects The number of person-years of observation per cluster.
 #' @param r1 The expected mean event rate per unit time in the treatment group.
 #' @param r2 The mean event rate per unit time in the control group.
-#' @param cvb The between-cluster coefficient of variation.
+#' @param CVB The between-cluster coefficient of variation.
 #' @param r1inc Logical indicating if r1 is expected to be greater than r2. This is
 #'   only important to specify if one of r1 or r2 is NA.
 #' @param tol Numerical tolerance used in root finding. The default provides
@@ -30,8 +30,8 @@
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
 #' # power = 0.80, 10 person-years per cluster, rate in condition 1 of 0.10 
-#' # and condition 2 of 0.20, and cvb = 0.10.
-#' cpa.count(py=10, r1=0.10, r2=0.20, cvb=0.10)
+#' # and condition 2 of 0.20, and CVB = 0.10.
+#' cpa.count(nsubjects=10, r1=0.10, r2=0.20, CVB=0.10)
 #' # 
 #' # The result, showimg nclusters of greater than 24, suggests 25 clusters per
 #' # condition should be used.
@@ -42,29 +42,29 @@
 #' @export
 
 cpa.count<- function(alpha = 0.05, power = 0.80,
-                        nclusters = NA, py = NA,
+                        nclusters = NA, nsubjects = NA,
                         r1 = NA, r2 = NA,
-                        cvb = NA, r1inc = TRUE,
+                        CVB = NA, r1inc = TRUE,
                         tol = .Machine$double.eps^0.25){
   
   if(!is.na(nclusters) && nclusters <= 1) {
     stop("'nclusters' must be greater than 1.")
   }
   
-  needlist <- list(alpha, power, nclusters, py, r1, r2, cvb)
-  neednames <- c("alpha", "power", "nclusters", "py", "r1", "r2", "cvb")
+  needlist <- list(alpha, power, nclusters, nsubjects, r1, r2, CVB)
+  neednames <- c("alpha", "power", "nclusters", "nsubjects", "r1", "r2", "CVB")
   needind <- which(unlist(lapply(needlist, is.na))) # find NA index
   
   if (length(needind) != 1) {
-    stop("Exactly one of 'alpha', 'power', 'nclusters', 'py', 'r1', 'r2', or 'cvb' must be NA.")
+    stop("Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'r1', 'r2', or 'CVB' must be NA.")
   }
   
   target <- neednames[needind]
   
   pwr <- quote({
-    IF <- 1 + cvb^2*(r1^2 + r2^2)*py/(r1 + r2)
+    IF <- 1 + CVB^2*(r1^2 + r2^2)*nsubjects/(r1 + r2)
     zcrit <- qnorm(alpha/2, lower.tail = FALSE)
-    vard <- (r1 + r2)*IF/py
+    vard <- (r1 + r2)*IF/nsubjects
     pnorm(sqrt((nclusters - 1)*(r1 - r2)^2/vard) - zcrit, lower.tail = TRUE)
   })
   
@@ -87,9 +87,9 @@ cpa.count<- function(alpha = 0.05, power = 0.80,
                                 tol = tol)$root
   }
   
-  # calculate py
-  if (is.na(py)) {
-    py <- stats::uniroot(function(py) eval(pwr) - power,
+  # calculate nsubjects
+  if (is.na(nsubjects)) {
+    nsubjects <- stats::uniroot(function(nsubjects) eval(pwr) - power,
                          interval = c(1e-10, 1e+07),
                          tol = tol, extendInt = "upX")$root
   }
@@ -121,9 +121,9 @@ cpa.count<- function(alpha = 0.05, power = 0.80,
     }
   }
   
-  # calculate cvb
-  if (is.na(cvb)) {
-    cvb <- stats::uniroot(function(cvb) eval(pwr) - power,
+  # calculate CVB
+  if (is.na(CVB)) {
+    CVB <- stats::uniroot(function(CVB) eval(pwr) - power,
                           interval = c(1e-7, 1e+07),
                           tol = tol, extendInt = "downX")$root
   }
