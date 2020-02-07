@@ -1,4 +1,4 @@
-#' Power calculations for simple cluster randomized trials, count outcome
+#' Analytic power calculations for parallel arm cluster-randomized trials with count outcomes
 #'
 #' Compute the power of a simple cluster randomized trial with a count outcome,
 #' or determine parameters to obtain a target power.

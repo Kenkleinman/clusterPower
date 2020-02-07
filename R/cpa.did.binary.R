@@ -1,4 +1,4 @@
-#' Power calculations for  difference-in-difference cluster randomized trials, binary outcome
+#' Power calculations for  difference-in-difference cluster randomized trials, dichotomous outcome
 #'
 #' Compute the power of a difference-in-difference cluster randomized trial design with a 
 #' binary outcome, or determine parameters to obtain a target power.
