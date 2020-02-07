@@ -76,7 +76,7 @@
 #'                       c1 = 100, c2 = 200, sigma_b_sq = 1, 
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE, 
-#'                       all.sim.data = FALSE, optimizer = "L-BFGS-B")
+#'                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
 #' }
 #'
 #' @export

@@ -20,7 +20,8 @@ cps.count(
   quiet = FALSE,
   all.sim.data = FALSE,
   irgtt = FALSE,
-  seed = NA
+  seed = NA,
+  optimizer = "L-BFGS-B"
 )
 }
 \arguments{
@@ -54,6 +55,8 @@ If between cluster variances differ between treatment groups, the following must
 \item{quiet}{When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.}
 
 \item{all.sim.data}{Option to output list of all simulated datasets. Default = FALSE}
+
+\item{optimizer}{Option to fit with a different optimizer (using the package \code{optimx}). Defaults to L-BFGS-B.}
 }
 \value{
 A list with the following components
@@ -106,9 +109,11 @@ intervals.
 }
 \examples{
 \dontrun{
-count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 36, c1 = 100,
-                      c2 = 200, sigma_b_sq = 1, family = 'poisson', analysis = 'poisson',
-                      method = 'glmm', alpha = 0.05, quiet = FALSE, all.sim.data = FALSE)
+count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 36, 
+                      c1 = 100, c2 = 200, sigma_b_sq = 1, 
+                      family = 'poisson', analysis = 'poisson',
+                      method = 'glmm', alpha = 0.05, quiet = FALSE, 
+                      all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
 }
 
 }

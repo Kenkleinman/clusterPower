@@ -68,11 +68,11 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(500, 10), nclusters = 50, 
-#'                              c1 = 85, c2 = 450, sigma_b_sq2 = 1, 
+#' irgtt.count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(500, 10), nclusters = 50, 
+#'                              c1 = 85, c2 = 450, sigma_b_sq2 = 0.25, 
 #'                              family = 'poisson', analysis = 'poisson',
 #'                              alpha = 0.05, quiet = FALSE, all.sim.data = FALSE, 
-#'                              opt = 'bobyqa')
+#'                              opt = 'auto')
 #' }
 #'
 #' @export

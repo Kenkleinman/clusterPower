@@ -8,8 +8,8 @@ cpa.ma.normal(
   alpha = 0.05,
   power = 0.8,
   narms = NA,
-  n = NA,
-  m = NA,
+  nclusters = NA,
+  nsubjects = NA,
   vara = NA,
   varc = NA,
   vare = NA,
@@ -25,9 +25,9 @@ error.}
 
 \item{narms}{The number of independent arms (conditions). It must be greater than 2.}
 
-\item{n}{The number of clusters per arm. It must be greater than 1.}
+\item{nclusters}{The number of clusters per arm. It must be greater than 1.}
 
-\item{m}{The cluster size.}
+\item{nsubjects}{The cluster size.}
 
 \item{vara}{The between-arm variance.}
 
@@ -42,13 +42,12 @@ at least four significant digits.}
 The computed argument.
 }
 \description{
-Wrapper function for crtpwr.nmean() to compute the power of the 
-overall F-test for a multi-arm cluster randomized trial with a 
-continuous outcome, or determine parameters to obtain a target power.
+Compute the power of the overall F-test for a multi-arm cluster randomized trial with a continuous
+outcome, or determine parameters to obtain a target power.
 }
 \details{
-Exactly one of \code{alpha}, \code{power}, \code{narms}, \code{n},
-  \code{m}, \code{vara}, \code{varc}, and \code{vare}  must be passed as \code{NA}.
+Exactly one of \code{alpha}, \code{power}, \code{narms}, \code{nclusters},
+  \code{nsubjects}, \code{vara}, \code{varc}, and \code{vare}  must be passed as \code{NA}.
   Note that \code{alpha} and \code{power} have non-\code{NA}
   defaults, so if those are the parameters of interest they must be
   explicitly passed as \code{NA}.
@@ -76,7 +75,7 @@ Assuming a balanced design, the between-arm variance \eqn{\sigma_a^2} (correspon
 
 \section{Authors}{
 
-Alexandria Sakrejda, Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
+Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
 }
 
 \examples{
@@ -93,9 +92,9 @@ Alexandria Sakrejda, Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman 
 # the within-cluster and between-cluster variances are 64 and 9, respectively.
 # These values are entered into the function as follows:
 
-cpa.ma.normal(narms=3,n=5,vara=36,varc=9,vare=64)
+cpa.ma.normal(narms=3,nclusters=5,vara=36,varc=9,vare=64)
 # 
-# The result, showing m of greater than 20, suggests 21 subjects per 
+# The result, showing nsubjects of greater than 20, suggests 21 subjects per 
 # cluster should be used.
 }
 \references{

@@ -50,8 +50,8 @@ at least four significant digits.}
 The computed argument.
 }
 \description{
-Compute the power of a difference-in-difference cluster randomized trial design with a binary outcome,
-or determine parameters to obtain a target power.
+Compute the power of a difference-in-difference cluster randomized trial design with a 
+binary outcome, or determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},

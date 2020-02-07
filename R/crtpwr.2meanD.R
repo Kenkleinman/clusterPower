@@ -20,7 +20,6 @@
 #'   invalid arguments are given.
 #'
 #' @section Authors:
-#' @section Authors:
 #' Jonathan Moyer (\email{jon.moyer@@gmail.com}), Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @param alpha The level of significance of the test, the probability of a

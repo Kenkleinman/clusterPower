@@ -74,8 +74,6 @@ If \code{nsubjects} is a vector the values, \code{nclusters} will be recalculate
 
 \section{Authors}{
 
-
-
 Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
 }
 

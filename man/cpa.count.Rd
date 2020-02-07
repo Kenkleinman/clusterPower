@@ -7,11 +7,11 @@
 cpa.count(
   alpha = 0.05,
   power = 0.8,
-  n = NA,
-  m = NA,
+  nclusters = NA,
+  py = NA,
   r1 = NA,
   r2 = NA,
-  CV = NA,
+  cvb = NA,
   r1inc = TRUE,
   tol = .Machine$double.eps^0.25
 )
@@ -23,41 +23,48 @@ Type I error.}
 \item{power}{The power of the test, 1 minus the probability of a Type II
 error.}
 
+\item{nclusters}{The number of clusters per condition. It must be greater than 1.}
+
+\item{py}{The number of person-years of observation per cluster.}
+
 \item{r1}{The expected mean event rate per unit time in the treatment group.}
 
 \item{r2}{The mean event rate per unit time in the control group.}
+
+\item{cvb}{The between-cluster coefficient of variation.}
 
 \item{r1inc}{Logical indicating if r1 is expected to be greater than r2. This is
 only important to specify if one of r1 or r2 is NA.}
 
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}
-
-\item{nclusters}{The number of clusters per condition. It must be greater than 1.}
-
-\item{py}{The number of person-years of observation per cluster.}
-
-\item{cvb}{The between-cluster coefficient of variation.}
 }
 \value{
 The computed argument.
 }
 \description{
-Wrapper function that uses crtpwr.2rate to compute the power of a 
-simple cluster randomized trial with a count outcome,
-or determine parameters to obtain a target power. For additional
-details, see ?crtpwr.2rate help page.
+Compute the power of a simple cluster randomized trial with a count outcome,
+or determine parameters to obtain a target power.
 }
 \section{Authors}{
 
 Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
 }
 
+\section{Note}{
+
+  This function was inspired by work from Stephane Champely (pwr.t.test) and
+  Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
+  solve power equation for unknowns, so you may see
+  errors from it, notably about inability to bracket the root when
+  invalid arguments are given.
+}
+
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
 # power = 0.80, 10 person-years per cluster, rate in condition 1 of 0.10 
-# and condition 2 of 0.20, and CVB = 0.10.
-cpa.count(m=10, r1=0.10, r2=0.20, CV=0.10)
+# and condition 2 of 0.20, and cvb = 0.10.
+cpa.count(py=10, r1=0.10, r2=0.20, cvb=0.10)
 # 
 # The result, showimg nclusters of greater than 24, suggests 25 clusters per
 # condition should be used.
