@@ -63,6 +63,8 @@ crtpwr.2meanD <- function(alpha = 0.05, power = 0.80, nclusters = NA,
                           vart = NA,
                           tol = .Machine$double.eps^0.25){
   
+  .Deprecated("cpa.did.normal")
+  
   # if nsubjects is a vector, 
   if(length(nsubjects) > 1){
     nclusters <- length(nsubjects)

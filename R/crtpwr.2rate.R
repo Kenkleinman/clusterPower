@@ -47,6 +47,8 @@ crtpwr.2rate<- function(alpha = 0.05, power = 0.80,
                          cvb = NA, r1inc = TRUE,
                          tol = .Machine$double.eps^0.25){
   
+  .Deprecated("cpa.count")
+  
   if(!is.na(nclusters) && nclusters <= 1) {
     stop("'nclusters' must be greater than 1.")
   }

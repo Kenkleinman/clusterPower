@@ -57,6 +57,8 @@ crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
                          icc = NA, pooled = FALSE,
                          p1inc = TRUE,
                          tol = .Machine$double.eps^0.25){
+  .Deprecated("cpa.binary")
+  
   
   if(!is.na(nclusters) && nclusters <= 1) {
     stop("'nclusters' must be greater than 1.")
