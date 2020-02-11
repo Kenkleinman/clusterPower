@@ -28,10 +28,11 @@ type1ErrTest <- function(sigma_sq_, sigma_b_sq_, nsubjects_){
       nobstemp <- nobs[[i]][[j]]
       ICCtemp <- ICC[i]
       clusterstemp <- clusters[i]  
-      if ((nobstemp < 5 & ICCtemp < 0.1 & clusterstemp < 20) | 
+      alert <- ifelse ((nobstemp < 5 & ICCtemp < 0.1 & clusterstemp < 20) | 
           (nobstemp < 10  & ICCtemp < 0.05 & clusterstemp < 20) |
           (nobstemp < 20  & ICCtemp < 0.02 & clusterstemp < 20) |
-          (nobstemp < 50  & ICCtemp < 0.01 & clusterstemp < 10)){
+          (nobstemp < 50  & ICCtemp < 0.01 & clusterstemp < 10), TRUE, FALSE)
+      if (sum(alert) > 0){
         warning("ClusterPower uses maximum likelihood inference, which depends on asymptotic results. These results hove known limitations in finite settings, such as when there are small numbers of clusters or small numbers of observation per cluster. With the parameters you entered, the power estimate may be conservative.")
       }
     }

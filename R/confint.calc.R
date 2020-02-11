@@ -1,6 +1,6 @@
 #' Power simulations for cluster-randomized trials: get exact confidence intervals.
 #'
-#' This function is effectively a wrapper for binom.test(), used to get exact
+#' This function uses binom.test() to get exact
 #' confidence intervals for the power in Monte Carlo power estimation.  
 #' It is called by some of the clusterPower functions. 
 #' 
