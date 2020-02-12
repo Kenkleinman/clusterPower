@@ -22,7 +22,7 @@ A dataframe
 }
 }
 \description{
-This function is effectively a wrapper for binom.test(), used to get exact
+This function uses binom.test() to get exact
 confidence intervals for the power in Monte Carlo power estimation.  
 It is called by some of the clusterPower functions.
 }
