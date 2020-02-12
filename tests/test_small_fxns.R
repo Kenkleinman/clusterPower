@@ -63,25 +63,32 @@ test_that("prop_H0_rejection matches a reference", {
 })
 
 
-# this is still messed up
 context("type1ErrTest")
 
 test_that("type1ErrTest matches a reference", {
- type1ErrTest(sigma_sq_ = c(0.1, 4),
+ warn <- type1ErrTest(sigma_sq_ = c(0.1, 4),
                        sigma_b_sq_ = c(0.1, 0.15),
                        nsubjects_ = list(rep(4, 10),
                                          rep(4, 10)))
-                       
-                       
-  expect_equal(3, length(prop))
-  expect_equal(0.804, as.numeric(prop[1]))
-  expect_equal(0.828, as.numeric(prop[3]))
-  expect_equal("Power", names(prop[1]))
-})
+ expect_equal(310, nchar(warn))
+ nowarn <- type1ErrTest(sigma_sq_ = c(1, 1),
+                      sigma_b_sq_ = c(0.5, 0.1),
+                      nsubjects_ = list(rep(20, 20),
+                                        rep(20, 20)))
+ expect_equal(TRUE, is.null(nowarn))
+ })
 
-if ((nobstemp < 5 & ICCtemp < 0.1 & clusterstemp < 20) | 
-    (nobstemp < 10  & ICCtemp < 0.05 & clusterstemp < 20) |
-    (nobstemp < 20  & ICCtemp < 0.02 & clusterstemp < 20) |
-    (nobstemp < 50  & ICCtemp < 0.01 & clusterstemp < 10))
-  
-  createMissingVarianceParam(sigma_sq = c(0.1, 4), sigma_b_sq = c(0.001, 0.15))
+
+context("validateVariance")
+
+test_that("validateVariance matches a reference", {
+  validateVariance(dist = NULL, difference = NULL, alpha = alpha, 
+   ICC = ICC, sigma_sq = sigma_sq, 
+   sigma_b_sq = sigma_b_sq, ICC2 = NA, sigma_sq2 = NA, 
+   sigma_b_sq2 = NA, method = method, quiet = quiet, 
+   all.sim.data = all.sim.data, 
+   poor.fit.override = poor.fit.override, 
+   cores = NA,
+   probs = NA)
+  expect_equal(TRUE, is.null(nowarn))
+})
