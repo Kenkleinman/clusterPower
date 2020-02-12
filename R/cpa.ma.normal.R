@@ -1,11 +1,10 @@
 #' Power calculations for multi-arm cluster randomized trials, continuous outcome
 #'
-#' Wrapper function for crtpwr.nmean() to compute the power of the 
-#' overall F-test for a multi-arm cluster randomized trial with a 
-#' continuous outcome, or determine parameters to obtain a target power.
+#' Compute the power of the overall F-test for a multi-arm cluster randomized trial with a continuous
+#' outcome, or determine parameters to obtain a target power.
 #'
-#' Exactly one of \code{alpha}, \code{power}, \code{narms}, \code{n},
-#'   \code{m}, \code{vara}, \code{varc}, and \code{vare}  must be passed as \code{NA}.
+#' Exactly one of \code{alpha}, \code{power}, \code{narms}, \code{nclusters},
+#'   \code{nsubjects}, \code{vara}, \code{varc}, and \code{vare}  must be passed as \code{NA}.
 #'   Note that \code{alpha} and \code{power} have non-\code{NA}
 #'   defaults, so if those are the parameters of interest they must be
 #'   explicitly passed as \code{NA}.
@@ -30,15 +29,15 @@
 #'   bracket the root when invalid arguments are given.
 #'
 #' @section Authors:
-#' Alexandria Sakrejda, Jonathan Moyer (\email{jon.moyer@@gmail.com}), Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' Jonathan Moyer (\email{jon.moyer@@gmail.com}), Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @param alpha The level of significance of the test, the probability of a
 #'   Type I error.
 #' @param power The power of the test, 1 minus the probability of a Type II
 #'   error.
 #' @param narms The number of independent arms (conditions). It must be greater than 2.
-#' @param n The number of clusters per arm. It must be greater than 1.
-#' @param m The cluster size.
+#' @param nclusters The number of clusters per arm. It must be greater than 1.
+#' @param nsubjects The cluster size.
 #' @param vara The between-arm variance.
 #' @param varc The between-cluster variance.
 #' @param vare The within-cluster variance.
@@ -59,23 +58,107 @@
 #' # the within-cluster and between-cluster variances are 64 and 9, respectively.
 #' # These values are entered into the function as follows:
 #' 
-#' cpa.ma.normal(narms=3,n=5,vara=36,varc=9,vare=64)
+#' cpa.ma.normal(narms=3,nclusters=5,vara=36,varc=9,vare=64)
 #' # 
-#' # The result, showing m of greater than 20, suggests 21 subjects per 
+#' # The result, showing nsubjects of greater than 20, suggests 21 subjects per 
 #' # cluster should be used.
 #' @references Murray DM. Design and Analysis of Group-Randomized Trials. New York,
 #'   NY: Oxford University Press; 1998.
 #' @export
 
 cpa.ma.normal <- function(alpha = 0.05, power = 0.80,
-                         narms = NA, n = NA, m = NA,
+                         narms = NA, nclusters = NA, nsubjects = NA,
                          vara = NA, varc = NA, vare = NA, 
                          tol = .Machine$double.eps^0.25){
   
-  ma.analytic.normal <- crtpwr.nmean(alpha = alpha, power = power,
-                           narms = narms, nclusters = n, nsubjects = m,
-                           vara = vara, varc = varc, vare = vare, 
-                           tol = tol)
- 
-  return(ma.analytic.normal) 
+  # if(!is.na(narms) && narms <= 2) {
+  #   stop("'narms' must be greater than 2.")
+  # }
+  
+  if(!is.na(nclusters) && nclusters <= 1) {
+    stop("'nclusters' must be greater than 1.")
+  }
+  
+  if(!is.na(nsubjects) && nsubjects <= 1) {
+    stop("'nsubjects' must be greater than 1.")
+  }
+  
+  # list of needed inputs
+  needlist <- list(alpha, power, narms, nclusters, nsubjects, vara, varc, vare)
+  neednames <- c("alpha", "power", "narms", "nclusters", "nsubjects", "vara", "varc", "vare")
+  needind <- which(unlist(lapply(needlist, is.na)))
+  # check to see that exactly one needed param is NA
+  
+  if (length(needind) != 1) {
+    neederror = "Exactly one of 'alpha', 'power', 'narms', 'nclusters', 'nsubjects', 'vara', 'varb', and 'varc' must be NA."
+    stop(neederror)
+  } 
+  
+  target <- neednames[needind]
+  
+  # evaluate power
+  pwr <- quote({
+    ndf <- narms - 1
+    ddf <- narms*(nclusters-1)
+    fcrit <- qf(alpha/2, ndf, ddf, lower.tail = FALSE)
+    ncp <- (vare+nsubjects*varc+nsubjects*nclusters*vara)/(vare+nsubjects*varc)
+    pf(fcrit, ndf, ddf, ncp, lower.tail = FALSE) 
+  })
+  
+  # calculate alpha
+  if (is.na(alpha)) {
+    alpha <- stats::uniroot(function(alpha) eval(pwr) - power,
+                            interval = c(1e-10, 1 - 1e-10),
+                            tol = tol)$root
+  }
+  
+  # calculate power
+  if (is.na(power)) {
+    power <- eval(pwr)
+  }
+  
+  # calculate narms
+  if (is.na(narms)) {
+    narms <- stats::uniroot(function(narms) eval(pwr) - power,
+                            interval = c(2 + 1e-10, 1e+07),
+                            tol = tol, extendInt = "upX")$root
+  }
+  
+  # calculate nclusters
+  if (is.na(nclusters)) {
+    nclusters <- stats::uniroot(function(nclusters) eval(pwr) - power,
+                                interval = c(2 + 1e-10, 1e+07),
+                                tol = tol, extendInt = "upX")$root
+  }
+  
+  # calculate nsubjects
+  if (is.na(nsubjects)) {
+    nsubjects <- stats::uniroot(function(nsubjects) eval(pwr) - power,
+                                interval = c(2 + 1e-10, 1e+07),
+                                tol = tol, extendInt = "upX")$root
+  }
+  
+  # calculate vara
+  if (is.na(vara)){
+    vara <- stats::uniroot(function(vara) eval(pwr) - power,
+                           interval = c(1e-07, 1e+07),
+                           tol = tol, extendInt = "downX")$root
+  }
+  
+  # calculate varc
+  if (is.na(varc)){
+    varc <- stats::uniroot(function(varc) eval(pwr) - power,
+                           interval = c(1e-07, 1e+07),
+                           tol = tol, extendInt = "downX")$root
+  }
+  
+  # calculate vare
+  if (is.na(vare)) {
+    vare <- stats::uniroot(function(vare) eval(pwr) - power,
+                           interval = c(1e-07, 1e+07),
+                           tol = tol, extendInt = "downX")$root
+  }
+  
+  structure(get(target), names = target)
+  
 }

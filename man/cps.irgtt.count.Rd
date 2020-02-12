@@ -19,7 +19,8 @@ cps.irgtt.count(
   alpha = 0.05,
   quiet = FALSE,
   all.sim.data = FALSE,
-  seed = NA
+  seed = NA,
+  opt = "L-BFGS-B"
 )
 }
 \arguments{
@@ -27,7 +28,8 @@ cps.irgtt.count(
 
 \item{nsubjects}{Number of subjects per cluster; accepts integer (required).}
 
-\item{nclusters}{Number of clusters per treatment group; accepts integer (required).
+\item{nclusters}{Number of clusters in the treatment group; accepts integer (required). 
+Treatment group cluster size defaults to 1.
 At least 2 of the following 3 arguments must be specified:}
 
 \item{c1}{Expected outcome count in non-treatment group}
@@ -52,6 +54,8 @@ If between cluster variances differ between treatment groups, the following must
 \item{all.sim.data}{Option to output list of all simulated datasets. Default = FALSE.}
 
 \item{seed}{Option to set seed. Default is NA.}
+
+\item{opt}{Option to fit with a different optimizer (using the package \code{optimx}). Defaults to L-BFGS-B.}
 }
 \value{
 A list with the following components
@@ -99,9 +103,11 @@ while the function is running.
 }
 \examples{
 \dontrun{
-count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(400, 50), nclusters = c(1, 60), c1 = 1000,
-                      c2 = 2500, sigma_b_sq2 = 1, family = 'poisson', analysis = 'poisson',
-                      alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
+irgtt.count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(500, 10), nclusters = 50, 
+                             c1 = 85, c2 = 450, sigma_b_sq2 = 0.25, 
+                             family = 'poisson', analysis = 'poisson',
+                             alpha = 0.05, quiet = FALSE, all.sim.data = FALSE, 
+                             opt = 'auto')
 }
 
 }

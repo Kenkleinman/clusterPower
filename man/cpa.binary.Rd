@@ -7,9 +7,9 @@
 cpa.binary(
   alpha = 0.05,
   power = 0.8,
-  n = NA,
-  m = NA,
-  CV = 0,
+  nclusters = NA,
+  nsubjects = NA,
+  cv = 0,
   p1 = NA,
   p2 = NA,
   ICC = NA,
@@ -25,11 +25,11 @@ Type I error.}
 \item{power}{The power of the test, 1 minus the probability of a Type II
 error.}
 
-\item{n}{The number of clusters per condition. It must be greater than 1.}
+\item{nclusters}{The number of clusters per condition. It must be greater than 1.}
 
-\item{m}{The mean of the cluster sizes.}
+\item{nsubjects}{The mean of the cluster sizes.}
 
-\item{CV}{The coefficient of variation of the cluster sizes. When \code{cv} = 0,
+\item{cv}{The coefficient of variation of the cluster sizes. When \code{cv} = 0,
 the clusters all have the same size.}
 
 \item{p1}{The expected proportion in the treatment group.}
@@ -49,22 +49,35 @@ at least four significant digits.}
 The computed argument.
 }
 \description{
-Wrapper function that uses crtpwr.2prop to compute the power of 
-a simple cluster randomized trial with a binary outcome,
-or determine parameters to obtain a target power. See ?crtpwr.2prop
-for additional details.
+Compute the power of a simple cluster randomized trial with a binary outcome,
+or determine parameters to obtain a target power.
+}
+\details{
+This function implements the approach of Donner and Klar (2000). An estimate for the
+ intracluster correlation coefficient (ICC) is used to calculate a design effect that 
+ accounts for variance inflation due to clustering. There are several ways in
+ which estimates for the ICC for a binary outcome can be calculated, as described by
+ Wu, Crespi, and Wong (2012).
 }
 \section{Authors}{
 
-Alexandria Sakrejda, Jonathan Moyer (\email{jon.moyer@gmail.com}), 
-Ken Kleinman (\email{ken.kleinman@gmail.com})
+Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
+}
+
+\section{Note}{
+
+  This function was inspired by work from Stephane Champely (pwr.t.test) and
+  Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
+  solve power equation for unknowns, so you may see
+  errors from it, notably about inability to bracket the root when
+  invalid arguments are given.
 }
 
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = .05, 
 # power = 0.8, 10 observations per cluster, no variation in cluster size, probability
-# in condition 1 of .1 and condition 2 of .2, and icc = 0.1.
-cpa.binary(m=10 ,p1=.1, p2=.2, ICC=.1)
+# in condition 1 of .1 and condition 2 of .2, and ICC = 0.1.
+cpa.binary(nsubjects=10 ,p1=.1, p2=.2, ICC=.1)
 # 
 # The result, showimg nclusters of greater than 37, suggests 38 clusters per 
 # condition should be used.
@@ -75,5 +88,6 @@ Trials in Health Research. London; Arnold; 2000.
 
 Wu S, Crespi CM, Wong WK. Comparison of Methods for Estimating Intraclass
 Correlation Coefficient for Binary Responses in Cancer Prevention Cluster Randomized
-Trials. Contemp Clin Trials. 2012; 33(5): 869-880. doi:10.1016/j.cct.2012.05.004 London: Arnold; 2000.
+Trials. Contemp Clin Trials. 2012; 33(5): 869-880. doi:10.1016/j.cct.2012.05.004 
+London: Arnold; 2000.
 }

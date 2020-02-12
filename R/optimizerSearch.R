@@ -16,6 +16,9 @@
 
 
 optimizerSearch <- function(model){
+  if(isTRUE(missing(model))){
+    message("Error: model does not exist.")
+  }
   require(optimx)
   diff_optims <- try(lme4::allFit(model, maxfun = 1e5, 
     parallel = 'multicore', 

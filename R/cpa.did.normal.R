@@ -1,12 +1,10 @@
 #' Power calculations for difference-in-difference cluster randomized trials, continuous outcome
 #'
-#' Wrapper function that uses crtpwr.2meanD() to compute the power of a 
-#' difference-in-difference cluster randomized trial design with a 
-#' continuous outcome, or determine parameters to obtain a target power. 
-#' See ?crtpwr.2meanD for additional details.
+#' Compute the power of a difference-in-difference cluster randomized trial design with a continuous outcome,
+#' or determine parameters to obtain a target power.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-#'   \code{d}, \code{icc}, \code{rho_c}, \code{rho_s}, and \code{vart}
+#'   \code{d}, \code{ICC}, \code{rho_c}, \code{rho_s}, and \code{vart}
 #'   must be passed as \code{NA}. Note that \code{alpha} and\code{power}
 #'   have non-\code{NA} defaults, so if those are the parameters of 
 #'   interest they must be explicitly passed as \code{NA}.
@@ -22,16 +20,15 @@
 #'   invalid arguments are given.
 #'
 #' @section Authors:
-#' Alexandria Sakrejda, Jonathan Moyer (\email{jon.moyer@@gmail.com}), Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' Jonathan Moyer (\email{jon.moyer@@gmail.com}), Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @param alpha The level of significance of the test, the probability of a
 #'   Type I error.
 #' @param power The power of the test, 1 minus the probability of a Type II
 #'   error.
-#' @param n The number of clusters per condition. It must be greater than 1.
-#' @param m The mean of the cluster sizes.
-#' @param difference.control The difference in mean change in the control arm.
-#' @param intervention.control The difference in mean change in the intervention arm.
+#' @param nclusters The number of clusters per condition. It must be greater than 1.
+#' @param nsubjects The mean of the cluster sizes, or a vector of cluster sizes for one arm.
+#' @param d The difference in mean change between conditions (i.e. "difference-in-difference").
 #' @param ICC The intraclass correlation.
 #' @param rho_c The correlation between baseline and post-test outcomes at the
 #'   cluster level. This value can be used in both cross-sectional and cohort
@@ -46,10 +43,9 @@
 #' @return The computed argument.
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
-#' # power = 0.80, m = 100, difference.control = 5, difference.intervention = 4.5,
-#'  units, ICC = 0.05, rho_c = 0.50, rho_s = 0.70,
+#' # power = 0.80, nsubjects = 100, d = 0.50 units, ICC = 0.05, rho_c = 0.50, rho_s = 0.70,
 #' # and vart = 1 unit.
-#' cpa.did.normal(m = 100 , difference.control = 5, difference.intervention = 4.5, ICC = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
+#' cpa.did.normal(nsubjects = 100 , d = 0.5, ICC = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
 #' # 
 #' # The result, nclusters = 4.683358, suggests 5 clusters per condition should be used.
 #' 
@@ -61,21 +57,112 @@
 #'   
 #' @export
 
-cpa.did.normal <- function(alpha = 0.05, power = 0.80, n = NA,
-                          m = NA, difference.control = NA, 
-                          difference.intervention = NA, ICC = NA,
+cpa.did.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
+                          nsubjects = NA, d = NA, ICC = NA,
                           rho_c = NA, rho_s = NA,
                           vart = NA,
                           tol = .Machine$double.eps^0.25){
   
-  did.analytic.normal <- crtpwr.2meanD(alpha = alpha, 
-                            power = power, nclusters = n,
-                            nsubjects = m, 
-                            d = difference.control-difference.intervention, 
-                            icc = ICC,
-                            rho_c = rho_c, rho_s = rho_s,
-                            vart = vart,
-                            tol = tol)
+  # if nsubjects is a vector, 
+  if(length(nsubjects) > 1){
+    nclusters <- length(nsubjects)
+  }
   
-  return(did.analytic.normal)
+  if(!is.na(nclusters) && nclusters <= 1) {
+    stop("'nclusters' must be greater than 1.")
+  }
+  
+  # list of needed inputs
+  needlist <- list(alpha, power, nclusters, nsubjects, d, ICC, rho_c, rho_s, vart)
+  neednames <- c("alpha", "power", "nclusters", "nsubjects", "d", "ICC",
+                 "rho_c", "rho_s", "vart")
+  needind <- which(unlist(lapply(needlist, is.na)))
+  # check to see that exactly one needed param is NA
+  
+  if (length(needind) != 1) {
+    neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'd', 'ICC', 'rho_c', 'rho_s', and 'vart' must be NA."
+    stop(neederror)
+  } 
+  
+  target <- neednames[needind]
+  
+  # evaluate power
+  pwr <- quote({
+    
+    # variance inflation
+    DEFF <- 1 + (nsubjects - 1)*ICC
+    r <- (nsubjects*ICC/DEFF)*rho_c + ((1 - ICC)/DEFF)*rho_s
+    # VIF <- DEFF*(1 - r^2)
+    VIF <- DEFF*2*(1 - r)
+    
+    tcrit <- qt(alpha/2, 2*(nclusters - 1), lower.tail = FALSE)
+    
+    ncp <- sqrt(nclusters*nsubjects/(2*VIF)) * abs(d)/sqrt(vart)
+    
+    pt(tcrit, 2*(nclusters - 1), ncp, lower.tail = FALSE)#+
+    #pt(-tcrit, 2*(nclusters - 1), ncp, lower.tail = TRUE)
+  })
+  
+  # calculate alpha
+  if (is.na(alpha)) {
+    alpha <- stats::uniroot(function(alpha) eval(pwr) - power,
+                            interval = c(1e-10, 1 - 1e-10),
+                            tol = tol)$root
+  }
+  
+  # calculate power
+  if (is.na(power)) {
+    power <- eval(pwr)
+  }
+  
+  # calculate nclusters
+  if (is.na(nclusters)) {
+    nclusters <- stats::uniroot(function(nclusters) eval(pwr) - power,
+                                interval = c(2 + 1e-10, 1e+07),
+                                tol = tol, extendInt = "upX")$root
+  }
+  
+  # calculate nsubjects
+  if (is.na(nsubjects)) {
+    nsubjects <- stats::uniroot(function(nsubjects) eval(pwr) - power,
+                                interval = c(2 + 1e-10, 1e+07),
+                                tol = tol, extendInt = "upX")$root
+  }
+  
+  # calculate d
+  if (is.na(d)) {
+    d <- stats::uniroot(function(d) eval(pwr) - power,
+                        interval = c(1e-07, 1e+07),
+                        tol = tol, extendInt = "upX")$root
+  }
+  
+  # calculate ICC
+  if (is.na(ICC)){
+    ICC <- stats::uniroot(function(ICC) eval(pwr) - power,
+                          interval = c(1e-07, 1 - 1e-07),
+                          tol = tol)$root
+  }
+  
+  # calculate rho_c
+  if (is.na(rho_c)){
+    rho_c <- stats::uniroot(function(rho_c) eval(pwr) - power,
+                            interval = c(1e-07, 1 - 1e-07),
+                            tol = tol)$root
+  }
+  
+  # calculate rho_s
+  if (is.na(rho_s)){
+    rho_s <- stats::uniroot(function(rho_s) eval(pwr) - power,
+                            interval = c(1e-07, 1 - 1e-07),
+                            tol = tol)$root
+  }
+  
+  # calculate vart
+  if (is.na(vart)) {
+    vart <- stats::uniroot(function(vart) eval(pwr) - power,
+                           interval = c(1e-07, 1e+07),
+                           tol = tol, extendInt = "downX")$root
+  }
+  
+  structure(get(target), names = target)
 }

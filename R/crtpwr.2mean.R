@@ -66,6 +66,7 @@ crtpwr.2mean <- function(alpha = 0.05, power = 0.80, nclusters = NA,
                          vart = NA,
                          method = c("taylor", "weighted"),
                          tol = .Machine$double.eps^0.25){
+  .Deprecated("cpa.normal")
   
   method <- match.arg(method)
   

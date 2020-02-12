@@ -2,16 +2,16 @@
 % Please edit documentation in R/cpa.did.binary.R
 \name{cpa.did.binary}
 \alias{cpa.did.binary}
-\title{Power calculations for  difference-in-difference cluster randomized trials, binary outcome}
+\title{Power calculations for  difference-in-difference cluster randomized trials, dichotomous outcome}
 \usage{
 cpa.did.binary(
   alpha = 0.05,
   power = 0.8,
-  n = NA,
-  m = NA,
+  nclusters = NA,
+  nsubjects = NA,
   p = NA,
-  did = NA,
-  ICC = NA,
+  d = NA,
+  icc = NA,
   rho_c = NA,
   rho_s = NA,
   tol = .Machine$double.eps^0.25
@@ -24,15 +24,15 @@ Type I error.}
 \item{power}{The power of the test, 1 minus the probability of a Type II
 error.}
 
-\item{n}{The number of clusters per condition. It must be greater than 1.}
+\item{nclusters}{The number of clusters per condition. It must be greater than 1.}
 
-\item{m}{The mean of the cluster sizes.}
+\item{nsubjects}{The mean of the cluster sizes.}
 
 \item{p}{The expected mean proportion at the post-test, averaged across treatment and control arms.}
 
-\item{did}{The expected absolute difference.}
+\item{d}{The expected absolute difference.}
 
-\item{ICC}{The intraclass correlation.}
+\item{icc}{The intraclass correlation.}
 
 \item{rho_c}{The correlation between baseline and post-test outcomes at the
 cluster level. This value can be used in both cross-sectional and cohort
@@ -50,21 +50,19 @@ at least four significant digits.}
 The computed argument.
 }
 \description{
-Wrapper function that uses crtpwr.2propD() to compute the power 
-of a difference-in-difference cluster randomized trial design 
-with a binary outcome, or determine parameters to obtain a target 
-power. For additional details, see ?crtpwr.2propD.
+Compute the power of a difference-in-difference cluster randomized trial design with a 
+binary outcome, or determine parameters to obtain a target power.
 }
 \details{
-Exactly one of \code{alpha}, \code{power}, \code{n}, \code{m},
-  \code{p}, \code{did}, \code{ICC}, \code{rho_c}, and \code{rho_s} must be passed as \code{NA}.
+Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
+  \code{p}, \code{d}, \code{icc}, \code{rho_c}, and \code{rho_s} must be passed as \code{NA}.
   Note that \code{alpha} and \code{power} have non-\code{NA}
   defaults, so if those are the parameters of interest they must be
   explicitly passed as \code{NA}.
 }
 \section{Authors}{
 
-Alexandria Sakrejda, Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
+Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
 }
 
 \section{Note}{
@@ -79,9 +77,9 @@ Alexandria Sakrejda, Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman 
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = .05, 
 # power = 0.8, 50 observations per cluster, expected mean post-test proportion of .50,
-# expected difference of .1, ICC = 0.05, cluster level correlation of 0.3, and subject level 
+# expected difference of .1, icc = 0.05, cluster level correlation of 0.3, and subject level 
 # correlation of 0.7.
-cpa.did.binary(m=50 ,p=.5, did=.1, ICC=.05, rho_c=.3, rho_s=.7)
+cpa.did.binary(nsubjects=50 ,p=.5, d=.1, icc=.05, rho_c=.3, rho_s=.7)
 # 
 # The result, showimg nclusters of greater than 32, suggests 33 clusters per 
 # condition should be used.

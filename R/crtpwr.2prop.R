@@ -47,7 +47,8 @@
 #' Trials in Health Research. London; Arnold; 2000.
 #' @references Wu S, Crespi CM, Wong WK. Comparison of Methods for Estimating Intraclass
 #' Correlation Coefficient for Binary Responses in Cancer Prevention Cluster Randomized
-#' Trials. Contemp Clin Trials. 2012; 33(5): 869-880. doi:10.1016/j.cct.2012.05.004 London: Arnold; 2000.
+#' Trials. Contemp Clin Trials. 2012; 33(5): 869-880. doi:10.1016/j.cct.2012.05.004 
+#' London: Arnold; 2000.
 #' @export
 
 crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
@@ -56,6 +57,8 @@ crtpwr.2prop <- function(alpha = 0.05, power = 0.80,
                          icc = NA, pooled = FALSE,
                          p1inc = TRUE,
                          tol = .Machine$double.eps^0.25){
+  .Deprecated("cpa.binary")
+  
   
   if(!is.na(nclusters) && nclusters <= 1) {
     stop("'nclusters' must be greater than 1.")

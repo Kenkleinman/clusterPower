@@ -71,6 +71,8 @@ crtpwr.nmean <- function(alpha = 0.05, power = 0.80,
                          vara = NA, varc = NA, vare = NA, 
                          tol = .Machine$double.eps^0.25){
   
+  .Deprecated("cpa.ma.normal")
+  
   # if(!is.na(narms) && narms <= 2) {
   #   stop("'narms' must be greater than 2.")
   # }

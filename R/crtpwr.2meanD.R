@@ -20,7 +20,6 @@
 #'   invalid arguments are given.
 #'
 #' @section Authors:
-#' @section Authors:
 #' Jonathan Moyer (\email{jon.moyer@@gmail.com}), Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @param alpha The level of significance of the test, the probability of a
@@ -63,6 +62,8 @@ crtpwr.2meanD <- function(alpha = 0.05, power = 0.80, nclusters = NA,
                           rho_c = NA, rho_s = NA,
                           vart = NA,
                           tol = .Machine$double.eps^0.25){
+  
+  .Deprecated("cpa.did.normal")
   
   # if nsubjects is a vector, 
   if(length(nsubjects) > 1){

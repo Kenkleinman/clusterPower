@@ -7,10 +7,10 @@
 cpa.normal(
   alpha = 0.05,
   power = 0.8,
-  n = NA,
-  m = NA,
-  cv = 0,
-  difference = NA,
+  nclusters = NA,
+  nsubjects = NA,
+  CV = 0,
+  d = NA,
   ICC = NA,
   vart = NA,
   method = c("taylor", "weighted"),
@@ -24,14 +24,14 @@ Type I error.}
 \item{power}{The power of the test, 1 minus the probability of a Type II
 error.}
 
-\item{n}{The number of clusters per condition. It must be greater than 1.}
+\item{nclusters}{The number of clusters per condition. It must be greater than 1.}
 
-\item{m}{The mean of the cluster sizes, or a vector of cluster sizes for one arm.}
+\item{nsubjects}{The mean of the cluster sizes, or a vector of cluster sizes for one arm.}
 
-\item{cv}{The coefficient of variation of the cluster sizes. When \code{cv} = 0,
+\item{CV}{The coefficient of variation of the cluster sizes. When \code{CV} = 0,
 the clusters all have the same size.}
 
-\item{difference}{The difference in condition means.}
+\item{d}{The difference in condition means.}
 
 \item{ICC}{The intraclass correlation.}
 
@@ -48,18 +48,40 @@ at least four significant digits.}
 The computed argument.
 }
 \description{
-Wrapper function that uses crtpwr.2mean to compute the power of 
-a simple cluster randomized trial with a continuous outcome,
-or determine parameters to obtain a target power. See ?crtpwr.2mean 
-for more details.
-#' @section Authors:
-Alexandria Sakrejda, Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
+Compute the power of a simple cluster randomized trial with a continuous outcome,
+or determine parameters to obtain a target power.
 }
+\details{
+Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
+  \code{CV}, \code{d}, \code{ICC}, and \code{vart}  must be passed as \code{NA}.
+  Note that \code{alpha}, \code{power}, and \code{CV} have non-\code{NA}
+  defaults, so if those are the parameters of interest they must be
+  explicitly passed as \code{NA}.
+  
+If \code{nsubjects} is a vector the values, \code{nclusters} and \code{CV} will be recalculated
+   using the values in \code{nsubjects}. If \code{nsubjects} is a vector and \code{method} is
+   "taylor", the exact relative efficiency will be calculated as described in
+   van Breukelen et al (2007).
+}
+\section{Note}{
+
+  This function was inspired by work from Stephane Champely (pwr.t.test) and
+  Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
+  solve power equation for unknowns, so you may see
+  errors from it, notably about inability to bracket the root when
+  invalid arguments are given.
+}
+
+\section{Authors}{
+
+Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
+}
+
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = .05, 
 # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
-# of 1 unit,  icc = 0.1 and   a variance of five units.
-cpa.normal(m=10, difference=1, ICC=.1, vart=5)
+# of 1 unit,  ICC = 0.1 and   a variance of five units.
+cpa.normal(nsubjects=10 ,d=1, ICC=.1, vart=5)
 # 
 # The result, showimg nclusters of greater than 15, suggests 16 clusters per 
 # condition should be used.

@@ -1,7 +1,7 @@
 #' Power calculations for  difference-in-difference cluster randomized trials, binary outcome
 #'
-#' Compute the power of a difference-in-difference cluster randomized trial design with a binary outcome,
-#' or determine parameters to obtain a target power.
+#' Compute the power of a difference-in-difference cluster randomized trial design with a 
+#' binary outcome, or determine parameters to obtain a target power.
 #' 
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
 #'   \code{p}, \code{d}, \code{icc}, \code{rho_c}, and \code{rho_s} must be passed as \code{NA}.
@@ -58,6 +58,8 @@ crtpwr.2propD <- function(alpha = 0.05, power = 0.80,
                           p = NA, d = NA, icc = NA, 
                           rho_c = NA, rho_s = NA,
                           tol = .Machine$double.eps^0.25){
+  
+  .Deprecated("cpa.did.binary")
   
   if(!is.na(nclusters) && nclusters <= 1) {
     stop("'nclusters' must be greater than 1.")

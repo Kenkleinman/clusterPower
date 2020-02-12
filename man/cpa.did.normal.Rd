@@ -7,10 +7,9 @@
 cpa.did.normal(
   alpha = 0.05,
   power = 0.8,
-  n = NA,
-  m = NA,
-  difference.control = NA,
-  difference.intervention = NA,
+  nclusters = NA,
+  nsubjects = NA,
+  d = NA,
   ICC = NA,
   rho_c = NA,
   rho_s = NA,
@@ -25,11 +24,11 @@ Type I error.}
 \item{power}{The power of the test, 1 minus the probability of a Type II
 error.}
 
-\item{n}{The number of clusters per condition. It must be greater than 1.}
+\item{nclusters}{The number of clusters per condition. It must be greater than 1.}
 
-\item{m}{The mean of the cluster sizes.}
+\item{nsubjects}{The mean of the cluster sizes, or a vector of cluster sizes for one arm.}
 
-\item{difference.control}{The difference in mean change in the control arm.}
+\item{d}{The difference in mean change between conditions (i.e. "difference-in-difference").}
 
 \item{ICC}{The intraclass correlation.}
 
@@ -46,21 +45,17 @@ are completely different from post-test subjects), this value should be 0.}
 
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}
-
-\item{intervention.control}{The difference in mean change in the intervention arm.}
 }
 \value{
 The computed argument.
 }
 \description{
-Wrapper function that uses crtpwr.2meanD() to compute the power of a 
-difference-in-difference cluster randomized trial design with a 
-continuous outcome, or determine parameters to obtain a target power. 
-See ?crtpwr.2meanD for additional details.
+Compute the power of a difference-in-difference cluster randomized trial design with a continuous outcome,
+or determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-  \code{d}, \code{icc}, \code{rho_c}, \code{rho_s}, and \code{vart}
+  \code{d}, \code{ICC}, \code{rho_c}, \code{rho_s}, and \code{vart}
   must be passed as \code{NA}. Note that \code{alpha} and\code{power}
   have non-\code{NA} defaults, so if those are the parameters of 
   interest they must be explicitly passed as \code{NA}.
@@ -79,15 +74,14 @@ If \code{nsubjects} is a vector the values, \code{nclusters} will be recalculate
 
 \section{Authors}{
 
-Alexandria Sakrejda, Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
+Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
 }
 
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
-# power = 0.80, m = 100, difference.control = 5, difference.intervention = 4.5,
- units, ICC = 0.05, rho_c = 0.50, rho_s = 0.70,
+# power = 0.80, nsubjects = 100, d = 0.50 units, ICC = 0.05, rho_c = 0.50, rho_s = 0.70,
 # and vart = 1 unit.
-cpa.did.normal(m = 100 , difference.control = 5, difference.intervention = 4.5, ICC = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
+cpa.did.normal(nsubjects = 100 , d = 0.5, ICC = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1)
 # 
 # The result, nclusters = 4.683358, suggests 5 clusters per condition should be used.
 
