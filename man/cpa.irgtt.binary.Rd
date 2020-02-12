@@ -13,6 +13,7 @@ cpa.irgtt.binary(
   icc = NA,
   p.e = NA,
   p.c = NA,
+  decrease = TRUE,
   tol = .Machine$double.eps^0.25
 )
 }
@@ -35,6 +36,10 @@ two individuals from the same cluster in the intervention arm.}
 \item{p.e}{The expected probability of the outcome in the intervention arm.}
 
 \item{p.c}{The expected probability of the outcome in the control arm.}
+
+\item{decrease}{Whether or not the proportion in the intervention arm is expected to be
+less than the proportion in the control arm. If TRUE it is assumed p.e < p.c, while FALSE implies
+p.e > p.c.}
 
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}
@@ -70,7 +75,7 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 \examples{
 # Find the required number of subjects per intervention cluster an IRGTT with alpha = 0.05,
 power = 0.80, nclusters = 23, ncontrols = 146, icc = 0.05, p.e = 0.397, and p.c = 0.243.
-cpa.irgtt.binary(nclusters=23, ncontrols = 146, icc = 0.05, p.e = 0.397, p.c = 0.243)
+cpa.irgtt.binary(nclusters=23, ncontrols = 146, icc = 0.05, p.e = 0.397, p.c = 0.243, decrease = FALSE)
 # 
 # The result, nsubjects = 7.96624, suggests 8 subjects per cluster in the intervention arm should be recruited.
 # This means that the total number of subjects in the study is nclusters*nsubjects + ncontrols = 23*8 + 146 = 330.

@@ -30,13 +30,16 @@
 #'   two individuals from the same cluster in the intervention arm.
 #' @param p.e The expected probability of the outcome in the intervention arm.
 #' @param p.c The expected probability of the outcome in the control arm.
+#' @param decrease Whether or not the proportion in the intervention arm is expected to be
+#'   less than the proportion in the control arm. If TRUE it is assumed p.e < p.c, while FALSE implies
+#'   p.e > p.c.
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
 #' @return The computed argument.
 #' @examples 
 #' # Find the required number of subjects per intervention cluster an IRGTT with alpha = 0.05,
 #' power = 0.80, nclusters = 23, ncontrols = 146, icc = 0.05, p.e = 0.397, and p.c = 0.243.
-#' cpa.irgtt.binary(nclusters=23, ncontrols = 146, icc = 0.05, p.e = 0.397, p.c = 0.243)
+#' cpa.irgtt.binary(nclusters=23, ncontrols = 146, icc = 0.05, p.e = 0.397, p.c = 0.243, decrease = FALSE)
 #' # 
 #' # The result, nsubjects = 7.96624, suggests 8 subjects per cluster in the intervention arm should be recruited.
 #' # This means that the total number of subjects in the study is nclusters*nsubjects + ncontrols = 23*8 + 146 = 330.
@@ -50,6 +53,7 @@
 cpa.irgtt.binary <- function(alpha = 0.05, power = 0.80, nclusters = NA,
                              nsubjects = NA, ncontrols = NA, 
                              icc = NA, p.e = NA, p.c = NA,
+                             decrease = TRUE,
                              tol = .Machine$double.eps^0.25){
   
   # list of needed inputs
@@ -122,16 +126,30 @@ cpa.irgtt.binary <- function(alpha = 0.05, power = 0.80, nclusters = NA,
   
   # calculate p.e
   if (is.na(p.e)) {
-    p.e <- stats::uniroot(function(p.e) eval(pwr) - power,
-                          interval = c(1e-10, 1 - 1e-10),
-                          tol = tol)$root
+    if(decrease){
+      p.e <- stats::uniroot(function(p.e) eval(pwr) - power,
+                            interval = c(1e-10, p.c),
+                            tol = tol)$root
+      
+    } else {
+      p.e <- stats::uniroot(function(p.e) eval(pwr) - power,
+                            interval = c(p.c, 1 - 1e-10),
+                            tol = tol, extendInt = "yes")$root
+    }
   }
   
   # calculate p.c
   if (is.na(p.c)) {
-    p.c <- stats::uniroot(function(p.c) eval(pwr) - power,
-                          interval = c(1e-10, 1 - 1e-10),
-                          tol = tol)$root
+    if(decrease){
+      p.c <- stats::uniroot(function(p.c) eval(pwr) - power,
+                            interval = c(p.e, 1 - 1e-10),
+                            tol = tol)$root
+    } else {
+      p.c <- stats::uniroot(function(p.c) eval(pwr) - power,
+                            interval = c(1e-10, p.e),
+                            tol = tol)$root
+    }
+    
   }
   
   structure(get(target), names = target)
