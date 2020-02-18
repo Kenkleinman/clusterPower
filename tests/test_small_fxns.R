@@ -9,9 +9,6 @@ library("clusterPower")
 
 test_check("clusterPower")
 
-#validateVariance 
-#optimizerSearch
-
 
 ############################################
 ######  TESTING FOR SMALL FUNCTIONS  #######
@@ -78,17 +75,14 @@ test_that("type1ErrTest matches a reference", {
  expect_equal(TRUE, is.null(nowarn))
  })
 
+#optimizerSearch
 
-context("validateVariance")
+context("optimizerSearch")
 
-test_that("validateVariance matches a reference", {
-  validateVariance(dist = NULL, difference = NULL, alpha = alpha, 
-   ICC = ICC, sigma_sq = sigma_sq, 
-   sigma_b_sq = sigma_b_sq, ICC2 = NA, sigma_sq2 = NA, 
-   sigma_b_sq2 = NA, method = method, quiet = quiet, 
-   all.sim.data = all.sim.data, 
-   poor.fit.override = poor.fit.override, 
-   cores = NA,
-   probs = NA)
-  expect_equal(TRUE, is.null(nowarn))
+test_that("optimizerSearch matches a reference", {
+  library(lattice)
+  gm1 <- glmer(cbind(incidence, size - incidence) ~ period + (1 | herd),
+               data = cbpp, family = binomial)
+  goodopt <- optimizerSearch(gm1)
+  expect_equal("bobyqa", goodopt)
 })
