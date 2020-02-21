@@ -83,6 +83,9 @@ test_that("optimizerSearch matches a reference", {
   library(lattice)
   gm1 <- glmer(cbind(incidence, size - incidence) ~ period + (1 | herd),
                data = cbpp, family = binomial)
-  goodopt <- optimizerSearch(gm1)
-  expect_equal("bobyqa", goodopt)
+  lm1 <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
+  lmopt <- optimizerSearch(lm1)
+  gmopt <- optimizerSearch(gm1)
+  expect_equal("bobyqa", gmopt)
+  expect_equal("bobyqa", lmopt)
 })

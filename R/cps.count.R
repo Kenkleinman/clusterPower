@@ -287,7 +287,8 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
                                                                optCtrl = list(method = goodopt,
                                                                               starttests = FALSE, kkt = FALSE)))
         }
-      } else {
+      } 
+      if (irgtt == TRUE){
         if(analysis == 'poisson'){
           my.mod <- lme4::glmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
                                family = stats::poisson(link = 'log'),                                

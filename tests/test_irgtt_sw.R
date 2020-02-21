@@ -177,7 +177,14 @@ test_that("analytic binary irgtt case matches a constant: p.e", {
 
 # compare simulation methods (count) to a constant
 test_that("analytic irgtt power is within simulated method count irgtt CI", {
-  sim_model <- cps.irgtt.binary(nsim = 100, 
+
+  irgtt.count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(500, 10), nclusters = 100, 
+                                c1 = 85, c2 = 450, sigma_b_sq2 = 25, 
+                                family = 'poisson', analysis = 'poisson',
+                                alpha = 0.05, quiet = FALSE, all.sim.data = FALSE, 
+                                opt = "L-BFGS-B")
+  
+    sim_model <- cps.irgtt.count(nsim = 100, 
                                                   nsubjects = 30, 
                                                   nclusters = 10, 
                                                   p1 = 0.2,
