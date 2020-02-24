@@ -366,3 +366,25 @@ test_that("analytic normal SW case matches a constant: rho_s", {
                                         vart = 2322.988, 
                                         power = 0.8100001)), 
                0.2502912)})
+
+
+test_that("analytic normal SW case matches a function from SWSamp pkg", {
+  expect_equal(as.numeric(cpa.sw.normal(alpha = 0.05, power = NA, 
+    nclusters = 4, nsubjects = 20, 
+    ntimes = 4, d = 5, icc = 0.05, rho_c = 1, 
+    rho_s = 0, vart = 400)),
+    as.numeric(SWSamp::HH.normal(mu = 0,          
+      b.trt = 5,
+      sigma = sqrt(400),
+      I = 4*4,
+      J = 4,
+      K = 20,
+      rho = 0.05,
+      which.var = "total")$power))})
+                                                                                                 b.trt = d,
+                                                                                                 sigma = sqrt(vart),
+                                                                                                 I = nclusters*ntimes,
+                                                                                                 J = ntimes,
+                                                                                                 K = nsubjects,
+                                                                                                 rho = icc,
+                                                                                                 which.var = "total")
