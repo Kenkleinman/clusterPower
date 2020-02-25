@@ -166,7 +166,7 @@ test_that("DID normal simulation and analytic methods give similar power estimat
 context("DID binary outcome accuracy")
 
 # compare to a reference value from NIH calculator
-test_that("DID continuous case matches reference (cohort)", {
+test_that("DID binary case matches reference (cohort)", {
   expect_equal(ceiling(as.numeric(crtpwr.2propD(nsubjects=50, p=.5, 
                                                 d=.1, icc=.05, rho_c=.3, 
                                                 rho_s=.7))), 
@@ -190,11 +190,22 @@ test_that("DID binary simulation and analytic methods give similar power estimat
 })
 
 
-# still need to test:
-# DID poisson outcomes
-# IRGTT normal/binary/count
-# SW normal/binary/count
-# Multi-arm normal/binary/count
+#--------------------------------- DID COUNT OUTCOMES
+
+context("DID count outcome accuracy")
+
+# compare to a reference value from NIH calculator
+test_that("DID count case matches reference (cohort)", {
+  model <- cps.did.count(nsim = 100, nsubjects = 9, nclusters = 7, c1 = 5, 
+                                                c2 = 3, sigma_b_sq0 = c(1, 0.5), sigma_b_sq1 = c(0.5, 0.8), 
+                                                family = 'poisson', analysis = 'poisson', method = 'glmm', 
+                                                alpha = 0.05, quiet = FALSE, all.sim.data = TRUE) 
+               x <- 0.8
+               expect_equal(TRUE, 
+                            data.table::between(x, 
+                                                model$power$lower.95.ci, 
+                                                model$power$upper.95.ci))
+               })
 
 
 

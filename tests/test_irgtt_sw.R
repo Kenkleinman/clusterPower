@@ -381,6 +381,7 @@ test_that("analytic normal SW case matches a function from SWSamp pkg", {
       K = 20,
       rho = 0.05,
       which.var = "total")$power))})
+
                                                                                                  b.trt = d,
                                                                                                  sigma = sqrt(vart),
                                                                                                  I = nclusters*ntimes,
