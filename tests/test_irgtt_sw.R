@@ -177,7 +177,14 @@ test_that("analytic binary irgtt case matches a constant: p.e", {
 
 # compare simulation methods (count) to a constant
 test_that("analytic irgtt power is within simulated method count irgtt CI", {
-  sim_model <- cps.irgtt.binary(nsim = 100, 
+
+  irgtt.count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(500, 10), nclusters = 100, 
+                                c1 = 85, c2 = 450, sigma_b_sq2 = 25, 
+                                family = 'poisson', analysis = 'poisson',
+                                alpha = 0.05, quiet = FALSE, all.sim.data = FALSE, 
+                                opt = "L-BFGS-B")
+  
+    sim_model <- cps.irgtt.count(nsim = 100, 
                                                   nsubjects = 30, 
                                                   nclusters = 10, 
                                                   p1 = 0.2,
@@ -359,3 +366,26 @@ test_that("analytic normal SW case matches a constant: rho_s", {
                                         vart = 2322.988, 
                                         power = 0.8100001)), 
                0.2502912)})
+
+
+test_that("analytic normal SW case matches a function from SWSamp pkg", {
+  expect_equal(as.numeric(cpa.sw.normal(alpha = 0.05, power = NA, 
+    nclusters = 4, nsubjects = 20, 
+    ntimes = 4, d = 5, icc = 0.05, rho_c = 1, 
+    rho_s = 0, vart = 400)),
+    as.numeric(SWSamp::HH.normal(mu = 0,          
+      b.trt = 5,
+      sigma = sqrt(400),
+      I = 4*4,
+      J = 4,
+      K = 20,
+      rho = 0.05,
+      which.var = "total")$power))})
+
+                                                                                                 b.trt = d,
+                                                                                                 sigma = sqrt(vart),
+                                                                                                 I = nclusters*ntimes,
+                                                                                                 J = ntimes,
+                                                                                                 K = nsubjects,
+                                                                                                 rho = icc,
+                                                                                                 which.var = "total")
