@@ -252,11 +252,11 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
         if (isTRUE(optimizer == "auto")) {
           if (irgtt == FALSE) {
             if (analysis == 'poisson') {
-              my.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat, 
+              my.mod = lme4::glmer(y ~ as.factor(trt) + (1|clust), data = sim.dat, 
                                    family = stats::poisson(link = 'log'))
             }
             if (analysis == 'neg.binom') {
-              my.mod = lme4::glmer.nb(y ~ trt + (1|clust), data = sim.dat)
+              my.mod = lme4::glmer.nb(y ~ as.factor(trt) + (1|clust), data = sim.dat)
             }
           }
           if (irgtt == TRUE){

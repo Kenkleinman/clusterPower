@@ -381,7 +381,8 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
      complete.output <-  list("power" <-  power.parms[-1,],
                               "overall.power" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
                               "convergence" <- normal.ma.rct[[3]])
-   }
+     }
+   class(complete.output) <- "crtpwr"
    return(complete.output)
  }
    #Organize output for GEE method

@@ -334,6 +334,7 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
                                                                         LRT.holder.abbrev=LRT.holder.abbrev)),
                                "proportion.failed.to.converge" <- count.ma.rct[[3]])
     }
+    class(complete.output) <- "crtpwr"
     return(complete.output)
   } # end of GLMM options
   
@@ -418,7 +419,7 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
                                                                          LRT.holder.abbrev=LRT.holder.abbrev)))
     }# end of return options
     # assign special class
-    class(complete.output) <- c("multiarm", "list")
+    class(complete.output) <- c("ctrpwr", "multiarm", "list")
     return(complete.output)
   }# end of GEE options
   }# end of fxn
