@@ -1,1 +1,0 @@
-cpa.sw.binary(nclusters, ntimes, nsubjects, d, ICC, beta, mu)
