@@ -457,6 +457,7 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
                                   alpha=alpha, nsim=nsim, 
                                   LRT.holder.abbrev=LRT.holder.abbrev))
      }
+     class(complete.output) <- "ctrpwr"
      return(complete.output)
    }
 }
