@@ -70,8 +70,8 @@
 #' sigma_b_sq.example <- c(1, 1, .2)
 #' 
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-#' counts.example <- c(30, 55, 98)
-#' sigma_b_sq.example <- c(1, 1, 2)
+#' counts.example <- c(75, 120, 100)
+#' sigma_b_sq.example <- c(0.5, 0.5, 0.75)
 #' 
 #' count.ma.rct <- cps.ma.count.internal (nsim = 10, 
 #'                             str.nsubjects = nsubjects.example, 
@@ -154,7 +154,7 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                            str.nsubjects. = str.nsubjects,
                            family. = family){
     # Generate between-cluster effects for non-treatment and treatment 
-    if (tdist==TRUE){
+    if (tdist.==TRUE){
       randint = mapply(function(n, df) stats::rt(n, df = df), 
                        n = nclusters., 
                        df = Inf)
@@ -167,19 +167,19 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     if (typeof(randint)=="list"){
       randint.holder <- list()
       for (j in 1:length(counts.)){
-        randint.holder[[j]] <- log(counts.[j])+ randint[[j]]
+        randint.holder[[j]] <- log(counts.[j]) + randint[[j]]
       }
       randintrandint <- sapply(randint.holder, exp)
     } else {
       randint.holder <- matrix(nrow = nclusters.[1], ncol = length(counts.))
       for (j in 1:length(counts.)){
-        randint.holder[,j] <- log(counts.[j])+ randint[,j]
+        randint.holder[,j] <- log(counts.[j]) + randint[,j]
       }
       randintrandint <- exp(randint.holder)
     }
     # Create y-value
     y.intercept <- vector(mode = "numeric", 
-                           length = length(clust))
+                           length = sum(unlist(str.nsubjects.)))
     y.intercept <- sapply(1:sum(nclusters.), 
                            function(x) rep(unlist(randintrandint)[x], 
                                            length.out = unlist(str.nsubjects.)[x]))
@@ -196,6 +196,7 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                           nclusters. = nclusters, 
                                           sigma_b_sq. = sigma_b_sq, 
                                           str.nsubjects. = str.nsubjects, 
+                                          counts. = counts,
                                           family. = family))
   
   require(foreach)
@@ -276,38 +277,34 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       Sys.sleep(1/100)
     }
     
-    # option to stop the function early if fits are singular
-    converged <- foreach::foreach(i=1:nsim, .packages = "lme4", .inorder=FALSE) %fun% {
-      ifelse(isTRUE(any( grepl("fail", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE |
+    # re-fit models that didn't converge and
+    #option to stop the function early if fits are singular
+    for (i in 1:nsim){
+      converged[i] <- ifelse(isTRUE(any( grepl("fail", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE |
                any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )), FALSE, TRUE)
     }
-    print(unlist(converged))
-    #print(as.vector(which(!isTRUE(unlist(converged)))))
-    for (i in 1:nsim){
-      if (unlist(converged)[i]==FALSE) {
+    singular <- which(unlist(converged)==FALSE)
+    for (j in singular){
         if(family == 'poisson'){
-          print(i)
-          my.mod[[i]] <- lme4::glmer(sim.dat[,i] ~ as.factor(trt) + (1|clust), 
+          my.mod[[j]] <- lme4::glmer(sim.dat[,j] ~ as.factor(trt) + (1|clust), 
                                                    family = stats::poisson(link = 'log'),
                                                    control = lme4::glmerControl(optimizer = opt, 
                                                                                 calc.derivs = TRUE,
                                                                                 optCtrl = list(method = opt, 
                                                                                                starttests = FALSE, 
                                                                                                kkt = FALSE)))
-                                     }
+          }
         if(family == 'neg.binom'){
-          my.mod[[i]] <- lme4::glmer.nb(sim.dat[,i] ~ as.factor(trt) + (1|clust),
+          my.mod[[j]] <- lme4::glmer.nb(sim.dat[,j] ~ as.factor(trt) + (1|clust),
                                                       control = lme4::glmerControl(optimizer = opt, calc.derivs = TRUE,
                                                                                    optCtrl = list(method = opt, 
                                                                                                   starttests = FALSE, kkt = FALSE)))
           }
-        }
     }
-    converged <- foreach::foreach(i=1:nsim, .packages = "lme4", .inorder=FALSE) %fun% {
-      ifelse(isTRUE(any( grepl("fail", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE |
+    for (i in 1:nsim){
+      converged[i] <- ifelse(isTRUE(any( grepl("fail", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE |
                       any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )), FALSE, TRUE)
     }
-    print(unlist(converged))
     if (poor.fit.override==FALSE){
       if(sum(unlist(converged), na.rm = TRUE)>(nsim*.25)){
         stop("more than 25% of simulations are singular fit: check model specifications")}
