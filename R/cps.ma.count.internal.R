@@ -63,16 +63,23 @@
 #' @examples 
 #' \dontrun{
 #' 
-#' nsubjects.example <- list(c(200,200,200,250), c(150, 200, 200, 210), c(170, 200, 210))
-#' counts.example <- c(300, 550, 900)
-#' sigma_b_sq.example <- c(1, 1, 2)
+#' nsubjects.example <- list(c(200,200,200,250, 200,200,200,250, 200,200,200,250), 
+#' c(150, 200, 200, 210, 200, 200, 210, 200, 200, 210), 
+#' c(170, 200, 210, 170, 200, 210, 170, 200, 210, 170, 200, 210))
+#' counts.example <- c(100, 550, 900)
+#' sigma_b_sq.example <- c(1, 1, .2)
+#' 
+#' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+#' counts.example <- c(75, 120, 100)
+#' sigma_b_sq.example <- c(0.5, 0.5, 0.75)
 #' 
 #' count.ma.rct <- cps.ma.count.internal (nsim = 10, 
 #'                             str.nsubjects = nsubjects.example, 
 #'                             counts = counts.example,
 #'                             sigma_b_sq = sigma_b_sq.example, 
 #'                             alpha = 0.05, all.sim.data = FALSE, 
-#'                             seed = 123, cores="all") 
+#'                             seed = 123, cores="all", poor.fit.override=TRUE, 
+#'                             opt = "nloptwrap") 
 #' }
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
@@ -147,7 +154,7 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                            str.nsubjects. = str.nsubjects,
                            family. = family){
     # Generate between-cluster effects for non-treatment and treatment 
-    if (tdist==TRUE){
+    if (tdist.==TRUE){
       randint = mapply(function(n, df) stats::rt(n, df = df), 
                        n = nclusters., 
                        df = Inf)
@@ -160,19 +167,19 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     if (typeof(randint)=="list"){
       randint.holder <- list()
       for (j in 1:length(counts.)){
-        randint.holder[[j]] <- log(counts.[j])+ randint[[j]]
+        randint.holder[[j]] <- log(counts.[j]) + randint[[j]]
       }
       randintrandint <- sapply(randint.holder, exp)
     } else {
       randint.holder <- matrix(nrow = nclusters.[1], ncol = length(counts.))
       for (j in 1:length(counts.)){
-        randint.holder[,j] <- log(counts.[j])+ randint[,j]
+        randint.holder[,j] <- log(counts.[j]) + randint[,j]
       }
       randintrandint <- exp(randint.holder)
     }
     # Create y-value
     y.intercept <- vector(mode = "numeric", 
-                           length = length(clust))
+                           length = sum(unlist(str.nsubjects.)))
     y.intercept <- sapply(1:sum(nclusters.), 
                            function(x) rep(unlist(randintrandint)[x], 
                                            length.out = unlist(str.nsubjects.)[x]))
@@ -189,6 +196,7 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                           nclusters. = nclusters, 
                                           sigma_b_sq. = sigma_b_sq, 
                                           str.nsubjects. = str.nsubjects, 
+                                          counts. = counts,
                                           family. = family))
   
   require(foreach)
@@ -213,7 +221,7 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   # Update simulation progress information
   if(quiet == FALSE){
     sim.start <- Sys.time()
-    lme4::glmer(sim.dat[,1] ~ trt + (1|clust), family = stats::poisson(link = 'log'))
+    lme4::glmer(sim.dat[,1] ~ as.factor(trt) + (1|clust), family = stats::poisson(link = 'log'))
     avg.iter.time = as.numeric(difftime(Sys.time(), sim.start, units = 'secs'))
     time.est = avg.iter.time * (nsim - 1) / 60
     hr.est = time.est %/% 60
@@ -244,18 +252,20 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     if(family == 'poisson'){
       my.mod <- foreach::foreach(i=1:nsim, .options.snow=opts, 
                                .packages = c("lme4", "optimx"), .inorder=FALSE) %fun% { 
-                                 lme4::glmer(sim.dat[,i] ~ trt + (1|clust), 
+                                 lme4::glmer(sim.dat[,i] ~ as.factor(trt) + (1|clust), 
                                              family = stats::poisson(link = 'log'),
-                                             control = lme4::glmerControl(optimizer = "optimx", calc.derivs = TRUE,
+                                             control = lme4::glmerControl(optimizer = opt, 
+                                                                          calc.derivs = TRUE,
                                                                           optCtrl = list(method = opt, 
-                                                                                         starttests = FALSE, kkt = FALSE)))
+                                                                                         starttests = FALSE, 
+                                                                                         kkt = FALSE)))
                                }
     }
     if(family == 'neg.binom'){
       my.mod <- foreach::foreach(i=1:nsim, .options.snow=opts, 
                                  .packages = c("lme4", "optimx"), .inorder=FALSE) %fun% { 
-                                   lme4::glmer.nb(sim.dat[,i] ~ trt + (1|clust),
-                                                  control = lme4::glmerControl(optimizer = "optimx", calc.derivs = TRUE,
+                                   lme4::glmer.nb(sim.dat[,i] ~ as.factor(trt) + (1|clust),
+                                                  control = lme4::glmerControl(optimizer = opt, calc.derivs = TRUE,
                                                                                optCtrl = list(method = opt, 
                                                                                               starttests = FALSE, kkt = FALSE)))
                                  }
@@ -267,10 +277,33 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
       Sys.sleep(1/100)
     }
     
-    # option to stop the function early if fits are singular
-    converged <- foreach::foreach(i=1:nsim, .packages = "lme4", .inorder=FALSE) %fun% {
-      ifelse(any( grepl("fail", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE |
-               any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE)
+    # re-fit models that didn't converge and
+    #option to stop the function early if fits are singular
+    for (i in 1:nsim){
+      converged[i] <- ifelse(isTRUE(any( grepl("fail", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE |
+               any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )), FALSE, TRUE)
+    }
+    singular <- which(unlist(converged)==FALSE)
+    for (j in singular){
+        if(family == 'poisson'){
+          my.mod[[j]] <- lme4::glmer(sim.dat[,j] ~ as.factor(trt) + (1|clust), 
+                                                   family = stats::poisson(link = 'log'),
+                                                   control = lme4::glmerControl(optimizer = opt, 
+                                                                                calc.derivs = TRUE,
+                                                                                optCtrl = list(method = opt, 
+                                                                                               starttests = FALSE, 
+                                                                                               kkt = FALSE)))
+          }
+        if(family == 'neg.binom'){
+          my.mod[[j]] <- lme4::glmer.nb(sim.dat[,j] ~ as.factor(trt) + (1|clust),
+                                                      control = lme4::glmerControl(optimizer = opt, calc.derivs = TRUE,
+                                                                                   optCtrl = list(method = opt, 
+                                                                                                  starttests = FALSE, kkt = FALSE)))
+          }
+    }
+    for (i in 1:nsim){
+      converged[i] <- ifelse(isTRUE(any( grepl("fail", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE |
+                      any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )), FALSE, TRUE)
     }
     if (poor.fit.override==FALSE){
       if(sum(unlist(converged), na.rm = TRUE)>(nsim*.25)){
@@ -317,7 +350,7 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   if(method == 'gee'){
     if(quiet == FALSE){
       sim.start <- Sys.time()
-      geepack::geeglm(sim.dat[,1] ~ trt,
+      geepack::geeglm(sim.dat[,1] ~ as.factor(trt),
                       family = stats::poisson(link = 'log'), 
                       id = clust, corstr = "exchangeable")
       time.est = avg.iter.time * (nsim - 1) / 60
@@ -345,7 +378,7 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     if(family=="poisson"){
       my.mod <- foreach::foreach(i=1:nsim, .options.snow=opts, 
                                .packages = "geepack", .inorder=FALSE) %fun% { 
-                                 geepack::geeglm(sim.dat[,i] ~ trt,
+                                 geepack::geeglm(sim.dat[,i] ~ as.factor(trt),
                                    family = stats::poisson(link = 'log'), 
                                    id = clust, corstr = "exchangeable")
                                }
@@ -353,7 +386,7 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     if(family=="quasipoisson"){
       my.mod <- foreach::foreach(i=1:nsim, .options.snow=opts, 
                                  .packages = "geepack", .inorder=FALSE) %fun% { 
-                                   geepack::geeglm(sim.dat[,i] ~ trt,
+                                   geepack::geeglm(sim.dat[,i] ~ as.factor(trt),
                                                    family = stats::quasipoisson(link = 'log'), 
                                                    id = clust, corstr = "exchangeable")
                                  }
@@ -400,7 +433,7 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   } else {
     complete.output.internal <-  list("estimates" = model.values,
                                   "model.comparisons" = model.compare,
-                                   "converged" =  paste(1-(sum(unlist(converged))/nsim)*100, 
+                                   "converged" =  paste((1-(sum(unlist(converged))/nsim))*100, 
                                        "% did not converge", sep=""))
   }
   return(complete.output.internal)
