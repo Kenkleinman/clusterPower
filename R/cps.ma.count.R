@@ -108,16 +108,16 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+#' nsubjects.example <- list(c(200, 200, 200, 250), c(150, 200, 200, 210), c(170, 200, 210))
 #' counts.example <- c(30, 55, 98)
-#' sigma_b_sq.example <- c(1, 1, 2)
+#' sigma_b_sq.example <- c(0.1, 0.1, 0.2)
 #' 
-#' count.ma.rct.unbal <- cps.ma.count(nsim = 100, 
+#' count.ma.rct.unbal <- cps.ma.count(nsim = 10, 
 #'                             nsubjects = nsubjects.example, 
 #'                             counts = counts.example,
 #'                             sigma_b_sq = sigma_b_sq.example, 
 #'                             alpha = 0.05, all.sim.data = FALSE, 
-#'                             seed = 123, cores="all") 
+#'                             seed = 123, cores="all", poor.fit.override=TRUE) 
 #'                             
 #' count.ma.rct.bal <- cps.ma.count(nsim = 50, nsubjects = 20, narms=3,
 #'                             nclusters=10,
@@ -295,9 +295,13 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
     sig.val <-  ifelse(p.val < alpha, 1, 0)
     pval.power <- apply(sig.val, 2, sum)
     
-    cps.model.temp <- data.frame(unlist(count.ma.rct[[3]]), p.val)
-    colnames(cps.model.temp)[1] <- "converge"
-    cps.model.temp2 <- dplyr::filter(cps.model.temp, isTRUE(converge))
+    converged <- as.vector(rep(NA, times = nsim))
+    for (i in 1:nsim){
+      converged[i] <- ifelse(is.null(count.ma.rct[[1]][[i]]$optinfo$conv$lme4$messages), TRUE, FALSE)
+    }
+    cps.model.temp <- data.frame(converged, p.val)
+    colnames(cps.model.temp)[1] <- "converged"
+    cps.model.temp2 <- dplyr::filter(cps.model.temp, converged == TRUE)
     
     # Calculate and store power estimate & confidence intervals
     power.parms <- confint.calc(nsim = nsim, alpha = alpha,

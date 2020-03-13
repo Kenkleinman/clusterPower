@@ -45,7 +45,10 @@
 #' simulation values, default = FALSE.
 #' @param cores A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to NA, no parallel computing is used.
-#'  @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
+#'  @param opt Option to fit with a different optimizer algorithm. Setting this to "auto" tests an example fit using 
+#'  "NLOPT_LN_PRAXIS", "NLOPT_GN_CRS2_LM", "NLOPT_LN_COBYLA", "NLOPT_LN_NEWUOA", "NLOPT_LN_NEWUOA_BOUND", 
+#'  "NLOPT_LN_NELDERMEAD", "NLOPT_LN_SBPLX", or "NLOPT_LN_BOBYQA" from the \code(nloptr) package and selects the first 
+#'  algorithm that converges.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -63,15 +66,13 @@
 #' @examples 
 #' \dontrun{
 #' 
-#' nsubjects.example <- list(c(200,200,200,250, 200,200,200,250, 200,200,200,250), 
-#' c(150, 200, 200, 210, 200, 200, 210, 200, 200, 210), 
-#' c(170, 200, 210, 170, 200, 210, 170, 200, 210, 170, 200, 210))
+#' nsubjects.example <- list(c(200,200,200,250), c(150, 200, 200, 210), c(170, 200, 210))
 #' counts.example <- c(100, 550, 900)
-#' sigma_b_sq.example <- c(1, 1, .2)
+#' sigma_b_sq.example <- c(.2, .1, .1)
 #' 
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' counts.example <- c(75, 120, 100)
-#' sigma_b_sq.example <- c(0.5, 0.5, 0.75)
+#' sigma_b_sq.example <- c(0.2, 0.1, 0.1)
 #' 
 #' count.ma.rct <- cps.ma.count.internal (nsim = 10, 
 #'                             str.nsubjects = nsubjects.example, 
@@ -79,7 +80,7 @@
 #'                             sigma_b_sq = sigma_b_sq.example, 
 #'                             alpha = 0.05, all.sim.data = FALSE, 
 #'                             seed = 123, cores="all", poor.fit.override=TRUE, 
-#'                             opt = "nloptwrap") 
+#'                             opt = "NLOPT_LN_BOBYQA") 
 #' }
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
@@ -101,8 +102,8 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
-  
-  require("optimx")
+  goodopt <- opt
+  require("nloptr")
   
   # Create NCLUSTERS, NARMS, from str.nsubjects
   narms = length(str.nsubjects)
@@ -249,26 +250,66 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     if (!is.na(cores) & quiet == FALSE){
       message("Fitting models")
     }
+    
     if(family == 'poisson'){
+      if (opt == "auto"){
+        algoptions <- c("NLOPT_LN_BOBYQA", "NLOPT_GN_CRS2_LM",
+                        "NLOPT_LN_COBYLA", "NLOPT_LN_NEWUOA",
+                        "NLOPT_LN_NEWUOA_BOUND", "NLOPT_LN_NELDERMEAD",
+                        "NLOPT_LN_SBPLX")
+        for(i in 1:length(algoptions)){
+          R.utils::withTimeout(Sys.sleep(10), timeout = 30)
+          model_flex1 <- lme4::glmer(sim.dat[,1] ~ as.factor(trt) + (1|clust), 
+                                    family = stats::poisson(link = 'log'),
+                                    control = lme4::glmerControl(optimizer = "nloptwrap",
+                                                   optCtrl = list(algorithm = algoptions[i],
+                                                                  maxeval = 1e7,
+                                                                  xtol_abs = 1e-9,
+                                                                  ftol_abs = 1e-9)))
+          model_flex2 <- lme4::glmer(sim.dat[,2] ~ as.factor(trt) + (1|clust), 
+                                     family = stats::poisson(link = 'log'),
+                                     control = lme4::glmerControl(optimizer = "nloptwrap",
+                                                                  optCtrl = list(algorithm = algoptions[i],
+                                                                                 maxeval = 1e7,
+                                                                                 xtol_abs = 1e-9,
+                                                                                 ftol_abs = 1e-9)))
+          if(is.null(model_flex1@optinfo$conv$lme4$messages) & is.null(model_flex2@optinfo$conv$lme4$messages)) {
+            print(goodopt)
+            break
+          }
+        }
+      }
       my.mod <- foreach::foreach(i=1:nsim, .options.snow=opts, 
                                .packages = c("lme4", "optimx"), .inorder=FALSE) %fun% { 
                                  lme4::glmer(sim.dat[,i] ~ as.factor(trt) + (1|clust), 
                                              family = stats::poisson(link = 'log'),
-                                             control = lme4::glmerControl(optimizer = opt, 
-                                                                          calc.derivs = TRUE,
-                                                                          optCtrl = list(method = opt, 
+                                             control = lme4::glmerControl(optimizer = "nloptwrap", 
+                                                                          calc.derivs = TRUE, 
+                                                                          optCtrl = list(algorithm = goodopt, 
                                                                                          starttests = FALSE, 
                                                                                          kkt = FALSE)))
                                }
     }
+    
     if(family == 'neg.binom'){
+      if (opt == "auto"){
+      mod <- lme4::glmer.nb(sim.dat[,1] ~ as.factor(trt) + (1|clust),
+                     control = lme4::glmerControl(optimizer = "nloptwrap", calc.derivs = TRUE,
+                                                  optCtrl = list(method = goodopt, 
+                                                                 starttests = FALSE, 
+                                                                 kkt = FALSE)))
+
+      
+    }
       my.mod <- foreach::foreach(i=1:nsim, .options.snow=opts, 
-                                 .packages = c("lme4", "optimx"), .inorder=FALSE) %fun% { 
+                                 .packages = c("lme4", "optimx", "nloptr"), .inorder=FALSE) %fun% { 
                                    lme4::glmer.nb(sim.dat[,i] ~ as.factor(trt) + (1|clust),
-                                                  control = lme4::glmerControl(optimizer = opt, calc.derivs = TRUE,
-                                                                               optCtrl = list(method = opt, 
-                                                                                              starttests = FALSE, kkt = FALSE)))
-                                 }
+                                                  control = lme4::glmerControl(optimizer = "nloptwrap", 
+                                                                               calc.derivs = TRUE, 
+                                                                               optCtrl = list(method = goodopt, 
+                                                                                              starttests = FALSE, 
+                                                                                              kkt = FALSE)))
+                                   }
     }
     
     if (is.na(cores) & quiet==FALSE){
@@ -280,30 +321,28 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     # re-fit models that didn't converge and
     #option to stop the function early if fits are singular
     for (i in 1:nsim){
-      converged[i] <- ifelse(isTRUE(any( grepl("fail", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE |
-               any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )), FALSE, TRUE)
+      converged[i] <- ifelse(is.null(my.mod[[i]]@optinfo$conv$lme4$messages), TRUE, FALSE)
     }
     singular <- which(unlist(converged)==FALSE)
     for (j in singular){
         if(family == 'poisson'){
           my.mod[[j]] <- lme4::glmer(sim.dat[,j] ~ as.factor(trt) + (1|clust), 
                                                    family = stats::poisson(link = 'log'),
-                                                   control = lme4::glmerControl(optimizer = opt, 
+                                                   control = lme4::glmerControl(optimizer = "nloptwrap", 
                                                                                 calc.derivs = TRUE,
-                                                                                optCtrl = list(method = opt, 
+                                                                                optCtrl = list(method = goodopt, 
                                                                                                starttests = FALSE, 
                                                                                                kkt = FALSE)))
           }
         if(family == 'neg.binom'){
           my.mod[[j]] <- lme4::glmer.nb(sim.dat[,j] ~ as.factor(trt) + (1|clust),
-                                                      control = lme4::glmerControl(optimizer = opt, calc.derivs = TRUE,
-                                                                                   optCtrl = list(method = opt, 
+                                                      control = lme4::glmerControl(optimizer = "nloptwrap", calc.derivs = TRUE,
+                                                                                   optCtrl = list(method = goodopt, 
                                                                                                   starttests = FALSE, kkt = FALSE)))
           }
     }
     for (i in 1:nsim){
-      converged[i] <- ifelse(isTRUE(any( grepl("fail", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE |
-                      any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )), FALSE, TRUE)
+      converged[i] <- ifelse(is.null(my.mod[[i]]@optinfo$conv$lme4$messages), TRUE, FALSE)
     }
     if (poor.fit.override==FALSE){
       if(sum(unlist(converged), na.rm = TRUE)>(nsim*.25)){
@@ -429,12 +468,14 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     complete.output.internal <-  list("estimates" = model.values,
                                    "model.comparisons" = model.compare,
                                    "converged"= unlist(converged),
-                                   "sim.data" = data.frame(trt, clust, sim.dat))
+                                   "sim.data" = data.frame(trt, clust, sim.dat),
+                                   "optimizer algorithm" = goodopt)
   } else {
     complete.output.internal <-  list("estimates" = model.values,
                                   "model.comparisons" = model.compare,
                                    "converged" =  paste((1-(sum(unlist(converged))/nsim))*100, 
-                                       "% did not converge", sep=""))
+                                       "% did not converge", sep=""),
+                                  "optimizer algorithm" = goodopt)
   }
   return(complete.output.internal)
 } #end of function
