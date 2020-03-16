@@ -409,21 +409,21 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
     ## Output objects for GEE
     # Create list containing all output (class 'crtpwr') and return
     if(all.sim.data == TRUE){
-      complete.output <-  list("power" <-  power.parms[-1,],
+      complete.output <- structure(list("power" <-  power.parms[-1,],
                                "model.estimates" <-  ma.model.est, 
                                "overall.power" <- LRT.holder,
                                "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
                                                                          LRT.holder.abbrev=LRT.holder.abbrev),
-                                                       "sim.data" <-  count.ma.rct[[4]]))
+                                                       "sim.data" <-  count.ma.rct[[4]])), 
+                               class = "ctrpwr")
     } else {
-      complete.output <-  list("power" <-  power.parms[-1,],
+      complete.output <- structure(list("power" <-  power.parms[-1,],
                                "model.estimates" <-  ma.model.est, 
                                "overall.power" <- LRT.holder,
-                               "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
-                                                                         LRT.holder.abbrev=LRT.holder.abbrev)))
+                               "overall.power2" <- try(prop_H0_rejection(alpha = alpha, nsim = nsim, 
+                                                                         LRT.holder.abbrev = LRT.holder.abbrev))), 
+                               class = "crtpwr")
     }# end of return options
-    # assign special class
-    class(complete.output) <- c("ctrpwr", "multiarm", "list")
     return(complete.output)
   }# end of GEE options
   }# end of fxn

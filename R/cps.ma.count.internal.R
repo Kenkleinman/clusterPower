@@ -46,9 +46,7 @@
 #' @param cores A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to NA, no parallel computing is used.
 #'  @param opt Option to fit with a different optimizer algorithm. Setting this to "auto" tests an example fit using 
-#'  "NLOPT_LN_PRAXIS", "NLOPT_GN_CRS2_LM", "NLOPT_LN_COBYLA", "NLOPT_LN_NEWUOA", "NLOPT_LN_NEWUOA_BOUND", 
-#'  "NLOPT_LN_NELDERMEAD", "NLOPT_LN_SBPLX", or "NLOPT_LN_BOBYQA" from the \code(nloptr) package and selects the first 
-#'  algorithm that converges.
+#'  the \code(nloptr) package and selects the first algorithm that converges.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -98,7 +96,7 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                    low.power.override = FALSE,
                                     tdist = FALSE,
                                     cores = cores,
-                                   opt = "optim") {
+                                   opt = opt) {
   
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
@@ -253,34 +251,31 @@ cps.ma.count.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     
     if(family == 'poisson'){
       if (opt == "auto"){
-        algoptions <- c("NLOPT_LN_BOBYQA", "NLOPT_GN_CRS2_LM",
+        message("testing optimizer algorithms:")
+        algoptions <- c("NLOPT_LN_BOBYQA", "NLOPT_GN_CRS2_LM", 
                         "NLOPT_LN_COBYLA", "NLOPT_LN_NEWUOA",
                         "NLOPT_LN_NEWUOA_BOUND", "NLOPT_LN_NELDERMEAD",
                         "NLOPT_LN_SBPLX")
         for(i in 1:length(algoptions)){
+          print(algoptions[i])
           R.utils::withTimeout(Sys.sleep(10), timeout = 30)
-          model_flex1 <- lme4::glmer(sim.dat[,1] ~ as.factor(trt) + (1|clust), 
+          model_flex1 <- try(lme4::glmer(sim.dat[,1] ~ as.factor(trt) + (1|clust), 
                                     family = stats::poisson(link = 'log'),
                                     control = lme4::glmerControl(optimizer = "nloptwrap",
                                                    optCtrl = list(algorithm = algoptions[i],
                                                                   maxeval = 1e7,
                                                                   xtol_abs = 1e-9,
-                                                                  ftol_abs = 1e-9)))
-          model_flex2 <- lme4::glmer(sim.dat[,2] ~ as.factor(trt) + (1|clust), 
-                                     family = stats::poisson(link = 'log'),
-                                     control = lme4::glmerControl(optimizer = "nloptwrap",
-                                                                  optCtrl = list(algorithm = algoptions[i],
-                                                                                 maxeval = 1e7,
-                                                                                 xtol_abs = 1e-9,
-                                                                                 ftol_abs = 1e-9)))
-          if(is.null(model_flex1@optinfo$conv$lme4$messages) & is.null(model_flex2@optinfo$conv$lme4$messages)) {
-            print(goodopt)
-            break
+                                                                  ftol_abs = 1e-9))))
+          if(class(model_flex1) != "try-error"){
+            if(is.null(model_flex1@optinfo$conv$lme4$messages)) {
+              goodopt <- algoptions[i]
+              break
+            }
           }
         }
       }
       my.mod <- foreach::foreach(i=1:nsim, .options.snow=opts, 
-                               .packages = c("lme4", "optimx"), .inorder=FALSE) %fun% { 
+                               .packages = c("lme4", "optimx", "nloptr"), .inorder=FALSE) %fun% { 
                                  lme4::glmer(sim.dat[,i] ~ as.factor(trt) + (1|clust), 
                                              family = stats::poisson(link = 'log'),
                                              control = lme4::glmerControl(optimizer = "nloptwrap", 
