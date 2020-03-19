@@ -72,8 +72,8 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' count.sim = cps.count(nsim = 10, nsubjects = 20, nclusters = 36, 
-#'                       c1 = 100, c2 = 200, sigma_b_sq = 1, 
+#' count.sim = cps.count(nsim = 10, nsubjects = 20, nclusters = 10, 
+#'                       c1 = 20, c2 = 30, sigma_b_sq = 0.1, 
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE, 
 #'                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")

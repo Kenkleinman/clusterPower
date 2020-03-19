@@ -144,7 +144,7 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
                           tdist=FALSE,
                           poor.fit.override = FALSE,
                           low.power.override = FALSE,
-                          opt = "optim"){
+                          opt = "NLOPT_LN_BOBYQA"){
   
   # use this later to determine total elapsed time
   start.time <- Sys.time()
@@ -325,20 +325,21 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
     
     # Create list containing all output (class 'crtpwr') and return
     if(all.sim.data == TRUE){
-      complete.output <-  list("power" <-  power.parms[-1,],
+      complete.output <-  structure(list("power" <-  power.parms[-1,],
                                "model.estimates" <-  ma.model.est, 
                                "overall.power" <- LRT.holder,
                                "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
                                                                          LRT.holder.abbrev=LRT.holder.abbrev)),
                                "sim.data" <-  count.ma.rct[[3]], 
-                               "failed.to.converge" <-  count.ma.rct[[4]])
+                               "failed.to.converge" <-  count.ma.rct[[4]]), 
+                               class = "crtpwr")
     } else {
-      complete.output <-  list("power" <-  power.parms[-1,],
+      complete.output <-  structure(list("power" <-  power.parms[-1,],
                                "overall.power" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
                                                                         LRT.holder.abbrev=LRT.holder.abbrev)),
-                               "proportion.failed.to.converge" <- count.ma.rct[[3]])
+                               "proportion.failed.to.converge" <- count.ma.rct[[3]]), 
+                               class = "crtpwr")
     }
-    class(complete.output) <- "crtpwr"
     return(complete.output)
   } # end of GLMM options
   

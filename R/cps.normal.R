@@ -75,7 +75,7 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 9, difference = 3.75,
+#' normal.sim = cps.normal(nsim = 3, nsubjects = 50, nclusters = 9, difference = 3.75,
 #'                         ICC = 0.3, sigma_sq = 20,
 #'                         alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
@@ -106,7 +106,7 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
   stat.vector = NULL
   pval.vector = NULL
   # This container keeps track of how many models failed to converge
-  converge.vector <- rep(TRUE, nsim)
+  converge.vector <- NULL
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -294,7 +294,8 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
           se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
           stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", 
+            my.mod@optinfo$conv$lme4$messages) ) == FALSE, TRUE) )
           # option to stop the function early if fits are singular
           if (poor.fit.override==FALSE){
             if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
@@ -332,7 +333,8 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
           se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
           stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", 
+            my.mod@optinfo$conv$lme4$messages) ) == FALSE, TRUE) )
           # option to stop the function early if fits are singular
           if (poor.fit.override==FALSE){
             if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
@@ -369,7 +371,8 @@ cps.normal = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, differenc
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
           se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
           stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
+          converge.vector = append(converge.vector, ifelse(any( grepl("singular", 
+            my.mod@optinfo$conv$lme4$messages) ) == FALSE, TRUE) )
           # option to stop the function early if fits are singular
           if (poor.fit.override==FALSE){
             if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
