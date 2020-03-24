@@ -73,6 +73,7 @@
 #' drawn from a t-distribution rather than the normal distribution. 
 #' Default = FALSE.
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
+#' @param optmethod User-specified optimizer methods available for the optimizer specified in \code{opt} option.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{Data frame with columns "power" (Estimated statistical power), 
@@ -109,24 +110,25 @@
 #' \dontrun{
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' probs.example <- c(0.30, 0.5, 0.9)
-#' sigma_b_sq.example <- c(1, 1, 2)
+#' sigma_b_sq.example <- c(0.1, 0.1, 0.2)
 #' 
 #' bin.ma.rct.unbal <- cps.ma.binary(nsim = 100, 
 #'                             nsubjects = nsubjects.example, 
 #'                             probs = probs.example,
 #'                             sigma_b_sq = sigma_b_sq.example, 
 #'                             alpha = 0.05, all.sim.data = FALSE, 
-#'                             seed = 123, cores="all") 
+#'                             seed = 123, cores="all", 
+#'                             poor.fit.override = TRUE) 
 #'                             
-#' bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 20, narms=3,
-#'                             nclusters=10,
+#' bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 200, narms=3,
+#'                             nclusters=50,
 #'                             probs = c(0.30, 0.5, 0.7),
-#'                             sigma_b_sq = 1, alpha = 0.05,
+#'                             sigma_b_sq = 0.1, alpha = 0.05,
 #'                             quiet = FALSE, method = 'glmm', 
 #'                             all.sim.data = FALSE, 
 #'                             multi.p.method="none",
-#'                             poor.fit.override = TRUE,
-#'                             seed = 123, cores="all")                             
+#'                             seed = 123, cores="all",
+#'                             optmethod="bobyqa")                             
 #'}
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
@@ -141,7 +143,8 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                           tdist=FALSE,
                           poor.fit.override = FALSE,
                           low.power.override = FALSE,
-                          opt = "optim"){
+                          opt = "optimx",
+                          optmethod = "L-BFGS-B"){
   
   # use this later to determine total elapsed time
   start.time <- Sys.time()
@@ -237,7 +240,8 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
                                           low.power.override = low.power.override,
                                           tdist = tdist,
                                           cores = cores,
-                                          opt = opt)
+                                          opt = opt,
+                                          optmethod = optmethod)
   
   models <- binary.ma.rct[[1]]
 
@@ -291,6 +295,10 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     cps.model.temp <- data.frame(unlist(binary.ma.rct[[3]]), p.val)
     colnames(cps.model.temp)[1] <- "converge"
     cps.model.temp2 <- dplyr::filter(cps.model.temp, isTRUE(converge))
+    if (isTRUE(nrow(cps.model.temp2)<(.25*nsim))){
+      warning(paste0(nrow(cps.model.temp2), " models converged. Check model parameters."),
+              immediate. = TRUE)
+    }
     
     # Calculate and store power estimate & confidence intervals
     power.parms <- confint.calc(nsim = nsim, alpha = alpha,
@@ -314,18 +322,18 @@ cps.ma.binary <- function(nsim = 1000, nsubjects = NULL,
     
     # Create list containing all output (class 'crtpwr') and return
     if(all.sim.data == TRUE){
-      complete.output <-  list("power" <-  power.parms[-1,],
+      complete.output <-  structure(list("power" <-  power.parms[-1,],
                                "model.estimates" <-  ma.model.est, 
                                "overall.power" <- LRT.holder,
                                "overall.power2" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
                                                                      LRT.holder.abbrev=LRT.holder.abbrev)),
                                "sim.data" <-  binary.ma.rct[[3]], 
-                               "failed.to.converge" <-  binary.ma.rct[[4]])
+                               "failed.to.converge" <-  binary.ma.rct[[4]]), class = "crtpwr")
     } else {
-      complete.output <-  list("power" <-  power.parms[-1,],
+      complete.output <- structure(list("power" <-  power.parms[-1,],
                                "overall.power" <- try(prop_H0_rejection(alpha=alpha, nsim=nsim, 
                                                                     LRT.holder.abbrev=LRT.holder.abbrev)),
-                               "proportion.failed.to.converge" <- binary.ma.rct[[3]])
+                               "proportion.failed.to.converge" <- binary.ma.rct[[3]]), class = "crtpwr")
     }
     return(complete.output)
   } # end of GLMM options

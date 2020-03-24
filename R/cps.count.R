@@ -72,7 +72,7 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' count.sim = cps.count(nsim = 10, nsubjects = 20, nclusters = 10, 
+#' count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 10, 
 #'                       c1 = 20, c2 = 30, sigma_b_sq = 0.1, 
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE, 

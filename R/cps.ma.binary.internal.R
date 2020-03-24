@@ -42,6 +42,7 @@
 #' @param cores A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to NA, no parallel computing is used.
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
+#' @param optmethod User-specified optimizer methods available for the optimizer specified in \code{opt} option.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -59,15 +60,17 @@
 #' \dontrun{
 #' 
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-#' probs.example <- c(0.30, 0.5, 0.9)
-#' sigma_b_sq.example <- c(1, 1, 2)
+#' probs.example <- c(0.1, 0.5, 0.9)
+#' sigma_b_sq.example <- c(0.1, 0.1, 0.2)
 #' 
 #' bin.ma.rct <- cps.ma.binary.internal (nsim = 10, 
 #'                             str.nsubjects = nsubjects.example, 
 #'                             probs = probs.example,
 #'                             sigma_b_sq = sigma_b_sq.example, 
-#'                             alpha = 0.05, all.sim.data = FALSE, 
-#'                             seed = 123, cores="all") 
+#'                             alpha = 0.05, all.sim.data = FALSE,
+#'                             poor.fit.override = TRUE, 
+#'                             seed = 123, cores="all",
+#'                             optmethod = "bobyqa") 
 #' }
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
@@ -83,7 +86,8 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                                     low.power.override = FALSE,
                                     tdist = FALSE,
                                     cores = cores,
-                                    opt = "optim"){
+                                    opt = "optimx",
+                                    optmethod = "L-BFGS-B"){
   
   # Create vectors to collect iteration-specific values
   simulated.datasets = list()
@@ -93,7 +97,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   nclusters = sapply(str.nsubjects, length)
   
   # This container keeps track of how many models failed to converge
-  fail <- rep(NA, nsim)
+  converged <- rep(NA, nsim)
   
   # Create a container for the simulated.dataset and model output
   sim.dat = vector(mode = "list", length = nsim)
@@ -232,9 +236,9 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
                              .packages = c("lme4", "optimx"), .inorder = FALSE) %fun% { 
                                lme4::glmer(sim.dat[,i] ~ trt + (1|clust), 
                                            family = stats::binomial(link = 'logit'),
-                                           control = lme4::glmerControl(optimizer = "optimx", 
+                                           control = lme4::glmerControl(optimizer = opt, 
                                                                         calc.derivs = TRUE,
-                                                                        optCtrl = list(method = opt, 
+                                                                        optCtrl = list(method = optmethod, 
                                                                                        starttests = FALSE, kkt = FALSE)))
                                }
     
@@ -245,13 +249,12 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
     }
     
     # option to stop the function early if fits are singular
-    converged <- foreach::foreach(i=1:nsim, .packages = "lme4", .inorder=FALSE) %fun% {
-                             ifelse(any( grepl("fail", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE |
-                                      any(grepl("singular", my.mod[[i]]@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE)
-                           }
+    for (i in 1:nsim){
+      converged[i] <- ifelse(is.null(my.mod[[i]]@optinfo$conv$lme4$messages), FALSE, TRUE)
+    }
+    
     if (poor.fit.override==FALSE){
-      if(sum(unlist(converged), na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations
-                                                are singular fit: check model specifications")}
+      if(sum(unlist(converged), na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
     }
     
     # stop the loop if power is <0.5
@@ -382,8 +385,7 @@ cps.ma.binary.internal <-  function(nsim = 1000, str.nsubjects = NULL,
   } else {
     complete.output.internal <-  list("estimates" = model.values,
                                       "model.comparisons" = model.compare,
-                                      "converged" =  paste(1-(sum(unlist(converged))/nsim)*100, 
-                                                                    "% did not converge", sep=""))
+                                      "converged" = unlist(converged))
   }
   return(complete.output.internal)
 } #end of function

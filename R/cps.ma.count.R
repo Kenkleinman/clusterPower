@@ -302,6 +302,10 @@ cps.ma.count <- function(nsim = 1000, nsubjects = NULL,
     cps.model.temp <- data.frame(converged, p.val)
     colnames(cps.model.temp)[1] <- "converged"
     cps.model.temp2 <- dplyr::filter(cps.model.temp, converged == TRUE)
+    if (isTRUE(nrow(cps.model.temp2)<(.25*nsim))){
+      warning(paste0(nrow(cps.model.temp2), " models converged. Check model parameters."),
+              immediate. = TRUE)
+    }
     
     # Calculate and store power estimate & confidence intervals
     power.parms <- confint.calc(nsim = nsim, alpha = alpha,

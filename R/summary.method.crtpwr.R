@@ -10,6 +10,7 @@ setMethod("summary",
       cat(paste("\nMethod:", object[['method']], "\n"))
       cat("\nVariance Parameters:\n")
       print(object[['variance.parms']])
+      
       cat("\nClusters:\n")
       print(object[['n.clusters']])
       cat("\nObservations:\n")

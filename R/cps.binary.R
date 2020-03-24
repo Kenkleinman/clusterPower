@@ -438,7 +438,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                                      "model.estimates" = cps.model.est, 
                                      "sim.data" = simulated.datasets, 
                                      "warning.list" = warning.list,
-                                     "convergence" = converge.vector))
+                                     "convergence" = converge.vector), class = "crtpwr")
     } else {
     complete.output = structure(list("overview" = summary.message, "nsim" = nsim, 
                                        "power" = power.parms, "method" = long.method, 
@@ -448,7 +448,7 @@ cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
                                        "model.estimates" = cps.model.est, 
                                        "sim.data" = simulated.datasets, 
                                        "warning.list" = warning.list,
-                                       "convergence" = converge.vector))
+                                       "convergence" = converge.vector), class = "crtpwr")
     }
     return(complete.output)
     }

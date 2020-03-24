@@ -75,7 +75,7 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' normal.sim = cps.normal(nsim = 3, nsubjects = 50, nclusters = 9, difference = 3.75,
+#' normal.sim = cps.normal(nsim = 1000, nsubjects = 50, nclusters = 9, difference = 3.75,
 #'                         ICC = 0.3, sigma_sq = 20,
 #'                         alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
