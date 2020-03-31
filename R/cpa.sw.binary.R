@@ -38,6 +38,9 @@
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
+#' @references Zhou X, Liao X, Kunz LM, Normand ST, Wang M, Spiegelman D. A maximum 
+#' likelihood approach to power calculations for stepped wedge designs of binary 
+#' outcomes. Biostatistics. 2020 Jan 1;21(1):102-121. doi: 10.1093/biostatistics/kxy031
 #' 
 #@export
 # cpa.sw.binary(nclusters (I), ntimes(J), nsubjects(K), d(delta, p0totalchange), ICC(rho0), beta, mu)
