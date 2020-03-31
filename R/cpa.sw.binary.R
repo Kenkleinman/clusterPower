@@ -287,7 +287,7 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
       DD = nclusters / (ntimes - 1)
     
       z0 = 0
-      for(j in 1:(ntimes - 1)) {
+      for (j in 1:(ntimes - 1)) {
         z0[j] = j * nsubjects
         }
       z1 = NI - z0
