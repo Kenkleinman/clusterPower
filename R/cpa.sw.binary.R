@@ -111,7 +111,9 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
         maxcomp[ntimes + 2] = 1
         maxcomp[i] = 1
         }
-      }
+    }
+    rm(comp)
+    
     a = -a
     b = 1 - b
     GQholder <- statmod::gauss.quad(GQ, kind = "legendre", alpha = 0, beta = 0)
@@ -119,15 +121,13 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
     wts <- GQholder[[2]]
     
     # scale the quadrature formula to a nonstandard interval
-    al = 0.0
-    be = 0.0
     shft = (a + b) / 2.0
     slp = (b - a) / 2.0
-    p = slp^(al + be + 1.0)
-    for (k in 1:GQ) {
-      t[k] = shft + slp * t[k]
-      wts[k] = wts[k] * p
-      }
+    st <- slp * t
+    t = shft + st
+    wts = wts * slp
+    rm(slp)
+    rm(st)
 #####################################  
  #   Debugged to here
 #####################################
