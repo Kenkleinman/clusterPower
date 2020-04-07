@@ -48,9 +48,23 @@
 
 cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu, 
                           tol = 1e-5, GQ = 100){
+  ###delete this later
+  nclusters = 12
+  ntimes = 3
+  nsubjects = 90
+  mu = 0.18
+  beta = -0.05
+  ICC = 0.01
+  d = -0.01
+  GQ = 100
+  tol = 1e-5
+  ######
+  
+  
   p0 <- vector(mode = "numeric", length = ntimes)
   gamma <- vector(mode = "numeric", length = ntimes)
-  p0[1] <-  mu + beta
+  p0[1] <- mu
+  p11 <-  mu + beta
   p0stepchange <- d / (ntimes - 1)
   tau2 = ICC / (1 - ICC) * mu * (1 - mu)
   gamma[1] <- 0.0
@@ -59,6 +73,12 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
     gamma[i] <- p0[i] - mu
   }
   
+  # mincomp and maxcomp are ntimes+2 vectors of 0 and 1's, 
+  # representing the weights of gamma(1),...,gamma(ntimes), mu, beta.
+  comp <- rep(0, times = (ntimes + 2))
+  mincomp <- comp
+  maxcomp <- comp
+  
   if (p0totalchange > tol || p0totalchange < -tol) {
     a = 100 
     b = -100
@@ -66,27 +86,27 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
       temp = mu + gamma[i]
       if (temp < a) {
         a = temp
-        mincomp = 0
+        mincomp <- comp
         mincomp[ntimes + 1] = 1
         mincomp[i] = 1
         }
       if (temp > b) {
         b = temp
-        maxcomp = 0
+        maxcomp <- comp
         maxcomp[ntimes + 1] = 1
         maxcomp[i] = 1
         }
       temp = mu + beta + gamma[i]
       if (temp < a) {
         a = temp
-        mincomp = 0
+        mincomp <- comp
         mincomp[ntimes + 1] = 1
         mincomp[ntimes + 2] = 1
         mincomp[i] = 1
         }
       if (temp > b) {
         b = temp
-        maxcomp = 0
+        maxcomp <- comp
         maxcomp[ntimes + 1] = 1
         maxcomp[ntimes + 2] = 1
         maxcomp[i] = 1
@@ -95,8 +115,24 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
     a = -a
     b = 1 - b
     GQholder <- statmod::gauss.quad(GQ, kind = "legendre", alpha = 0, beta = 0)
-    GQX <- GQholder[[1]]
-    GQW <- GQholder[[2]]
+    t <- GQholder[[1]]
+    wts <- GQholder[[2]]
+    
+    # scale the quadrature formula to a nonstandard interval
+    al = 0.0
+    be = 0.0
+    shft = (a + b) / 2.0
+    slp = (b - a) / 2.0
+    p = slp^(al + be + 1.0)
+    for (k in 1:GQ) {
+      t[k] = shft + slp * t[k]
+      wts[k] = wts[k] * p
+      }
+#####################################  
+ #   Debugged to here
+#####################################
+    
+    
   #power = LinearPower_time(mu, beta, gamma, tau2, nclusters, ntimes, nsubjects, a, b, mincomp, maxcomp, GQ, GQX, GQW)
     DD <-  nclusters / (ntimes - 1)   # nclusters is a multiple of (ntimes-1)
   # assign intervention
