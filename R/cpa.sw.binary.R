@@ -79,7 +79,7 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
   mincomp <- comp
   maxcomp <- comp
   
-  if (p0totalchange > tol || p0totalchange < -tol) {
+  #if (p0totalchange > tol || p0totalchange < -tol) {
     a = 100 
     b = -100
     for (i in 1:ntimes) {
@@ -128,20 +128,30 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
     wts = wts * slp
     rm(slp)
     rm(st)
-#####################################  
- #   Debugged to here
-#####################################
-    
-    
+
   #power = LinearPower_time(mu, beta, gamma, tau2, nclusters, ntimes, nsubjects, a, b, mincomp, maxcomp, GQ, GQX, GQW)
     DD <-  nclusters / (ntimes - 1)   # nclusters is a multiple of (ntimes-1)
   # assign intervention
-    interventionX <- matrix(data = 1, nrow = (ntimes - 1), ncol = (ntimes - 1))
+    interventionX <- matrix(data = 0, nrow = (ntimes), ncol = (ntimes - 1))
+    
+    for (i in 1:(ntimes - 1)){
+      for (j in (i + 1):ntimes){
+        interventionX[j,i] <- 1
+      }
+    }
+    
     invVar = 0.0
-    z0 = as.vector(0)
+    z0 = rep(0, times = 3)
     finish = 0  #need this?
-    for (i in 1:(ntimes - 1)) {
-      while (isTRUE(finish < 1)) {
+    
+    
+    n <- 1 #DELETE THIS LATER
+    
+    
+    
+    # for (n in 1:(ntimes - 1)) { ## UNCOMMENT LATER
+     # while (isTRUE(finish < 1)) { #need this?
+      XX <- interventionX[,n]
         z1 = nsubjects - z0
    # call der_likelihood_time(mu,beta,gamma,tau2, z0, z1, X(i,:), ntimes, nsubjects, a, b, &
    #                            mincomp, maxcomp, GQ, GQX, GQW, derlikelihood, prob)
@@ -154,63 +164,81 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
         derlikelihood_tau2 = 0.0
         derlikelihood_gamma = as.vector(0.0)
         prob = 0.0
+        
         for (i in 1:GQ) {
-          x = GQX[i]
-          exx = dexp(-0.5 * x * x / tau2)
+          x = t[i]
+          exx = exp(-0.5 * x * x / tau2)
           ff = 1.0
           ffprob = 1.0
           ff_mu = 0.0
           ff_beta = 0.0
+          ff_gamma = as.vector(0.0)
             for (j in 1:ntimes) {
-              ff1 = mu + beta * XX[j] + gamma[j] + x  #WTF is XX???
+              ff1 = mu + beta * XX[j] + gamma[j] + x 
               ff0 = 1 - ff1
               ff = ff * (ff0^z0[j]) * (ff1^z1[j])
     # since GQX are not at limits, we ignore the cases where ff0=0 or ff1=0
               temp = z1[j] / ff1 - z0[j] / ff0
               ff_mu = ff_mu + temp
-              ff_beta = ff_beta + temp * XX[j]  ##WTF is XX????
+              ff_beta = ff_beta + temp * XX[j] 
               k = j - 1
               if (k > 0) {
-                ff_gamma[k] = temp # where is ff_gamma specified?
+                ff_gamma[k] = temp 
                 }
               ff01 = ff0 * ff1
+
     # compute binomial
               if (z0[j] < z1[j]) {
                 ffprob = ffprob * ff1^(z1[j] - z0[j])
-                for (k in 0:(z0[j] - 1)) {
-                  ffprob = ffprob * (nsubjects - k) / (z0[j] - k) * ff01
+                if (z0[j] != 0) {
+                  for (p in 0:(z0[j] - 1)) {
+                    ffprob = ffprob * (nsubjects - p) / (z0[j] - p) * ff01
+                    }
                   }
                 } else {      
                   ffprob = ffprob * ff0^(z0[j] - z1[j])
-                  for (k in 0:(z1[j] - 1)) {
-                    ffprob = ffprob * (nsubjects - k) / (z1[j] - k) * ff01
+                  for (p in 0:(z1[j] - 1)) {
+                    ffprob = ffprob * (nsubjects - p) / (z1[j] - p) * ff01
                     }
                 }
-              }
+            }
+
       # compute the possible combinations of (z0,z1)
-          prob = prob + GQW[i] * ffprob * exx
-          likelihoodf_denom = likelihoodf_denom + GQW[i] * exx
-          likelihoodf_numer = likelihoodf_numer + GQW[i] * ff * exx
-          likelihoodf_denomb2 = likelihoodf_denomb2 + GQW[i] * x * x * exx
-          derlikelihood_mu = derlikelihood_mu + GQW[i] * ff * ff_mu * exx
-          derlikelihood_beta = derlikelihood_beta + GQW[i] * ff * ff_beta * exx
-          derlikelihood_gamma = derlikelihood_gamma + GQW[i] * ff * ff_gamma * exx
-          derlikelihood_tau2 = derlikelihood_tau2 + GQW[i] * ff * x * x * exx
-          }
+          prob = prob + wts[i] * ffprob * exx
+          likelihoodf_denom = likelihoodf_denom + wts[i] * exx
+          likelihoodf_numer = likelihoodf_numer + wts[i] * ff * exx
+          likelihoodf_denomb2 = likelihoodf_denomb2 + wts[i] * x * x * exx
+          derlikelihood_mu = derlikelihood_mu + wts[i] * ff * ff_mu * exx
+          derlikelihood_beta = derlikelihood_beta + wts[i] * ff * ff_beta * exx
+          derlikelihood_gamma = derlikelihood_gamma + wts[i] * ff * ff_gamma * exx
+          derlikelihood_tau2 = derlikelihood_tau2 + wts[i] * ff * x * x * exx
+
+          #####################################  
+          #   Debugged to here
+          #####################################
+          
+                  
+          } ##THIS MOVES DOWN WITH DEBUG
+        
+        
+        
+        
+        
+        
     # calculate f(a)exp(-0.5*a*a)
-        eaa = dexp(-0.5 * a * a / tau2)
+        eaa = exp(-0.5 * a * a / tau2)
         ff = 1.0
-        for (i in 1:ntimes) {
-          ff1 = mu + beta * XX[j] + gamma[j] + a  #still haven't specified XX
+        for (i in 1:ntimes) {  # not i, but k?
+          ff1 = mu + beta * interventionX[j,n] + gamma[j] + a  #still haven't specified XX
           ff0 = 1 - ff1
           ff = ff * (ff0^z0[j]) * (ff1^z1[j])
           }
         faeaa = ff * eaa
     # calculate f(b)exp(-0.5*b*b)
-        ebb = dexp(-0.5 * b * b / tau2)
+        ebb = exp(-0.5 * b * b / tau2)
         ff = 1.0
         for (i in 1:ntimes) {
-          ff1 = mu + beta * XX[j] + gamma[j] + b
+          ff1 = mu + beta * interventionX[j,n] + gamma[j] + b
           ff0 = 1 - ff1
           ff = ff * (ff0^z0[j]) * (ff1^z1[j])
           }
