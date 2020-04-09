@@ -51,11 +51,11 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
   ###delete this later
   nclusters = 12
   ntimes = 3
-  nsubjects = 90
+  nsubjects = 10
   mu = 0.18
-  beta = -0.05
+  beta = -2
   ICC = 0.01
-  d = -0.01
+  d = -10
   GQ = 100
   tol = 1e-5
   ######
@@ -140,17 +140,13 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
       }
     }
     
-    invVar = 0.0
+    invVar = matrix(0, nrow = (ntimes + 2), ncol = (ntimes + 2))
     z0 = rep(0, times = 3)
     finish = 0  #need this?
+    derlikelihood = as.vector(0.0)
     
-    
-    n <- 1 #DELETE THIS LATER
-    
-    
-    
-    # for (n in 1:(ntimes - 1)) { ## UNCOMMENT LATER
-     # while (isTRUE(finish < 1)) { #need this?
+     for (n in 1:(ntimes - 1)) {
+      while (isTRUE(finish < 1)) { #THIS IS SLOW AF
       XX <- interventionX[,n]
         z1 = nsubjects - z0
    # call der_likelihood_time(mu,beta,gamma,tau2, z0, z1, X(i,:), ntimes, nsubjects, a, b, &
@@ -212,88 +208,88 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
           derlikelihood_beta = derlikelihood_beta + wts[i] * ff * ff_beta * exx
           derlikelihood_gamma = derlikelihood_gamma + wts[i] * ff * ff_gamma * exx
           derlikelihood_tau2 = derlikelihood_tau2 + wts[i] * ff * x * x * exx
+        }
 
-          #####################################  
-          #   Debugged to here
-          #####################################
+          # calculate f(a)exp(-0.5*a*a)
+          eaa = exp(-0.5 * a * a / tau2)
+          ff = 1.0
+          for (p in 1:ntimes) {
+            ff1 = mu + beta * XX[p] + gamma[p] + a
+            ff0 = 1 - ff1
+            ff = ff * (ff0^z0[p]) * (ff1^z1[p])
+          }
+          faeaa = ff * eaa
+          # calculate f(b)exp(-0.5*b*b)
+          ebb = exp(-0.5 * b * b / tau2)
+          ff = 1.0
+          for (p in 1:ntimes) {
+            ff1 = mu + beta * XX[p] + gamma[p] + b
+            ff0 = 1 - ff1
+            ff = ff * (ff0^z0[p]) * (ff1^z1[p])
+          }
+          fbebb = ff * ebb
+         
+          # calculate derlikelihood_mu
+          derlikelihood_mu = derlikelihood_mu + faeaa * mincomp[ntimes + 1] - fbebb * maxcomp[ntimes + 1]
+          derlikelihood_mu = derlikelihood_mu / likelihoodf_numer - (eaa * mincomp[ntimes + 1] - ebb * maxcomp[ntimes + 1]) / likelihoodf_denom
+          # calculate derlikelihood_beta
+          derlikelihood_beta = derlikelihood_beta + faeaa * mincomp[ntimes + 2] - fbebb * maxcomp[ntimes + 2]
+          derlikelihood_beta = derlikelihood_beta / likelihoodf_numer - (eaa * mincomp[ntimes + 2] - ebb * maxcomp[ntimes + 2]) / likelihoodf_denom
           
-                  
-          } ##THIS MOVES DOWN WITH DEBUG
-        
-        
-        
-        
-        
-        
-    # calculate f(a)exp(-0.5*a*a)
-        eaa = exp(-0.5 * a * a / tau2)
-        ff = 1.0
-        for (i in 1:ntimes) {  # not i, but k?
-          ff1 = mu + beta * interventionX[j,n] + gamma[j] + a  #still haven't specified XX
-          ff0 = 1 - ff1
-          ff = ff * (ff0^z0[j]) * (ff1^z1[j])
+          # calculate derlikelihood_gamma
+          for (p in 2:ntimes) {
+            k = p - 1
+            derlikelihood_gamma[k] = derlikelihood_gamma[k] + faeaa * mincomp[p] - fbebb * maxcomp[p]  #is this a vector now?
+            derlikelihood_gamma[k] = derlikelihood_gamma[k] / likelihoodf_numer - (eaa * mincomp[p] - ebb * maxcomp[p]) / likelihoodf_denom #is this a vector now?
           }
-        faeaa = ff * eaa
-    # calculate f(b)exp(-0.5*b*b)
-        ebb = exp(-0.5 * b * b / tau2)
-        ff = 1.0
-        for (i in 1:ntimes) {
-          ff1 = mu + beta * interventionX[j,n] + gamma[j] + b
-          ff0 = 1 - ff1
-          ff = ff * (ff0^z0[j]) * (ff1^z1[j])
-          }
-        fbebb = ff * ebb
-    
-    # calculate derlikelihood_mu
-        derlikelihood_mu = derlikelihood_mu + faeaa * mincomp[ntimes + 1] - fbebb * maxcomp[ntimes + 1]
-        derlikelihood_mu = derlikelihood_mu / likelihoodf_numer - (eaa * mincomp[ntimes + 1] - ebb * maxcomp[ntimes + 1]) / likelihoodf_denom
-    # calculate derlikelihood_beta
-        derlikelihood_beta = derlikelihood_beta + faeaa * mincomp[ntimes + 2] - fbebb * maxcomp[ntimes + 2]
-        derlikelihood_beta = derlikelihood_beta / likelihoodf_numer - (eaa * mincomp[ntimes + 2] - ebb * maxcomp[ntimes + 2]) / likelihoodf_denom
-    # calculate derlikelihood_gamma
-        for (j in 2:ntimes) {
-          k = j - 1
-          derlikelihood_gamma[k] = derlikelihood_gamma[k] + faeaa * mincomp[j] - fbebb * maxcomp[j]  #is this a vector now?
-          derlikelihood_gamma[k] = derlikelihood_gamma[k] / likelihoodf_numer - (eaa * mincomp[j] - ebb * maxcomp[j]) / likelihoodf_denom #is this a vector now?
-          }
-    
-    # calculate derlikelihood_tau2
-        derlikelihood_tau2 = 0.5 * (derlikelihood_tau2 / likelihoodf_numer - likelihoodf_denomb2 / likelihoodf_denom) / tau2 / tau2
-        prob = prob / likelihoodf_denom
-        derlikelihood[1] = derlikelihood_mu
-        derlikelihood[2] = derlikelihood_beta
-        derlikelihood[3:(ntimes + 1)] = derlikelihood_gamma
-        derlikelihood[ntimes + 2] = derlikelihood_tau2
-  
+          
+          # calculate derlikelihood_tau2
+          derlikelihood_tau2 = 0.5 * (derlikelihood_tau2 / likelihoodf_numer - likelihoodf_denomb2 / likelihoodf_denom) / tau2 / tau2
+          prob = prob / likelihoodf_denom
+          derlikelihood[1] = derlikelihood_mu
+          derlikelihood[2] = derlikelihood_beta
+          derlikelihood[3:(ntimes + 1)] = derlikelihood_gamma
+          derlikelihood[ntimes + 2] = derlikelihood_tau2
+          
     #call vectorsquare(derlikelihood, ntimes+2, derlikelihood2)
-        mat <- as.matrix(nrow = length(derlikelihood), ncol = length(derlikelihood))
-        for (i in 1:ntimes - 1) {
-          mat[i,i] = derlikelihood[i] * derlikelihood[i]
-          for (j in (i + 1):(ntimes + 2)) {
-            mat[i,j] = derlikelihood[i] * derlikelihood[j]
-            mat[j,i] = mat[i,j]
-            }
-          }
-        mat[(ntimes + 2),(ntimes + 2)] = derlikelihood[(ntimes + 2)] * derlikelihood[(ntimes + 2)]
-    
+          derlen <- length(derlikelihood)
+          mat2 <- matrix(rep(derlikelihood, times = derlen) , nrow = derlen, ncol = derlen)
+          tmat <- t(mat2)
+          derlikelihood2 <- mat2*tmat
+          rm(mat2)
+          rm(tmat)
+          rm(derlen)
+
     #call linearpower_time
-        derlikelihood2 <- mat
-        invVar = invVar + derlikelihood2 * prob
-   # finish = updatez(z0, ntimes, nsubjects)
-   
+        invVar = invVar + (derlikelihood2 * prob)
+        if (invVar[1,1]=="NaN") {
+          stop("NaN")
+        }
+      
+   # finish = updatez(z0, ntimes, nsubjects)  # need this?
         z0[1] = z0[1] + 1
-        for (j in 1:(ntimes - 1)) {
-          if (z0[j] > nsubjects) {
-            z0[j] = 0
-            z0[j + 1] = z0[j + 1] + 1
+        print(c(z0,z1))
+        for (p in 1:(ntimes - 1)) {
+          if (z0[p] > nsubjects) {
+            z0[p] = 0
+            z0[p + 1] = z0[p + 1] + 1
             } else {
               break
             }
           }
         if (z0[ntimes] > nsubjects) {finish = 1}
-        }
       }
+     }
   
+    
+    ######################################
+    ##### DEBUGGED TO HERE  ##############
+    ######################################
+    
+    
+    
+    
+    
   #call syminverse(invVar,Var,ntimes+2)
     k = 0
     aa <- as.vector(0)
