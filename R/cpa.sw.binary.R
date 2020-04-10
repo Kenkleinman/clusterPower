@@ -51,13 +51,25 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
   ###delete this later
   nclusters = 12
   ntimes = 3
-  nsubjects = 10
+  nsubjects = 4
   mu = 0.18
   beta = -2
   ICC = 0.01
   d = -10
   GQ = 100
   tol = 1e-5
+  
+  
+  cpa.sw.binary <- function(nclusters = 12, 
+                            ntimes = 3, 
+                            nsubjects = 90, 
+                            d = -10, 
+                            ICC = 0.01, 
+                            beta = -2, 
+                            mu = 0.18, 
+                            tol = 1e-5, 
+                            GQ = 100){
+    
   ######
   
   
@@ -262,9 +274,6 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
 
     #call linearpower_time
         invVar = invVar + (derlikelihood2 * prob)
-        if (invVar[1,1]=="NaN") {
-          stop("NaN")
-        }
       
    # finish = updatez(z0, ntimes, nsubjects)  # need this?
         z0[1] = z0[1] + 1
@@ -280,7 +289,8 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
         if (z0[ntimes] > nsubjects) {finish = 1}
       }
      }
-  
+return(as.list(derlikelihood, invVar, derlikelihood2))
+    }
     
     ######################################
     ##### DEBUGGED TO HERE  ##############
