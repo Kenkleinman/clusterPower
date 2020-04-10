@@ -79,22 +79,19 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
   p11 <-  mu + beta
   p0stepchange <- d / (ntimes - 1)
   tau2 = ICC / (1 - ICC) * mu * (1 - mu)
-  gamma[1] <- 0.0
   for (i in 2:ntimes) {
     p0[i] = p0[i - 1] + p0stepchange
-    gamma[i] <- p0[i] - mu
   }
+  gamma <- p0 - mu
   
   # mincomp and maxcomp are ntimes+2 vectors of 0 and 1's, 
   # representing the weights of gamma(1),...,gamma(ntimes), mu, beta.
   comp <- rep(0, times = (ntimes + 2))
-  mincomp <- comp
   maxcomp <- comp
-  
-  #if (p0totalchange > tol || p0totalchange < -tol) {
-    a = 100 
-    b = -100
-    for (i in 1:ntimes) {
+  mincomp <- comp
+  a = 100 
+  b = -100
+  for (i in 1:ntimes) {
       temp = mu + gamma[i]
       if (temp < a) {
         a = temp
@@ -123,8 +120,60 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
         maxcomp[ntimes + 2] = 1
         maxcomp[i] = 1
         }
+  }
+  rm(comp)
+  
+  #####  SANDBOX VERSION #####
+  comp <- rep(0, times = (ntimes + 2))
+  maxcomp <- comp
+  mincomp <- comp
+  a = 100 
+  b = -100
+  
+  minset <- FALSE
+  maxset <- FALSE
+  temp = mu + beta + gamma
+  if (isTRUE(any(temp < a)) || isTRUE(any(temp > b))) {
+    if (temp[i] < a) {
+      a = temp[i]
+      mincomp <- comp
+      mincomp[ntimes + 1] = 1
+      mincomp[ntimes + 2] = 1
+      mincomp[i] = 1
+      minset <- TRUE
     }
-    rm(comp)
+    if (temp[i] > b) {
+      b = temp[i]
+      maxcomp <- comp
+      maxcomp[ntimes + 1] = 1
+      maxcomp[ntimes + 2] = 1
+      maxcomp[i] = 1
+      maxset <- TRUE
+    }
+  }
+  if (minset == FALSE && maxset == FALSE) {
+    temp = mu + gamma
+    if (isTRUE(any(temp < a)) || isTRUE(any(temp > b))) {
+      for (i in 1:ntimes) {
+        if (minset == FALSE && temp[i] < a) {
+          a = temp[i]
+          mincomp <- comp
+          mincomp[ntimes + 1] = 1
+          mincomp[i] = 1
+        }
+        if (maxset == FALSE && temp[i] > b) {
+          b = temp[i]
+          maxcomp <- comp
+          maxcomp[ntimes + 1] = 1
+          maxcomp[i] = 1
+        }
+      }
+    }
+  }
+  rm(comp)
+  
+  ##### END SANDBOX  #############
+
     
     a = -a
     b = 1 - b
@@ -146,18 +195,18 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
   # assign intervention
     interventionX <- matrix(data = 0, nrow = (ntimes), ncol = (ntimes - 1))
     
-    for (i in 1:(ntimes - 1)){
-      for (j in (i + 1):ntimes){
+    for (i in 1:(ntimes - 1)) {
+      for (j in (i + 1):ntimes) {
         interventionX[j,i] <- 1
       }
     }
     
     invVar = matrix(0, nrow = (ntimes + 2), ncol = (ntimes + 2))
-    z0 = rep(0, times = 3)
-    finish = 0  #need this?
     derlikelihood = as.vector(0.0)
     
      for (n in 1:(ntimes - 1)) {
+       z0 = rep(0, times = 3)
+       finish = 0  #need this?
       while (isTRUE(finish < 1)) { #THIS IS SLOW AF
       XX <- interventionX[,n]
         z1 = nsubjects - z0
@@ -289,8 +338,8 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
         if (z0[ntimes] > nsubjects) {finish = 1}
       }
      }
-return(as.list(derlikelihood, invVar, derlikelihood2))
-    }
+return(derlikelihood)
+  }
     
     ######################################
     ##### DEBUGGED TO HERE  ##############
@@ -298,7 +347,7 @@ return(as.list(derlikelihood, invVar, derlikelihood2))
     
     
     
-    
+    invinvVar <- solve(invVar)
     
   #call syminverse(invVar,Var,ntimes+2)
     k = 0
@@ -336,7 +385,9 @@ return(as.list(derlikelihood, invVar, derlikelihood2))
     sebeta = sqrt(Var[2,2] / DD)
     power = alnorm(beta / sebeta - 1.959964, upper) + #is alnorm==dnorm?
       alnorm(-beta / sebeta - 1.959964, upper)
+    
     } else {
+      
       if (beta > 0) {
         a = -mu
         b = 1 - mu - beta
