@@ -61,8 +61,8 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
   
   
   cpa.sw.binary <- function(nclusters = 12, 
-                            ntimes = 3, 
-                            nsubjects = 90, 
+                            ntimes = 2, 
+                            nsubjects = 40, 
                             d = -10, 
                             ICC = 0.01, 
                             beta = -2, 
@@ -122,58 +122,6 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
         }
   }
   rm(comp)
-  
-  #####  SANDBOX VERSION #####
-  comp <- rep(0, times = (ntimes + 2))
-  maxcomp <- comp
-  mincomp <- comp
-  a = 100 
-  b = -100
-  
-  minset <- FALSE
-  maxset <- FALSE
-  temp = mu + beta + gamma
-  if (isTRUE(any(temp < a)) || isTRUE(any(temp > b))) {
-    if (temp[i] < a) {
-      a = temp[i]
-      mincomp <- comp
-      mincomp[ntimes + 1] = 1
-      mincomp[ntimes + 2] = 1
-      mincomp[i] = 1
-      minset <- TRUE
-    }
-    if (temp[i] > b) {
-      b = temp[i]
-      maxcomp <- comp
-      maxcomp[ntimes + 1] = 1
-      maxcomp[ntimes + 2] = 1
-      maxcomp[i] = 1
-      maxset <- TRUE
-    }
-  }
-  if (minset == FALSE && maxset == FALSE) {
-    temp = mu + gamma
-    if (isTRUE(any(temp < a)) || isTRUE(any(temp > b))) {
-      for (i in 1:ntimes) {
-        if (minset == FALSE && temp[i] < a) {
-          a = temp[i]
-          mincomp <- comp
-          mincomp[ntimes + 1] = 1
-          mincomp[i] = 1
-        }
-        if (maxset == FALSE && temp[i] > b) {
-          b = temp[i]
-          maxcomp <- comp
-          maxcomp[ntimes + 1] = 1
-          maxcomp[i] = 1
-        }
-      }
-    }
-  }
-  rm(comp)
-  
-  ##### END SANDBOX  #############
-
     
     a = -a
     b = 1 - b
@@ -205,7 +153,7 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
     derlikelihood = as.vector(0.0)
     
      for (n in 1:(ntimes - 1)) {
-       z0 = rep(0, times = 3)
+       z0 = rep(0, times = ntimes)
        finish = 0  #need this?
       while (isTRUE(finish < 1)) { #THIS IS SLOW AF
       XX <- interventionX[,n]
@@ -225,6 +173,9 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
         for (i in 1:GQ) {
           x = t[i]
           exx = exp(-0.5 * x * x / tau2)
+          if (exx == 0 || wts[i] == 0 || isTRUE(is.infinite(exx))) {
+            next
+          }
           ff = 1.0
           ffprob = 1.0
           ff_mu = 0.0
@@ -259,6 +210,10 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
                     }
                 }
             }
+          
+          if (ffprob == 0) {
+            next
+          }
 
       # compute the possible combinations of (z0,z1)
           prob = prob + wts[i] * ffprob * exx
@@ -270,6 +225,7 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
           derlikelihood_gamma = derlikelihood_gamma + wts[i] * ff * ff_gamma * exx
           derlikelihood_tau2 = derlikelihood_tau2 + wts[i] * ff * x * x * exx
         }
+        
 
           # calculate f(a)exp(-0.5*a*a)
           eaa = exp(-0.5 * a * a / tau2)
@@ -314,17 +270,20 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
           
     #call vectorsquare(derlikelihood, ntimes+2, derlikelihood2)
           derlen <- length(derlikelihood)
-          mat2 <- matrix(rep(derlikelihood, times = derlen) , nrow = derlen, ncol = derlen)
-          tmat <- t(mat2)
-          derlikelihood2 <- mat2*tmat
+          mat2 <- matrix(rep(derlikelihood, times = derlen) , nrow = derlen, 
+            ncol = derlen, byrow = TRUE)
+          derlikelihood2 <- mat2 * derlikelihood
           rm(mat2)
-          rm(tmat)
           rm(derlen)
 
     #call linearpower_time
+          print(prob)
+          if (prob == "NaN") {
+            next
+          }
         invVar = invVar + (derlikelihood2 * prob)
       
-   # finish = updatez(z0, ntimes, nsubjects)  # need this?
+   # finish = updatez(z0, ntimes, nsubjects)
         z0[1] = z0[1] + 1
         print(c(z0,z1))
         for (p in 1:(ntimes - 1)) {
@@ -338,7 +297,7 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
         if (z0[ntimes] > nsubjects) {finish = 1}
       }
      }
-return(derlikelihood)
+return (list(derlikelihood, derlikelihood2, invVar, prob))
   }
     
     ######################################
@@ -386,6 +345,9 @@ return(derlikelihood)
     power = alnorm(beta / sebeta - 1.959964, upper) + #is alnorm==dnorm?
       alnorm(-beta / sebeta - 1.959964, upper)
     
+    
+    
+    ##########################################################
     } else {
       
       if (beta > 0) {
