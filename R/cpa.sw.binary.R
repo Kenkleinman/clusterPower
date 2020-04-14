@@ -173,9 +173,11 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
         for (i in 1:GQ) {
           x = t[i]
           exx = exp(-0.5 * x * x / tau2)
-          if (exx == 0 || wts[i] == 0 || isTRUE(is.infinite(exx))) {
+          
+          if (exx == 0) {
             next
           }
+          
           ff = 1.0
           ffprob = 1.0
           ff_mu = 0.0
@@ -198,22 +200,20 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
     # compute binomial
               if (z0[j] < z1[j]) {
                 ffprob = ffprob * ff1^(z1[j] - z0[j])
-                if (z0[j] != 0) {
+                if (z0[j] != 0){
                   for (p in 0:(z0[j] - 1)) {
                     ffprob = ffprob * (nsubjects - p) / (z0[j] - p) * ff01
-                    }
                   }
+                }
                 } else {      
                   ffprob = ffprob * ff0^(z0[j] - z1[j])
+                  if (z1[j] != 0){
                   for (p in 0:(z1[j] - 1)) {
                     ffprob = ffprob * (nsubjects - p) / (z1[j] - p) * ff01
-                    }
+                  }
+                  }
                 }
             }
-          
-          if (ffprob == 0) {
-            next
-          }
 
       # compute the possible combinations of (z0,z1)
           prob = prob + wts[i] * ffprob * exx
@@ -277,10 +277,6 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
           rm(derlen)
 
     #call linearpower_time
-          print(prob)
-          if (prob == "NaN") {
-            next
-          }
         invVar = invVar + (derlikelihood2 * prob)
       
    # finish = updatez(z0, ntimes, nsubjects)
@@ -297,6 +293,7 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
         if (z0[ntimes] > nsubjects) {finish = 1}
       }
      }
+    browser()
 return (list(derlikelihood, derlikelihood2, invVar, prob))
   }
     
