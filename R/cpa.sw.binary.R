@@ -33,6 +33,7 @@
 #' 
 #' @examples 
 #' \dontrun{
+#' holder <- cpa.sw.binary()
 #' }
 #'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
