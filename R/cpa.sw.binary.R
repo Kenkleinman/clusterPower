@@ -59,10 +59,6 @@ cpa.sw.binary <- function(nclusters = 12,
     
   ###### Define some FORTRAN-calling functions  ########
   
-  alnorm <- function(x, upper){
-    .Fortran("alnorm", x = as.numeric(x), upper = as.logical(upper)) ## return?
-  }
-  
   syminverse <- function(invVar, 
                          Var, 
                          derlen){
@@ -242,9 +238,7 @@ cpa.sw.binary <- function(nclusters = 12,
     Var <- syminverse(a = invVar, c = Var, n = derlen)
     
     sebeta = sqrt(Var[2,2] / DD)
-    power = alnorm(x = (beta / sebeta - 1.959964), upper = FALSE) + 
-      alnorm(x = (-beta / sebeta - 1.959964), upper = FALSE)
-    return(power)
+    return(list(beta, sebeta))
   }
     
     ######################################
