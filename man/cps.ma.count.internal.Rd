@@ -19,7 +19,7 @@ cps.ma.count.internal(
   low.power.override = FALSE,
   tdist = FALSE,
   cores = cores,
-  opt = "optim"
+  opt = opt
 )
 }
 \arguments{
@@ -65,7 +65,8 @@ simulation values, default = FALSE.}
 
 \item{cores}{A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
 When this option is set to NA, no parallel computing is used.
- @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.}
+ @param opt Option to fit with a different optimizer algorithm. Setting this to "auto" tests an example fit using 
+ the \code(nloptr) package and selects the first algorithm that converges.}
 }
 \value{
 A list with the following components:
@@ -103,15 +104,20 @@ specified.
 \dontrun{
 
 nsubjects.example <- list(c(200,200,200,250), c(150, 200, 200, 210), c(170, 200, 210))
-counts.example <- c(300, 550, 900)
-sigma_b_sq.example <- c(1, 1, 2)
+counts.example <- c(100, 550, 900)
+sigma_b_sq.example <- c(.2, .1, .1)
+
+nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+counts.example <- c(75, 120, 100)
+sigma_b_sq.example <- c(0.2, 0.1, 0.1)
 
 count.ma.rct <- cps.ma.count.internal (nsim = 10, 
                             str.nsubjects = nsubjects.example, 
                             counts = counts.example,
                             sigma_b_sq = sigma_b_sq.example, 
                             alpha = 0.05, all.sim.data = FALSE, 
-                            seed = 123, cores="all") 
+                            seed = 123, cores="all", poor.fit.override=TRUE, 
+                            opt = "NLOPT_LN_BOBYQA") 
 }
 
 }

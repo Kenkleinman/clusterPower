@@ -106,7 +106,7 @@ When \eqn{\rho_S = 0} the design is considered to be a cross-sectional design, w
 
 \section{Authors}{
 
-Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com})
+Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com}), Alexandria C. Sakrejda
 }
 
 \examples{
@@ -121,6 +121,8 @@ cpa.sw.normal(nsubjects = 50, ntimes = 5, d = 1.5, icc = 0.2, rho_c = 0.80, rho_
 
 }
 \references{
+Baio G, Copas A, Ambler G, et al., 2015. Sample size calculation for a stepped wedge trial. Trials. 16:354.
+
 Hooper, R., Teerenstra, S., Hoop, E., and Eldridge, S. (2016)
   Sample size calculation for stepped wedge and other longitudinal cluster
   randomised trials. Statist. Med., 35: 4718-4728. doi: 10.1002/sim.7028.

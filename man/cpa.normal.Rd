@@ -81,7 +81,7 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 # Find the number of clusters per condition needed for a trial with alpha = .05, 
 # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
 # of 1 unit,  ICC = 0.1 and   a variance of five units.
-cpa.normal(nsubjects=10 ,d=1, ICC=.1, vart=5)
+example <- cpa.normal(nsubjects=10 ,d=1, ICC=.1, vart=5)
 # 
 # The result, showimg nclusters of greater than 15, suggests 16 clusters per 
 # condition should be used.

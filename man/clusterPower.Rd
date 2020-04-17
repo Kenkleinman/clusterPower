@@ -4,6 +4,3 @@
 \name{clusterPower}
 \alias{clusterPower}
 \title{clusterPower: doing various power analysis calculations for cluster randomized trials.}
-\description{
-clusterPower: doing various power analysis calculations for cluster randomized trials.
-}

@@ -23,7 +23,7 @@ cps.ma.count(
   tdist = FALSE,
   poor.fit.override = FALSE,
   low.power.override = FALSE,
-  opt = "optim"
+  opt = "NLOPT_LN_BOBYQA"
 )
 }
 \arguments{
@@ -155,16 +155,16 @@ intervals.
 }
 \examples{
 \dontrun{
-nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+nsubjects.example <- list(c(200, 200, 200, 250), c(150, 200, 200, 210), c(170, 200, 210))
 counts.example <- c(30, 55, 98)
-sigma_b_sq.example <- c(1, 1, 2)
+sigma_b_sq.example <- c(0.1, 0.1, 0.2)
 
-count.ma.rct.unbal <- cps.ma.count(nsim = 100, 
+count.ma.rct.unbal <- cps.ma.count(nsim = 10, 
                             nsubjects = nsubjects.example, 
                             counts = counts.example,
                             sigma_b_sq = sigma_b_sq.example, 
                             alpha = 0.05, all.sim.data = FALSE, 
-                            seed = 123, cores="all") 
+                            seed = 123, cores="all", poor.fit.override=TRUE) 
                             
 count.ma.rct.bal <- cps.ma.count(nsim = 50, nsubjects = 20, narms=3,
                             nclusters=10,

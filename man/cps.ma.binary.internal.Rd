@@ -18,7 +18,8 @@ cps.ma.binary.internal(
   low.power.override = FALSE,
   tdist = FALSE,
   cores = cores,
-  opt = "optim"
+  opt = "optimx",
+  optmethod = "L-BFGS-B"
 )
 }
 \arguments{
@@ -61,6 +62,8 @@ simulation values, default = FALSE.}
 When this option is set to NA, no parallel computing is used.}
 
 \item{opt}{Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.}
+
+\item{optmethod}{User-specified optimizer methods available for the optimizer specified in \code{opt} option.}
 }
 \value{
 A list with the following components:
@@ -97,15 +100,17 @@ and simulated data set output may also be specified.
 \dontrun{
 
 nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-probs.example <- c(0.30, 0.5, 0.9)
-sigma_b_sq.example <- c(1, 1, 2)
+probs.example <- c(0.1, 0.5, 0.9)
+sigma_b_sq.example <- c(0.1, 0.1, 0.2)
 
 bin.ma.rct <- cps.ma.binary.internal (nsim = 10, 
                             str.nsubjects = nsubjects.example, 
                             probs = probs.example,
                             sigma_b_sq = sigma_b_sq.example, 
-                            alpha = 0.05, all.sim.data = FALSE, 
-                            seed = 123, cores="all") 
+                            alpha = 0.05, all.sim.data = FALSE,
+                            poor.fit.override = TRUE, 
+                            seed = 123, cores="all",
+                            optmethod = "bobyqa") 
 }
 
 }

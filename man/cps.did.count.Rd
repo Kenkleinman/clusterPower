@@ -109,8 +109,8 @@ while the function is running.
 }
 \examples{
 \dontrun{
-did.count.sim = cps.did.count(nsim = 100, nsubjects = 50, nclusters = 6, c1 = 100, 
-                              c2 = 25, sigma_b_sq0 = c(10, 15), sigma_b_sq1 = c(12, 18), 
+did.count.sim = cps.did.count(nsim = 100, nsubjects = 9, nclusters = 7, c1 = 5, 
+                              c2 = 3, sigma_b_sq0 = c(1, 0.5), sigma_b_sq1 = c(0.5, 0.8), 
                               family = 'poisson', analysis = 'poisson', method = 'glmm', 
                               alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
 }

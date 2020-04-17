@@ -22,7 +22,8 @@ cps.ma.binary(
   tdist = FALSE,
   poor.fit.override = FALSE,
   low.power.override = FALSE,
-  opt = "optim"
+  opt = "optimx",
+  optmethod = "L-BFGS-B"
 )
 }
 \arguments{
@@ -82,6 +83,8 @@ stop message. Default = FALSE. When TRUE, this check is ignored and the
 calculated power is returned regardless of value.}
 
 \item{opt}{Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.}
+
+\item{optmethod}{User-specified optimizer methods available for the optimizer specified in \code{opt} option.}
 }
 \value{
 A list with the following components:
@@ -152,26 +155,30 @@ intervals.
 }
 \examples{
 \dontrun{
-nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-probs.example <- c(0.30, 0.5, 0.9)
-sigma_b_sq.example <- c(1, 1, 2)
+nsubjects.example <- list(rep(200, times=15), rep(150, times=15), 
+rep(170, times=15))
+probs.example <- c(0.5, 0.8, 0.9)
+sigma_b_sq.example <- c(1, 1, 1)
 
-bin.ma.rct.unbal <- cps.ma.binary(nsim = 100, 
-                            nsubjects = nsubjects.example, 
-                            probs = probs.example,
-                            sigma_b_sq = sigma_b_sq.example, 
-                            alpha = 0.05, all.sim.data = FALSE, 
-                            seed = 123, cores="all") 
+bin.ma.rct.unbal <- cps.ma.binary(nsim = 10, 
+                            nsubjects = 20, 
+                            narms = 2,
+                            nclusters = 10,
+                            probs = c(0.5, 0.8),
+                            sigma_b_sq = c(1, 1.2), 
+                            alpha = 0.05, all.sim.data = TRUE, 
+                            seed = 123, cores="all", 
+                            poor.fit.override = TRUE) 
                             
-bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 20, narms=3,
-                            nclusters=10,
+bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 200, narms=3,
+                            nclusters=50,
                             probs = c(0.30, 0.5, 0.7),
-                            sigma_b_sq = 1, alpha = 0.05,
+                            sigma_b_sq = 0.1, alpha = 0.05,
                             quiet = FALSE, method = 'glmm', 
                             all.sim.data = FALSE, 
                             multi.p.method="none",
-                            poor.fit.override = TRUE,
-                            seed = 123, cores="all")                             
+                            seed = 123, cores="all",
+                            optmethod="bobyqa")                             
 }
 }
 \author{
