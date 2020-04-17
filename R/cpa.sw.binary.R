@@ -238,7 +238,7 @@ cpa.sw.binary <- function(nclusters = 12,
     Var <- syminverse(a = invVar, c = Var, n = derlen)
     
     sebeta = sqrt(Var[2,2] / DD)
-    return(list(beta, sebeta))
+    return(sebeta)
   }
     
     ######################################
