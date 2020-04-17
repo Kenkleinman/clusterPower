@@ -797,8 +797,8 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
         z = - z
       end if
 
-      if ( z .gt. ltone .and. 
-     &  ( ( .not. up ) .or. utzero .lt. z ) ) then
+      if ( z .gt. ltone .and. &
+       ( ( .not. up ) .or. utzero .lt. z ) ) then
 
         if ( up ) then
           alnorm = 0.0D+00
@@ -814,20 +814,20 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
 
       if ( z .le. con ) then
 
-        alnorm = 0.5D+00 - z * ( p - q * y
-     &    / ( y + a1 + b1 
-     &    / ( y + a2 + b2 
-     &    / ( y + a3 ))))
+        alnorm = 0.5D+00 - z * ( p - q * y  &
+         / ( y + a1 + b1 
+         / ( y + a2 + b2 
+         / ( y + a3 ))))
 
       else
 
-        alnorm = r * dexp ( - y )
-     &    / ( z + c1 + d1
-     &    / ( z + c2 + d2
-     &    / ( z + c3 + d3
-     &    / ( z + c4 + d4
-     &    / ( z + c5 + d5
-     &    / ( z + c6 ))))))
+        alnorm = r * dexp ( - y ) &
+          / ( z + c1 + d1 &
+          / ( z + c2 + d2 &
+          / ( z + c3 + d3 &
+          / ( z + c4 + d4 &
+          / ( z + c5 + d5 &
+          / ( z + c6 ))))))
 
       end if
 
