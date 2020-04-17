@@ -244,7 +244,7 @@ cpa.sw.binary <- function(nclusters = 12,
     sebeta = sqrt(Var[2,2] / DD)
     power = alnorm(x = (beta / sebeta - 1.959964), upper = FALSE) + 
       alnorm(x = (-beta / sebeta - 1.959964), upper = FALSE)
-    
+    return(power)
   }
     
     ######################################

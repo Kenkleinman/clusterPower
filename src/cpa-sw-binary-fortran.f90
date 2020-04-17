@@ -702,40 +702,40 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
 
      function alnorm ( x, upper )
 
-c*********************************************************************72
-c
-cc ALNORM computes the cumulative density of the standard normal distribution.
-c
-c  Modified:
-c
-c    28 March 1999
-c
-c  Author:
-c
-c    David Hill
-c    Modifications by John Burkardt
-c
-c  Reference:
-c
-c    David Hill,
-c    Algorithm AS 66:
-c    The Normal Integral,
-c    Applied Statistics,
-c    Volume 22, Number 3, 1973, pages 424-427.
-c
-c  Parameters:
-c
-c    Input, double precision X, is one endpoint of the semi-infinite interval
-c    over which the integration takes place.
-c
-c    Input, logical UPPER, determines whether the upper or lower
-c    interval is to be integrated:
-c    .TRUE.  => integrate from X to + Infinity;
-c    .FALSE. => integrate from - Infinity to X.
-c
-c    Output, double precision ALNORM, the integral of the standard normal
-c    distribution over the desired interval.
-c
+!*********************************************************************72
+!c
+!cc ALNORM computes the cumulative density of the standard normal distribution.
+!c
+!c  Modified:
+!c
+!c    28 March 1999
+!c
+!c  Author:
+!c
+!c    David Hill
+!c    Modifications by John Burkardt
+!c
+!c  Reference:
+!c
+!c    David Hill,
+!c    Algorithm AS 66:
+!c    The Normal Integral,
+!c    Applied Statistics,
+!c    Volume 22, Number 3, 1973, pages 424-427.
+!c
+!c  Parameters:
+!c
+!c    Input, double precision X, is one endpoint of the semi-infinite interval
+!c    over which the integration takes place.
+!c
+!c    Input, logical UPPER, determines whether the upper or lower
+!c    interval is to be integrated:
+!c    .TRUE.  => integrate from X to + Infinity;
+!c    .FALSE. => integrate from - Infinity to X.
+!c
+!c    Output, double precision ALNORM, the integral of the standard normal
+!c    distribution over the desired interval.
+!c
       implicit none
 
       double precision a1
