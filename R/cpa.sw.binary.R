@@ -48,7 +48,7 @@
 
 
 cpa.sw.binary <- function(nclusters = 12, 
-                            ntimes = 2, 
+                            ntimes = 3, 
                             nsubjects = 40, 
                             d = -10, 
                             ICC = 0.01, 
@@ -58,6 +58,24 @@ cpa.sw.binary <- function(nclusters = 12,
                             GQ = 100){
     
   ###### Define some FORTRAN-calling functions  ########
+  
+  alnorm <- function(x, upper){
+    .Fortran("alnorm", x = as.numeric(x), upper = as.logical(upper)) ## return?
+  }
+  
+  syminverse <- function(invVar, 
+                         Var, 
+                         derlen){
+    .Fortran("syminverse", a = invVar, c = Var, n = derlen)
+    return(Var)
+  }
+  
+  vectorsquare <- function(derlikelihood, 
+                           n, 
+                           derlikelihood2){
+    .Fortran("vectorsquare", a = derlikelihood, n = n, c = derlikelihood2)
+    return(derlikelihood2)
+  }
   
   der_likelihood_time <- function(mu = as.numeric(mu), 
                                   beta = as.numeric(beta), 
@@ -193,21 +211,12 @@ cpa.sw.binary <- function(nclusters = 12,
                                              derlikelihood = as.numeric(derlikelihood), 
                                              prob = as.numeric(prob))
         
+        derlikelihood2 <-  0.0
+        derlen <- ntimes + 2
         
-    #call vectorsquare(derlikelihood, ntimes+2, derlikelihood2)
-          derlen <- length(derlikelihood)
-          mat2 <- matrix(rep(derlikelihood, times = derlen) , nrow = derlen, 
-            ncol = derlen, byrow = TRUE)
-          derlikelihood2 <- mat2 * derlikelihood
-          rm(mat2)
-          rm(derlen)
-
-    #call linearpower_time
-          
-          holder <- list()
-          for (h in 1:(40^2)){
-          holder[[h]] <- append(holder, invVar)
-          }
+    derlikelihood2 <- vectorsquare(derlikelihood = as.numeric(derlikelihood), 
+                                   n = as.integer(derlen), 
+                                   derlikelihood2 = as.numeric(derlikelihood2))
           
         invVar = invVar + derlikelihood2 * prob
         
@@ -227,8 +236,15 @@ cpa.sw.binary <- function(nclusters = 12,
         if (z0[ntimes] > nsubjects) {finish = 1}
       }
      }
-    browser()
-return(list(derlikelihood, derlikelihood2, invVar, prob))
+    
+    Var <- 0.0
+    
+    Var <- syminverse(a = invVar, c = Var, n = derlen)
+    
+    sebeta = sqrt(Var[2,2] / DD)
+    power = alnorm(x = (beta / sebeta - 1.959964), upper = FALSE) + 
+      alnorm(x = (-beta / sebeta - 1.959964), upper = FALSE)
+    
   }
     
     ######################################
