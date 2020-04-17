@@ -50,8 +50,8 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
                           tol = 1e-5, GQ = 100){
   ###delete this later
   nclusters = 12
-  ntimes = 3
-  nsubjects = 4
+  ntimes = 2
+  nsubjects = 40
   mu = 0.18
   beta = -2
   ICC = 0.01
@@ -60,7 +60,7 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
   tol = 1e-5
   
   
-  cpa.sw.binary <- function(nclusters = 12, 
+cpa.sw.binary <- function(nclusters = 12, 
                             ntimes = 2, 
                             nsubjects = 40, 
                             d = -10, 
@@ -70,8 +70,32 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
                             tol = 1e-5, 
                             GQ = 100){
     
-  ######
+  ###### Define some FORTRAN-calling functions  ########
   
+  der_likelihood_time <- function(mu = as.numeric(mu), 
+                                  beta = as.numeric(beta), 
+                                  gamma = as.numeric(gamma), 
+                                  tau2 = as.numeric(tau2), 
+                                  z0 = as.integer(z0),
+                                  z1 = as.integer(z1), 
+                                  XX = as.integer(XX), 
+                                  ntimes = as.integer(ntimes), 
+                                  nsubjects = as.integer(nsubjects), 
+                                  a = as.numeric(a), 
+                                  b = as.numeric(b), 
+                                  mincomp = as.integer(mincomp), 
+                                  maxcomp = as.integer(maxcomp), 
+                                  GQ = as.numeric(GQ), 
+                                  t = as.numeric(t), 
+                                  wts = as.numeric(wts), 
+                                  derlikelihood = as.numeric(derlikelihood), 
+                                  prob = as.numeric(prob)){
+    .Fortran("der_likelihood_time", mu = mu, beta = beta, gamma = gamma, tau2 = tau2, z0 = z0,
+        z1 = z1, XX = XX, JJ = ntimes, KK = nsubjects, a = a, b = b, 
+        mincomp = mincomp, maxcomp = maxcomp, GQ = GQ, GQX = t, GQW = wts, 
+        derlikelihood = derlikelihood, prob = prob)
+  return(derlikelihood)
+    }
   
   p0 <- vector(mode = "numeric", length = ntimes)
   gamma <- vector(mode = "numeric", length = ntimes)
@@ -155,119 +179,16 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
      for (n in 1:(ntimes - 1)) {
        z0 = rep(0, times = ntimes)
        finish = 0  #need this?
-      while (isTRUE(finish < 1)) { #THIS IS SLOW AF
+      while (isTRUE(finish < 1)) { #THIS IS SLOW
       XX <- interventionX[,n]
         z1 = nsubjects - z0
    # call der_likelihood_time(mu,beta,gamma,tau2, z0, z1, X(i,:), ntimes, nsubjects, a, b, &
    #                            mincomp, maxcomp, GQ, GQX, GQW, derlikelihood, prob)
     
-        likelihoodf_denom = 0.0
-        likelihoodf_numer = 0.0
-        likelihoodf_denomb2 = 0.0
-        derlikelihood_mu = 0.0
-        derlikelihood_beta = 0.0
-        derlikelihood_tau2 = 0.0
-        derlikelihood_gamma = as.vector(0.0)
-        prob = 0.0
+
+        derlikelihood <- der_likelihood_time()
         
-        for (i in 1:GQ) {
-          x = t[i]
-          exx = exp(-0.5 * x * x / tau2)
-          
-          if (exx == 0) {
-            next
-          }
-          
-          ff = 1.0
-          ffprob = 1.0
-          ff_mu = 0.0
-          ff_beta = 0.0
-          ff_gamma = as.vector(0.0)
-            for (j in 1:ntimes) {
-              ff1 = mu + beta * XX[j] + gamma[j] + x 
-              ff0 = 1 - ff1
-              ff = ff * (ff0^z0[j]) * (ff1^z1[j])
-    # since GQX are not at limits, we ignore the cases where ff0=0 or ff1=0
-              temp = z1[j] / ff1 - z0[j] / ff0
-              ff_mu = ff_mu + temp
-              ff_beta = ff_beta + temp * XX[j] 
-              k = j - 1
-              if (k > 0) {
-                ff_gamma[k] = temp 
-                }
-              ff01 = ff0 * ff1
-
-    # compute binomial
-              if (z0[j] < z1[j]) {
-                ffprob = ffprob * ff1^(z1[j] - z0[j])
-                if (z0[j] != 0){
-                  for (p in 0:(z0[j] - 1)) {
-                    ffprob = ffprob * (nsubjects - p) / (z0[j] - p) * ff01
-                  }
-                }
-                } else {      
-                  ffprob = ffprob * ff0^(z0[j] - z1[j])
-                  if (z1[j] != 0){
-                  for (p in 0:(z1[j] - 1)) {
-                    ffprob = ffprob * (nsubjects - p) / (z1[j] - p) * ff01
-                  }
-                  }
-                }
-            }
-
-      # compute the possible combinations of (z0,z1)
-          prob = prob + wts[i] * ffprob * exx
-          likelihoodf_denom = likelihoodf_denom + wts[i] * exx
-          likelihoodf_numer = likelihoodf_numer + wts[i] * ff * exx
-          likelihoodf_denomb2 = likelihoodf_denomb2 + wts[i] * x * x * exx
-          derlikelihood_mu = derlikelihood_mu + wts[i] * ff * ff_mu * exx
-          derlikelihood_beta = derlikelihood_beta + wts[i] * ff * ff_beta * exx
-          derlikelihood_gamma = derlikelihood_gamma + wts[i] * ff * ff_gamma * exx
-          derlikelihood_tau2 = derlikelihood_tau2 + wts[i] * ff * x * x * exx
-        }
         
-
-          # calculate f(a)exp(-0.5*a*a)
-          eaa = exp(-0.5 * a * a / tau2)
-          ff = 1.0
-          for (p in 1:ntimes) {
-            ff1 = mu + beta * XX[p] + gamma[p] + a
-            ff0 = 1 - ff1
-            ff = ff * (ff0^z0[p]) * (ff1^z1[p])
-          }
-          faeaa = ff * eaa
-          # calculate f(b)exp(-0.5*b*b)
-          ebb = exp(-0.5 * b * b / tau2)
-          ff = 1.0
-          for (p in 1:ntimes) {
-            ff1 = mu + beta * XX[p] + gamma[p] + b
-            ff0 = 1 - ff1
-            ff = ff * (ff0^z0[p]) * (ff1^z1[p])
-          }
-          fbebb = ff * ebb
-         
-          # calculate derlikelihood_mu
-          derlikelihood_mu = derlikelihood_mu + faeaa * mincomp[ntimes + 1] - fbebb * maxcomp[ntimes + 1]
-          derlikelihood_mu = derlikelihood_mu / likelihoodf_numer - (eaa * mincomp[ntimes + 1] - ebb * maxcomp[ntimes + 1]) / likelihoodf_denom
-          # calculate derlikelihood_beta
-          derlikelihood_beta = derlikelihood_beta + faeaa * mincomp[ntimes + 2] - fbebb * maxcomp[ntimes + 2]
-          derlikelihood_beta = derlikelihood_beta / likelihoodf_numer - (eaa * mincomp[ntimes + 2] - ebb * maxcomp[ntimes + 2]) / likelihoodf_denom
-          
-          # calculate derlikelihood_gamma
-          for (p in 2:ntimes) {
-            k = p - 1
-            derlikelihood_gamma[k] = derlikelihood_gamma[k] + faeaa * mincomp[p] - fbebb * maxcomp[p]  #is this a vector now?
-            derlikelihood_gamma[k] = derlikelihood_gamma[k] / likelihoodf_numer - (eaa * mincomp[p] - ebb * maxcomp[p]) / likelihoodf_denom #is this a vector now?
-          }
-          
-          # calculate derlikelihood_tau2
-          derlikelihood_tau2 = 0.5 * (derlikelihood_tau2 / likelihoodf_numer - likelihoodf_denomb2 / likelihoodf_denom) / tau2 / tau2
-          prob = prob / likelihoodf_denom
-          derlikelihood[1] = derlikelihood_mu
-          derlikelihood[2] = derlikelihood_beta
-          derlikelihood[3:(ntimes + 1)] = derlikelihood_gamma
-          derlikelihood[ntimes + 2] = derlikelihood_tau2
-          
     #call vectorsquare(derlikelihood, ntimes+2, derlikelihood2)
           derlen <- length(derlikelihood)
           mat2 <- matrix(rep(derlikelihood, times = derlen) , nrow = derlen, 
@@ -277,11 +198,17 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
           rm(derlen)
 
     #call linearpower_time
-        invVar = invVar + (derlikelihood2 * prob)
-      
+          
+          holder <- list()
+          for (h in 1:(40^2)){
+          holder[[h]] <- append(holder, invVar)
+          }
+          
+        invVar = invVar + derlikelihood2 * prob
+        
    # finish = updatez(z0, ntimes, nsubjects)
+        finish = 0
         z0[1] = z0[1] + 1
-        print(c(z0,z1))
         for (p in 1:(ntimes - 1)) {
           if (z0[p] > nsubjects) {
             z0[p] = 0
@@ -289,12 +216,14 @@ cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu,
             } else {
               break
             }
-          }
+        }
+        print(c(z0,z1))
+        
         if (z0[ntimes] > nsubjects) {finish = 1}
       }
      }
     browser()
-return (list(derlikelihood, derlikelihood2, invVar, prob))
+return(list(derlikelihood, derlikelihood2, invVar, prob))
   }
     
     ######################################
@@ -308,10 +237,11 @@ return (list(derlikelihood, derlikelihood2, invVar, prob))
   #call syminverse(invVar,Var,ntimes+2)
     k = 0
     aa <- as.vector(0)
+    
     for (i in 1:(ntimes + 2)) {
       for (j in 1:i) {
         k = k + 1
-        aa[k] = invVar[i,j]  #wait, this is a matrix?
+        aa[k] = invVar[i,j]
         }
       }
   
@@ -325,7 +255,7 @@ return (list(derlikelihood, derlikelihood2, invVar, prob))
     nn = (n * (n + 1)) / 2
   #call cholesky ( a, n, nn, c, nullty, ifault )
    # cholesky ( a, n, nn, u, nullty, ifault )
-    cholmat <- chol(a) #this doesn't make sense, originally c
+    cholmat <- chol(inVar) #this doesn't make sense, originally c
   #back to synverse
     k = 0
     for (i in 1:n) {
