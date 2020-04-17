@@ -42,24 +42,11 @@
 #' likelihood approach to power calculations for stepped wedge designs of binary 
 #' outcomes. Biostatistics. 2020 Jan 1;21(1):102-121. doi: 10.1093/biostatistics/kxy031
 #' 
-#@export
+#' @export
 # cpa.sw.binary(nclusters (I), ntimes(J), nsubjects(K), d(delta, p0totalchange), ICC(rho0), beta, mu)
 
 
-cpa.sw.binary <- function(nclusters, ntimes, nsubjects, d, ICC, beta, mu, 
-                          tol = 1e-5, GQ = 100){
-  ###delete this later
-  nclusters = 12
-  ntimes = 2
-  nsubjects = 40
-  mu = 0.18
-  beta = -2
-  ICC = 0.01
-  d = -10
-  GQ = 100
-  tol = 1e-5
-  
-  
+
 cpa.sw.binary <- function(nclusters = 12, 
                             ntimes = 2, 
                             nsubjects = 40, 
@@ -184,9 +171,27 @@ cpa.sw.binary <- function(nclusters = 12,
         z1 = nsubjects - z0
    # call der_likelihood_time(mu,beta,gamma,tau2, z0, z1, X(i,:), ntimes, nsubjects, a, b, &
    #                            mincomp, maxcomp, GQ, GQX, GQW, derlikelihood, prob)
-    
+    prob <- 0.0
+    derlikelihood <- 0.0
 
-        derlikelihood <- der_likelihood_time()
+        derlikelihood <- der_likelihood_time(mu = as.numeric(mu), 
+                                             beta = as.numeric(beta), 
+                                             gamma = as.numeric(gamma), 
+                                             tau2 = as.numeric(tau2), 
+                                             z0 = as.integer(z0),
+                                             z1 = as.integer(z1), 
+                                             XX = as.integer(XX), 
+                                             ntimes = as.integer(ntimes), 
+                                             nsubjects = as.integer(nsubjects), 
+                                             a = as.numeric(a), 
+                                             b = as.numeric(b), 
+                                             mincomp = as.integer(mincomp), 
+                                             maxcomp = as.integer(maxcomp), 
+                                             GQ = as.numeric(GQ), 
+                                             t = as.numeric(t), 
+                                             wts = as.numeric(wts), 
+                                             derlikelihood = as.numeric(derlikelihood), 
+                                             prob = as.numeric(prob))
         
         
     #call vectorsquare(derlikelihood, ntimes+2, derlikelihood2)
@@ -229,193 +234,4 @@ return(list(derlikelihood, derlikelihood2, invVar, prob))
     ######################################
     ##### DEBUGGED TO HERE  ##############
     ######################################
-    
-    
-    
-    invinvVar <- solve(invVar)
-    
-  #call syminverse(invVar,Var,ntimes+2)
-    k = 0
-    aa <- as.vector(0)
-    
-    for (i in 1:(ntimes + 2)) {
-      for (j in 1:i) {
-        k = k + 1
-        aa[k] = invVar[i,j]
-        }
-      }
-  
-  #call syminv(aa, n, cc, nullty, ifault)
-  #syminv ( a, n, c, nullty, ifault )
-    n = ntimes
-   #
-  #  Compute the Cholesky factorization of A.
-  #  The result is stored in C.
-   #
-    nn = (n * (n + 1)) / 2
-  #call cholesky ( a, n, nn, c, nullty, ifault )
-   # cholesky ( a, n, nn, u, nullty, ifault )
-    cholmat <- chol(inVar) #this doesn't make sense, originally c
-  #back to synverse
-    k = 0
-    for (i in 1:n) {
-      for (j in 1:i - 1) {
-        k = k + 1
-        c[i,j] = cc[k]
-        c[j,i] = cc[k]
-        }
-      k = k + 1
-      c[i,i] = cc[k]
-      }
-  #end synverse
-    sebeta = sqrt(Var[2,2] / DD)
-    power = alnorm(beta / sebeta - 1.959964, upper) + #is alnorm==dnorm?
-      alnorm(-beta / sebeta - 1.959964, upper)
-    
-    
-    
-    ##########################################################
-    } else {
-      
-      if (beta > 0) {
-        a = -mu
-        b = 1 - mu - beta
-      } else {
-        a = -mu - beta
-        b = 1 - mu
-      }
-    
-    #call legendre_handle (GQ, a, b, GQX, GQW)
-    # Gaussian Legendre will not take two limits, a and b
-      GQholder <- statmod::gauss.quad(GQ, kind = "legendre", alpha = alpha, beta = beta)
-      GQX <- GQholder[[1]]
-      GQW <- GQholder[[2]]
-    
-    #power = LinearPower_notime(mu, beta, tau2, nclusters, ntimes, nsubjects, a, b, GQ, GQX, GQW)
-
-      NI = ntimes * nsubjects
-      DD = nclusters / (ntimes - 1)
-    
-      z0 = 0
-      for (j in 1:(ntimes - 1)) {
-        z0[j] = j * nsubjects
-        }
-      z1 = NI - z0
-      h11 = 0.0
-      h12 = 0.0
-      h13 = 0.0
-      h22 = 0.0
-      h23 = 0.0
-      h33 = 0.0
-      for (i in 1:(ntimes - 1)) {
-        for (z00 in 0:z0[i]) {
-          z01 = z0[i] - z00
-          for (z10 in (0:z1[i])) {
-            z11 = z1[i] - z10
-    #call der_likelihood_notime(mu, beta, tau2, z00, z01, z10, z11, GQ, GQX, GQW, &
-    #                             derlikelihood_mu, derlikelihood_beta, derlikelihood_tau2, prob)
-            z0 = z00 + z01
-            z1 = z10 + z11
-            derlikelihood_mu = 0.0
-            derlikelihood_beta = 0.0
-            derlikelihood_tau2 = 0.0
-            likelihoodf_denom = 0.0
-            likelihoodf_denomb2 = 0.0
-            likelihoodf_numer = 0.0
-            prob = 0.0
-            for (i in 1:GQ) {
-              x = GQX[i]
-              ff = 1.0
-              ffprob = 1.0
-              ff01 = mu + x
-              ff00 = 1 - ff01
-              ff11 = mu + beta + x
-              ff10 = 1 - ff11
-              exx = dexp(-0.5 * x * x / tau2)
-              ff = (ff00^z00) * (ff01^z01) * (ff10^z10) * (ff11^z11)
-              likelihoodf_numer = likelihoodf_numer + GQW[i] * ff * exx
-              likelihoodf_denom = likelihoodf_denom + GQW[i] * exx
-              likelihoodf_denomb2 = likelihoodf_denomb2 + GQW[i] * x * x * exx
-          
-        #  ! since GQX are not at limits, we ignore the cases where ff00=0 or ff01=0 or ff10=0 or ff11=0
-              ff1 = ff * (z01 / ff01 - z00 / ff00 + z11 / ff11 - z10/ff10)
-              derlikelihood_mu = derlikelihood_mu + GQW[i] * ff1 * exx
-              ff1 = ff * (z11 / ff11 - z10 / ff10)
-              derlikelihood_beta = derlikelihood_beta + GQW[i] * ff1 * exx
-              ff1 = ff * x * x
-              derlikelihood_tau2 = derlikelihood_tau2 + GQW[i] * ff1 * exx
-          
-          #! prob
-              ff0prob = ff00 * ff01
-              ff1prob = ff10 * ff11
-              if (z00 < z01) {
-                ffprob = ffprob * ff01^(z01 - z00)
-                for (k in 0:(z00 - 1)) {
-                  ffprob = ffprob * (z0 - k) / (z00 - k) * ff0prob
-                  }
-                } else {
-                  ffprob = ffprob * ff00^(z00 - z01)
-                  for (k in 0:(z01 - 1)) {
-                    ffprob = ffprob * (z0 - k) / (z01 - k) * ff0prob
-                    }
-                  }
-              if (z10 < z11) {
-                ffprob = ffprob * ff11^(z11 - z10)
-                for (k in 0:(z10 - 1)) {
-                  ffprob = ffprob * (z1 - k) / (z10 - k) * ff1prob
-                  }
-                } else {
-                  ffprob = ffprob * ff10^(z10 - z11)
-                  for (k in 0:(z11 - 1)) {
-                    ffprob = ffprob * (z1 - k) / (z11 - k) * ff1prob
-                    }
-                  }
-              prob = prob + GQW[i] * ffprob * exx
-              }
-            if (beta >= 0) {
-          #! we don't consider the case of beta = 0
-              exx1 = dexp(-0.5 * mu * mu / tau2)
-              exx2 = dexp(-0.5 * (1 - mu - beta) * (1 - mu - beta) / tau2)
-              if (z01 == 0) {
-                derlikelihood_mu = derlikelihood_mu + ((1 - beta)^z10) * (beta^z11) * exx1
-                }
-              if (z10 == 0) {
-                temp = ((1 - beta)^z01) * (beta^z00) * exx2
-                derlikelihood_mu = derlikelihood_mu - temp
-                derlikelihood_beta = derlikelihood_beta - temp
-                }
-              derlikelihood_mu = derlikelihood_mu / likelihoodf_numer - (exx1 - exx2) / likelihoodf_denom
-              derlikelihood_beta = derlikelihood_beta / likelihoodf_numer + exx2 / likelihoodf_denom
-              } else {
-     #   ! beta < 0
-                exx1 = dexp(-0.5 * (mu + beta) * (mu + beta) / tau2)
-                exx2 = dexp(-0.5 * (1 - mu) * (1 - mu) / tau2)
-                if (z00 == 0) {
-                  derlikelihood_mu = derlikelihood_mu - ((-beta)^z10) * ((1 + beta)^z11) * exx2
-                  }
-                if (z11 == 0) {
-                  temp = ((-beta)^z01) * ((1 + beta)^z00) * exx1
-                  derlikelihood_mu = derlikelihood_mu + temp
-                  derlikelihood_beta = derlikelihood_beta + temp
-                  }
-                derlikelihood_mu = derlikelihood_mu / likelihoodf_numer - (exx1 - exx2)/likelihoodf_denom
-                derlikelihood_beta = derlikelihood_beta / likelihoodf_numer + exx1 / likelihoodf_denom
-                }
-            derlikelihood_tau2 = 0.5 * (derlikelihood_tau2 / likelihoodf_denom - likelihoodf_denomb2 / likelihoodf_denom) / tau2 / tau2
-            prob = prob / likelihoodf_denom
-
-            h11 = h11 + derlikelihood_mu * derlikelihood_mu * prob
-            h22 = h22 + derlikelihood_beta * derlikelihood_beta * prob
-            h33 = h33 + derlikelihood_tau2 * derlikelihood_tau2 * prob
-            h12 = h12 + derlikelihood_mu * derlikelihood_beta * prob
-            h13 = h13 + derlikelihood_mu * derlikelihood_tau2 * prob
-            h23 = h23 + derlikelihood_beta * derlikelihood_tau2 * prob
-            }
-          }
-        }
-      sebeta = sqrt(abs((h33 * h11 - h13 * h13) / (h11 * h22 * h33 + 2.0 * h12 * h23 * h13 - h13 * h13 * h22 - h12 * h12 * h33 - h23 * h23 * h11)) / DD)
-      power = alnorm(beta / sebeta - 1.959964, upper) + alnorm(-beta / sebeta - 1.959964, upper)
-      }
-  return(power)
-}
 
