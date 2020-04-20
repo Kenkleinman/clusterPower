@@ -70,7 +70,7 @@ cpa.sw.binary <- function(nclusters = 12,
     return(derlikelihood2)
   }
   
-  der_likelihood_time <- function(mu = as.numeric(mu), 
+  derlikelihoodtime <- function(mu = as.numeric(mu), 
                                   beta = as.numeric(beta), 
                                   gamma = as.numeric(gamma), 
                                   tau2 = as.numeric(tau2), 
@@ -88,7 +88,7 @@ cpa.sw.binary <- function(nclusters = 12,
                                   wts = as.numeric(wts), 
                                   derlikelihood = as.numeric(derlikelihood), 
                                   prob = as.numeric(prob)){
-    .Fortran("der_likelihood_time", mu = mu, beta = beta, gamma = gamma, tau2 = tau2, z0 = z0,
+    .Fortran("derlikelihoodtime", mu = mu, beta = beta, gamma = gamma, tau2 = tau2, z0 = z0,
         z1 = z1, XX = XX, JJ = ntimes, KK = nsubjects, a = a, b = b, 
         mincomp = mincomp, maxcomp = maxcomp, GQ = GQ, GQX = t, GQW = wts, 
         derlikelihood = derlikelihood, prob = prob)
@@ -185,7 +185,7 @@ cpa.sw.binary <- function(nclusters = 12,
     prob <- 0.0
     derlikelihood <- 0.0
 
-        derlikelihood <- der_likelihood_time(mu = as.numeric(mu), 
+        derlikelihood <- derlikelihoodtime(mu = as.numeric(mu), 
                                              beta = as.numeric(beta), 
                                              gamma = as.numeric(gamma), 
                                              tau2 = as.numeric(tau2), 
