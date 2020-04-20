@@ -3,7 +3,7 @@
 !     Last modified:   Dec 26, 2015
 !     Purpose: Cox proportional hazard models with ORC
 
-subroutine derlikelihoodtime(mu,beta,gamma,tau2, z0, z1, XX, JJ, KK, a, b, &
+subroutine der_likelihood_time(mu,beta,gamma,tau2, z0, z1, XX, JJ, KK, a, b, &
                         mincomp, maxcomp, GQ, GQX, GQW, derlikelihood, prob)
     implicit none
     ! ---- arg types -----------------------
@@ -141,7 +141,7 @@ subroutine derlikelihoodtime(mu,beta,gamma,tau2, z0, z1, XX, JJ, KK, a, b, &
     derlikelihood(3:(JJ+1)) = derlikelihood_gamma
     derlikelihood(JJ+2) = derlikelihood_tau2
 
-end subroutine derlikelihoodtime
+end subroutine der_likelihood_time
 
 
 
