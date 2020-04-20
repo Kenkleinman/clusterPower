@@ -46,7 +46,7 @@
 #' @param cores A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to NA, no parallel computing is used.
 #'  @param opt Option to fit with a different optimizer algorithm. Setting this to "auto" tests an example fit using 
-#'  the \code(nloptr) package and selects the first algorithm that converges.
+#'  the \code{nloptr} package and selects the first algorithm that converges.
 #' 
 #' @return A list with the following components:
 #' \itemize{
