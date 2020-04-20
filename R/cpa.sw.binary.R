@@ -54,7 +54,7 @@ cpa.sw.binary <- function(nclusters = 12,
                             GQ = 100){
   # cpa.sw.binary(nclusters (I), ntimes(J), nsubjects(K), d(delta, p0totalchange), ICC(rho0), beta, mu)
   
-  
+  dyn.load("src/cpa-sw-binary-fortran.f90")
   
   ###### Define some FORTRAN-calling functions  ########
   
