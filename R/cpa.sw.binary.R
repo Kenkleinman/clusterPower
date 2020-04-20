@@ -180,8 +180,7 @@ cpa.sw.binary <- function(nclusters = 12,
       while (isTRUE(finish < 1)) { #THIS IS SLOW
       XX <- interventionX[,n]
         z1 = nsubjects - z0
-   # call der_likelihood_time(mu,beta,gamma,tau2, z0, z1, X(i,:), ntimes, nsubjects, a, b, &
-   #                            mincomp, maxcomp, GQ, GQX, GQW, derlikelihood, prob)
+
     prob <- 0.0
     derlikelihood <- 0.0
 
