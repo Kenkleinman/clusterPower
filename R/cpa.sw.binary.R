@@ -184,31 +184,31 @@ cpa.sw.binary <- function(nclusters = 12,
     prob <- 0.0
     derlikelihood <- 0.0
 
-        derlikelihood <- der_likelihood_time(mu = as.numeric(mu), 
-                                             beta = as.numeric(beta), 
-                                             gamma = as.numeric(gamma), 
-                                             tau2 = as.numeric(tau2), 
-                                             z0 = as.integer(z0),
-                                             z1 = as.integer(z1), 
-                                             XX = as.integer(XX), 
-                                             ntimes = as.integer(ntimes), 
-                                             nsubjects = as.integer(nsubjects), 
-                                             a = as.numeric(a), 
-                                             b = as.numeric(b), 
-                                             mincomp = as.integer(mincomp), 
-                                             maxcomp = as.integer(maxcomp), 
-                                             GQ = as.numeric(GQ), 
-                                             t = as.numeric(t), 
-                                             wts = as.numeric(wts), 
-                                             derlikelihood = as.numeric(derlikelihood), 
-                                             prob = as.numeric(prob))
+        derlikelihood <- der_likelihood_time(mu = mu, 
+                                             beta = beta, 
+                                             gamma = gamma, 
+                                             tau2 = tau2, 
+                                             z0 = z0,
+                                             z1 = z1, 
+                                             XX = XX, 
+                                             ntimes = ntimes, 
+                                             nsubjects = nsubjects, 
+                                             a = a, 
+                                             b = b, 
+                                             mincomp = mincomp, 
+                                             maxcomp = maxcomp, 
+                                             GQ = GQ, 
+                                             t = t, 
+                                             wts = wts, 
+                                             derlikelihood = derlikelihood, 
+                                             prob = prob)
         
         derlikelihood2 <-  0.0
         derlen <- ntimes + 2
         
-    derlikelihood2 <- vectorsquare(derlikelihood = as.numeric(derlikelihood), 
-                                   n = as.integer(derlen), 
-                                   derlikelihood2 = as.numeric(derlikelihood2))
+    derlikelihood2 <- vectorsquare(derlikelihood = derlikelihood, 
+                                   n = derlen, 
+                                   derlikelihood2 = derlikelihood2)
           
         invVar = invVar + derlikelihood2 * prob
         
