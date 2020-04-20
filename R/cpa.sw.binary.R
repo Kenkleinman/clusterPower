@@ -223,7 +223,6 @@ cpa.sw.binary <- function(nclusters = 12,
               break
             }
         }
-        print(c(z0,z1))
         
         if (z0[ntimes] > nsubjects) {finish = 1}
       }
