@@ -1,7 +1,4 @@
-!     Program:         CoxORC.f90
-!     Written by:      Xin Zhou
-!     Last modified:   Dec 26, 2015
-!     Purpose: Cox proportional hazard models with ORC
+
 
 subroutine der_likelihood_time(mu,beta,gamma,tau2, z0, z1, XX, JJ, KK, a, b, &
                         mincomp, maxcomp, GQ, GQX, GQW, derlikelihood, prob)
