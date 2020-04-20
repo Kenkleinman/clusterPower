@@ -203,14 +203,14 @@ cpa.sw.binary <- function(nclusters = 12,
                                              derlikelihood = derlikelihood, 
                                              prob = prob)
         
-        derlikelihood2 <-  0.0
-        derlen <- ntimes + 2
+ #       derlikelihood2 <-  0.0
+#        derlen <- ntimes + 2
         
-    derlikelihood2 <- vectorsquare(derlikelihood = derlikelihood, 
-                                   n = derlen, 
-                                   derlikelihood2 = derlikelihood2)
+ #   derlikelihood2 <- vectorsquare(derlikelihood = derlikelihood, 
+#                                   n = derlen, 
+#                                   derlikelihood2 = derlikelihood2)
           
-        invVar = invVar + derlikelihood2 * prob
+#        invVar = invVar + derlikelihood2 * prob
         
    # finish = updatez(z0, ntimes, nsubjects)
         finish = 0
@@ -234,7 +234,7 @@ cpa.sw.binary <- function(nclusters = 12,
     
 #    sebeta = sqrt(Var[2,2] / DD)
 #    return(sebeta)
-    return(invVar)
+    return(prob)
   }
     
     ######################################
