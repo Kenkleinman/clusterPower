@@ -83,16 +83,24 @@ cpa.sw.binary <- function(nclusters = 12,
                                   b = as.numeric(b), 
                                   mincomp = as.integer(mincomp), 
                                   maxcomp = as.integer(maxcomp), 
-                                  GQ = as.numeric(GQ), 
+                                  GQ = as.integer(GQ), 
                                   t = as.numeric(t), 
-                                  wts = as.numeric(wts), 
-                                  derlikelihood = as.numeric(derlikelihood), 
-                                  prob = as.numeric(prob)){
-    .Fortran("der_likelihood_time", mu = mu, beta = beta, gamma = gamma, tau2 = tau2, z0 = z0,
+                                  wts = as.numeric(wts)){
+  stopifnot(length(gamma) == ntimes)
+  stopifnot(length(z0) == ntimes)
+  stopifnot(length(z1) == ntimes)
+  stopifnot(length(XX) == ntimes)
+  stopifnot(length(mincomp) == ntimes + 2)
+  stopifnot(length(maxcomp) == ntimes + 2)
+  stopifnot(length(t) == GQ)
+  stopifnot(length(wts) == GQ)
+  derlikelihood = vector(mode = 'numeric', length = ntimes + 2)
+  prob = 0.0
+  o = .Fortran("der_likelihood_time", mu = mu, beta = beta, gamma = gamma, tau2 = tau2, z0 = z0,
         z1 = z1, XX = XX, JJ = ntimes, KK = nsubjects, a = a, b = b, 
         mincomp = mincomp, maxcomp = maxcomp, GQ = GQ, GQX = t, GQW = wts, 
         derlikelihood = derlikelihood, prob = prob)
-  return(derlikelihood)
+  return(o)
     }
   
   p0 <- vector(mode = "numeric", length = ntimes)
@@ -181,10 +189,7 @@ cpa.sw.binary <- function(nclusters = 12,
       XX <- interventionX[,n]
         z1 = nsubjects - z0
 
-    prob <- 0.0
-    derlikelihood <- 0.0
-
-        derlikelihood <- der_likelihood_time(mu = mu, 
+        Dholder <- der_likelihood_time(mu = mu, 
                                              beta = beta, 
                                              gamma = gamma, 
                                              tau2 = tau2, 
@@ -202,6 +207,9 @@ cpa.sw.binary <- function(nclusters = 12,
                                              wts = wts, 
                                              derlikelihood = derlikelihood, 
                                              prob = prob)
+        
+        prob = Dholder$prob
+        derlikelihood <- Dholder$derlikelihood
         
  #       derlikelihood2 <-  0.0
 #        derlen <- ntimes + 2
