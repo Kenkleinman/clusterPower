@@ -98,7 +98,8 @@ cpa.sw.binary <- function(nclusters = 12,
   prob = 0.0
   o = .Fortran("der_likelihood_time", mu = mu, beta = beta, gamma = gamma, tau2 = tau2, z0 = z0,
         z1 = z1, XX = XX, JJ = ntimes, KK = nsubjects, a = a, b = b, 
-        mincomp = mincomp, maxcomp = maxcomp, GQ = GQ, GQX = t, GQW = wts)
+        mincomp = mincomp, maxcomp = maxcomp, GQ = GQ, GQX = t, 
+        GQW = wts, derlikelihood = derlikelihood, prob = prob)
   return(o)
     }
   
