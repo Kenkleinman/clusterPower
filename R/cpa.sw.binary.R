@@ -63,11 +63,11 @@ cpa.sw.binary <- function(nclusters = 12,
     return(Var)
   }
   
-  vectorsquare <- function(derlikelihood, 
-                           n, 
-                           derlikelihood2){
-    .Fortran("vectorsquare", a = derlikelihood, n = n, c = derlikelihood2)
-    return(derlikelihood2)
+  vectorsquare <- function(derlikelihood = as.numeric(derlikelihood)){
+    derlikelihood2 = vector(mode = 'numeric', length = ntimes + 2)
+    n <- ntimes + 2
+    o = .Fortran("vectorsquare", a = derlikelihood, n = n, c = derlikelihood2)
+    return(o)
   }
   
   der_likelihood_time <- function(mu = as.numeric(mu), 
@@ -89,19 +89,22 @@ cpa.sw.binary <- function(nclusters = 12,
   stopifnot(length(gamma) == ntimes)
   stopifnot(length(z0) == ntimes)
   stopifnot(length(z1) == ntimes)
-  stopifnot(length(XX) == ntimes)
+  stopifnot(length(XX) == ntimes - 1)
   stopifnot(length(mincomp) == ntimes + 2)
   stopifnot(length(maxcomp) == ntimes + 2)
   stopifnot(length(t) == GQ)
   stopifnot(length(wts) == GQ)
-  derlikelihood = vector(mode = 'numeric', length = ntimes + 2)
+  derlikelihood = rep(-4.8366978272229995e-26, times = (ntimes + 2))
   prob = 0.0
   o = .Fortran("der_likelihood_time", mu = mu, beta = beta, gamma = gamma, tau2 = tau2, z0 = z0,
         z1 = z1, XX = XX, JJ = ntimes, KK = nsubjects, a = a, b = b, 
         mincomp = mincomp, maxcomp = maxcomp, GQ = GQ, GQX = t, 
-        GQW = wts, derlikelihood = derlikelihood, prob = prob)
+        GQW = wts, derlikelihood = as.numeric(derlikelihood), prob = as.numeric(prob), NAOK = TRUE)
   return(o)
-    }
+  }
+  
+  ######## main function code ###################
+  
   
   p0 <- vector(mode = "numeric", length = ntimes)
   gamma <- vector(mode = "numeric", length = ntimes)
@@ -180,15 +183,14 @@ cpa.sw.binary <- function(nclusters = 12,
     }
     
     invVar = matrix(0, nrow = (ntimes + 2), ncol = (ntimes + 2))
-    derlikelihood = as.vector(0.0)
     
-     for (n in 1:(ntimes - 1)) {
+     for (i in 1:(ntimes - 1)) {
        z0 = rep(0, times = ntimes)
        finish = 0  #need this?
       while (isTRUE(finish < 1)) { #THIS IS SLOW
-      XX <- interventionX[,n]
+      XX <- interventionX[i,]
         z1 = nsubjects - z0
-
+browser()
         Dholder <- der_likelihood_time(mu = mu, 
                                              beta = beta, 
                                              gamma = gamma, 
@@ -205,19 +207,18 @@ cpa.sw.binary <- function(nclusters = 12,
                                              GQ = GQ, 
                                              t = t, 
                                              wts = wts)
+       
         
         prob = Dholder$prob
         derlikelihood <- Dholder$derlikelihood
         
- #       derlikelihood2 <-  0.0
-#        derlen <- ntimes + 2
+
         
- #   derlikelihood2 <- vectorsquare(derlikelihood = derlikelihood, 
-#                                   n = derlen, 
-#                                   derlikelihood2 = derlikelihood2)
+  #  VecHolder <- vectorsquare(derlikelihood = derlikelihood)
+  #  derlikelihood2 <- VecHolder$derlikelihood2
           
-#        invVar = invVar + derlikelihood2 * prob
-        
+  #  invVar = invVar + derlikelihood2 * prob
+        browser()
    # finish = updatez(z0, ntimes, nsubjects)
         finish = 0
         z0[1] = z0[1] + 1
@@ -237,10 +238,10 @@ cpa.sw.binary <- function(nclusters = 12,
  #   Var <- 0.0
     
 #    Var <- syminverse(a = invVar, c = Var, n = derlen)
-    
+
 #    sebeta = sqrt(Var[2,2] / DD)
 #    return(sebeta)
-    return(prob)
+    return(Dholder)
   }
     
     ######################################
