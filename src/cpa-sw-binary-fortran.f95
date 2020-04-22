@@ -3,18 +3,18 @@
 !     Last modified:   Dec 26, 2015
 !     Purpose: Cox proportional hazard models with ORC
 
-subroutine der_likelihood_time(mu,beta,gamma,tau2, z0, z1, XX, JJ, KK, a, b, &
+subroutine der_likelihood_time(mu,beta,gammaobj,tau2, z0, z1, XX, JJ, KK, a, b, &
                         mincomp, maxcomp, GQ, GQX, GQW, derlikelihood, prob)
     implicit none
     ! ---- arg types -----------------------
     integer :: JJ, KK
     double precision :: mu, beta, tau2
-    double precision :: gamma(JJ)
-    ! true values of mu, beta, gamma, tau2
+    double precision :: gammaobj(JJ)
+    ! true values of mu, beta, gammaobj, tau2
     integer :: z0(JJ), z1(JJ)   ! z0: # of subjects with outcome 0; z1: # of subjects with outcome 1.
     integer :: XX(JJ)     ! treatment assignment
     double precision :: a, b     ! integration limits: a - lower, b - upper
-    integer :: mincomp(JJ+2), maxcomp(JJ+2)  ! gamma(1), ..., gamma(JJ), mu, beta
+    integer :: mincomp(JJ+2), maxcomp(JJ+2)  ! gammaobj(1), ..., gammaobj(JJ), mu, beta
     integer :: GQ   ! number of GQ points
     double precision :: GQX(GQ), GQW(GQ)
     double precision :: derlikelihood(JJ+2)
@@ -29,11 +29,13 @@ subroutine der_likelihood_time(mu,beta,gamma,tau2, z0, z1, XX, JJ, KK, a, b, &
     double precision :: ff, ffprob
     double precision :: ff_mu, ff_beta
     double precision :: derlikelihood_mu, derlikelihood_beta, derlikelihood_tau2
-    double precision :: ff_gamma(JJ-1)
-    double precision :: derlikelihood_gamma(JJ-1)
+    double precision :: ff_gammaobj(JJ-1)
+    double precision :: derlikelihood_gammaobj(JJ-1)
     double precision :: temp
     double precision :: eaa, ebb, exx
     double precision :: faeaa, fbebb
+
+    open(unit=1, file="debug.txt", status='replace')
 
     likelihoodf_denom = 0.0d0
     likelihoodf_numer = 0.0d0
@@ -41,19 +43,22 @@ subroutine der_likelihood_time(mu,beta,gamma,tau2, z0, z1, XX, JJ, KK, a, b, &
     derlikelihood_mu = 0.0d0
     derlikelihood_beta = 0.0d0
     derlikelihood_tau2 = 0.0d0
-    derlikelihood_gamma = 0.0d0
-
+    derlikelihood_gammaobj = 0.0d0
+    
+        write (unit=1, fmt=*) likelihoodf_denom
+        
     prob = 0.0d0
     do i=1,GQ
         x = GQX(i)
-        exx = dexp(-0.5d0*x*x/tau2)
-
+        exx = exp(-0.5d0*x*x/tau2)
+        if (exx.ne.0) then
+        
         ff = 1.0d0
         ffprob = 1.0d0
         ff_mu = 0.0d0
         ff_beta = 0.0d0
         do j=1,JJ
-            ff1 = mu+beta*XX(j)+gamma(j)+x
+            ff1 = mu+beta*XX(j)+gammaobj(j)+x
             ff0 = 1-ff1
             ff = ff*(ff0**z0(j))*(ff1**z1(j))
 
@@ -63,7 +68,7 @@ subroutine der_likelihood_time(mu,beta,gamma,tau2, z0, z1, XX, JJ, KK, a, b, &
             ff_beta = ff_beta + temp*XX(j)
             k = j-1
             if (k>0) then
-                ff_gamma(k) = temp
+                ff_gammaobj(k) = temp
             end if
 
             ff01 = ff0*ff1
@@ -89,24 +94,27 @@ subroutine der_likelihood_time(mu,beta,gamma,tau2, z0, z1, XX, JJ, KK, a, b, &
 
         derlikelihood_mu = derlikelihood_mu + GQW(i)*ff*ff_mu*exx
         derlikelihood_beta = derlikelihood_beta + GQW(i)*ff*ff_beta*exx
-        derlikelihood_gamma = derlikelihood_gamma + GQW(i)*ff*ff_gamma*exx
+        derlikelihood_gammaobj = derlikelihood_gammaobj + GQW(i)*ff*ff_gammaobj*exx
         derlikelihood_tau2= derlikelihood_tau2 + GQW(i)*ff*x*x*exx
-    enddo
+        end if
+    end do
+    
+
 
     ! calculate f(a)exp(-0.5*a*a)
-    eaa = dexp(-0.5d0*a*a/tau2)
+    eaa = exp(-0.5d0*a*a/tau2)
     ff = 1.0d0
     do j=1,JJ
-        ff1 = mu+beta*XX(j)+gamma(j)+a
+        ff1 = mu+beta*XX(j)+gammaobj(j)+a
         ff0 = 1-ff1
         ff = ff*(ff0**z0(j))*(ff1**z1(j))
     end do
     faeaa = ff*eaa
     ! calculate f(b)exp(-0.5*b*b)
-    ebb = dexp(-0.5d0*b*b/tau2)
+    ebb = exp(-0.5d0*b*b/tau2)
     ff = 1.0d0
     do j=1,JJ
-        ff1 = mu+beta*XX(j)+gamma(j)+b
+        ff1 = mu+beta*XX(j)+gammaobj(j)+b
         ff0 = 1-ff1
         ff = ff*(ff0**z0(j))*(ff1**z1(j))
     end do
@@ -122,12 +130,12 @@ subroutine der_likelihood_time(mu,beta,gamma,tau2, z0, z1, XX, JJ, KK, a, b, &
                         - fbebb*dble(maxcomp(JJ+2))
     derlikelihood_beta = derlikelihood_beta / likelihoodf_numer - &
                     (eaa*dble(mincomp(JJ+2)) - ebb*dble(maxcomp(JJ+2))) / likelihoodf_denom
-    ! calculate derlikelihood_gamma
+    ! calculate derlikelihood_gammaobj
     do j=2,JJ
         k = j-1
-        derlikelihood_gamma(k) = derlikelihood_gamma(k) + &
+        derlikelihood_gammaobj(k) = derlikelihood_gammaobj(k) + &
                             faeaa*dble(mincomp(j)) - fbebb*dble(maxcomp(j))
-        derlikelihood_gamma(k) = derlikelihood_gamma(k)/likelihoodf_numer &
+        derlikelihood_gammaobj(k) = derlikelihood_gammaobj(k)/likelihoodf_numer &
                         -(eaa*dble(mincomp(j))-ebb*dble(maxcomp(j)))/likelihoodf_denom
     end do
 
@@ -138,8 +146,10 @@ subroutine der_likelihood_time(mu,beta,gamma,tau2, z0, z1, XX, JJ, KK, a, b, &
 
     derlikelihood(1) = derlikelihood_mu
     derlikelihood(2) = derlikelihood_beta
-    derlikelihood(3:(JJ+1)) = derlikelihood_gamma
+    derlikelihood(3:(JJ+1)) = derlikelihood_gammaobj
     derlikelihood(JJ+2) = derlikelihood_tau2
+    
+    close(unit=1)
 
 end subroutine der_likelihood_time
 
@@ -187,7 +197,7 @@ subroutine der_likelihood_notime(mu, beta, tau2, z00, z01, z10, z11, GQ, GQX, GQ
         ff00 = 1-ff01
         ff11 = mu+beta+x
         ff10 = 1-ff11
-        exx = dexp(-0.5d0*x*x/tau2)
+        exx = exp(-0.5d0*x*x/tau2)
 
         ff = (ff00**z00)*(ff01**z01)*(ff10**z10)*(ff11**z11)
         likelihoodf_numer = likelihoodf_numer + GQW(i) * ff * exx
@@ -236,8 +246,8 @@ subroutine der_likelihood_notime(mu, beta, tau2, z00, z01, z10, z11, GQ, GQX, GQ
 
     if (beta>=0) then
         ! we don't consider the case of beta = 0
-        exx1 = dexp(-0.5d0*mu*mu/tau2)       ! exx on lower limits
-        exx2 = dexp(-0.5d0*(1-mu-beta)*(1-mu-beta)/tau2)
+        exx1 = exp(-0.5d0*mu*mu/tau2)       ! exx on lower limits
+        exx2 = exp(-0.5d0*(1-mu-beta)*(1-mu-beta)/tau2)
         if (z01==0) then
             derlikelihood_mu = derlikelihood_mu + ((1-beta)**z10)*(beta**z11)*exx1
         end if
@@ -250,8 +260,8 @@ subroutine der_likelihood_notime(mu, beta, tau2, z00, z01, z10, z11, GQ, GQX, GQ
         derlikelihood_beta = derlikelihood_beta / likelihoodf_numer + exx2/likelihoodf_denom
     else
         ! beta < 0
-        exx1 = dexp(-0.5d0*(mu+beta)*(mu+beta)/tau2)       ! exx on lower limits
-        exx2 = dexp(-0.5d0*(1-mu)*(1-mu)/tau2)
+        exx1 = exp(-0.5d0*(mu+beta)*(mu+beta)/tau2)       ! exx on lower limits
+        exx2 = exp(-0.5d0*(1-mu)*(1-mu)/tau2)
         if (z00==0) then
             derlikelihood_mu = derlikelihood_mu - ((-beta)**z10)*((1+beta)**z11)*exx2
         end if

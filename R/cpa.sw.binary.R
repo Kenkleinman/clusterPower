@@ -1,3 +1,53 @@
+###### Define some FORTRAN-calling functions  ########
+
+syminverse <- function(invVar, 
+                       Var, 
+                       derlen){
+  .Fortran("syminverse", a = invVar, c = Var, n = derlen)
+  return(Var)
+}
+
+vectorsquare <- function(derlikelihood = as.numeric(derlikelihood)){
+  derlikelihood2 = vector(mode = 'numeric', length = ntimes + 2)
+  n <- ntimes + 2
+  o = .Fortran("vectorsquare", a = derlikelihood, n = n, c = derlikelihood2)
+  return(o)
+}
+
+der_likelihood_time <- function(mu = as.numeric(mu), 
+                                beta = as.numeric(beta), 
+                                gammaobj = as.numeric(gammaobj), 
+                                tau2 = as.numeric(tau2), 
+                                z0 = as.integer(z0),
+                                z1 = as.integer(z1), 
+                                XX = as.integer(XX), 
+                                ntimes = as.integer(ntimes), 
+                                nsubjects = as.integer(nsubjects), 
+                                a = as.numeric(a), 
+                                b = as.numeric(b), 
+                                mincomp = as.integer(mincomp), 
+                                maxcomp = as.integer(maxcomp), 
+                                GQ = as.integer(GQ), 
+                                t = as.numeric(t), 
+                                wts = as.numeric(wts)){
+  stopifnot(length(gammaobj) == ntimes)
+  stopifnot(length(z0) == ntimes)
+  stopifnot(length(z1) == ntimes)
+  stopifnot(length(XX) == ntimes)
+  stopifnot(length(mincomp) == ntimes + 2)
+  stopifnot(length(maxcomp) == ntimes + 2)
+  stopifnot(length(t) == GQ)
+  stopifnot(length(wts) == GQ)
+  derlikelihood = rep(0.0, times = (ntimes + 2))
+  prob = 0.0
+  o = .Fortran("der_likelihood_time", mu = mu, beta = beta, gammaobj = gammaobj, tau2 = tau2, z0 = z0,
+               z1 = z1, XX = XX, JJ = ntimes, KK = nsubjects, a = a, b = b, 
+               mincomp = mincomp, maxcomp = maxcomp, GQ = GQ, GQX = t, 
+               GQW = wts, derlikelihood = as.numeric(derlikelihood), prob = as.numeric(prob), NAOK = TRUE)
+  return(o)
+}
+
+
 #' Power simulations for cluster-randomized trials: Stepped Wedge Design, Binary Outcome
 #'
 #' This function uses a modified Cox method to determine power for stepped 
@@ -54,60 +104,12 @@ cpa.sw.binary <- function(nclusters = 12,
                             GQ = 100){
   # cpa.sw.binary(nclusters (I), ntimes(J), nsubjects(K), d(delta, p0totalchange), ICC(rho0), beta, mu)
   
-  ###### Define some FORTRAN-calling functions  ########
-  
-  syminverse <- function(invVar, 
-                         Var, 
-                         derlen){
-    .Fortran("syminverse", a = invVar, c = Var, n = derlen)
-    return(Var)
-  }
-  
-  vectorsquare <- function(derlikelihood = as.numeric(derlikelihood)){
-    derlikelihood2 = vector(mode = 'numeric', length = ntimes + 2)
-    n <- ntimes + 2
-    o = .Fortran("vectorsquare", a = derlikelihood, n = n, c = derlikelihood2)
-    return(o)
-  }
-  
-  der_likelihood_time <- function(mu = as.numeric(mu), 
-                                  beta = as.numeric(beta), 
-                                  gamma = as.numeric(gamma), 
-                                  tau2 = as.numeric(tau2), 
-                                  z0 = as.integer(z0),
-                                  z1 = as.integer(z1), 
-                                  XX = as.integer(XX), 
-                                  ntimes = as.integer(ntimes), 
-                                  nsubjects = as.integer(nsubjects), 
-                                  a = as.numeric(a), 
-                                  b = as.numeric(b), 
-                                  mincomp = as.integer(mincomp), 
-                                  maxcomp = as.integer(maxcomp), 
-                                  GQ = as.integer(GQ), 
-                                  t = as.numeric(t), 
-                                  wts = as.numeric(wts)){
-  stopifnot(length(gamma) == ntimes)
-  stopifnot(length(z0) == ntimes)
-  stopifnot(length(z1) == ntimes)
-  stopifnot(length(XX) == ntimes - 1)
-  stopifnot(length(mincomp) == ntimes + 2)
-  stopifnot(length(maxcomp) == ntimes + 2)
-  stopifnot(length(t) == GQ)
-  stopifnot(length(wts) == GQ)
-  derlikelihood = rep(-4.8366978272229995e-26, times = (ntimes + 2))
-  prob = 0.0
-  o = .Fortran("der_likelihood_time", mu = mu, beta = beta, gamma = gamma, tau2 = tau2, z0 = z0,
-        z1 = z1, XX = XX, JJ = ntimes, KK = nsubjects, a = a, b = b, 
-        mincomp = mincomp, maxcomp = maxcomp, GQ = GQ, GQX = t, 
-        GQW = wts, derlikelihood = as.numeric(derlikelihood), prob = as.numeric(prob), NAOK = TRUE)
-  return(o)
-  }
   
   ######## main function code ###################
   
   
   p0 <- vector(mode = "numeric", length = ntimes)
-  gamma <- vector(mode = "numeric", length = ntimes)
+  gammaobj <- vector(mode = "numeric", length = ntimes)
   p0[1] <- mu
   p11 <-  mu + beta
   p0stepchange <- d / (ntimes - 1)
@@ -115,17 +117,17 @@ cpa.sw.binary <- function(nclusters = 12,
   for (i in 2:ntimes) {
     p0[i] = p0[i - 1] + p0stepchange
   }
-  gamma <- p0 - mu
+  gammaobj <- p0 - mu
   
   # mincomp and maxcomp are ntimes+2 vectors of 0 and 1's, 
-  # representing the weights of gamma(1),...,gamma(ntimes), mu, beta.
+  # representing the weights of gammaobj(1),...,gammaobj(ntimes), mu, beta.
   comp <- rep(0, times = (ntimes + 2))
   maxcomp <- comp
   mincomp <- comp
   a = 100 
   b = -100
   for (i in 1:ntimes) {
-      temp = mu + gamma[i]
+      temp = mu + gammaobj[i]
       if (temp < a) {
         a = temp
         mincomp <- comp
@@ -138,7 +140,7 @@ cpa.sw.binary <- function(nclusters = 12,
         maxcomp[ntimes + 1] = 1
         maxcomp[i] = 1
         }
-      temp = mu + beta + gamma[i]
+      temp = mu + beta + gammaobj[i]
       if (temp < a) {
         a = temp
         mincomp <- comp
@@ -171,29 +173,29 @@ cpa.sw.binary <- function(nclusters = 12,
     rm(slp)
     rm(st)
 
-  #power = LinearPower_time(mu, beta, gamma, tau2, nclusters, ntimes, nsubjects, a, b, mincomp, maxcomp, GQ, GQX, GQW)
+  #power = LinearPower_time(mu, beta, gammaobj, tau2, nclusters, ntimes, nsubjects, a, b, mincomp, maxcomp, GQ, GQX, GQW)
     DD <-  nclusters / (ntimes - 1)   # nclusters is a multiple of (ntimes-1)
   # assign intervention
-    interventionX <- matrix(data = 0, nrow = (ntimes), ncol = (ntimes - 1))
+    interventionX <- matrix(data = 0, nrow = (ntimes - 1), ncol = (ntimes))
     
     for (i in 1:(ntimes - 1)) {
       for (j in (i + 1):ntimes) {
-        interventionX[j,i] <- 1
+        interventionX[i,j] <- 1
       }
     }
-    
+
     invVar = matrix(0, nrow = (ntimes + 2), ncol = (ntimes + 2))
     
      for (i in 1:(ntimes - 1)) {
        z0 = rep(0, times = ntimes)
        finish = 0  #need this?
-      while (isTRUE(finish < 1)) { #THIS IS SLOW
+      while (finish < 1) { #THIS IS SLOW
       XX <- interventionX[i,]
         z1 = nsubjects - z0
-browser()
+
         Dholder <- der_likelihood_time(mu = mu, 
                                              beta = beta, 
-                                             gamma = gamma, 
+                                             gammaobj = gammaobj, 
                                              tau2 = tau2, 
                                              z0 = z0,
                                              z1 = z1, 
@@ -211,6 +213,8 @@ browser()
         
         prob = Dholder$prob
         derlikelihood <- Dholder$derlikelihood
+        z1 <- Dholder$z1
+        z0 <- Dholder$z0
         
 
         
@@ -218,7 +222,7 @@ browser()
   #  derlikelihood2 <- VecHolder$derlikelihood2
           
   #  invVar = invVar + derlikelihood2 * prob
-        browser()
+
    # finish = updatez(z0, ntimes, nsubjects)
         finish = 0
         z0[1] = z0[1] + 1
@@ -236,7 +240,7 @@ browser()
      }
     
  #   Var <- 0.0
-    
+
 #    Var <- syminverse(a = invVar, c = Var, n = derlen)
 
 #    sebeta = sqrt(Var[2,2] / DD)
