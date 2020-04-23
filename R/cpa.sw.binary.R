@@ -1,14 +1,13 @@
 ###### Define some FORTRAN-calling functions  ########
 
-syminverse <- function(invVar, 
-                       Var, 
-                       derlen){
+syminverse <- function(invVar = invVar, 
+                       Var = Var){
   .Fortran("syminverse", a = as.numeric(invVar), 
-           c = as.numeric(Var), n = as.integer(derlen))
+           c = as.numeric(Var), n = as.integer(ntimes + 2))
   return(Var)
 }
 
-vectorsquare <- function(derlikelihood = derlikelihood, ntimes = ntimes){
+vectorsquare <- function(derlikelihood = derlikelihood){
   derlikelihood2 = vector(mode = 'numeric', length = ntimes + 2)
   o = .Fortran("vectorsquare", a = as.numeric(derlikelihood), 
                n = as.integer(ntimes + 2), c = as.numeric(derlikelihood2))
@@ -218,13 +217,11 @@ cpa.sw.binary <- function(nclusters = 12,
         prob = Dholder$prob
         derlikelihood <- Dholder$derlikelihood
         
-
-        browser()
         
-   # VecHolder <- vectorsquare(derlikelihood = derlikelihood)
-  #  derlikelihood2 <- VecHolder$derlikelihood2
+    VecHolder <- vectorsquare(derlikelihood = derlikelihood)
+    derlikelihood2 <- VecHolder$c
           
-  #  invVar = invVar + derlikelihood2 * prob
+    invVar = invVar + derlikelihood2 * prob
 
    # finish = updatez(z0, ntimes, nsubjects)
         finish = 0
@@ -242,9 +239,9 @@ cpa.sw.binary <- function(nclusters = 12,
       }
      }
     
- #   Var <- 0.0
+    Var <- matrix(0, nrow = (ntimes + 2), ncol = (ntimes + 2))
 
-#    Var <- syminverse(a = invVar, c = Var, n = derlen)
+    Var <- syminverse(a = invVar, c = Var, n = n)
 
 #    sebeta = sqrt(Var[2,2] / DD)
 #    return(sebeta)
