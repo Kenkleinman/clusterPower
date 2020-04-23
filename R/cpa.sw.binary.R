@@ -8,8 +8,9 @@ syminverse <- function(invVar,
   return(Var)
 }
 
-vectorsquare <- function(derlikelihood = derlikelihood, n = n){
+vectorsquare <- function(derlikelihood = derlikelihood, ntimes = ntimes){
   derlikelihood2 = vector(mode = 'numeric', length = ntimes + 2)
+  n = (ntimes + 2)
   o = .Fortran("vectorsquare", a = as.numeric(derlikelihood), 
                n = as.integer(n), c = as.numeric(derlikelihood2))
   return(o)
@@ -219,9 +220,9 @@ cpa.sw.binary <- function(nclusters = 12,
         derlikelihood <- Dholder$derlikelihood
         
 
+        browser()
         
-    VecHolder <- vectorsquare(derlikelihood = derlikelihood, 
-                              n = (ntimes + 2))
+    VecHolder <- vectorsquare(derlikelihood = derlikelihood, ntimes = ntimes)
     derlikelihood2 <- VecHolder$derlikelihood2
           
   #  invVar = invVar + derlikelihood2 * prob
