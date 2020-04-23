@@ -221,8 +221,8 @@ cpa.sw.binary <- function(nclusters = 12,
         
 
         
-  #  VecHolder <- vectorsquare(derlikelihood = derlikelihood)
-  #  derlikelihood2 <- VecHolder$derlikelihood2
+    VecHolder <- vectorsquare(derlikelihood = derlikelihood)
+    derlikelihood2 <- VecHolder$derlikelihood2
           
   #  invVar = invVar + derlikelihood2 * prob
 
@@ -248,7 +248,7 @@ cpa.sw.binary <- function(nclusters = 12,
 
 #    sebeta = sqrt(Var[2,2] / DD)
 #    return(sebeta)
-    return(Dholder)
+    return(VecHolder)
   }
     
     ######################################
