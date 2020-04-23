@@ -35,7 +35,7 @@ subroutine der_likelihood_time(mu,beta,gammaobj,tau2, z0, z1, XX, JJ, KK, a, b, 
     double precision :: eaa, ebb, exx
     double precision :: faeaa, fbebb
 
-    open(unit=1, file="debug.txt", status='replace')
+  !  open(unit=1, file="debug.txt", status='replace')
 
     likelihoodf_denom = 0.0d0
     likelihoodf_numer = 0.0d0
@@ -45,7 +45,7 @@ subroutine der_likelihood_time(mu,beta,gammaobj,tau2, z0, z1, XX, JJ, KK, a, b, 
     derlikelihood_tau2 = 0.0d0
     derlikelihood_gammaobj = 0.0d0
     
-        write (unit=1, fmt=*) likelihoodf_denom
+   !     write (unit=1, fmt=*) likelihoodf_denom
         
     prob = 0.0d0
     do i=1,GQ
@@ -149,7 +149,7 @@ subroutine der_likelihood_time(mu,beta,gammaobj,tau2, z0, z1, XX, JJ, KK, a, b, 
     derlikelihood(3:(JJ+1)) = derlikelihood_gammaobj
     derlikelihood(JJ+2) = derlikelihood_tau2
     
-    close(unit=1)
+  !  close(unit=1)
 
 end subroutine der_likelihood_time
 

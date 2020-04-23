@@ -3,33 +3,35 @@
 syminverse <- function(invVar, 
                        Var, 
                        derlen){
-  .Fortran("syminverse", a = invVar, c = Var, n = derlen)
+  .Fortran("syminverse", a = as.numeric(invVar), 
+           c = as.numeric(Var), n = as.integer(derlen))
   return(Var)
 }
 
-vectorsquare <- function(derlikelihood = as.numeric(derlikelihood)){
+vectorsquare <- function(derlikelihood = derlikelihood){
   derlikelihood2 = vector(mode = 'numeric', length = ntimes + 2)
   n <- ntimes + 2
-  o = .Fortran("vectorsquare", a = derlikelihood, n = n, c = derlikelihood2)
+  o = .Fortran("vectorsquare", a = as.numeric(derlikelihood), 
+               n = as.numeric(n), c = as.numeric(derlikelihood2))
   return(o)
 }
 
-der_likelihood_time <- function(mu = as.numeric(mu), 
-                                beta = as.numeric(beta), 
-                                gammaobj = as.numeric(gammaobj), 
-                                tau2 = as.numeric(tau2), 
-                                z0 = as.integer(z0),
-                                z1 = as.integer(z1), 
-                                XX = as.integer(XX), 
-                                ntimes = as.integer(ntimes), 
-                                nsubjects = as.integer(nsubjects), 
-                                a = as.numeric(a), 
-                                b = as.numeric(b), 
-                                mincomp = as.integer(mincomp), 
-                                maxcomp = as.integer(maxcomp), 
-                                GQ = as.integer(GQ), 
-                                t = as.numeric(t), 
-                                wts = as.numeric(wts)){
+der_likelihood_time <- function(mu = mu, 
+                                beta = beta, 
+                                gammaobj = gammaobj, 
+                                tau2 = tau2, 
+                                z0 = z0,
+                                z1 = z1, 
+                                XX = XX, 
+                                ntimes = ntimes, 
+                                nsubjects = nsubjects, 
+                                a = a, 
+                                b = b, 
+                                mincomp = mincomp, 
+                                maxcomp = maxcomp, 
+                                GQ = GQ, 
+                                t = t, 
+                                wts = wts){
   stopifnot(length(gammaobj) == ntimes)
   stopifnot(length(z0) == ntimes)
   stopifnot(length(z1) == ntimes)
@@ -40,10 +42,13 @@ der_likelihood_time <- function(mu = as.numeric(mu),
   stopifnot(length(wts) == GQ)
   derlikelihood = rep(0.0, times = (ntimes + 2))
   prob = 0.0
-  o = .Fortran("der_likelihood_time", mu = mu, beta = beta, gammaobj = gammaobj, tau2 = tau2, z0 = z0,
-               z1 = z1, XX = XX, JJ = ntimes, KK = nsubjects, a = a, b = b, 
-               mincomp = mincomp, maxcomp = maxcomp, GQ = GQ, GQX = t, 
-               GQW = wts, derlikelihood = as.numeric(derlikelihood), prob = as.numeric(prob), NAOK = TRUE)
+  o = .Fortran("der_likelihood_time", mu = as.numeric(mu), beta = as.numeric(beta), 
+               gammaobj = as.numeric(gammaobj), tau2 = as.numeric(tau2), z0 = as.integer(z0),
+               z1 = as.integer(z1), XX = as.integer(XX), JJ = as.integer(ntimes), 
+               KK = as.integer(nsubjects), a = as.numeric(a), b = as.numeric(b), 
+               mincomp = as.integer(mincomp), maxcomp = as.integer(maxcomp), 
+               GQ = as.integer(GQ), GQX = as.numeric(t), GQW = as.numeric(wts), 
+               derlikelihood = as.numeric(derlikelihood), prob = as.numeric(prob))
   return(o)
 }
 
@@ -213,8 +218,6 @@ cpa.sw.binary <- function(nclusters = 12,
         
         prob = Dholder$prob
         derlikelihood <- Dholder$derlikelihood
-        z1 <- Dholder$z1
-        z0 <- Dholder$z0
         
 
         
