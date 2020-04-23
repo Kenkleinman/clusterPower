@@ -51,7 +51,6 @@ subroutine der_likelihood_time(mu,beta,gammaobj,tau2, z0, z1, XX, JJ, KK, a, b, 
     do i=1,GQ
         x = GQX(i)
         exx = exp(-0.5d0*x*x/tau2)
-        if (exx.ne.0) then
         
         ff = 1.0d0
         ffprob = 1.0d0
@@ -96,7 +95,6 @@ subroutine der_likelihood_time(mu,beta,gammaobj,tau2, z0, z1, XX, JJ, KK, a, b, 
         derlikelihood_beta = derlikelihood_beta + GQW(i)*ff*ff_beta*exx
         derlikelihood_gammaobj = derlikelihood_gammaobj + GQW(i)*ff*ff_gammaobj*exx
         derlikelihood_tau2= derlikelihood_tau2 + GQW(i)*ff*x*x*exx
-        end if
     end do
     
 
