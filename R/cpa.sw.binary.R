@@ -51,9 +51,6 @@ der_likelihood_time <- function(mu = mu,
   return(o)
 }  
 
-
-
-
 #' Power simulations for cluster-randomized trials: Stepped Wedge Design, Binary Outcome
 #'
 #' This function uses a modified Cox method to determine power for stepped 
