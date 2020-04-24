@@ -5,13 +5,13 @@
 \title{Power simulations for cluster-randomized trials: Stepped Wedge Design, Binary Outcome}
 \usage{
 cpa.sw.binary(
-  nclusters = 12,
-  ntimes = 3,
-  nsubjects = 40,
-  d = -10,
-  ICC = 0.01,
-  beta = -2,
-  mu = 0.18,
+  nclusters = NA,
+  steps = NA,
+  nsubjects = NA,
+  d = NA,
+  ICC = NA,
+  beta = NA,
+  mu = NA,
   tol = 1e-05,
   GQ = 100
 )
@@ -19,18 +19,25 @@ cpa.sw.binary(
 \arguments{
 \item{nclusters}{Number of clusters; accepts non-negative integer scalar (required).}
 
-\item{nsubjects}{Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
-or a vector of length \code{nclusters} (user-defined size for each cluster) (required).}
+\item{steps}{Number of crossover steps; Accepts positive scalar indicating the total 
+number of steps (required).}
 
-\item{steps}{Number of crossover steps; a baseline step (all clusters in non-treatment group) is assumed. 
-Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 
-\code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
-of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the cumulative 
-number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).}
+\item{nsubjects}{Number of subjects per cluster; accepts a scalar. Equal cluster sizes 
+are assumed (required).}
 
-\item{alpha}{Significance level. Default = 0.05.}
+\item{d}{Total change over the study period (assume that time effects are linear 
+across time steps); accepts numeric (required).}
 
-\item{quiet}{When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.}
+\item{ICC}{ICC for participants at first time step; accepts numeric (required).}
+
+\item{beta}{Estimated treatment effect; accepts numeric (required).}
+
+\item{mu}{Estimated baseline effect; accepts numeric (required).}
+
+\item{tol}{Machine tolerance. Accepts numeric. Default is 1e-5.}
+
+\item{GQ}{Number of quadriture points used in Gaussian Legendre integration; accepts 
+a scalar. Default is 100.}
 }
 \value{
 The estimated power.
@@ -49,14 +56,24 @@ cluster can change treatments in a wave, but the order in which clusters
 change treatments is randomly determined. The outcome of interest is assessed 
 in each cluster during each wave.
 
-Users must specify the number of subjects per cluster, number of clusters 
-per treatment arm, the number of time steps, the baseline effect, the 
-expected treatment effect, expected absolute difference between treatment 
-arms, ICC, and significance level.
+Users must specify the number of subjects per cluster, number of clusters, 
+the number of time steps, the baseline effect, the expected treatment effect, 
+expected absolute difference between treatment 
+arms, ICC, and time effect.
+
+Fortran for this package was kindly provided by Dr. Zhou and others.
 }
 \examples{
 \dontrun{
-holder <- cpa.sw.binary()
+holder <- cpa.sw.binary(nclusters = 12, 
+  steps = 3, 
+  nsubjects = 90, 
+  d = -0.05, 
+  ICC = 0.01, 
+  beta = -0.5, 
+  mu = 0.18, 
+  tol = 1e-5, 
+  GQ = 100)
 }
 
 }
