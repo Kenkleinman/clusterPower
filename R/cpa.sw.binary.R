@@ -1,56 +1,3 @@
-###### Define some FORTRAN-calling functions  ########
-
-syminverse <- function(invVar = invVar, 
-                       Var = Var, steps = steps){
-  o = .Fortran("syminverse", a = as.numeric(invVar), 
-               c = as.numeric(Var), n = as.integer(steps + 2))
-  return(o)
-}
-
-vectorsquare <- function(derlikelihood = as.vector(derlikelihood), steps = steps){
-  derlen = steps + 2
-  derlikelihood2 = matrix(0, nrow = (steps + 2), ncol = (steps + 2))
-  o = .Fortran("vectorsquare", a = as.numeric(derlikelihood), 
-               n = as.integer(derlen), c = as.numeric(derlikelihood2))
-  return(o)
-}
-
-der_likelihood_time <- function(mu = mu, 
-                                beta = beta, 
-                                gammaobj = gammaobj, 
-                                tau2 = tau2, 
-                                z0 = z0,
-                                z1 = z1, 
-                                XX = XX, 
-                                steps = steps, 
-                                nsubjects = nsubjects, 
-                                a = a, 
-                                b = b, 
-                                mincomp = mincomp, 
-                                maxcomp = maxcomp, 
-                                GQ = GQ, 
-                                t = t, 
-                                wts = wts){
-  stopifnot(length(gammaobj) == steps)
-  stopifnot(length(z0) == steps)
-  stopifnot(length(z1) == steps)
-  stopifnot(length(XX) == steps)
-  stopifnot(length(mincomp) == steps + 2)
-  stopifnot(length(maxcomp) == steps + 2)
-  stopifnot(length(t) == GQ)
-  stopifnot(length(wts) == GQ)
-  derlikelihood = rep(0.0, times = (steps + 2))
-  prob = 0.0
-  o = .Fortran("der_likelihood_time", mu = as.numeric(mu), beta = as.numeric(beta), 
-               gammaobj = as.numeric(gammaobj), tau2 = as.numeric(tau2), z0 = as.integer(z0),
-               z1 = as.integer(z1), XX = as.integer(XX), JJ = as.integer(steps), 
-               KK = as.integer(nsubjects), a = as.numeric(a), b = as.numeric(b), 
-               mincomp = as.integer(mincomp), maxcomp = as.integer(maxcomp), 
-               GQ = as.integer(GQ), GQX = as.numeric(t), GQW = as.numeric(wts), 
-               derlikelihood = as.numeric(derlikelihood), prob = as.numeric(prob))
-  return(o)
-}  
-
 #' Power simulations for cluster-randomized trials: Stepped Wedge Design, Binary Outcome
 #'
 #' This function uses a modified Cox method to determine power for stepped 
@@ -90,12 +37,12 @@ der_likelihood_time <- function(mu = mu,
 #' 
 #' @examples 
 #' \dontrun{
-#' holder <- cpa.sw.binary(nclusters = 12, 
+#' holder <- cpa.sw.binary(nclusters = 16, 
 #'   steps = 3, 
 #'   nsubjects = 90, 
 #'   d = -0.05, 
 #'   ICC = 0.01, 
-#'   beta = -0.5, 
+#'   beta = -0.05, 
 #'   mu = 0.18, 
 #'   tol = 1e-5, 
 #'   GQ = 100)
@@ -116,10 +63,71 @@ cpa.sw.binary <- function(nclusters = NA,
                             beta = NA, 
                             mu = NA, 
                             tol = 1e-5, 
-                            GQ = 100){
+                            GQ = 100,
+                          quiet = FALSE){
+  
+  ###### Define some FORTRAN-calling functions  ########
+  
+  syminverse <- function(invVar = invVar, 
+                         Var = Var, steps = steps){
+    o = .Fortran("syminverse", a = as.numeric(invVar), 
+                 c = as.numeric(Var), n = as.integer(steps + 2))
+    return(o)
+  }
+  
+  vectorsquare <- function(derlikelihood = as.vector(derlikelihood), steps = steps){
+    derlen = steps + 2
+    derlikelihood2 = matrix(0, nrow = (steps + 2), ncol = (steps + 2))
+    o = .Fortran("vectorsquare", a = as.numeric(derlikelihood), 
+                 n = as.integer(derlen), c = as.numeric(derlikelihood2))
+    return(o)
+  }
+  
+  der_likelihood_time <- function(mu = mu, 
+                                  beta = beta, 
+                                  gammaobj = gammaobj, 
+                                  tau2 = tau2, 
+                                  z0 = z0,
+                                  z1 = z1, 
+                                  XX = XX, 
+                                  steps = steps, 
+                                  nsubjects = nsubjects, 
+                                  a = a, 
+                                  b = b, 
+                                  mincomp = mincomp, 
+                                  maxcomp = maxcomp, 
+                                  GQ = GQ, 
+                                  t = t, 
+                                  wts = wts){
+    stopifnot(length(gammaobj) == steps)
+    stopifnot(length(z0) == steps)
+    stopifnot(length(z1) == steps)
+    stopifnot(length(XX) == steps)
+    stopifnot(length(mincomp) == steps + 2)
+    stopifnot(length(maxcomp) == steps + 2)
+    stopifnot(length(t) == GQ)
+    stopifnot(length(wts) == GQ)
+    derlikelihood = rep(0.0, times = (steps + 2))
+    prob = 0.0
+    o = .Fortran("der_likelihood_time", mu = as.numeric(mu), beta = as.numeric(beta), 
+                 gammaobj = as.numeric(gammaobj), tau2 = as.numeric(tau2), z0 = as.integer(z0),
+                 z1 = as.integer(z1), XX = as.integer(XX), JJ = as.integer(steps), 
+                 KK = as.integer(nsubjects), a = as.numeric(a), b = as.numeric(b), 
+                 mincomp = as.integer(mincomp), maxcomp = as.integer(maxcomp), 
+                 GQ = as.integer(GQ), GQX = as.numeric(t), GQW = as.numeric(wts), 
+                 derlikelihood = as.numeric(derlikelihood), prob = as.numeric(prob))
+    return(o)
+  }  
+  
+  legendre_handle <- function(order = GQ, a = a, b = b){
+    x <- rep(0, times = order)
+    w <- rep(0, times = order)
+    o = .Fortran("legendre_handle", order = as.integer(order), a = as.numeric(a), 
+                 b = as.numeric(b), x = as.numeric(x), w = as.numeric(w))
+    return(o)
+  }
   
   ######## main function code ###################
-  
   
   p0 <- vector(mode = "numeric", length = steps)
   gammaobj <- vector(mode = "numeric", length = steps)
@@ -173,18 +181,9 @@ cpa.sw.binary <- function(nclusters = NA,
     
     a <- -a
     b <-  1 - b
-    GQholder <- statmod::gauss.quad(GQ, kind = "legendre", alpha = 0, beta = 0)
-    t <- GQholder[[1]]
-    wts <- GQholder[[2]]
-    
-    # scale the quadrature formula to a nonstandard interval
-    shft <- (a + b) / 2.0
-    slp <- (b - a) / 2.0
-    st <- slp * t
-    t <- shft + st
-    wts <- wts * slp
-    rm(slp)
-    rm(st)
+    quadholder <- legendre_handle(order = GQ, a = a, b = b)
+    t <- quadholder$x
+    wts <- quadholder$w
 
     DD <- nclusters / (steps - 1)   # nclusters is a multiple of (steps-1)
   # assign intervention
@@ -197,6 +196,36 @@ cpa.sw.binary <- function(nclusters = NA,
     }
 
     invVar <- matrix(0, nrow = (steps + 2), ncol = (steps + 2))
+    
+    # Set start.time for progress iterator & initialize progress bar
+  #  start.time = Sys.time()
+  #  prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
+  #                                         total = (nsubjects + 1), clear = FALSE, width = 100)
+  #  prog.bar$tick(0)
+    
+    # Update simulation progress information
+  #  if (quiet == FALSE){
+  #    if (sum(z0) == 0){
+  #      avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+  #      time.est = avg.iter.time * (nsubjects) / 60
+  #      hr.est = time.est %/% 60
+  #      min.est = round(time.est %% 60, 0)
+  #      message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
+  #                     ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
+  #    }
+  ##    # Iterate progress bar
+  #    prog.bar$update(z0[steps] / (nsubjects + 1))
+  #    Sys.sleep(1/100)
+      
+  #    if (z0[steps] == (nsubjects + 1)){
+  #      total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+  #      hr.est = total.est %/% 3600
+  #      min.est = total.est %/% 60
+  #      sec.est = round(total.est %% 60, 0)
+  #      message(paste0("Calculations Complete! Time Completed: ", Sys.time(), 
+  #                     "\nTotal Runtime: ", hr.est, 'Hr:', min.est, 'Min:', sec.est, 'Sec'))
+  #    }
+  #  }
     
      for (i in 1:(steps - 1)) {
        z0 <- rep(0, times = steps)
@@ -249,10 +278,13 @@ cpa.sw.binary <- function(nclusters = NA,
 
     mat <- matrix(0, nrow = (steps + 2), ncol = (steps + 2))
     mat <- syminverse(invVar = invVar, Var = mat, steps = steps)
-    Var <- matrix(mat$c, nrow = (steps + 2), ncol = (steps + 2))
+    Var <- matrix(mat$c, nrow = (steps + 2), 
+                  ncol = (steps + 2), byrow = FALSE)
 
     sebeta <- sqrt(Var[2,2] / DD)
-    power <- pnorm(beta/sebeta - 1.959964, FALSE) + pnorm(-beta/sebeta - 1.959964, FALSE)
+    browser()
+    power <- pnorm(beta/sebeta - 1.959964, lower.tail = TRUE) + 
+      pnorm(-beta/sebeta - 1.959964, lower.tail = TRUE)
     return(power)
   }
     
