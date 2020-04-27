@@ -40,7 +40,7 @@
 #' holder <- cpa.sw.binary(nclusters = 16, 
 #'   steps = 3, 
 #'   nsubjects = 90, 
-#'   d = -0.05, 
+#'   d = -0.01, 
 #'   ICC = 0.01, 
 #'   beta = -0.05, 
 #'   mu = 0.18, 
@@ -127,6 +127,10 @@ cpa.sw.binary <- function(nclusters = NA,
     return(o)
   }
   
+  #computeparameter <- function(JJ, mu, beta, gamma, tau2, p0, p11, rho0){
+  #  
+  #}
+  
   ######## main function code ###################
   
   p0 <- vector(mode = "numeric", length = steps)
@@ -134,11 +138,11 @@ cpa.sw.binary <- function(nclusters = NA,
   p0[1] <- mu
   p11 <-  mu + beta
   p0stepchange <- d / (steps - 1)
-  tau2 <-  ICC / (1 - ICC) * mu * (1 - mu)
   for (i in 2:steps) {
     p0[i] <-  p0[i - 1] + p0stepchange
   }
-  gammaobj <- p0 - mu
+  tau2 <-  ICC / (1 - ICC) * mu * (1 - mu)
+  gammaobj <- p0
   
   # mincomp and maxcomp are steps+2 vectors of 0 and 1's, 
   # representing the weights of gammaobj(1),...,gammaobj(steps), mu, beta.
@@ -147,6 +151,7 @@ cpa.sw.binary <- function(nclusters = NA,
   mincomp <- comp
   a <-  100 
   b <- -100
+  browser()
   for (i in 1:steps) {
       temp = mu + gammaobj[i]
       if (temp < a) {
@@ -178,7 +183,7 @@ cpa.sw.binary <- function(nclusters = NA,
         }
   }
   rm(comp)
-    
+   browser() 
     a <- -a
     b <-  1 - b
     quadholder <- legendre_handle(order = GQ, a = a, b = b)
