@@ -2385,7 +2385,7 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
       
       
       
-      subroutine computeparameter(JJ, mu, beta, gamma, tau2, p0, p11, rho0)
+    subroutine computeparameter(JJ, mu, beta, gamma, tau2, p0, p11, rho0)
     implicit none
     ! ---- arg types -----------------------
     integer :: JJ
@@ -2406,3 +2406,235 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
         gamma(j) = p0(j) - mu
     end do
     end subroutine computeparameter
+    
+
+subroutine LinearPower_notime_subroutine(mu, beta, tau2, II, JJ, KK, a, b, GQ, GQX, GQW, power)
+implicit none
+!  ------ ARG TYPES  ---------
+double precision :: mu, beta, tau2
+    ! true values of beta0, beta1, and tau2
+    integer :: II, JJ, KK
+    ! II : number of clusters
+    ! JJ : number of steps
+    ! KK : number of subjects per cluster per step
+    double precision :: a, b        ! lower and upper limits of GL integral
+    integer :: GQ   ! number of GQ points
+    double precision :: GQX(GQ), GQW(GQ)
+    double precision :: power
+    ! ----------------------------------------
+    double precision, external :: LinearPower_notime
+    
+    power = LinearPower_notime(mu, beta, tau2, II, JJ, KK, a, b, GQ, GQX, GQW)
+    
+end subroutine LinearPower_notime_subroutine
+
+
+
+
+function LinearPower_notime(mu, beta, tau2, II, JJ, KK, a, b, GQ, GQX, GQW) result (power)
+    implicit none
+    ! ---- arg types -----------------------
+    double precision :: mu, beta, tau2
+    ! true values of beta0, beta1, and tau2
+    integer :: II, JJ, KK
+    ! II : number of clusters
+    ! JJ : number of steps
+    ! KK : number of subjects per cluster per step
+    double precision :: a, b        ! lower and upper limits of GL integral
+    integer :: GQ   ! number of GQ points
+    double precision :: GQX(GQ), GQW(GQ)
+    double precision :: power
+    ! ----------------------------------------
+    integer :: NI   ! number of subjects per cluster, NI=JJ*KK
+    integer :: DD   ! II/(JJ-1). By design, II is a multiple of (JJ-1)
+
+    double precision, parameter :: PI = 3.14159265358979323846   ! pi
+    integer :: i, j, k
+    integer :: z0(JJ-1), z1(JJ-1)
+    integer :: z00, z01, z10, z11
+    double precision :: h11, h12, h13, h22, h23, h33
+    double precision :: derlikelihood_mu, derlikelihood_beta, derlikelihood_tau2
+    double precision :: prob
+    double precision :: sebeta  ! se of beta1
+    logical :: upper
+
+    double precision, external :: alnorm
+
+    upper = .false.
+
+    NI = JJ * KK
+    DD = II/(JJ-1)
+
+    z0 = 0
+    do j=1,JJ-1
+        z0(j) = j*KK
+    enddo
+    z1 = NI - z0
+
+    h11 = 0.0d0
+    h12 = 0.0d0
+    h13 = 0.0d0
+    h22 = 0.0d0
+    h23 = 0.0d0
+    h33 = 0.0d0
+    do i=1,(JJ-1)
+        do z00 = 0,z0(i)
+            z01 = z0(i) - z00
+            do z10 = 0,z1(i)
+                z11 = z1(i) - z10
+                call der_likelihood_notime(mu, beta, tau2, z00, z01, z10, z11, GQ, GQX, GQW, &
+                derlikelihood_mu, derlikelihood_beta, derlikelihood_tau2, prob)
+                h11 = h11 + derlikelihood_mu*derlikelihood_mu*prob
+                h22 = h22 + derlikelihood_beta*derlikelihood_beta*prob
+                h33 = h33 + derlikelihood_tau2*derlikelihood_tau2*prob
+                h12 = h12 + derlikelihood_mu*derlikelihood_beta*prob
+                h13 = h13 + derlikelihood_mu*derlikelihood_tau2*prob
+                h23 = h23 + derlikelihood_beta*derlikelihood_tau2*prob
+            enddo
+        enddo
+    enddo
+    sebeta = sqrt(abs((h33*h11-h13*h13)/(h11*h22*h33+2.0d0*h12*h23*h13-h13*h13*h22-h12*h12*h33-h23*h23*h11))/DD)
+    power = alnorm(beta/sebeta-1.959964d0,upper) + alnorm(-beta/sebeta-1.959964d0,upper)
+
+end function LinearPower_notime
+
+
+
+      function alnorm ( x, upper )
+
+!*********************************************************************72
+!
+!! ALNORM computes the cumulative density of the standard normal distribution.
+!
+!  Modified:
+!
+!    28 March 1999
+!
+!  Author:
+!
+!    David Hill
+!    Modifications by John Burkardt
+!
+!  Reference:
+!
+!    David Hill,
+!    Algorithm AS 66:
+!    The Normal Integral,
+!    Applied Statistics,
+!    Volume 22, Number 3, 1973, pages 424-427.
+!
+!  Parameters:
+!
+!    Input, double precision X, is one endpoint of the semi-infinite interval
+!    over which the integration takes place.
+!
+!    Input, logical UPPER, determines whether the upper or lower
+!    interval is to be integrated:
+!    .TRUE.  => integrate from X to + Infinity;
+!    .FALSE. => integrate from - Infinity to X.
+!
+!    Output, double precision ALNORM, the integral of the standard normal
+!    distribution over the desired interval.
+!
+      implicit none
+
+      double precision a1
+      parameter ( a1 = 5.75885480458D+00 )
+      double precision a2
+      parameter ( a2 = 2.62433121679D+00 )
+      double precision a3
+      parameter ( a3 = 5.92885724438D+00 )
+      double precision alnorm
+      double precision b1
+      parameter ( b1 = -29.8213557807D+00 )
+      double precision b2
+      parameter ( b2 = 48.6959930692D+00 )
+      double precision c1
+      parameter ( c1 = -0.000000038052D+00 )
+      double precision c2
+      parameter ( c2 = 0.000398064794D+00 )
+      double precision c3
+      parameter ( c3 = -0.151679116635D+00 )
+      double precision c4
+      parameter ( c4 = 4.8385912808D+00 )
+      double precision c5
+      parameter ( c5 = 0.742380924027D+00 )
+      double precision c6
+      parameter ( c6 = 3.99019417011D+00 )
+      double precision con
+      parameter ( con = 1.28D+00 )
+      double precision d1
+      parameter ( d1 = 1.00000615302D+00 )
+      double precision d2
+      parameter ( d2 = 1.98615381364D+00 )
+      double precision d3
+      parameter ( d3 = 5.29330324926D+00 )
+      double precision d4
+      parameter ( d4 = -15.1508972451D+00 )
+      double precision d5
+      parameter ( d5 = 30.789933034D+00 )
+      double precision ltone
+      parameter ( ltone = 7.0D+00 )
+      double precision p
+      parameter ( p = 0.398942280444D+00 )
+      double precision q
+      parameter ( q = 0.39990348504D+00 )
+      double precision r
+      parameter ( r = 0.398942280385D+00 )
+      logical up
+      logical upper
+      double precision utzero
+      parameter ( utzero = 18.66D+00 )
+      double precision x
+      double precision y
+      double precision z
+
+      up = upper
+      z = x
+
+      if ( z .lt. 0.0D+00 ) then
+        up = .not. up
+        z = - z
+      end if
+
+      if ( z .gt. ltone .and. &
+       ( ( .not. up ) .or. utzero .lt. z ) ) then
+
+        if ( up ) then
+          alnorm = 0.0D+00
+        else
+          alnorm = 1.0D+00
+        end if
+
+        return
+
+      end if
+
+      y = 0.5D+00 * z * z
+
+      if ( z .le. con ) then
+
+        alnorm = 0.5D+00 - z * ( p - q * y &
+         / ( y + a1 + b1 &
+         / ( y + a2 + b2 &
+         / ( y + a3 ))))
+
+      else
+
+        alnorm = r * dexp ( - y ) &
+         / ( z + c1 + d1 &
+         / ( z + c2 + d2 &
+         / ( z + c3 + d3 &
+         / ( z + c4 + d4 &
+         / ( z + c5 + d5 &
+         / ( z + c6 ))))))
+
+      end if
+
+      if ( .not. up ) then
+        alnorm = 1.0D+00 - alnorm
+      end if
+
+      return
+      end
+

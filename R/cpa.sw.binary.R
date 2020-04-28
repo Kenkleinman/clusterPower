@@ -40,7 +40,7 @@
 #' holder <- cpa.sw.binary(nclusters = 16, 
 #'   steps = 3, 
 #'   nsubjects = 90, 
-#'   d = -0.01, 
+#'   d = 1e-6, 
 #'   ICC = 0.01, 
 #'   beta = -0.05, 
 #'   mu = 0.18, 
@@ -127,18 +127,30 @@ cpa.sw.binary <- function(nclusters = NA,
     return(o)
   }
   
-  computeparameter <- function(steps = steps, mu = mu, 
+  computeparameter <- function(JJ = steps, mu = mu, 
                                beta = beta, 
                                p0 = p0, p11 = p11, 
-                               ICC = ICC){
+                               rho0 = ICC){
     tau2 <- 0.0
-    gammaobj <- rep(NA, times = steps)
-    o = .Fortran("computeparameter", JJ = as.integer(steps), 
+    gamma <- rep(0, times = JJ)
+    o = .Fortran("computeparameter", JJ = as.integer(JJ), 
                  mu = as.numeric(mu), beta = as.numeric(beta), 
-                 gamma = as.numeric(gammaobj), 
-                 tau2 = as.numeric(tau2), p0 = as.integer(p0), 
-                 p11 = as.integer(p11), 
-                 rho0 = as.numeric(ICC))
+                 gamma = as.numeric(gamma), 
+                 tau2 = as.numeric(tau2), p0 = as.numeric(p0), 
+                 p11 = as.numeric(p11), 
+                 rho0 = as.numeric(rho0))
+    return(o)
+  }
+  
+  LinearPower_notime_subroutine <- function(mu = mu, beta = beta, tau2 = tau2,
+                                 II = II, JJ = JJ, KK = KK, a = a, 
+                                 b = b, GQ = GQ, GQX = GQX, GQW = GQW){
+    power = 0.0
+    o = .Fortran("LinearPower_notime_subroutine", mu = as.numeric(mu), beta = as.numeric(beta), 
+                 tau2 = as.numeric(tau2), II = as.integer(II), JJ = as.integer(JJ), 
+                 KK = as.integer(KK), a = as.numeric(a), b = as.numeric(b), 
+                 GQ = as.integer(GQ), GQX = as.numeric(GQX), GQW = as.numeric(GQW), 
+                 power = as.numeric(power))
     return(o)
   }
   
@@ -150,22 +162,23 @@ cpa.sw.binary <- function(nclusters = NA,
   for (i in 2:steps) {
     p0[i] <-  p0[i - 1] + p0stepchange
   }
-  browser()
-  parholder <- computeparameter(steps = steps, mu = mu, 
+  parholder <- computeparameter(JJ = steps, mu = mu, 
                                 beta = beta, 
                                 p0 = p0, p11 = p11, 
-                                ICC = ICC)
+                                rho0 = ICC)
   tau2 <- parholder$tau2
   gammaobj <- parholder$gamma
-  browser()
+
   # mincomp and maxcomp are steps+2 vectors of 0 and 1's, 
   # representing the weights of gammaobj(1),...,gammaobj(steps), mu, beta.
   comp <- rep(0, times = (steps + 2))
   maxcomp <- comp
   mincomp <- comp
+  
+  if (d > tol || d < -tol) {
   a <-  100 
   b <- -100
-  browser()
+
   for (i in 1:steps) {
       temp = mu + gammaobj[i]
       if (temp < a) {
@@ -197,7 +210,7 @@ cpa.sw.binary <- function(nclusters = NA,
         }
   }
   rm(comp)
-   browser() 
+
     a <- -a
     b <-  1 - b
     quadholder <- legendre_handle(order = GQ, a = a, b = b)
@@ -217,10 +230,10 @@ cpa.sw.binary <- function(nclusters = NA,
     invVar <- matrix(0, nrow = (steps + 2), ncol = (steps + 2))
     
     # Set start.time for progress iterator & initialize progress bar
-  #  start.time = Sys.time()
-  #  prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
-  #                                         total = (nsubjects + 1), clear = FALSE, width = 100)
-  #  prog.bar$tick(0)
+    start.time = Sys.time()
+    prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
+                                           total = (nsubjects + 1), clear = FALSE, width = 100)
+    prog.bar$tick(0)
     
     # Update simulation progress information
   #  if (quiet == FALSE){
@@ -304,6 +317,23 @@ cpa.sw.binary <- function(nclusters = NA,
     browser()
     power <- pnorm(beta/sebeta - 1.959964, lower.tail = TRUE) + 
       pnorm(-beta/sebeta - 1.959964, lower.tail = TRUE)
+  } else {
+    if (beta > 0) {
+    a = -mu
+    b = 1 - mu - beta
+    } else {
+      a = -mu - beta
+    b = 1 - mu
+    }
+    quadholder <- legendre_handle(order = GQ, a = a, b = b)
+    t <- quadholder$x
+    wts <- quadholder$w
+
+    Linpower <- LinearPower_notime_subroutine(mu = mu, beta = beta, tau2 = tau2, 
+                               II = nclusters, JJ = steps, KK = nsubjects, 
+                               a = a, b = b, GQ = GQ, GQX = t, GQW = wts)
+    power <- Linpower$power
+  }
     return(power)
   }
     
