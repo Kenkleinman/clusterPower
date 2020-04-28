@@ -77,30 +77,60 @@
 #'
 #' @export
 
+
 # Define function
-cps.irgtt.count <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL, c2 = NULL, 
-                     c.diff = NULL, sigma_b_sq = 0, sigma_b_sq2 = 0, family = 'poisson', 
-                     analysis = 'poisson', alpha = 0.05, quiet = FALSE, 
-                     all.sim.data = FALSE, seed = NA, opt = "L-BFGS-B"){
-  
-  if (sigma_b_sq == 0 & sigma_b_sq2 == 0){
-    warning("sigma_b_sq in both arms is 0. This is equivalent to a t-test. Did you mean to 
-            enter a sigma_b_sq value for the arm containing clustered observations?")
-  }
-  if (sigma_b_sq != 0 & sigma_b_sq2 != 0){
-    warning("sigma_b_sq is not zero for either arm. Did you want to use cps.count()?")
-  }
-  if (sigma_b_sq != 0 & sigma_b_sq2 == 0){
-    stop("Non-clustered group must be entered as the reference group.")
-    nclust <- c(nclusters, 1)
-  }
-  if (sigma_b_sq2 != 0){
-    nclust <- c(1, nclusters)
-  }
-  
-  sim <- cps.count(nsim = nsim, nsubjects = nsubjects, nclusters = nclusters, c1 = c1, c2 = c2, 
-                   c.diff = c.diff, sigma_b_sq = sigma_b_sq, sigma_b_sq2 = sigma_b_sq2, family = family, 
-                   analysis = analysis, method = 'glmm', alpha = alpha, quiet = quiet, 
-                   all.sim.data = all.sim.data, seed = seed, irgtt = TRUE, opt = opt)
-  return(sim)
+cps.irgtt.count <-
+  function(nsim = NULL,
+           nsubjects = NULL,
+           nclusters = NULL,
+           c1 = NULL,
+           c2 = NULL,
+           c.diff = NULL,
+           sigma_b_sq = 0,
+           sigma_b_sq2 = 0,
+           family = 'poisson',
+           analysis = 'poisson',
+           alpha = 0.05,
+           quiet = FALSE,
+           all.sim.data = FALSE,
+           seed = NA,
+           opt = "L-BFGS-B") {
+    if (sigma_b_sq == 0 & sigma_b_sq2 == 0) {
+      warning(
+        "sigma_b_sq in both arms is 0. This is equivalent to a t-test. Did you mean to
+            enter a sigma_b_sq value for the arm containing clustered observations?"
+      )
+    }
+    if (sigma_b_sq != 0 & sigma_b_sq2 != 0) {
+      warning("sigma_b_sq is not zero for either arm. Did you want to use cps.count()?")
+    }
+    if (sigma_b_sq != 0 & sigma_b_sq2 == 0) {
+      stop("Non-clustered group must be entered as the reference group.")
+      nclust <- c(nclusters, 1)
+    }
+    if (sigma_b_sq2 != 0) {
+      nclust <- c(1, nclusters)
+    }
+    
+    sim <-
+      cps.count(
+        nsim = nsim,
+        nsubjects = nsubjects,
+        nclusters = nclusters,
+        c1 = c1,
+        c2 = c2,
+        c.diff = c.diff,
+        sigma_b_sq = sigma_b_sq,
+        sigma_b_sq2 = sigma_b_sq2,
+        family = family,
+        analysis = analysis,
+        method = 'glmm',
+        alpha = alpha,
+        quiet = quiet,
+        all.sim.data = all.sim.data,
+        seed = seed,
+        irgtt = TRUE,
+        opt = opt
+      )
+    return(sim)
   }

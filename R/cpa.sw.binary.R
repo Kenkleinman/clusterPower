@@ -313,7 +313,7 @@ cpa.sw.binary <- function(nclusters = NA,
       h <- h
       while (finish < 1) {
         h <- h + 1
-        XX <- interventionX[i, ]
+        XX <- interventionX[i,]
         z1 <- nsubjects - z0
         
         Dholder <- der_likelihood_time(

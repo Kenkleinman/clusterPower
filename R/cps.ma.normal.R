@@ -163,21 +163,28 @@
 #' 
 #' @export
 #' 
- 
-cps.ma.normal <- function(nsim = 1000, nsubjects = NULL, 
-                           narms = NULL, nclusters = NULL,
-                        means = NULL, sigma_sq = NULL, 
-                        sigma_b_sq = NULL, alpha = 0.05,
-                        quiet = FALSE, ICC = NULL, method = 'glmm', 
-                        multi.p.method = "bonferroni",
-                        all.sim.data = FALSE, seed = NA, 
-                        cores=NULL,
-                        poor.fit.override = FALSE, 
-                        low.power.override = FALSE, 
-                        tdist=FALSE,
-                        return.all.models = FALSE,
-                        opt = "nloptwrap"){
 
+
+cps.ma.normal <- function(nsim = 1000,
+                          nsubjects = NULL,
+                          narms = NULL,
+                          nclusters = NULL,
+                          means = NULL,
+                          sigma_sq = NULL,
+                          sigma_b_sq = NULL,
+                          alpha = 0.05,
+                          quiet = FALSE,
+                          ICC = NULL,
+                          method = 'glmm',
+                          multi.p.method = "bonferroni",
+                          all.sim.data = FALSE,
+                          seed = NA,
+                          cores = NULL,
+                          poor.fit.override = FALSE,
+                          low.power.override = FALSE,
+                          tdist = FALSE,
+                          return.all.models = FALSE,
+                          opt = "nloptwrap") {
   # create narms and nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
     # create narms and nclusters if not supplied by the user
@@ -194,276 +201,358 @@ cps.ma.normal <- function(nsim = 1000, nsubjects = NULL,
   if (length(nclusters) > 1 & length(nsubjects) == 1) {
     narms <- length(nclusters)
   }
-    
+  
   # input validation steps
-  if(!is.wholenumber(nsim) || nsim < 1 || length(nsim)>1){
+  if (!is.wholenumber(nsim) || nsim < 1 || length(nsim) > 1) {
     stop("nsim must be a positive integer of length 1.")
   }
-  if (is.null(nsubjects)){
+  if (is.null(nsubjects)) {
     stop("nsubjects must be specified. See ?cps.ma.normal for help.")
   }
   if (length(nsubjects) == 1 & !isTRUE(is.numeric(nclusters))) {
     stop("When nsubjects is scalar, user must supply nclusters (clusters per arm)")
   }
-  if (length(nsubjects) == 1 & length(nclusters)==1 & 
+  if (length(nsubjects) == 1 & length(nclusters) == 1 &
       !isTRUE(is.list(narms))) {
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
-
-  validateVariance(dist="norm", 
-                   difference=means, alpha=alpha, ICC=ICC, sigma_sq=sigma_sq, 
-                   sigma_b_sq=sigma_b_sq, ICC2=NA, sigma_sq2=NA, 
-                   sigma_b_sq2=NA, method=method, quiet=quiet, 
-                   all.sim.data=all.sim.data, 
-                   poor.fit.override=poor.fit.override)
-
+  
+  validateVariance(
+    dist = "norm",
+    difference = means,
+    alpha = alpha,
+    ICC = ICC,
+    sigma_sq = sigma_sq,
+    sigma_b_sq = sigma_b_sq,
+    ICC2 = NA,
+    sigma_sq2 = NA,
+    sigma_b_sq2 = NA,
+    method = method,
+    quiet = quiet,
+    all.sim.data = all.sim.data,
+    poor.fit.override = poor.fit.override
+  )
+  
   # nclusters must be positive whole numbers
-  if (sum(is.wholenumber(nclusters)==FALSE)!=0 || sum(unlist(nclusters) < 1)!=0){
+  if (sum(is.wholenumber(nclusters) == FALSE) != 0 ||
+      sum(unlist(nclusters) < 1) != 0) {
     stop("nclusters must be postive integer values.")
   }
-
+  
   # nsubjects must be positive whole numbers
-  if (sum(is.wholenumber(unlist(nsubjects))==FALSE)!=0 || sum(unlist(nsubjects)< 1)!=0){
+  if (sum(is.wholenumber(unlist(nsubjects)) == FALSE) != 0 ||
+      sum(unlist(nsubjects) < 1) != 0) {
     stop("nsubjects must be positive integer values.")
   }
   # Create nsubjects structure from narms and nclusters when nsubjects is scalar
-  if (length(nsubjects)==1){
-    str.nsubjects <- lapply(nclusters, function(x) rep(nsubjects, x))
+  if (length(nsubjects) == 1) {
+    str.nsubjects <- lapply(nclusters, function(x)
+      rep(nsubjects, x))
   } else {
     str.nsubjects <- nsubjects
   }
   
   # allows for means, sigma_sq, sigma_b_sq, and ICC to be entered as scalar
-  if (length(sigma_sq)==1){
+  if (length(sigma_sq) == 1) {
     sigma_sq <- rep(sigma_sq, narms)
   }
-  if (length(sigma_b_sq)==1){
+  if (length(sigma_b_sq) == 1) {
     sigma_b_sq <- rep(sigma_b_sq, narms)
   }
-  if (length(ICC)==1){
+  if (length(ICC) == 1) {
     ICC <- rep(ICC, narms)
   }
-  if (length(means)==1){
+  if (length(means) == 1) {
     means <- rep(means, narms)
   }
-
-# supplies sigma_sq or sigma_b_sq if user supplies ICC
-  if (isTRUE(length(ICC)!=0)){
-    if (isTRUE(length(sigma_sq)==0 & length(sigma_b_sq)!=0)){
-      sigma_sq <- createMissingVarianceParam(sigma_b_sq = sigma_b_sq, ICC = ICC)
+  
+  # supplies sigma_sq or sigma_b_sq if user supplies ICC
+  if (isTRUE(length(ICC) != 0)) {
+    if (isTRUE(length(sigma_sq) == 0 & length(sigma_b_sq) != 0)) {
+      sigma_sq <-
+        createMissingVarianceParam(sigma_b_sq = sigma_b_sq, ICC = ICC)
       return(sigma_sq)
     }
-    if (isTRUE(length(sigma_b_sq)==0 & length(sigma_sq)!=0)){
-      sigma_b_sq <- createMissingVarianceParam(sigma_sq = sigma_sq, ICC = ICC)
+    if (isTRUE(length(sigma_b_sq) == 0 & length(sigma_sq) != 0)) {
+      sigma_b_sq <-
+        createMissingVarianceParam(sigma_sq = sigma_sq, ICC = ICC)
       return(sigma_b_sq)
     }
   }
   
-  if (length(sigma_sq)!=narms){
-    stop("Length of variance parameters (sigma_sq, sigma_b_sq, ICC) 
-         must equal narms, or be provided as a scalar if sigma_sq for all arms are equal.")
+  if (length(sigma_sq) != narms) {
+    stop(
+      "Length of variance parameters (sigma_sq, sigma_b_sq, ICC)
+         must equal narms, or be provided as a scalar if sigma_sq for all arms are equal."
+    )
   }
   
   #type 1 error warning, see helperfxns.R
-  type1ErrTest(sigma_sq_ = sigma_sq, sigma_b_sq_ = sigma_b_sq, nsubjects_ = nsubjects)
+  type1ErrTest(sigma_sq_ = sigma_sq,
+               sigma_b_sq_ = sigma_b_sq,
+               nsubjects_ = nsubjects)
   
-   # run the simulations 
-   normal.ma.rct <- cps.ma.normal.internal(nsim = nsim, 
-                                           str.nsubjects = str.nsubjects, 
-                                           means = means, sigma_sq = sigma_sq, 
-                                           sigma_b_sq = sigma_b_sq, alpha = alpha, 
-                                           quiet = quiet, method = method, 
-                                           all.sim.data = all.sim.data,
-                                           seed = seed,
-                                           cores = cores,
-                                           poor.fit.override = poor.fit.override,
-                                           low.power.override = low.power.override,
-                                           tdist = tdist,
-                                           opt = opt)
-   
-   models <- normal.ma.rct[[1]]
-   
-#Organize output for GLMM
- if(method=="glmm"){
-   Estimates = matrix(NA, nrow = nsim, ncol = narms)
-   std.error = matrix(NA, nrow = nsim, ncol = narms)
-   t.val = matrix(NA, nrow = nsim, ncol = narms)
-   p.val = matrix(NA, nrow = nsim, ncol = narms)
- 
-  if(max(sigma_sq) != min(sigma_sq)) {
-    for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]][20][[1]][,1]
-      std.error[i,] <- models[[i]][20][[1]][,2]
-      t.val[i,] <- models[[i]][20][[1]][,4]
-      p.val[i,] <- models[[i]][20][[1]][,5]
-    }
-    keep.names <- rownames(models[[1]][20][[1]])
-  } else {
-   for (i in 1:nsim){
-     Estimates[i,] <- models[[i]][[10]][,1]
-     std.error[i,] <- models[[i]][[10]][,2]
-     t.val[i,] <- models[[i]][[10]][,4]
-     p.val[i,] <- models[[i]][[10]][,5]
-   }
-    keep.names <- rownames(models[[1]][[10]])
-   }
- 
- # Organize the row/col names for the model estimates output
- 
-   names.Est <- rep(NA, narms)
-   names.st.err <- rep(NA, narms)
-   names.tval <- rep(NA, narms)
-   names.pval <- rep(NA, narms)
-   names.power <- rep(NA, narms)
- 
-   for (i in 1:length(keep.names)){
-     names.Est[i] <- paste(keep.names[i], ".Estimate", sep="")
-     names.st.err[i] <- paste(keep.names[i], ".Std.Err", sep="")
-     names.tval[i] <- paste(keep.names[i], ".tval", sep="")
-     names.pval[i] <- paste(keep.names[i], ".pval", sep="")
-     names.power[i] <- paste(keep.names[i], ".power", sep="")
-   }
-   colnames(Estimates) <- names.Est
-   colnames(std.error) <- names.st.err
-   colnames(t.val) <- names.tval
-   colnames(p.val) <- names.pval
-   
-   # Organize the LRT output
-   if ((max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)==min(sigma_b_sq)) | 
-       (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)!=min(sigma_b_sq))){
-     LRT.holder <- matrix(unlist(normal.ma.rct[[2]]), ncol=6, nrow=nsim, 
-       byrow=TRUE, 
-       dimnames = list(seq(1:nsim), 
-       c("Sum Sq", "Mean Sq", "NumDF", "DenDF", "F value", "P(>F)")))
-     sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
-   } else {
-     LRT.holder <- as.vector(rep(NA, nsim))
-     for (i in 1:nsim){
-       LRT.holder[i] <- na.omit(normal.ma.rct[[2]][[i]][,9])}
-     sig.LRT <-  ifelse(LRT.holder < alpha, 1, 0)
-   }
-   
-   # Proportion of times P(>F)
-
-   LRT.holder.abbrev <- sum(sig.LRT)
-   
-   cps.model.temp <- data.frame(cbind(unlist(normal.ma.rct[[3]]), p.val))
-   colnames(cps.model.temp)[1] <- "converge"
-   cps.model.temp2 <- dplyr::filter(cps.model.temp, converge == TRUE)
-   if (isTRUE(nrow(cps.model.temp2)<(.25*nsim))){
-     warning(paste0(nrow(cps.model.temp2), " models converged. Check model parameters."),
-             immediate. = TRUE)
-   }
-   
- # Calculate and store power estimate & confidence intervals
-   power.parms <- confint.calc(nsim = nsim, alpha = alpha,
-     p.val = as.vector(cps.model.temp2[,2:length(cps.model.temp2)]), 
-     names.power = names.power)
+  # run the simulations
+  normal.ma.rct <- cps.ma.normal.internal(
+    nsim = nsim,
+    str.nsubjects = str.nsubjects,
+    means = means,
+    sigma_sq = sigma_sq,
+    sigma_b_sq = sigma_b_sq,
+    alpha = alpha,
+    quiet = quiet,
+    method = method,
+    all.sim.data = all.sim.data,
+    seed = seed,
+    cores = cores,
+    poor.fit.override = poor.fit.override,
+    low.power.override = low.power.override,
+    tdist = tdist,
+    opt = opt
+  )
+  
+  models <- normal.ma.rct[[1]]
+  
+  #Organize output for GLMM
+  if (method == "glmm") {
+    Estimates = matrix(NA, nrow = nsim, ncol = narms)
+    std.error = matrix(NA, nrow = nsim, ncol = narms)
+    t.val = matrix(NA, nrow = nsim, ncol = narms)
+    p.val = matrix(NA, nrow = nsim, ncol = narms)
     
-  # Store simulation output in data frame
-   ma.model.est <-  data.frame(Estimates, std.error, t.val, p.val)
-   ma.model.est <- ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))] 
-   
-   ## Output objects for GLMM
-
-   # Create list containing all output (class 'crtpwr') and return
-   if(all.sim.data == TRUE){
-     complete.output <-  list("power" <-  power.parms[-1,],
-                              "model.estimates" <-  ma.model.est, 
-                              "overall.power" <- LRT.holder,
-                              "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
-                              "sim.data" <-  normal.ma.rct[[4]], 
-                              "convergence" <-  normal.ma.rct[[3]])
-   } 
-   if (return.all.models == TRUE) {
-     complete.output <-  list("power" <-  power.parms[-1,],
-                              "model.estimates" <-  ma.model.est, 
-                              "overall.power" <- LRT.holder,
-                              "overall.power2" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
-                              "all.models" <-  normal.ma.rct)
-     } else {
-     complete.output <-  list("power" <-  power.parms[-1,],
-                              "overall.power" <- prop_H0_rejection(alpha=alpha, nsim=nsim, LRT.holder.abbrev=LRT.holder.abbrev),
-                              "convergence" <- normal.ma.rct[[3]])
-     }
-   class(complete.output) <- "crtpwr"
-   return(complete.output)
- }
-   #Organize output for GEE method
-   if (method=="gee"){
-     # Organize the output
-     Estimates = matrix(NA, nrow = nsim, ncol = narms)
-     std.error = matrix(NA, nrow = nsim, ncol = narms)
-     Wald = matrix(NA, nrow = nsim, ncol = narms)
-     Pr = matrix(NA, nrow = nsim, ncol = narms)
-     
-     for (i in 1:nsim){
-       Estimates[i,] <- models[[i]]$coefficients[,1]
-       std.error[i,] <- models[[i]]$coefficients[,2]
-       Wald[i,] <- models[[i]]$coefficients[,3]
-       Pr[i,] <- p.adjust(models[[i]]$coefficients[,4], method = multi.p.method)
-     }
-     
-     # Organize the row/col names for the output
-     keep.names <- rownames(models[[1]]$coefficients)
-     
-     names.Est <- rep(NA, length(narms))
-     names.st.err <- rep(NA, length(narms))
-     names.wald <- rep(NA, length(narms))
-     names.pval <- rep(NA, length(narms))
-     names.power <- rep(NA, length(narms))
-     
-     for (i in 1:length(keep.names)){
-       names.Est[i] <- paste(keep.names[i], ".Estimate", sep="")
-       names.st.err[i] <- paste(keep.names[i], ".Std.Err", sep="")
-       names.wald[i] <- paste(keep.names[i], ".wald", sep="")
-       names.pval[i] <- paste(keep.names[i], ".pval", sep="")
-       names.power[i] <- paste(keep.names[i], ".power", sep="")
-     }
-     colnames(Estimates) <- names.Est
-     colnames(std.error) <- names.st.err
-     colnames(Wald) <- names.wald
-     colnames(Pr) <- names.pval
-     
-     # Organize the LRT output
-     LRT.holder <- matrix(unlist(normal.ma.rct[[2]]), ncol=3, nrow=nsim, 
-                          byrow=TRUE, 
-                          dimnames = list(seq(1:nsim), 
-                                          c("Df", "X2", "P(>|Chi|)")))
-     
-     # Proportion of times P(>F)
-     sig.LRT <-  ifelse(LRT.holder[,6] < alpha, 1, 0)
-     LRT.holder.abbrev <- sum(sig.LRT)
-     
-     # Calculate and store power estimate & confidence intervals
-     power.parms <- confint.calc(nsim = nsim, alpha = alpha,
-                                 p.val = Pr, names.power = names.power)
-     
-     # Store GEE simulation output in data frame
-     ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)
-     ma.model.est <- ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))] 
-   
-   ## Output objects for GEE
-   
-     # Create list containing all output (class 'crtpwr') and return
-     if(all.sim.data == TRUE){
-       complete.output <-  list("power" <-  power.parms[-1,],
-                                "model.estimates" <-  ma.model.est, 
-                                "overall.power" <- LRT.holder,
-                                "overall.power2" <- prop_H0_rejection(
-                                  alpha=alpha, nsim=nsim, 
-                                  LRT.holder.abbrev=LRT.holder.abbrev),
-                                "sim.data" <-  normal.ma.rct[[3]])
-     } else {
-       complete.output <-  list("power" <-  power.parms[-1,],
-                                "model.estimates" <-  ma.model.est, 
-                                "overall.power" <- LRT.holder,
-                                "overall.power2" <- prop_H0_rejection(
-                                  alpha=alpha, nsim=nsim, 
-                                  LRT.holder.abbrev=LRT.holder.abbrev))
-     }
-     class(complete.output) <- "ctrpwr"
-     return(complete.output)
-   }
+    if (max(sigma_sq) != min(sigma_sq)) {
+      for (i in 1:nsim) {
+        Estimates[i, ] <- models[[i]][20][[1]][, 1]
+        std.error[i, ] <- models[[i]][20][[1]][, 2]
+        t.val[i, ] <- models[[i]][20][[1]][, 4]
+        p.val[i, ] <- models[[i]][20][[1]][, 5]
+      }
+      keep.names <- rownames(models[[1]][20][[1]])
+    } else {
+      for (i in 1:nsim) {
+        Estimates[i, ] <- models[[i]][[10]][, 1]
+        std.error[i, ] <- models[[i]][[10]][, 2]
+        t.val[i, ] <- models[[i]][[10]][, 4]
+        p.val[i, ] <- models[[i]][[10]][, 5]
+      }
+      keep.names <- rownames(models[[1]][[10]])
+    }
+    
+    # Organize the row/col names for the model estimates output
+    
+    names.Est <- rep(NA, narms)
+    names.st.err <- rep(NA, narms)
+    names.tval <- rep(NA, narms)
+    names.pval <- rep(NA, narms)
+    names.power <- rep(NA, narms)
+    
+    for (i in 1:length(keep.names)) {
+      names.Est[i] <- paste(keep.names[i], ".Estimate", sep = "")
+      names.st.err[i] <- paste(keep.names[i], ".Std.Err", sep = "")
+      names.tval[i] <- paste(keep.names[i], ".tval", sep = "")
+      names.pval[i] <- paste(keep.names[i], ".pval", sep = "")
+      names.power[i] <- paste(keep.names[i], ".power", sep = "")
+    }
+    colnames(Estimates) <- names.Est
+    colnames(std.error) <- names.st.err
+    colnames(t.val) <- names.tval
+    colnames(p.val) <- names.pval
+    
+    # Organize the LRT output
+    if ((max(sigma_sq) == min(sigma_sq) &
+         max(sigma_b_sq) == min(sigma_b_sq)) |
+        (max(sigma_sq) == min(sigma_sq) &
+         max(sigma_b_sq) != min(sigma_b_sq))) {
+      LRT.holder <- matrix(
+        unlist(normal.ma.rct[[2]]),
+        ncol = 6,
+        nrow = nsim,
+        byrow = TRUE,
+        dimnames = list(
+          seq(1:nsim),
+          c("Sum Sq", "Mean Sq", "NumDF", "DenDF", "F value", "P(>F)")
+        )
+      )
+      sig.LRT <-  ifelse(LRT.holder[, 6] < alpha, 1, 0)
+    } else {
+      LRT.holder <- as.vector(rep(NA, nsim))
+      for (i in 1:nsim) {
+        LRT.holder[i] <- na.omit(normal.ma.rct[[2]][[i]][, 9])
+      }
+      sig.LRT <-  ifelse(LRT.holder < alpha, 1, 0)
+    }
+    
+    # Proportion of times P(>F)
+    
+    LRT.holder.abbrev <- sum(sig.LRT)
+    
+    cps.model.temp <-
+      data.frame(cbind(unlist(normal.ma.rct[[3]]), p.val))
+    colnames(cps.model.temp)[1] <- "converge"
+    cps.model.temp2 <-
+      dplyr::filter(cps.model.temp, converge == TRUE)
+    if (isTRUE(nrow(cps.model.temp2) < (.25 * nsim))) {
+      warning(paste0(
+        nrow(cps.model.temp2),
+        " models converged. Check model parameters."
+      ),
+      immediate. = TRUE)
+    }
+    
+    # Calculate and store power estimate & confidence intervals
+    power.parms <- confint.calc(
+      nsim = nsim,
+      alpha = alpha,
+      p.val = as.vector(cps.model.temp2[, 2:length(cps.model.temp2)]),
+      names.power = names.power
+    )
+    
+    # Store simulation output in data frame
+    ma.model.est <-  data.frame(Estimates, std.error, t.val, p.val)
+    ma.model.est <-
+      ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))]
+    
+    ## Output objects for GLMM
+    
+    # Create list containing all output (class 'crtpwr') and return
+    if (all.sim.data == TRUE) {
+      complete.output <-  list(
+        "power" <-  power.parms[-1, ],
+        "model.estimates" <-  ma.model.est,
+        "overall.power" <- LRT.holder,
+        "overall.power2" <-
+          prop_H0_rejection(
+            alpha = alpha,
+            nsim = nsim,
+            LRT.holder.abbrev = LRT.holder.abbrev
+          ),
+        "sim.data" <-  normal.ma.rct[[4]],
+        "convergence" <-  normal.ma.rct[[3]]
+      )
+    }
+    if (return.all.models == TRUE) {
+      complete.output <-  list(
+        "power" <-  power.parms[-1, ],
+        "model.estimates" <-  ma.model.est,
+        "overall.power" <- LRT.holder,
+        "overall.power2" <-
+          prop_H0_rejection(
+            alpha = alpha,
+            nsim = nsim,
+            LRT.holder.abbrev = LRT.holder.abbrev
+          ),
+        "all.models" <-  normal.ma.rct
+      )
+    } else {
+      complete.output <-  list(
+        "power" <-  power.parms[-1, ],
+        "overall.power" <-
+          prop_H0_rejection(
+            alpha = alpha,
+            nsim = nsim,
+            LRT.holder.abbrev = LRT.holder.abbrev
+          ),
+        "convergence" <- normal.ma.rct[[3]]
+      )
+    }
+    class(complete.output) <- "crtpwr"
+    return(complete.output)
+  }
+  #Organize output for GEE method
+  if (method == "gee") {
+    # Organize the output
+    Estimates = matrix(NA, nrow = nsim, ncol = narms)
+    std.error = matrix(NA, nrow = nsim, ncol = narms)
+    Wald = matrix(NA, nrow = nsim, ncol = narms)
+    Pr = matrix(NA, nrow = nsim, ncol = narms)
+    
+    for (i in 1:nsim) {
+      Estimates[i, ] <- models[[i]]$coefficients[, 1]
+      std.error[i, ] <- models[[i]]$coefficients[, 2]
+      Wald[i, ] <- models[[i]]$coefficients[, 3]
+      Pr[i, ] <-
+        p.adjust(models[[i]]$coefficients[, 4], method = multi.p.method)
+    }
+    
+    # Organize the row/col names for the output
+    keep.names <- rownames(models[[1]]$coefficients)
+    
+    names.Est <- rep(NA, length(narms))
+    names.st.err <- rep(NA, length(narms))
+    names.wald <- rep(NA, length(narms))
+    names.pval <- rep(NA, length(narms))
+    names.power <- rep(NA, length(narms))
+    
+    for (i in 1:length(keep.names)) {
+      names.Est[i] <- paste(keep.names[i], ".Estimate", sep = "")
+      names.st.err[i] <- paste(keep.names[i], ".Std.Err", sep = "")
+      names.wald[i] <- paste(keep.names[i], ".wald", sep = "")
+      names.pval[i] <- paste(keep.names[i], ".pval", sep = "")
+      names.power[i] <- paste(keep.names[i], ".power", sep = "")
+    }
+    colnames(Estimates) <- names.Est
+    colnames(std.error) <- names.st.err
+    colnames(Wald) <- names.wald
+    colnames(Pr) <- names.pval
+    
+    # Organize the LRT output
+    LRT.holder <-
+      matrix(
+        unlist(normal.ma.rct[[2]]),
+        ncol = 3,
+        nrow = nsim,
+        byrow = TRUE,
+        dimnames = list(seq(1:nsim),
+                        c("Df", "X2", "P(>|Chi|)"))
+      )
+    
+    # Proportion of times P(>F)
+    sig.LRT <-  ifelse(LRT.holder[, 6] < alpha, 1, 0)
+    LRT.holder.abbrev <- sum(sig.LRT)
+    
+    # Calculate and store power estimate & confidence intervals
+    power.parms <- confint.calc(
+      nsim = nsim,
+      alpha = alpha,
+      p.val = Pr,
+      names.power = names.power
+    )
+    
+    # Store GEE simulation output in data frame
+    ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)
+    ma.model.est <-
+      ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))]
+    
+    ## Output objects for GEE
+    
+    # Create list containing all output (class 'crtpwr') and return
+    if (all.sim.data == TRUE) {
+      complete.output <-  list(
+        "power" <-  power.parms[-1, ],
+        "model.estimates" <-  ma.model.est,
+        "overall.power" <- LRT.holder,
+        "overall.power2" <-
+          prop_H0_rejection(
+            alpha = alpha,
+            nsim = nsim,
+            LRT.holder.abbrev = LRT.holder.abbrev
+          ),
+        "sim.data" <-  normal.ma.rct[[3]]
+      )
+    } else {
+      complete.output <-  list(
+        "power" <-  power.parms[-1, ],
+        "model.estimates" <-  ma.model.est,
+        "overall.power" <- LRT.holder,
+        "overall.power2" <-
+          prop_H0_rejection(
+            alpha = alpha,
+            nsim = nsim,
+            LRT.holder.abbrev = LRT.holder.abbrev
+          )
+      )
+    }
+    class(complete.output) <- "ctrpwr"
+    return(complete.output)
+  }
 }
-

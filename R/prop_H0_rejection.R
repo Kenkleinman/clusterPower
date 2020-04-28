@@ -16,8 +16,9 @@
 #' 
 #' @export
 
-prop_H0_rejection <- function (alpha = alpha, nsim = nsim, 
-                               LRT.holder.abbrev = LRT.holder.abbrev){
+prop_H0_rejection <- function (alpha = alpha,
+                               nsim = nsim,
+                               LRT.holder.abbrev = LRT.holder.abbrev) {
   f.test <- binom.test(p = 0.05, n = nsim, x = LRT.holder.abbrev)
   Power = f.test$estimate
   Lower.95.CI = f.test$conf.int[1]
