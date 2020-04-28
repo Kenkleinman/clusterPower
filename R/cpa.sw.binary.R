@@ -127,23 +127,37 @@ cpa.sw.binary <- function(nclusters = NA,
     return(o)
   }
   
-  #computeparameter <- function(JJ, mu, beta, gamma, tau2, p0, p11, rho0){
-  #  
-  #}
+  computeparameter <- function(steps = steps, mu = mu, 
+                               beta = beta, 
+                               p0 = p0, p11 = p11, 
+                               ICC = ICC){
+    tau2 <- 0.0
+    gammaobj <- rep(NA, times = steps)
+    o = .Fortran("computeparameter", JJ = as.integer(steps), 
+                 mu = as.numeric(mu), beta = as.numeric(beta), 
+                 gamma = as.numeric(gammaobj), 
+                 tau2 = as.numeric(tau2), p0 = as.integer(p0), 
+                 p11 = as.integer(p11), 
+                 rho0 = as.numeric(ICC))
+    return(o)
+  }
   
   ######## main function code ###################
   
-  p0 <- vector(mode = "numeric", length = steps)
-  gammaobj <- vector(mode = "numeric", length = steps)
-  p0[1] <- mu
-  p11 <-  mu + beta
+  p0 <- rep(mu, times = steps)
+  p11 <-  p0[1] + beta
   p0stepchange <- d / (steps - 1)
   for (i in 2:steps) {
     p0[i] <-  p0[i - 1] + p0stepchange
   }
-  tau2 <-  ICC / (1 - ICC) * mu * (1 - mu)
-  gammaobj <- p0
-  
+  browser()
+  parholder <- computeparameter(steps = steps, mu = mu, 
+                                beta = beta, 
+                                p0 = p0, p11 = p11, 
+                                ICC = ICC)
+  tau2 <- parholder$tau2
+  gammaobj <- parholder$gamma
+  browser()
   # mincomp and maxcomp are steps+2 vectors of 0 and 1's, 
   # representing the weights of gammaobj(1),...,gammaobj(steps), mu, beta.
   comp <- rep(0, times = (steps + 2))
