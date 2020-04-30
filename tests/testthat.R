@@ -209,21 +209,38 @@ test_that("DID count case matches reference (cohort)", {
 
 
 
+##------------------------------------------ SW binary outcome
 
-###########################################
-######## VALIDATION FXNS TESTS ############
-###########################################
+context("SW binary outcome accuracy")
 
-testthat::context("createMissingVarianceParam: calculate ICC, sigma, 
-                  or sigma_b based on user providing 2 of those values")
+# compare to a reference value from Zhou's FORTRAN program
+test_that("SW binary case matches reference", {
+  model <- cpa.sw.binary(nclusters = 20,
+                             steps = 3,
+                            nsubjects = 90,
+                            d = -0.05,
+                            ICC = 0.01,
+                            beta = -0.05,
+                            mu = 0.18) 
+  x <- 0.8155647
+  expect_equal(model, x)
+})
 
-# compare to a reference value 
-testthat::test_that("createMissingVarianceParam returns ICC", {
-  testthat::expect_equal(createMissingVarianceParam(sigma = c(1, 1, 0.9), 
-                                                       sigma_b = c(0.1, 0.15, 0.1)), 
-                            c(0.09090909, 0.13043478, 0.10000000))})
-
-testthat::test_that("createMissingVarianceParam fails when fewer than 2 params provided", {
-  testthat::show_failure(createMissingVarianceParam(sigma = c(1, 1, 0.9)))})
-
-  
+# compare SW binary analytic to simulated method
+test_that("Analytic SW binary case matches simulation results", {
+  model <- cpa.sw.binary(nclusters = 20,
+                         steps = 3,
+                         nsubjects = 90,
+                         d = -0.05,
+                         ICC = 0.01,
+                         beta = -0.05,
+                         mu = 0.18)
+   binary.sw.rct = cps.sw.binary(nsim = 1000, nsubjects = 90, nclusters = 21, 
+                                 p.ntrt = 0.1, p.trt = 0.2, steps = 3, 
+                                 sigma_b_sq = 0.1, alpha = 0.05, method = 'glmm', 
+                                 quiet = FALSE, all.sim.data = FALSE)
+  expect_equal(TRUE, 
+               data.table::between(x, 
+                                   model$power$lower.95.ci, 
+                                   model$power$upper.95.ci))
+})
