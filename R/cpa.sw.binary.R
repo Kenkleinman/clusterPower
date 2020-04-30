@@ -26,7 +26,8 @@
 #' number of steps (required).
 #' @param d Total change over the study period (assume that time effects are linear
 #' across time steps); accepts numeric (required).
-#' @param ICC ICC for participants at first time step; accepts numeric (required).
+#' @param ICC Intracluster correlation coefficient as defined by Hussey and Hughes (2007) 
+#' for participants at first time step; accepts numeric (required). 
 #' @param beta Estimated treatment effect; accepts numeric (required).
 #' @param mu Estimated baseline effect; accepts numeric (required).
 #' @param tol Machine tolerance. Accepts numeric. Default is 1e-5.
@@ -55,6 +56,8 @@
 #' @references Zhou X, Liao X, Kunz LM, Normand ST, Wang M, Spiegelman D. A maximum
 #' likelihood approach to power calculations for stepped wedge designs of binary
 #' outcomes. Biostatistics. 2020 Jan 1;21(1):102-121. doi: 10.1093/biostatistics/kxy031
+#' @references Hussey, MA AND Hughes, JP. (2007). Design and analysis of stepped wedge 
+#' cluster randomized trials. Contemporary Clinical Trials 28, 182–191.
 #' @export
 cpa.sw.binary <- function(nclusters = NA,
                           steps = NA,

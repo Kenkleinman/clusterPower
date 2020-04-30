@@ -13,22 +13,24 @@ cpa.sw.binary(
   beta = NA,
   mu = NA,
   tol = 1e-05,
-  GQ = 100
+  GQ = 100,
+  quiet = FALSE
 )
 }
 \arguments{
 \item{nclusters}{Number of clusters; accepts non-negative integer scalar (required).}
 
-\item{steps}{Number of crossover steps; Accepts positive scalar indicating the total 
+\item{steps}{Number of crossover steps; Accepts positive scalar indicating the total
 number of steps (required).}
 
-\item{nsubjects}{Number of subjects per cluster; accepts a scalar. Equal cluster sizes 
+\item{nsubjects}{Number of subjects per cluster; accepts a scalar. Equal cluster sizes
 are assumed (required).}
 
-\item{d}{Total change over the study period (assume that time effects are linear 
+\item{d}{Total change over the study period (assume that time effects are linear
 across time steps); accepts numeric (required).}
 
-\item{ICC}{ICC for participants at first time step; accepts numeric (required).}
+\item{ICC}{Intracluster correlation coefficient as defined by Hussey and Hughes (2007) 
+for participants at first time step; accepts numeric (required).}
 
 \item{beta}{Estimated treatment effect; accepts numeric (required).}
 
@@ -36,51 +38,56 @@ across time steps); accepts numeric (required).}
 
 \item{tol}{Machine tolerance. Accepts numeric. Default is 1e-5.}
 
-\item{GQ}{Number of quadriture points used in Gaussian Legendre integration; accepts 
+\item{GQ}{Number of quadriture points used in Gaussian Legendre integration; accepts
 a scalar. Default is 100.}
+
+\item{quiet}{Suppresses the progress bar; logical. Default is FALSE.}
 }
 \value{
 The estimated power.
 }
 \description{
-This function uses a modified Cox method to determine power for stepped 
-wedge cluster-randomized controlled trials. Users can modify a variety of 
+This function uses a modified Cox method to determine power for stepped
+wedge cluster-randomized controlled trials. Users can modify a variety of
 parameters to suit their desired experimental situation.
 }
 \details{
 The stepped wedge trial design is a type of cross-over
-design in which clusters change treatments in waves. Initially all the 
+design in which clusters change treatments in waves. Initially all the
 clusters recieve the same standard treatment, and at the end of the trial all
-of the clusters will be recieving the treatment of interest. More than one 
-cluster can change treatments in a wave, but the order in which clusters 
-change treatments is randomly determined. The outcome of interest is assessed 
+of the clusters will be recieving the treatment of interest. More than one
+cluster can change treatments in a wave, but the order in which clusters
+change treatments is randomly determined. The outcome of interest is assessed
 in each cluster during each wave.
 
-Users must specify the number of subjects per cluster, number of clusters, 
-the number of time steps, the baseline effect, the expected treatment effect, 
-expected absolute difference between treatment 
+Users must specify the number of subjects per cluster, number of clusters,
+the number of time steps, the baseline effect, the expected treatment effect,
+expected absolute difference between treatment
 arms, ICC, and time effect.
 
 Fortran for this package was kindly provided by Dr. Zhou and others.
 }
 \examples{
 \dontrun{
-holder <- cpa.sw.binary(nclusters = 12, 
-  steps = 3, 
-  nsubjects = 90, 
-  d = -0.05, 
-  ICC = 0.01, 
-  beta = -0.5, 
-  mu = 0.18, 
-  tol = 1e-5, 
+holder <- cpa.sw.binary(nclusters = 16,
+  steps = 3,
+  nsubjects = 90,
+  d = -0.01,
+  ICC = 0.01,
+  beta = -0.05,
+  mu = 0.18,
+  tol = 1e-5,
   GQ = 100)
 }
 
 }
 \references{
-Zhou X, Liao X, Kunz LM, Normand ST, Wang M, Spiegelman D. A maximum 
-likelihood approach to power calculations for stepped wedge designs of binary 
+Zhou X, Liao X, Kunz LM, Normand ST, Wang M, Spiegelman D. A maximum
+likelihood approach to power calculations for stepped wedge designs of binary
 outcomes. Biostatistics. 2020 Jan 1;21(1):102-121. doi: 10.1093/biostatistics/kxy031
+
+Hussey, MA AND Hughes, JP. (2007). Design and analysis of stepped wedge 
+cluster randomized trials. Contemporary Clinical Trials 28, 182–191.
 }
 \author{
 Alexandria C. Sakrejda (\email{acbro0@umass.edu})

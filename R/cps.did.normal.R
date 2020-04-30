@@ -98,6 +98,7 @@ cps.did.normal = function(nsim = NULL,
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
+  converge.vector = vector(mode = "logical", length = nsim)
   values.vector = cbind(c(0, 0, 0, 0))
   simulated.datasets = list()
   
@@ -307,6 +308,9 @@ cps.did.normal = function(nsim = NULL,
       se.vector = append(se.vector, glmm.values['trt:period', 'Std. Error'])
       stat.vector = append(stat.vector, glmm.values['trt:period', 't value'])
       pval.vector = append(pval.vector, p.val)
+      converge.vector[i] == ifelse(is.null(my.mod@optinfo$conv$lme4$messages),
+                                                           FALSE,
+                                                           TRUE)
     }
     
     # Fit GEE (geeglm)
@@ -447,7 +451,8 @@ cps.did.normal = function(nsim = NULL,
       "inputs" = difference,
       "model.estimates" = cps.model.est,
       "sim.data" = simulated.datasets,
-      "differences" = differences
+      "differences" = differences,
+      "convergence" = converge.vector
     ),
     class = 'crtpwr'
   )
