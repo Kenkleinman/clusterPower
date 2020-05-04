@@ -235,14 +235,14 @@ test_that("Analytic SW binary case matches simulation results", {
                          ICC = 0.01,
                          beta = -0.05,
                          mu = 0.18)
-   binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 90, nclusters = 21, 
-                                 p.ntrt = 0.06, p.trt = 0.01, steps = 3, 
-                                 sigma_b_sq = 0.30, alpha = 0.05, method = 'glmm', 
+   x <- cps.sw.binary(nsim = 1000, nsubjects = 90, nclusters = 21, 
+                                 p.ntrt = 0.18, p.trt = 0.13, steps = 3, 
+                                 sigma_b_sq = 1, alpha = 0.05, method = 'glmm', 
                                  quiet = FALSE, all.sim.data = FALSE)
   expect_equal(TRUE, 
-               data.table::between(x, 
-                                   model$power$lower.95.ci, 
-                                   model$power$upper.95.ci))
+               data.table::between(model, 
+                                   x$power$Lower.95.CI, 
+                                   x$power$Upper.95.CI))
 })
 
 ##------------------------------------------ SW count outcome
