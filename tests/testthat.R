@@ -228,19 +228,52 @@ test_that("SW binary case matches reference", {
 
 # compare SW binary analytic to simulated method
 test_that("Analytic SW binary case matches simulation results", {
-  model <- cpa.sw.binary(nclusters = 20,
+  model <- cpa.sw.binary(nclusters = 21,
                          steps = 3,
                          nsubjects = 90,
                          d = -0.05,
                          ICC = 0.01,
                          beta = -0.05,
                          mu = 0.18)
-   binary.sw.rct = cps.sw.binary(nsim = 1000, nsubjects = 90, nclusters = 21, 
-                                 p.ntrt = 0.1, p.trt = 0.2, steps = 3, 
-                                 sigma_b_sq = 0.1, alpha = 0.05, method = 'glmm', 
+   binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 90, nclusters = 21, 
+                                 p.ntrt = 0.06, p.trt = 0.01, steps = 3, 
+                                 sigma_b_sq = 0.30, alpha = 0.05, method = 'glmm', 
                                  quiet = FALSE, all.sim.data = FALSE)
   expect_equal(TRUE, 
                data.table::between(x, 
                                    model$power$lower.95.ci, 
                                    model$power$upper.95.ci))
 })
+
+##------------------------------------------ SW count outcome
+#compare analytic SW count to a constant
+
+testthat::context("SW count outcome accuracy")
+
+# compare to a reference value calculated previously
+testthat::test_that("SW count case matches reference", {
+  model <- cpa.sw.count(lambda1 = 1.75, RR = 0.9, nclusters = 21, steps = 6, nsubjects = 30, ICC = 0.01) 
+  x <- 0.806856
+  testthat::expect_equal(round(model, 6), x)
+})
+
+# compare to a HH.count
+testthat::test_that("SW count case matches HH.count", {
+  model <- cpa.sw.count(lambda1 = 1.75, RR = 0.9, nclusters = 21, steps = 6, nsubjects = 30, ICC = 0.01) 
+  x <- HH.count(lambda1 = 1.75, RR = 0.9, I = 21, J = 6, K = 30, rho = 0.01)$power
+  testthat::expect_equal(model, x)
+})
+
+# compare to simulated method
+testthat::test_that("SW count case matches HH.count", {
+  model <- cpa.sw.count(lambda1 = 1.75, RR = 0.9, nclusters = 25, steps = 5, nsubjects = 30, ICC = 0.01) 
+  x <- cps.sw.count(nsim = 1000, nsubjects = 30, nclusters = 25, 
+                                   c.ntrt = 1.75, c.trt = 1.575, steps = 5, sigma_b_sq = 0.01678129, 
+                                   alpha = 0.05, family = 'poisson', analysis = 'poisson', 
+                                   method = 'glmm', quiet = FALSE, all.sim.data = FALSE)
+  testthat::expect_equal(TRUE, 
+               data.table::between(model, 
+                                   x$power$Lower.95.CI, 
+                                   x$power$Upper.95.CI))
+})
+
