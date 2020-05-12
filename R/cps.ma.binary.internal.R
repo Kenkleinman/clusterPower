@@ -52,16 +52,16 @@
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
 #'                   "clust" (Indicator for cluster)
-#'   \item A vector of length \code{nsim} consisting of 1 and 0. 
-#'           When a model fails to converge, failed.to.converge==1, otherwise 0.
+#'   \item A vector of logical values \code{nsim}. 
+#'           When a model fails to converge, FALSE, otherwise TRUE.
 #' }
 #' 
 #' @examples 
 #' \dontrun{
 #' 
-#' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-#' probs.example <- c(0.1, 0.5, 0.9)
-#' sigma_b_sq.example <- c(0.1, 0.1, 0.2)
+#' nsubjects.example <- list(c(200,200,200,250), c(150, 200, 200, 210), c(170, 200, 210))
+#' probs.example <- c(0.15, 0.35, 0.4)
+#' sigma_b_sq.example <- c(0.01, 0.01, 0.02)
 #' 
 #' bin.ma.rct <- cps.ma.binary.internal (nsim = 10, 
 #'                             str.nsubjects = nsubjects.example, 
@@ -70,7 +70,8 @@
 #'                             alpha = 0.05, all.sim.data = FALSE,
 #'                             poor.fit.override = TRUE, 
 #'                             seed = 123, cores="all",
-#'                             optmethod = "bobyqa") 
+#'                             opt = "bobyqa",
+#'                             optmethod = "Nelder-Mead") 
 #' }
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
@@ -90,8 +91,8 @@ cps.ma.binary.internal <-
            low.power.override = FALSE,
            tdist = FALSE,
            cores = cores,
-           opt = "optimx",
-           optmethod = "L-BFGS-B") {
+           opt = opt,
+           optmethod = optmethod) {
     # Create vectors to collect iteration-specific values
     simulated.datasets = list()
     
@@ -99,7 +100,7 @@ cps.ma.binary.internal <-
     narms = length(str.nsubjects)
     nclusters = sapply(str.nsubjects, length)
     
-    # This container keeps track of how many models failed to converge
+    # This container keeps track of how many models converged
     converged <- rep(NA, nsim)
     
     # Create a container for the simulated.dataset and model output
@@ -305,8 +306,8 @@ cps.ma.binary.internal <-
       for (i in 1:nsim) {
         converged[i] <-
           ifelse(is.null(my.mod[[i]]@optinfo$conv$lme4$messages),
-                 FALSE,
-                 TRUE)
+                 TRUE,
+                 FALSE)
       }
       
       if (poor.fit.override == FALSE) {

@@ -58,6 +58,36 @@ cpa.sw.count <-
            which.var = "within",
            X = NULL, 
            all.returned.objects = FALSE) {
+    
+    ## Validate user entries
+    if (!is.integer(nclusters) ||
+        nclusters < 1 ||
+        length(nclusters) > 1 ||
+        is.na(nclusters)) {
+      errorCondition(message = "nclusters must be a positive scalar.")
+    }
+    if (!is.integer(steps) ||
+        steps < 1 ||
+        length(steps) > 1 ||
+        is.na(steps)) {
+      errorCondition(message = "steps must be a positive scalar.")
+    }
+    if (!is.integer(nsubjects) ||
+        nsubjects < 1 ||
+        length(nsubjects) > 1 ||
+        is.na(nsubjects)) {
+      errorCondition(message = "nsubjects must be a positive scalar.")
+    }
+    if (which.var != "total" || 
+        which.var != "within" ||
+        is.na(which.var)) {
+      errorCondition(message = "which.var must be either 'total' or 'within'.")
+    }
+    if (!is.logical(all.returned.objects) ||
+        is.na(all.returned.objects)) {
+      errorCondition(message = "all.returned.objects must be logical.")
+    }
+    
     o <-
       SWSamp::HH.count(
         lambda1 = lambda1,

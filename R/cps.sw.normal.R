@@ -89,6 +89,7 @@
 #' @export
 
 
+
 cps.sw.normal = function(nsim = NULL,
                          nsubjects = NULL,
                          nclusters = NULL,
@@ -156,6 +157,13 @@ cps.sw.normal = function(nsim = NULL,
   # Validate STEPS
   if (!is.wholenumber(steps) || steps < 0) {
     stop("All values supplied to STEPS must be non-negative integers")
+  }
+  if (length(steps) == 1) {
+    if (!is.wholenumber(nclusters / steps)) {
+      stop(
+        "nclusters/steps must be a whole number. See documentation for steps parameter in '?clusterPower::cps.sw.binary'"
+      )
+    }
   }
   if (length(steps) > 1) {
     if (sum(steps) != nclusters && max(steps) != nclusters) {

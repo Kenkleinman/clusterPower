@@ -123,10 +123,10 @@
 #'                             seed = 123, cores="all", 
 #'                             poor.fit.override = TRUE) 
 #'                             
-#' bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 200, narms=3,
+#' bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 25, narms=3,
 #'                             nclusters=50,
 #'                             probs = c(0.30, 0.5, 0.7),
-#'                             sigma_b_sq = 0.1, alpha = 0.05,
+#'                             sigma_b_sq = 0.01, alpha = 0.05,
 #'                             quiet = FALSE, method = 'glmm', 
 #'                             all.sim.data = FALSE, 
 #'                             multi.p.method="none",
@@ -151,8 +151,8 @@ cps.ma.binary <- function(nsim = 1000,
                           tdist = FALSE,
                           poor.fit.override = FALSE,
                           low.power.override = FALSE,
-                          opt = "optimx",
-                          optmethod = "L-BFGS-B") {
+                          opt = "bobyqa",
+                          optmethod = "Nelder-Mead") {
   # use this later to determine total elapsed time
   start.time <- Sys.time()
   

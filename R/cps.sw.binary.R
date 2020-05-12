@@ -87,6 +87,7 @@
 #' @export
 
 
+
 cps.sw.binary = function(nsim = NULL,
                          nsubjects = NULL,
                          nclusters = NULL,
@@ -126,6 +127,13 @@ cps.sw.binary = function(nsim = NULL,
     1 / (1 + exp(-x))
   
   # Validate NSIM, NSUBJECTS, NCLUSTERS, DIFFERENCE
+  if (length(steps) == 1) {
+    if (!is.wholenumber(nclusters / steps)) {
+      stop(
+        "nclusters/steps must be a whole number. See documentation for steps parameter in '?clusterPower::cps.sw.binary'"
+      )
+    }
+  }
   sim.data.arg.list = list(nsim, nclusters, nsubjects)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if (sum(sim.data.args) > 0) {
