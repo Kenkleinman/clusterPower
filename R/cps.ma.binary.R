@@ -108,17 +108,14 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' nsubjects.example <- list(rep(200, times=15), rep(150, times=15), 
-#' rep(170, times=15))
-#' probs.example <- c(0.5, 0.8, 0.9)
-#' sigma_b_sq.example <- c(1, 1, 1)
-#' 
 #' bin.ma.rct.unbal <- cps.ma.binary(nsim = 10, 
-#'                             nsubjects = 20, 
-#'                             narms = 2,
-#'                             nclusters = 10,
-#'                             probs = c(0.5, 0.8),
-#'                             sigma_b_sq = c(1, 1.2), 
+#'                             nsubjects = list(c(200,200,200,250), 
+#'                             c(150, 200, 200, 210), 
+#'                             c(170, 200, 210)), 
+#'                             narms = 3,
+#'                             nclusters = 15,
+#'                             probs = c(0.15, 0.35, 0.25),
+#'                             sigma_b_sq = c(0.1, 0.1, 0.1), 
 #'                             alpha = 0.05, all.sim.data = TRUE, 
 #'                             seed = 123, cores="all", 
 #'                             poor.fit.override = TRUE) 
@@ -126,12 +123,11 @@
 #' bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 25, narms=3,
 #'                             nclusters=50,
 #'                             probs = c(0.30, 0.5, 0.7),
-#'                             sigma_b_sq = 0.01, alpha = 0.05,
+#'                             sigma_b_sq = 0.001, alpha = 0.05,
 #'                             quiet = FALSE, method = 'glmm', 
 #'                             all.sim.data = FALSE, 
 #'                             multi.p.method="none",
-#'                             seed = 123, cores="all",
-#'                             optmethod="bobyqa")                             
+#'                             seed = 123, cores="all")                             
 #'}
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
@@ -328,7 +324,7 @@ cps.ma.binary <- function(nsim = 1000,
     colnames(cps.model.temp)[1] <- "converge"
     cps.model.temp2 <-
       dplyr::filter(cps.model.temp, isTRUE(converge))
-    if (isTRUE(nrow(cps.model.temp2) < (.25 * nsim))) {
+    if (nrow(cps.model.temp2) < (.25 * nsim)) {
       warning(paste0(
         nrow(cps.model.temp2),
         " models converged. Check model parameters."

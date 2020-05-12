@@ -60,8 +60,8 @@
 #' \dontrun{
 #' 
 #' nsubjects.example <- list(c(200,200,200,250), c(150, 200, 200, 210), c(170, 200, 210))
-#' probs.example <- c(0.15, 0.35, 0.4)
-#' sigma_b_sq.example <- c(0.01, 0.01, 0.02)
+#' probs.example <- c(0.25, 0.15, 0.3)
+#' sigma_b_sq.example <- c(0.01, 0.01, 0.01)
 #' 
 #' bin.ma.rct <- cps.ma.binary.internal (nsim = 10, 
 #'                             str.nsubjects = nsubjects.example, 
@@ -288,8 +288,9 @@ cps.ma.binary.internal <-
             optimizer = opt,
             calc.derivs = TRUE,
             optCtrl = list(
+              maxfun = 2e4,
               method = optmethod,
-              starttests = FALSE,
+              starttests = TRUE,
               kkt = FALSE
             )
           )
