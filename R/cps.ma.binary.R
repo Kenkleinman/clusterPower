@@ -114,20 +114,20 @@
 #'                             rep(170, times=15)), 
 #'                             narms = 3,
 #'                             nclusters = 15,
-#'                             probs = c(0.15, 0.25, 0.35),
+#'                             probs = c(0.15, 0.23, 0.22),
 #'                             sigma_b_sq = c(0.1, 0.1, 0.1), 
 #'                             alpha = 0.05, all.sim.data = FALSE, 
-#'                             seed = 123, cores="all", 
-#'                             poor.fit.override = TRUE) 
+#'                             seed = 123, cores="all") 
 #'                             
-#' bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 25, narms=3,
-#'                             nclusters=50,
+#' bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 250, narms=3,
+#'                             nclusters=10,
 #'                             probs = c(0.30, 0.5, 0.7),
-#'                             sigma_b_sq = 0.001, alpha = 0.05,
+#'                             sigma_b_sq = 0.01, alpha = 0.05,
 #'                             quiet = FALSE, method = 'glmm', 
 #'                             all.sim.data = FALSE, 
 #'                             multi.p.method="none",
-#'                             seed = 123, cores="all")                             
+#'                             seed = 123, cores="all", 
+#'                             poor.fit.override = TRUE)                             
 #'}
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
@@ -323,7 +323,7 @@ cps.ma.binary <- function(nsim = 1000,
     cps.model.temp <- data.frame(unlist(binary.ma.rct[[3]]), p.val)
     colnames(cps.model.temp)[1] <- "converge"
     cps.model.temp2 <-
-      dplyr::filter(cps.model.temp, isTRUE(converge))
+      dplyr::filter(cps.model.temp, converge == TRUE)
     if (isTRUE(nrow(cps.model.temp2) < (.25 * nsim))) {
       warning(paste0(
         nrow(cps.model.temp2),

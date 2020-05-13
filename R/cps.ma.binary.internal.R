@@ -312,7 +312,7 @@ cps.ma.binary.internal <-
       }
       
       if (poor.fit.override == FALSE) {
-        if (sum(unlist(converged), na.rm = TRUE) > (nsim * .25)) {
+        if (sum(unlist(converged), na.rm = TRUE) < (nsim * .75)) {
           stop("more than 25% of simulations are singular fit: check model specifications")
         }
       }
