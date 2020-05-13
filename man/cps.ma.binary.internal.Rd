@@ -18,8 +18,8 @@ cps.ma.binary.internal(
   low.power.override = FALSE,
   tdist = FALSE,
   cores = cores,
-  opt = "optimx",
-  optmethod = "L-BFGS-B"
+  opt = opt,
+  optmethod = optmethod
 )
 }
 \arguments{
@@ -74,8 +74,8 @@ A list with the following components:
                   "y" (Simulated response value), 
                   "trt" (Indicator for treatment group), 
                   "clust" (Indicator for cluster)
-  \item A vector of length \code{nsim} consisting of 1 and 0. 
-          When a model fails to converge, failed.to.converge==1, otherwise 0.
+  \item A vector of logical values \code{nsim}. 
+          When a model fails to converge, FALSE, otherwise TRUE.
 }
 }
 \description{
@@ -99,9 +99,9 @@ and simulated data set output may also be specified.
 \examples{
 \dontrun{
 
-nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
-probs.example <- c(0.1, 0.5, 0.9)
-sigma_b_sq.example <- c(0.1, 0.1, 0.2)
+nsubjects.example <- list(c(200,200,200,250), c(150, 200, 200, 210), c(170, 200, 210))
+probs.example <- c(0.25, 0.15, 0.3)
+sigma_b_sq.example <- c(0.01, 0.01, 0.01)
 
 bin.ma.rct <- cps.ma.binary.internal (nsim = 10, 
                             str.nsubjects = nsubjects.example, 
@@ -110,7 +110,8 @@ bin.ma.rct <- cps.ma.binary.internal (nsim = 10,
                             alpha = 0.05, all.sim.data = FALSE,
                             poor.fit.override = TRUE, 
                             seed = 123, cores="all",
-                            optmethod = "bobyqa") 
+                            opt = "bobyqa",
+                            optmethod = "Nelder-Mead") 
 }
 
 }

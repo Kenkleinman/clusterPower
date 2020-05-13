@@ -5,8 +5,6 @@
 #' Hughes (2007) where sample size calculations are based on 
 #' an assumption of a normally-distributed outcome.
 #' 
-#' 
-#' 
 #' @param lambda1 Baseline rate for outcome of interest
 #' @param RR Estimated relative risk of the intervention
 #' @param nclusters Number of clusters

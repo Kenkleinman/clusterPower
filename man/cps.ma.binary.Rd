@@ -22,8 +22,8 @@ cps.ma.binary(
   tdist = FALSE,
   poor.fit.override = FALSE,
   low.power.override = FALSE,
-  opt = "optimx",
-  optmethod = "L-BFGS-B"
+  opt = "bobyqa",
+  optmethod = "Nelder-Mead"
 )
 }
 \arguments{
@@ -155,30 +155,26 @@ intervals.
 }
 \examples{
 \dontrun{
-nsubjects.example <- list(rep(200, times=15), rep(150, times=15), 
-rep(170, times=15))
-probs.example <- c(0.5, 0.8, 0.9)
-sigma_b_sq.example <- c(1, 1, 1)
-
-bin.ma.rct.unbal <- cps.ma.binary(nsim = 10, 
-                            nsubjects = 20, 
-                            narms = 2,
-                            nclusters = 10,
-                            probs = c(0.5, 0.8),
-                            sigma_b_sq = c(1, 1.2), 
-                            alpha = 0.05, all.sim.data = TRUE, 
+bin.ma.rct.unbal <- cps.ma.binary(nsim = 12, 
+                            nsubjects = list(rep(200, times=15), 
+                            rep(150, times=15), 
+                            rep(170, times=15)), 
+                            narms = 3,
+                            nclusters = 15,
+                            probs = c(0.15, 0.25, 0.35),
+                            sigma_b_sq = c(0.1, 0.1, 0.1), 
+                            alpha = 0.05, all.sim.data = FALSE, 
                             seed = 123, cores="all", 
                             poor.fit.override = TRUE) 
                             
-bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 200, narms=3,
+bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 25, narms=3,
                             nclusters=50,
                             probs = c(0.30, 0.5, 0.7),
-                            sigma_b_sq = 0.1, alpha = 0.05,
+                            sigma_b_sq = 0.001, alpha = 0.05,
                             quiet = FALSE, method = 'glmm', 
                             all.sim.data = FALSE, 
                             multi.p.method="none",
-                            seed = 123, cores="all",
-                            optmethod="bobyqa")                             
+                            seed = 123, cores="all")                             
 }
 }
 \author{

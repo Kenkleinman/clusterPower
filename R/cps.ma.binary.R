@@ -108,15 +108,15 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' bin.ma.rct.unbal <- cps.ma.binary(nsim = 10, 
-#'                             nsubjects = list(c(200,200,200,250), 
-#'                             c(150, 200, 200, 210), 
-#'                             c(170, 200, 210)), 
+#' bin.ma.rct.unbal <- cps.ma.binary(nsim = 12, 
+#'                             nsubjects = list(rep(200, times=15), 
+#'                             rep(150, times=15), 
+#'                             rep(170, times=15)), 
 #'                             narms = 3,
 #'                             nclusters = 15,
-#'                             probs = c(0.15, 0.35, 0.25),
+#'                             probs = c(0.15, 0.25, 0.35),
 #'                             sigma_b_sq = c(0.1, 0.1, 0.1), 
-#'                             alpha = 0.05, all.sim.data = TRUE, 
+#'                             alpha = 0.05, all.sim.data = FALSE, 
 #'                             seed = 123, cores="all", 
 #'                             poor.fit.override = TRUE) 
 #'                             
@@ -324,7 +324,7 @@ cps.ma.binary <- function(nsim = 1000,
     colnames(cps.model.temp)[1] <- "converge"
     cps.model.temp2 <-
       dplyr::filter(cps.model.temp, isTRUE(converge))
-    if (nrow(cps.model.temp2) < (.25 * nsim)) {
+    if (isTRUE(nrow(cps.model.temp2) < (.25 * nsim))) {
       warning(paste0(
         nrow(cps.model.temp2),
         " models converged. Check model parameters."
