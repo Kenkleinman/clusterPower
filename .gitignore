@@ -6,8 +6,4 @@ src/*.o
 src/*.so
 src/*.dll
 .Rproj
-man/*.Rd
-man/*.rd
-*.Rd
-
-*.rd
+./man/*.Rd
