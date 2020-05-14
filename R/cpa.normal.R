@@ -20,6 +20,12 @@
 #'   solve power equation for unknowns, so you may see
 #'   errors from it, notably about inability to bracket the root when
 #'   invalid arguments are given.
+#'   
+#' @section Testing details:   
+#'This function has been verified against reference values from the NIH's GRT 
+#'Sample Size Calculator, PASS11, \code{CRTsize::n4means}, and 
+#'\code{clusterPower::cps.normal}.
+#'
 #'
 #' @section Authors:
 #' Jonathan Moyer (\email{jon.moyer@@gmail.com}), Ken Kleinman (\email{ken.kleinman@@gmail.com})

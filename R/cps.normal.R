@@ -16,6 +16,10 @@
 #' Non-convergent models are not included in the calculation of exact confidence 
 #' intervals.
 #' 
+#' @section Testing details:   
+#' This function has been verified against reference values from the NIH's GRT 
+#' Sample Size Calculator, PASS11, \code{CRTsize::n4means}, and 
+#' \code{clusterPower::cpa.normal}.
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes, both groups), 
@@ -75,7 +79,7 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' normal.sim = cps.normal(nsim = 1000, nsubjects = 50, nclusters = 9, difference = 3.75,
+#' normal.sim = cps.normal(nsim = 1000, nsubjects = 50, nclusters = 10, difference = 3.75,
 #'                         ICC = 0.3, sigma_sq = 20,
 #'                         alpha = 0.05, method = 'glmm', 
 #'                         quiet = FALSE, all.sim.data = FALSE)
@@ -176,7 +180,7 @@ cps.normal = function(nsim = NULL,
       "A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS"
     )
   }
-  
+
   ## Create variance parameters
   # sigma_b_sq, sigma_sq, ICC
   if (!is.null(c(ICC, sigma_sq)) && is.null(sigma_b_sq)) {
@@ -226,8 +230,7 @@ cps.normal = function(nsim = NULL,
   if (sum(parm1.args) > 1) {
     stop("At least two of the following terms must be specified: ICC, sigma_sq, sigma_b_sq")
   }
-  if (isTRUE(sum(parm1.args) == 0 &
-             (ICC != sigma_b_sq / (sigma_b_sq + sigma_sq)))) {
+  if (round(ICC,2) != round((sigma_b_sq / (sigma_b_sq + sigma_sq)), 2)) {
     stop("At least one of the following terms has been misspecified: ICC, sigma_sq, sigma_b_sq")
   }
   
@@ -239,8 +242,7 @@ cps.normal = function(nsim = NULL,
          variances: ICC2, sigma_sq2, sigma_b_sq2"
     )
   }
-  if (sum(parm2.args) == 0 &&
-      ICC2 != sigma_b_sq2 / (sigma_b_sq2 + sigma_sq2)) {
+  if (round(ICC2, 2) != round((sigma_b_sq2 / (sigma_b_sq2 + sigma_sq2)), 2)) {
     stop(
       "At least one of the following terms has been misspecified: ICC2, sigma_sq2, sigma_b_sq2"
     )
@@ -467,7 +469,7 @@ cps.normal = function(nsim = NULL,
           converge.vector = append(converge.vector, ifelse(any(
             grepl("singular",
                   my.mod@optinfo$conv$lme4$messages)
-          ) == FALSE, TRUE))
+          ) == TRUE, FALSE, TRUE))
           # option to stop the function early if fits are singular
           if (poor.fit.override == FALSE) {
             if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
