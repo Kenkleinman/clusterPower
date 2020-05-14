@@ -1,7 +1,8 @@
 #' Power calculations for simple cluster randomized trials, continuous outcome
 #'
-#' Compute the power of a simple cluster randomized trial with a continuous outcome,
-#' or determine parameters to obtain a target power.
+#' Compute the power, number of clusters needed, number of subjects per cluster 
+#' needed, or other key parameters, for a simple parallel cluster randomized 
+#' trial with a continuous outcome.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
 #'   \code{CV}, \code{d}, \code{ICC}, and \code{vart}  must be passed as \code{NA}.
@@ -32,22 +33,25 @@
 #' @param nsubjects The mean of the cluster sizes, or a vector of cluster sizes for one arm.
 #' @param CV The coefficient of variation of the cluster sizes. When \code{CV} = 0,
 #'   the clusters all have the same size.
-#' @param d The difference in condition means.
-#' @param ICC The intraclass correlation.
-#' @param vart The total variation of the outcome (the sum of within- and between-cluster variation).
+#' @param d The difference in condition means $|\mu_1 - \mu_2|$
+#' @param ICC The intraclass correlation $\sigma_b^2 / (\sigma_b^2 + \sigma^2)$.
+#' @param vart The total variation of the outcome (the sum of within- and 
+#' between-cluster variation) $\sigma_b^2 + \sigma^2$.
 #' @param method The method for calculating variance inflation due to unequal cluster
 #'   sizes. Either a method based on Taylor approximation of relative efficiency 
 #'   ("taylor"), or weighting by cluster size ("weighted")
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
-#' @return The computed argument.
+#' @return The computed value of the missing parameter needed to satisfy the power and 
+#' sample size equation.
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
-#' # of 1 unit,  ICC = 0.1 and   a variance of five units.
+#' # of 1 unit,  ICC = 0.1 and a variance of five units.
+#' 
 #' cpa.normal(nsubjects=10 ,d=1, ICC=.1, vart=5)
-#' # 
-#' # The result, showimg nclusters of greater than 15, suggests 16 clusters per 
+#'  
+#' # The result, showing nclusters of greater than 15, suggests 16 clusters per 
 #' # condition should be used.
 #' @references Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation
 #'   Coefficient in Cluster Randomized Trials: A Review of Definitions. Int Stat Rev. 
