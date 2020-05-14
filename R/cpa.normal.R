@@ -33,10 +33,10 @@
 #' @param nsubjects The mean of the cluster sizes, or a vector of cluster sizes for one arm.
 #' @param CV The coefficient of variation of the cluster sizes. When \code{CV} = 0,
 #'   the clusters all have the same size.
-#' @param d The difference in condition means $|\mu_1 - \mu_2|$
-#' @param ICC The intraclass correlation $\sigma_b^2 / (\sigma_b^2 + \sigma^2)$.
+#' @param d The difference in condition means \eqn{|\mu_1 - \mu_2|}
+#' @param ICC The intraclass correlation \eqn{\sigma_b^2 / (\sigma_b^2 + \sigma^2)}.
 #' @param vart The total variation of the outcome (the sum of within- and 
-#' between-cluster variation) $\sigma_b^2 + \sigma^2$.
+#' between-cluster variation) \eqn{\sigma_b^2 + \sigma^2}.
 #' @param method The method for calculating variance inflation due to unequal cluster
 #'   sizes. Either a method based on Taylor approximation of relative efficiency 
 #'   ("taylor"), or weighting by cluster size ("weighted")
@@ -49,10 +49,19 @@
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
 #' # of 1 unit,  ICC = 0.1 and a variance of five units.
 #' 
-#' cpa.normal(nsubjects=10 ,d=1, ICC=.1, vart=5)
+#' cpa.normal(nsubjects=10, d=1, ICC=.1, vart=5)
 #'  
 #' # The result, showing nclusters of greater than 15, suggests 16 clusters per 
 #' # condition should be used.
+#' 
+#' # Find the power achieved with 16 clusters, 10 subjects per cluster,
+#' # difference between condition of 1 unit, ICC = .1, and total variance
+#' # of 5 units
+#' 
+#' cpa.normal(power = NA, nclusters= 16, nsubjects=10 ,d=1, ICC=.1, vart=5)
+#' 
+#' # The result shows the power is 0.8012.
+#' 
 #' @references Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation
 #'   Coefficient in Cluster Randomized Trials: A Review of Definitions. Int Stat Rev. 
 #'   77: 378-394.
