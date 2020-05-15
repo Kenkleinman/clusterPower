@@ -79,10 +79,10 @@ test_that("simulation and analytic methods give similar power estimations",
           {
             sim.power <-
               cps.normal(
-                nsim = 100,
-                nsubjects = 150,
-                nclusters = 5,
-                difference = .4804988,
+                nsim = 1000,
+                nsubjects = 100,
+                nclusters = 100,
+                difference = 0.1,
                 ICC = 0.05,
                 sigma_sq = 1,
                 alpha = 0.05,
@@ -93,14 +93,14 @@ test_that("simulation and analytic methods give similar power estimations",
             print(sim.power$power)
             reference <-
               as.numeric(round(
-                crtpwr.2mean(
+                cpa.normal(
                   alpha = 0.05,
                   power = NA,
-                  d = 0.4804988,
-                  nclusters = 5,
-                  nsubjects = 150,
-                  icc = .05,
-                  vart = 1,
+                  d = 0.1,
+                  nclusters = 100,
+                  nsubjects = 100,
+                  ICC = .05,
+                  sigma_sq = 1,
                   method = "weighted",
                   tol = .Machine$double.eps ^ 0.25
                 ),

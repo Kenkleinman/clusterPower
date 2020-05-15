@@ -230,7 +230,7 @@ cps.normal = function(nsim = NULL,
   if (sum(parm1.args) > 1) {
     stop("At least two of the following terms must be specified: ICC, sigma_sq, sigma_b_sq")
   }
-  if (round(ICC,2) != round((sigma_b_sq / (sigma_b_sq + sigma_sq)), 2)) {
+  if (round(ICC, 2) != round((sigma_b_sq / (sigma_b_sq + sigma_sq)), 2)) {
     stop("At least one of the following terms has been misspecified: ICC, sigma_sq, sigma_b_sq")
   }
   
