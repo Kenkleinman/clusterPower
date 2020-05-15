@@ -1,23 +1,42 @@
 #' Power calculations for simple cluster randomized trials, binary outcome
 #'
-#' Compute the power of a simple cluster randomized trial with a binary outcome,
-#' or determine parameters to obtain a target power.
-#' 
+#' Compute the power, number of clusters needed, number of subjects per cluster needed, 
+#' or other key parameters, for a simple parallel cluster randomized trial with a 
+#' binary outcome.
+#'
+#' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
+#'   \code{CV}, \code{p1}, \code{p2}, and \code{ICC} must be passed as \code{NA}.
+#'   Note that \code{alpha}, \code{power}, and \code{CV} have non-\code{NA}
+#'   defaults, so if those are the parameters of interest they must be
+#'   explicitly passed as \code{NA}.
+#'
 #' This function implements the approach of Donner and Klar (2000). An estimate for the
 #'  intracluster correlation coefficient (ICC) is used to calculate a design effect that 
-#'  accounts for variance inflation due to clustering. There are several ways in
+#'  accounts for variance inflation due to clustering. 
+#'  
+#'  There are several ways in
 #'  which estimates for the ICC for a binary outcome can be calculated, as described by
-#'  Wu, Crespi, and Wong (2012). 
+#'  Wu, Crespi, and Wong (2012).  For this reason we do not offer the user a option to input
+#'  the variance of the clusters.  If you prefer to use that input, we suggest using the
+#'  cps.binary function.
 #'
 #' @section Authors:
 #' Jonathan Moyer (\email{jon.moyer@@gmail.com}), Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
-#' @section Note:
+#' @section Notes:
+#' 
+#'  Unlike in the case of normal distributed outcomes (cpa.normal), the ICC refers neither to 
+#'  any natural parameter of a data generatong model nor to any function of its parameters.  The
+#'  user is advised to exercise caution in estimating, generating, and interpreting ICCs in
+#'  this setting.
+#' 
 #'   This function was inspired by work from Stephane Champely (pwr.t.test) and
 #'   Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
 #'   solve power equation for unknowns, so you may see
 #'   errors from it, notably about inability to bracket the root when
-#'   invalid arguments are given.
+#'   invalid arguments are given.  This generally means that no solution exists for which the 
+#'   omitted parameter and the supplied parameters fulfill the equation.  In particular, the desired
+#'   power may not be acheiveable with any number of subjects or clusters.
 #'   
 #' @param alpha The level of significance of the test, the probability of a
 #'   Type I error.
@@ -27,22 +46,35 @@
 #' @param nsubjects The mean of the cluster sizes.
 #' @param cv The coefficient of variation of the cluster sizes. When \code{cv} = 0,
 #'   the clusters all have the same size.
-#' @param p1 The expected proportion in the treatment group.
-#' @param p2 The proportion in the control group.
+#' @param p1 The expected proportion in one of the conditions.
+#' @param p2 The expected proportion in the other condition.
 #' @param ICC The intraclass correlation.
 #' @param pooled Logical indicating if pooled standard error should be used.
 #' @param p1inc Logical indicating if p1 is expected to be greater than p2.
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
+#'   
 #' @return The computed argument.
+#' 
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, probability
 #' # in condition 1 of .1 and condition 2 of .2, and ICC = 0.1.
-#' cpa.binary(nsubjects=10 ,p1=.1, p2=.2, ICC=.1)
+#' 
+#' cpa.binary(nsubjects=10, p1=.1, p2=.2, ICC=.1)
+#' 
 #' # 
-#' # The result, showimg nclusters of greater than 37, suggests 38 clusters per 
+#' # The result, showing nclusters of greater than 37, suggests 38 clusters per 
 #' # condition should be used.
+#' 
+#' # Find the minimum detectable \eqn{p1 > p2}, given 38 clusters per condition, 10 
+#' # observations per cluster no variation in cluster size, ICC of 0.1, and probability of 
+#' # .1 in condition 2, with power of .8.
+#' 
+#' cpa.binary(nsubjects=10, nclusters = 38, p1=.1, p2=NA, ICC=.1, p1inc = FALSE)
+#' 
+#' # The result shows that p1 greater than 0.198922 can be detected with at least 80% power.
+#' 
 #' @references Donner A, Klar N. Design and Analysis of Cluster Randomization
 #' Trials in Health Research. London; Arnold; 2000.
 #' @references Wu S, Crespi CM, Wong WK. Comparison of Methods for Estimating Intraclass
