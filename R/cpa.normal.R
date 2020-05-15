@@ -1,7 +1,8 @@
 #' Power calculations for simple cluster randomized trials, continuous outcome
 #'
-#' Compute the power of a simple cluster randomized trial with a continuous outcome,
-#' or determine parameters to obtain a target power.
+#' Compute the power, number of clusters needed, number of subjects per cluster 
+#' needed, or other key parameters, for a simple parallel cluster randomized 
+#' trial with a continuous outcome.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
 #'   \code{CV}, and \code{d}  must be passed as \code{NA}.
@@ -23,7 +24,9 @@
 #'   Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
 #'   solve power equation for unknowns, so you may see
 #'   errors from it, notably about inability to bracket the root when
-#'   invalid arguments are given.
+#'   invalid arguments are given. This generally means that no solution exists for which the 
+#'   omitted parameter and the supplied parameters fulfill the equation.  In particular, the desired
+#'   power may not be acheiveable with any number of subjects or clusters.
 #'
 #' @section Testing details:
 #' This function has been verified against reference values from the NIH's GRT
@@ -46,23 +49,38 @@
 #' @param sigma_b_sq Between-cluster variance; accepts numeric.
 #' @param CV The coefficient of variation of the cluster sizes. When \code{CV} = 0,
 #'   the clusters all have the same size.
-#' @param d The difference in condition means.
-#' @param ICC The intraclass correlation. Accepts a numeric between 0-1.
-#' @param vart The total variation of the outcome (the sum of within- and between-cluster variation).
+#' @param d The difference in condition means \eqn{|\mu_1 - \mu_2|}
+#' @param ICC The intraclass correlation \eqn{\sigma_b^2 / (\sigma_b^2 + \sigma^2)}.
+#' Accepts a numeric between 0-1.
+#' @param vart The total variation of the outcome (the sum of within- and 
+#' between-cluster variation) \eqn{\sigma_b^2 + \sigma^2}.
 #' @param method The method for calculating variance inflation due to unequal cluster
 #'   sizes. Either a method based on Taylor approximation of relative efficiency
 #'   ("taylor"), or weighting by cluster size ("weighted"). Default is \code{"taylor"}.
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
-#' @return The computed argument.
-#' @examples
-#' # Find the number of clusters per condition needed for a trial with alpha = .05,
-#' # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference
-#' # of 1 unit,  ICC = 0.1 and   a variance of five units.
-#' example <- cpa.normal(nsubjects=10 ,d=1, ICC=.1, vart=5)
-#' #
-#' # The result, showimg nclusters of greater than 15, suggests 16 clusters per
+#' 
+#' @return The computed value of the missing parameter needed to satisfy the power and 
+#' sample size equation.
+#'
+#'  @examples 
+#' # Find the number of clusters per condition needed for a trial with alpha = .05, 
+#' # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
+#' # of 1 unit,  ICC = 0.1 and a variance of five units.
+#' 
+#' cpa.normal(nsubjects=10, d=1, ICC=.1, vart=5)
+#'  
+#' # The result, showing nclusters of greater than 15, suggests 16 clusters per 
 #' # condition should be used.
+#' 
+#' # Find the power achieved with 16 clusters, 10 subjects per cluster,
+#' # difference between condition of 1 unit, ICC = .1, and total variance
+#' # of 5 units
+#' 
+#' cpa.normal(power = NA, nclusters= 16, nsubjects=10 ,d=1, ICC=.1, vart=5)
+#' 
+#' # The result shows the power is 0.8012.
+#' 
 #' @references Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation
 #'   Coefficient in Cluster Randomized Trials: A Review of Definitions. Int Stat Rev.
 #'   77: 378-394.
