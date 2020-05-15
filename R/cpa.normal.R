@@ -37,7 +37,7 @@
 #' @section Authors:
 #' Jonathan Moyer (\email{jon.moyer@@gmail.com}), 
 #' Alexandria C. Sakrejda (\email{acbro0@@umass.edu}),
-#' & Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @param alpha The level of significance of the test, the probability of a
 #'   Type I error.
@@ -45,11 +45,11 @@
 #'   error.
 #' @param nclusters The number of clusters per condition. It must be greater than 1.
 #' @param nsubjects The mean of the cluster sizes, or a vector of cluster sizes for one arm.
-#' @param sigma_sq Within-cluster variance; accepts numeric.
-#' @param sigma_b_sq Between-cluster variance; accepts numeric.
+#' @param sigma_sq Within-cluster variance.
+#' @param sigma_b_sq Between-cluster variance.
 #' @param CV The coefficient of variation of the cluster sizes. When \code{CV} = 0,
 #'   the clusters all have the same size.
-#' @param d The difference in condition means \eqn{|\mu_1 - \mu_2|}
+#' @param d The difference in condition means \eqn{|\beta_1|}
 #' @param ICC The intraclass correlation \eqn{\sigma_b^2 / (\sigma_b^2 + \sigma^2)}.
 #' Accepts a numeric between 0-1.
 #' @param vart The total variation of the outcome (the sum of within- and 
@@ -61,9 +61,9 @@
 #'   at least four significant digits.
 #' 
 #' @return The computed value of the missing parameter needed to satisfy the power and 
-#' sample size equation.
+#' sample size equation, plus the total variance and the ICC.
 #'
-#'  @examples 
+#' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
 #' # of 1 unit,  ICC = 0.1 and a variance of five units.
@@ -77,9 +77,9 @@
 #' # difference between condition of 1 unit, ICC = .1, and total variance
 #' # of 5 units
 #' 
-#' cpa.normal(power = NA, nclusters= 16, nsubjects=10 ,d=1, ICC=.1, vart=5)
+#' cpa.normal(power = NA, nclusters= 16, nsubjects=10 ,d=1, sigma_b_sq=.5, vart=5)
 #' 
-#' # The result shows the power is 0.8012.
+#' # The result shows the power is 0.801766.
 #' 
 #' @references Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation
 #'   Coefficient in Cluster Randomized Trials: A Review of Definitions. Int Stat Rev.
@@ -90,6 +90,7 @@
 #' @references van Breukelen GJP, Candel MJJM, Berger MPF. (2007) Relative efficiency of
 #'   unequal versus equal cluster sizes in cluster randomized and multicentre trials.
 #'   Statist Med. 26:2589-2603.
+#'   
 #' @export
 
 
@@ -131,6 +132,10 @@ cpa.normal <- function(alpha = 0.05,
   }
   if (!is.na(sigma_sq) && is.na(ICC)) {
     ICC <- (1 - (sigma_sq / vart))
+  }
+  if (is.na(vart) && is.na(ICC)) {
+    ICC <- ( (sigma_b_sq / (sigma_b_sq + sigma_sq) ) )
+    vart <- (sigma_b_sq + sigma_sq)
   }
   
   # list of needed inputs
