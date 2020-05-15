@@ -26,7 +26,7 @@ test_that("continuous case matches reference", {
       tol = .Machine$double.eps ^
         0.25
     )
-  )), as.numeric(5))
+  ))[1], as.numeric(5))
 })
 
 # compare to a reference value from PASS11
@@ -44,7 +44,7 @@ test_that("continuous case matches reference", {
       tol = .Machine$double.eps ^
         0.25
     )
-  )), as.numeric(150))
+  ))[1], as.numeric(150))
 })
 
 
@@ -63,7 +63,7 @@ test_that("continuous case matches CRTSize", {
         0.25,
       d = 0.4804988
     )
-  ), 0),
+  ), 0)[1],
   round(
     CRTSize::n4means(
       delta = 0.4804988,
@@ -92,7 +92,7 @@ test_that("simulation and analytic methods give similar power estimations",
               )
             print(sim.power$power)
             reference <-
-              as.numeric(round(
+              as.numeric(
                 cpa.normal(
                   alpha = 0.05,
                   power = NA,
@@ -103,9 +103,8 @@ test_that("simulation and analytic methods give similar power estimations",
                   sigma_sq = 1,
                   method = "weighted",
                   tol = .Machine$double.eps ^ 0.25
-                ),
-                1
-              ))
+                )
+                )[1]
             print(paste("analytic power = ", reference, sep = ""))
             expect_equal(sim.power$power[, 2] <= reference &
                            sim.power$power[, 3] >= reference,
