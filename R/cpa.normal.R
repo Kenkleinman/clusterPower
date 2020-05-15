@@ -42,9 +42,11 @@
 #'   ("taylor"), or weighting by cluster size ("weighted")
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
+#' 
 #' @return The computed value of the missing parameter needed to satisfy the power and 
 #' sample size equation.
-#' @examples 
+#'
+#'  @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
 #' # of 1 unit,  ICC = 0.1 and a variance of five units.
