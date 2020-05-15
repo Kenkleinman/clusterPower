@@ -75,29 +75,54 @@
 
 #FIXME add irgtt equation in cps.binary
 # Define function
-cps.irgtt.binary <- function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-                      p1 = NULL, p2 = NULL, sigma_b_sq = 0, sigma_b_sq2 = 0, 
-                      alpha = 0.05,
-                      quiet = TRUE, all.sim.data = FALSE, seed = NA){
-  
-  if (sigma_b_sq == 0 & sigma_b_sq2 == 0){
-    warning("sigma_b_sq in both arms is 0. This is equivalent to a t-test. Did you mean to 
-            enter a sigma_b_sq value for the arm containing clustered observations?")
-  }
-  if (sigma_b_sq != 0 & sigma_b_sq2 != 0){
-    warning("sigma_b_sq is not zero for either arm. Did you want to use cps.binary()?")
-  }
-  if (sigma_b_sq != 0 & sigma_b_sq2 == 0){
-    stop("Non-clustered group must be entered as the reference group.")
-    nclust <- c(nclusters, 1)
-  }
-  if (sigma_b_sq2 != 0){
-    nclust <- c(1, nclusters)
-  }
-  
-  sim <- cps.binary(nsim = nsim, nsubjects = nsubjects, nclusters = nclust,
-                        p1 = p1, p2 = p2, or1 = NULL, or2 = NULL, or.diff = NULL, 
-                        sigma_b_sq = sigma_b_sq, sigma_b_sq2 = sigma_b_sq2, alpha = alpha, method = 'glmm', 
-                        quiet = quiet, all.sim.data = all.sim.data, seed = seed, irgtt = TRUE)
-  return(sim)
+
+cps.irgtt.binary <-
+  function(nsim = NULL,
+           nsubjects = NULL,
+           nclusters = NULL,
+           p1 = NULL,
+           p2 = NULL,
+           sigma_b_sq = 0,
+           sigma_b_sq2 = 0,
+           alpha = 0.05,
+           quiet = TRUE,
+           all.sim.data = FALSE,
+           seed = NA) {
+    if (sigma_b_sq == 0 & sigma_b_sq2 == 0) {
+      warning(
+        "sigma_b_sq in both arms is 0. This is equivalent to a t-test. Did you mean to
+            enter a sigma_b_sq value for the arm containing clustered observations?"
+      )
+    }
+    if (sigma_b_sq != 0 & sigma_b_sq2 != 0) {
+      warning("sigma_b_sq is not zero for either arm. Did you want to use cps.binary()?")
+    }
+    if (sigma_b_sq != 0 & sigma_b_sq2 == 0) {
+      stop("Non-clustered group must be entered as the reference group.")
+      nclust <- c(nclusters, 1)
+    }
+    if (sigma_b_sq2 != 0) {
+      nclust <- c(1, nclusters)
+    }
+    
+    sim <-
+      cps.binary(
+        nsim = nsim,
+        nsubjects = nsubjects,
+        nclusters = nclust,
+        p1 = p1,
+        p2 = p2,
+        or1 = NULL,
+        or2 = NULL,
+        or.diff = NULL,
+        sigma_b_sq = sigma_b_sq,
+        sigma_b_sq2 = sigma_b_sq2,
+        alpha = alpha,
+        method = 'glmm',
+        quiet = quiet,
+        all.sim.data = all.sim.data,
+        seed = seed,
+        irgtt = TRUE
+      )
+    return(sim)
   }

@@ -15,30 +15,32 @@
 #' @export
 
 
-optimizerSearch <- function(model){
-  if(isTRUE(missing(model))){
+optimizerSearch <- function(model) {
+  if (isTRUE(missing(model))) {
     message("Error: model does not exist.")
   }
   require(optimx)
-  diff_optims <- try(lme4::allFit(model, maxfun = 1e5, 
-    parallel = 'multicore', 
-    ncpus = parallel::detectCores()))
-  if (class(diff_optims) == "try-error"){
+  diff_optims <- try(lme4::allFit(
+    model,
+    maxfun = 1e5,
+    parallel = 'multicore',
+    ncpus = parallel::detectCores()
+  ))
+  if (class(diff_optims) == "try-error") {
     stop("optimizerSearch is not compatible with this model structure.")
   }
   is.OK <- sapply(diff_optims, is, "merMod")
   diff_optims.OK <- diff_optims[is.OK]
-  convergence_results <- lapply(diff_optims.OK, 
-    function(x) x@optinfo$conv$lme4$messages)
+  convergence_results <- lapply(diff_optims.OK,
+                                function(x)
+                                  x@optinfo$conv$lme4$messages)
   working_indices <- sapply(convergence_results, is.null)
-  if(isTRUE(sum(unlist(working_indices), na.rm = TRUE) == 0)){
+  if (isTRUE(sum(unlist(working_indices), na.rm = TRUE) == 0)) {
     print("No algorithms from allFit converged. Default to nloptwrap")
     print("You may still be able to use the results, but proceed with extreme caution.")
-      goodopt <- "nloptwrap"
-    } else {
+    goodopt <- "nloptwrap"
+  } else {
     goodopt <- names(working_indices[working_indices == TRUE][1])
-    }
+  }
   return(goodopt)
 }
-
-

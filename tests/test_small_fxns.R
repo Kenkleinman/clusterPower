@@ -17,8 +17,12 @@ test_check("clusterPower")
 context("confint.calc")
 
 test_that("confint.calc matches a reference", {
-  some_nums <- confint.calc(nsim = 1000, alpha = 0.05, p.val = 0.01, 
-                            names.power = c("bestCI"))
+  some_nums <- confint.calc(
+    nsim = 1000,
+    alpha = 0.05,
+    p.val = 0.01,
+    names.power = c("bestCI")
+  )
   expect_equal(3, length(some_nums))
   expect_equal(0.001, some_nums$Power)
   expect_equal(2.531749e-05, some_nums$Lower.95.CI)
@@ -28,12 +32,15 @@ test_that("confint.calc matches a reference", {
 context("createMissingVarianceParam")
 
 test_that("createMissingVarianceParam matches a reference", {
-  ICC <- createMissingVarianceParam(sigma_sq = c(1, 1, 0.9), sigma_b_sq = c(0.1, 0.15, 0.1))
+  ICC <-
+    createMissingVarianceParam(sigma_sq = c(1, 1, 0.9),
+                               sigma_b_sq = c(0.1, 0.15, 0.1))
   expect_equal(3, length(ICC))
   expect_equal(0.09090909, ICC[1])
   expect_equal(0.13043478, ICC[2])
   expect_equal(0.10000000, ICC[3])
-  sig_b <- createMissingVarianceParam(sigma_sq = c(1, 1, 0.9), ICC = ICC)
+  sig_b <-
+    createMissingVarianceParam(sigma_sq = c(1, 1, 0.9), ICC = ICC)
   expect_equal(3, length(sig_b))
   expect_equal(0.10, sig_b[1])
   expect_equal(0.15, sig_b[2])
@@ -51,8 +58,9 @@ test_that("is.wholenumber matches a reference", {
 context("prop_H0_rejection")
 
 test_that("prop_H0_rejection matches a reference", {
-  prop <- prop_H0_rejection(alpha = 0.05, nsim = 1000, 
-                    LRT.holder.abbrev = 804)
+  prop <- prop_H0_rejection(alpha = 0.05,
+                            nsim = 1000,
+                            LRT.holder.abbrev = 804)
   expect_equal(3, length(prop))
   expect_equal(0.804, as.numeric(prop[1]))
   expect_equal(0.828, as.numeric(prop[3]))
@@ -63,17 +71,21 @@ test_that("prop_H0_rejection matches a reference", {
 context("type1ErrTest")
 
 test_that("type1ErrTest matches a reference", {
- warn <- type1ErrTest(sigma_sq_ = c(0.1, 4),
-                       sigma_b_sq_ = c(0.1, 0.15),
-                       nsubjects_ = list(rep(4, 10),
-                                         rep(4, 10)))
- expect_equal(310, nchar(warn))
- nowarn <- type1ErrTest(sigma_sq_ = c(1, 1),
-                      sigma_b_sq_ = c(0.5, 0.1),
-                      nsubjects_ = list(rep(20, 20),
-                                        rep(20, 20)))
- expect_equal(TRUE, is.null(nowarn))
- })
+  warn <- type1ErrTest(
+    sigma_sq_ = c(0.1, 4),
+    sigma_b_sq_ = c(0.1, 0.15),
+    nsubjects_ = list(rep(4, 10),
+                      rep(4, 10))
+  )
+  expect_equal(310, nchar(warn))
+  nowarn <- type1ErrTest(
+    sigma_sq_ = c(1, 1),
+    sigma_b_sq_ = c(0.5, 0.1),
+    nsubjects_ = list(rep(20, 20),
+                      rep(20, 20))
+  )
+  expect_equal(TRUE, is.null(nowarn))
+})
 
 #optimizerSearch
 
@@ -81,11 +93,36 @@ context("optimizerSearch")
 
 test_that("optimizerSearch matches a reference", {
   library(lattice)
-  gm1 <- glmer(cbind(incidence, size - incidence) ~ period + (1 | herd),
-               data = cbpp, family = binomial)
+  gm1 <-
+    glmer(
+      cbind(incidence, size - incidence) ~ period + (1 | herd),
+      data = cbpp,
+      family = binomial
+    )
   lm1 <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy)
   lmopt <- optimizerSearch(lm1)
   gmopt <- optimizerSearch(gm1)
   expect_equal("bobyqa", gmopt)
   expect_equal("bobyqa", lmopt)
 })
+
+testthat::context(
+  "createMissingVarianceParam: calculate ICC, sigma,
+                  or sigma_b based on user providing 2 of those values"
+)
+
+# compare to a reference value
+testthat::test_that("createMissingVarianceParam returns ICC", {
+  testthat::expect_equal(
+    createMissingVarianceParam(
+      sigma = c(1, 1, 0.9),
+      sigma_b = c(0.1, 0.15, 0.1)
+    ),
+    c(0.09090909, 0.13043478, 0.10000000)
+  )
+})
+
+testthat::test_that("createMissingVarianceParam fails when fewer than 2 params provided",
+                    {
+                      testthat::show_failure(createMissingVarianceParam(sigma = c(1, 1, 0.9)))
+                    })

@@ -88,278 +88,397 @@
 #'                               }
 #' @export
 
-cps.ma.normal.internal <-  function(nsim = 1000, str.nsubjects = NULL,
-                      means = NULL, sigma_sq = NULL, sigma_b_sq = NULL,
-                      alpha = 0.05,
-                      quiet = FALSE, method = 'glmm', 
-                      all.sim.data = FALSE, 
-                      seed = NA,
-                      cores = "all",
-                      poor.fit.override = FALSE,
-                      low.power.override = FALSE,
-                      tdist=FALSE,
-                      opt = "optim"){
 
-  # Create vectors to collect iteration-specific values
-  simulated.datasets = list()
-  
-  # Create NCLUSTERS, NARMS, from str.nsubjects
-  narms = length(str.nsubjects)
-  nclusters = sapply(str.nsubjects, length)
-  
-  # Set start.time for progress iterator & initialize progress bar
-  start.time = Sys.time()
-  prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
-                                         total = nsim, clear = FALSE, width = 100)
-  
-  # This container keeps track of how many models failed to converge
-  converge.vector <- rep(TRUE, nsim)
-  
-  # Create a container for the simulated.dataset and model output
-  sim.dat = vector(mode = "list", length = nsim)
-  model.values <- list()
-  model.compare <- list()
-  
-  # option for reproducibility
-  if (!is.na(seed)) {
-    set.seed(seed = seed)
-  }
-  
-  # Create indicators for treatment group & cluster for the sim.data output
-  trt = list()
-  for (arm in 1:length(str.nsubjects)) {
-    trt[[arm]] = list()
-    for (cluster in 1:length(str.nsubjects[[arm]])){
-      trt[[arm]][[cluster]] = rep(arm, str.nsubjects[[arm]][[cluster]])
+cps.ma.normal.internal <-
+  function(nsim = 1000,
+           str.nsubjects = NULL,
+           means = NULL,
+           sigma_sq = NULL,
+           sigma_b_sq = NULL,
+           alpha = 0.05,
+           quiet = FALSE,
+           method = 'glmm',
+           all.sim.data = FALSE,
+           seed = NA,
+           cores = "all",
+           poor.fit.override = FALSE,
+           low.power.override = FALSE,
+           tdist = FALSE,
+           opt = "optim") {
+    # Create vectors to collect iteration-specific values
+    simulated.datasets = list()
+    
+    # Create NCLUSTERS, NARMS, from str.nsubjects
+    narms = length(str.nsubjects)
+    nclusters = sapply(str.nsubjects, length)
+    
+    # Set start.time for progress iterator & initialize progress bar
+    start.time = Sys.time()
+    prog.bar =  progress::progress_bar$new(
+      format = "(:spin) [:bar] :percent eta :eta",
+      total = nsim,
+      clear = FALSE,
+      width = 100
+    )
+    
+    # This container keeps track of how many models failed to converge
+    converge.vector <- rep(TRUE, nsim)
+    
+    # Create a container for the simulated.dataset and model output
+    sim.dat = vector(mode = "list", length = nsim)
+    model.values <- list()
+    model.compare <- list()
+    
+    # option for reproducibility
+    if (!is.na(seed)) {
+      set.seed(seed = seed)
     }
-  }
-  clust = list()
-  for(i in 1:sum(nclusters)){
-    clust[[i]] <- lapply(seq(1, sum(nclusters))[i], 
-                         function (x) {rep.int(x, unlist(str.nsubjects)[i])})
-  }
-  #Alert the user if using t-distribution
-  if (tdist==TRUE){
-    print("using t-distribution because tdist = TRUE")
-  }
-  #setup for parallel computing
-  if (!is.null(cores)){
-    ## Do computations with multiple processors:
-    ## Number of cores:
-    if (cores=="all"){nc <- parallel::detectCores()} else {nc <- cores}
-    ## Create clusters
-    cl <- parallel::makeCluster(rep("localhost", nc))
-  }
-  
-  # Create simulation loop
-  require(foreach)
-  foreach::foreach(i=1:nsim, .packages = c("optimx")) %do% {
-    sim.dat[[i]] = data.frame(y = NA, trt = as.factor(unlist(trt)), 
-                              clust = as.factor(unlist(clust)))
-    # Generate between-cluster effects for non-treatment and treatment
-    if (tdist==TRUE){
-      randint = mapply(function(n, df) stats::rt(n, df = df), 
-                       n = nclusters, 
-                       df = Inf)
+    
+    # Create indicators for treatment group & cluster for the sim.data output
+    trt = list()
+    for (arm in 1:length(str.nsubjects)) {
+      trt[[arm]] = list()
+      for (cluster in 1:length(str.nsubjects[[arm]])) {
+        trt[[arm]][[cluster]] = rep(arm, str.nsubjects[[arm]][[cluster]])
+      }
+    }
+    clust = list()
+    for (i in 1:sum(nclusters)) {
+      clust[[i]] <- lapply(seq(1, sum(nclusters))[i],
+                           function (x) {
+                             rep.int(x, unlist(str.nsubjects)[i])
+                           })
+    }
+    #Alert the user if using t-distribution
+    if (tdist == TRUE) {
+      print("using t-distribution because tdist = TRUE")
+    }
+    #setup for parallel computing
+    if (!is.null(cores)) {
+      ## Do computations with multiple processors:
+      ## Number of cores:
+      if (cores == "all") {
+        nc <- parallel::detectCores()
+      } else {
+        nc <- cores
+      }
+      ## Create clusters
+      cl <- parallel::makeCluster(rep("localhost", nc))
+    }
+    
+    # Create simulation loop
+    require(foreach)
+    foreach::foreach(i = 1:nsim, .packages = c("optimx")) %do% {
+      sim.dat[[i]] = data.frame(y = NA,
+                                trt = as.factor(unlist(trt)),
+                                clust = as.factor(unlist(clust)))
+      # Generate between-cluster effects for non-treatment and treatment
+      if (tdist == TRUE) {
+        randint = mapply(function(n, df)
+          stats::rt(n, df = df),
+          n = nclusters,
+          df = Inf)
+      } else {
+        randint = mapply(
+          function(nc, s, mu)
+            stats::rnorm(nc, mean = mu, sd = sqrt(s)),
+          nc = nclusters,
+          s = sigma_b_sq,
+          mu = 0
+        )
+      }
+      # Create y-value
+      y.bclust <-
+        vector(mode = "numeric", length = length(unlist(str.nsubjects)))
+      y.wclust <-  vector(mode = "list", length = narms)
+      y.bclust <-  sapply(1:sum(nclusters),
+                          function(x)
+                            rep(unlist(randint)[x], length.out = unlist(str.nsubjects)[x]))
+      for (j in 1:narms) {
+        y.wclust[[j]] <-
+          lapply(str.nsubjects[[j]], function(x)
+            stats::rnorm(x, mean = means[j],
+                         sd = sqrt(sigma_sq[j])))
+      }
+      
+      # Create data frame for simulated dataset
+      y <- as.vector(unlist(y.bclust) + unlist(y.wclust))
+      sim.dat[[i]][["y"]] <- y
+      
+      # Update simulation progress information
+      if (quiet == FALSE) {
+        if (i == 1) {
+          message(paste0('Begin simulations :: Start Time: ', Sys.time()))
+        }
+        # Iterate progress bar
+        prog.bar$update(i / nsim)
+        Sys.sleep(1 / 100)
+      }
+      
+      # trt and clust are re-coded as trt2 and clust2 to work nicely with lme. This can be changed later.
+      # Fit GLMM (lmer)
+      if (method == 'glmm') {
+        if (max(sigma_sq) != min(sigma_sq) &
+            max(sigma_b_sq) != min(sigma_b_sq)) {
+          trt2 <- unlist(trt)
+          clust2 <- unlist(clust)
+          if (opt != "nlm" && opt != "nlminb" && opt != "auto") {
+            stop("opt must be either nlm or nlminb for this model type.")
+          }
+          my.mod <-
+            try(nlme::lme(
+              y ~ as.factor(trt2),
+              random = ~ 1 + as.factor(trt2) | clust2,
+              weights = nlme::varIdent(form = ~ 1 |
+                                         as.factor(trt2)),
+              method = "ML",
+              control = nlme::nlmeControl(
+                opt = opt,
+                niterEM = 100,
+                msMaxIter = 100
+              )
+            ))
+          model.values[[i]] <-  try(summary(my.mod)$tTable)
+          # get the overall p-values (>Chisq)
+          null.mod <-
+            try(nlme::lme(
+              y ~ 1,
+              random = ~ 1 + as.factor(trt2) | clust2,
+              weights = nlme::varIdent(form = ~ 1 |
+                                         as.factor(trt2)),
+              method = "ML",
+              control = nlme::nlmeControl(
+                opt = opt,
+                niterEM = 100,
+                msMaxIter = 100
+              )
+            ))
+          converge.vector[i] <-
+            ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE)
+          if (poor.fit.override == FALSE) {
+            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
+              stop("more than 25% of simulations are singular fit: check model specifications")
+            }
+          }
+        }
+        
+        if (max(sigma_sq) == min(sigma_sq) &
+            max(sigma_b_sq) != min(sigma_b_sq)) {
+          my.mod <-
+            lmerTest::lmer(y ~ trt + (1 + as.factor(trt) | clust),
+                           REML = FALSE,
+                           data = sim.dat[[i]])
+          if (!isTRUE(class(my.mod) == "nlme")) {
+            if (i == 1) {
+              if (opt == "auto") {
+                require("optimx")
+                goodopt <- optimizerSearch(my.mod)
+                
+              } else {
+                goodopt <- opt
+              }
+            }
+          }
+          if (isTRUE(class(my.mod) == "nlme")) {
+            if (i == 1) {
+              if (opt == "auto") {
+                goodopt <- "nlminb"
+              } else {
+                goodopt <- opt
+              }
+            }
+          }
+          my.mod <-
+            lmerTest::lmer(
+              y ~ trt + (1 + as.factor(trt) | clust),
+              REML = FALSE,
+              data = sim.dat[[i]],
+              lme4::lmerControl(optimizer = goodopt)
+            )
+          # get the overall p-values (>Chisq)
+          null.mod <-
+            update.formula(my.mod, y ~ 1 + (1 + as.factor(trt) | clust))
+          # option to stop the function early if fits are singular
+          converge.vector[i] <-
+            ifelse(is.null(my.mod@optinfo$conv$lme4$messages),
+                   FALSE,
+                   TRUE)
+          if (poor.fit.override == FALSE) {
+            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
+              stop("more than 25% of simulations are singular fit: check model specifications")
+            }
+          }
+        }
+        
+        if (max(sigma_sq) != min(sigma_sq) &
+            max(sigma_b_sq) == min(sigma_b_sq)) {
+          trt2 <- unlist(trt)
+          clust2 <- unlist(clust)
+          if (opt != "nlm" && opt != "nlminb") {
+            stop("opt must be either nlm or nlminb for this model type.")
+          }
+          my.mod <-
+            try(nlme::lme(
+              y ~ as.factor(trt2),
+              random = ~ 1 | clust2,
+              weights = nlme::varIdent(form = ~ 1 |
+                                         as.factor(trt2)),
+              method = "ML",
+              control = nlme::nlmeControl(
+                opt = opt,
+                niterEM = 100,
+                msMaxIter = 100
+              )
+            ))
+          model.values[[i]] <-  try(summary(my.mod)$tTable)
+          # get the overall p-values (>Chisq)
+          null.mod <- try(nlme::lme(
+            y ~ 1,
+            random =  ~ 1 | clust2,
+            weights = nlme::varIdent(form = ~ 1 |
+                                       as.factor(trt2)),
+            method = "ML",
+            control = nlme::nlmeControl(
+              opt = opt,
+              niterEM = 100,
+              msMaxIter = 100
+            )
+          ))
+          converge.vector[i] <-
+            ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE)
+          if (poor.fit.override == FALSE) {
+            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
+              stop("more than 25% of simulations are singular fit: check model specifications")
+            }
+          }
+        }
+        
+        if (max(sigma_sq) == min(sigma_sq) &
+            max(sigma_b_sq) == min(sigma_b_sq)) {
+          my.mod <- lmerTest::lmer(y ~ trt + (1 | clust), REML = FALSE,
+                                   data = sim.dat[[i]])
+          if (i == 1) {
+            if (!isTRUE(class(my.mod) == "nlme")) {
+              if (opt == "auto") {
+                require("optimx")
+                goodopt <- optimizerSearch(my.mod)
+              } else {
+                goodopt <- opt
+              }
+            }
+          }
+          my.mod <-  lmerTest::lmer(
+            y ~ trt + (1 | clust),
+            REML = FALSE,
+            data = sim.dat[[i]],
+            lme4::lmerControl(optimizer = goodopt)
+          )
+          # get the overall p-values (>Chisq)
+          null.mod <- update.formula(my.mod, y ~ 1 + (1 | clust))
+          # option to stop the function early if fits are singular
+          converge.vector[i] <-
+            ifelse(is.null(my.mod@optinfo$conv$lme4$messages),
+                   FALSE,
+                   TRUE)
+          if (poor.fit.override == FALSE) {
+            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
+              stop("more than 25% of simulations are singular fit: check model specifications")
+            }
+          }
+        }
+        
+        model.values[[i]] <-  summary(my.mod)
+      }
+      # Fit GEE (geeglm)
+      if (method == 'gee') {
+        data.holder = dplyr::arrange(sim.dat[[i]], clust)
+        
+        # Iterate progress bar
+        prog.bar$update(i / nsim)
+        Sys.sleep(1 / 100)
+        
+        my.mod = geepack::geeglm(y ~ trt,
+                                 data = data.holder,
+                                 id = clust,
+                                 corstr = "exchangeable")
+        model.values[[i]] = summary(my.mod)
+      }
+      
+      
+      model.compare[[i]] <- try(anova(my.mod, null.mod))
+      # stop the loop if power is <0.5
+      if (low.power.override == FALSE) {
+        if (i > 50 & (i %% 10 == 0)) {
+          temp.power.checker <-
+            matrix(
+              unlist(model.compare[1:i]),
+              ncol = 6,
+              nrow = i,
+              byrow = TRUE
+            )
+          sig.val.temp <-
+            ifelse(temp.power.checker[, 6][1:i] < alpha, 1, 0)
+          pval.power.temp <- sum(sig.val.temp) / i
+          if (pval.power.temp < 0.5) {
+            stop(
+              paste(
+                "Calculated power is < ",
+                pval.power.temp,
+                ", auto stop at simulation ",
+                i,
+                ". Set low.power.override==TRUE to run the simulations anyway.",
+                sep = ""
+              )
+            )
+          }
+        }
+      }
+      
+      if (i == nsim) {
+        total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+        hr.est = total.est %/% 3600
+        min.est = total.est %/% 60
+        sec.est = round(total.est %% 60, 0)
+        message(
+          paste0(
+            "Simulations Complete! Time Completed: ",
+            Sys.time(),
+            "\nTotal Runtime: ",
+            hr.est,
+            'Hr:',
+            min.est,
+            'Min:',
+            sec.est,
+            'Sec'
+          )
+        )
+      }
+    }
+    
+    ## Output objects
+    if (all.sim.data == TRUE) {
+      complete.output.internal <-  list(
+        "estimates" = try(model.values)
+        ,
+        "model.comparisons" = try(model.compare)
+        ,
+        "converged" = converge.vector,
+        "sim.data" = sim.dat
+      )
     } else {
-    randint = mapply(function(nc, s, mu) stats::rnorm(nc, mean = mu, sd = sqrt(s)), 
-                                                      nc = nclusters, s = sigma_b_sq, 
-                                                      mu = 0)
-    }
-    # Create y-value
-    y.bclust <-  vector(mode = "numeric", length = length(unlist(str.nsubjects)))
-    y.wclust <-  vector(mode = "list", length = narms)
-    y.bclust <-  sapply(1:sum(nclusters), 
-                      function(x) rep(unlist(randint)[x], length.out = unlist(str.nsubjects)[x]))
-    for (j in 1:narms) {
-      y.wclust[[j]] <-  lapply(str.nsubjects[[j]], function(x) stats::rnorm(x, mean = means[j], 
-                                                                             sd = sqrt(sigma_sq[j])))
-    }
-
-    # Create data frame for simulated dataset
-    y <- as.vector(unlist(y.bclust) + unlist(y.wclust))
-    sim.dat[[i]][["y"]] <- y
-  
-    # Update simulation progress information
-    if(quiet == FALSE){
-      if(i == 1){
-        message(paste0('Begin simulations :: Start Time: ', Sys.time()))
-      }
-      # Iterate progress bar
-      prog.bar$update(i / nsim)
-      Sys.sleep(1/100)
+      complete.output.internal <-  list(
+        "estimates" = try(model.values)
+        ,
+        "model.comparisons" = try(model.compare)
+        ,
+        "converged" = converge.vector
+      )
     }
     
-    # trt and clust are re-coded as trt2 and clust2 to work nicely with lme. This can be changed later.
-    # Fit GLMM (lmer)
-    if (method == 'glmm') {
-      if (max(sigma_sq) != min(sigma_sq) & max(sigma_b_sq) != min(sigma_b_sq)){
-        trt2 <- unlist(trt)
-        clust2 <- unlist(clust)
-      if (opt != "nlm" && opt != "nlminb" && opt != "auto"){
-        stop("opt must be either nlm or nlminb for this model type.")
-      }  
-      my.mod <- try(nlme::lme(y~as.factor(trt2), random = ~1+as.factor(trt2)|clust2, 
-                     weights = nlme::varIdent(form = ~1|as.factor(trt2)), 
-                     method = "ML",
-                     control = nlme::nlmeControl(opt = opt, niterEM = 100,
-                                                 msMaxIter = 100)))
-      model.values[[i]] <-  try(summary(my.mod)$tTable)
-      # get the overall p-values (>Chisq)
-      null.mod <- try(nlme::lme(y~1, random = ~1 + as.factor(trt2)|clust2, 
-                            weights = nlme::varIdent(form = ~1|as.factor(trt2)), 
-                                                   method="ML",
-                            control=nlme::nlmeControl(opt = opt, niterEM = 100,
-                                                      msMaxIter = 100)))
-      converge.vector[i] <- ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE) 
-      if (poor.fit.override==FALSE){
-        if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")
-        }
-      }
-      }
-      
-      if (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)!=min(sigma_b_sq)){
-        my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), REML=FALSE,
-                                  data = sim.dat[[i]])
-        if (!isTRUE(class(my.mod) == "nlme")){
-          if (i == 1){
-            if (opt == "auto"){
-              require("optimx")
-              goodopt <- optimizerSearch(my.mod)
-
-            } else {
-              goodopt <- opt
-            }
-          }
-        } 
-        if (isTRUE(class(my.mod) == "nlme")){
-          if (i == 1){
-            if (opt == "auto"){
-              goodopt <- "nlminb"
-            } else {
-              goodopt <- opt
-            }
-          }
-        } 
-        my.mod <-  lmerTest::lmer(y~trt+(1+as.factor(trt)|clust), REML=FALSE,
-                                  data = sim.dat[[i]], 
-                                  lme4::lmerControl(optimizer = goodopt))
-        # get the overall p-values (>Chisq)
-        null.mod <- update.formula(my.mod, y ~ 1 + (1+as.factor(trt)|clust))
-        # option to stop the function early if fits are singular
-        converge.vector[i] <- ifelse(isTRUE(any( grepl("singular", my.mod@optinfo$conv$lme4$messages))), FALSE, TRUE) 
-        if (poor.fit.override==FALSE){
-          if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
-        }
-      }
-      
-      if (max(sigma_sq)!=min(sigma_sq) & max(sigma_b_sq)==min(sigma_b_sq)){
-        trt2 <- unlist(trt)
-        clust2 <- unlist(clust)
-        if (opt != "nlm" && opt != "nlminb"){
-          stop("opt must be either nlm or nlminb for this model type.")
-        }  
-        my.mod <- try(nlme::lme(y~as.factor(trt2), random = ~1|clust2, 
-                            weights=nlme::varIdent(form = ~1|as.factor(trt2)), 
-                            method="ML",
-                            control=nlme::nlmeControl(opt = opt, niterEM = 100, 
-                                                      msMaxIter = 100)))
-        model.values[[i]] <-  try(summary(my.mod)$tTable)
-        # get the overall p-values (>Chisq)
-        null.mod <- try(nlme::lme(y~1, random=~1|clust2,  
-                              weights=nlme::varIdent(form = ~1|as.factor(trt2)), 
-                              method="ML",
-                              control=nlme::nlmeControl(opt = opt, niterEM = 100, 
-                                                        msMaxIter = 100)))
-        converge.vector[i] <- ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE) 
-        if (poor.fit.override==FALSE){
-          if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")
-          }
-        }
-      }
-      
-      if (max(sigma_sq)==min(sigma_sq) & max(sigma_b_sq)==min(sigma_b_sq)){
-        my.mod <- lmerTest::lmer(y~trt+(1|clust), REML=FALSE, 
-                                  data = sim.dat[[i]])
-        if (i == 1){
-          if (!isTRUE(class(my.mod) == "nlme")){
-            if (opt == "auto"){
-              require("optimx")
-              goodopt <- optimizerSearch(my.mod)
-            } else {
-              goodopt <- opt
-            }
-          }
-        }
-        my.mod <-  lmerTest::lmer(y~trt+(1|clust), REML=FALSE, 
-                                  data = sim.dat[[i]], 
-                                  lme4::lmerControl(optimizer = goodopt))
-        # get the overall p-values (>Chisq)
-        null.mod <- update.formula(my.mod, y ~ 1 + (1|clust))
-        # option to stop the function early if fits are singular
-        converge.vector[i] <- ifelse(isTRUE(any(grepl("singular", my.mod@optinfo$conv$lme4$messages))), FALSE, TRUE) 
-        if (poor.fit.override==FALSE){
-          if(sum(converge.vector == FALSE, na.rm = TRUE)>(nsim*.25)){stop("more than 25% of simulations are singular fit: check model specifications")}
-        }
-      } 
-      
-      model.values[[i]] <-  summary(my.mod)
+    # turn off parallel computing
+    if (!exists("cores", mode = "NULL")) {
+      parallel::stopCluster(cl)
     }
-  # Fit GEE (geeglm)
-  if(method == 'gee'){
-    data.holder = dplyr::arrange(sim.dat[[i]], clust)
     
-    # Iterate progress bar
-    prog.bar$update(i / nsim)
-    Sys.sleep(1/100)
-    
-    my.mod = geepack::geeglm(y ~ trt, data = data.holder,
-                             id = clust, corstr = "exchangeable")
-    model.values[[i]] = summary(my.mod)
+    return(complete.output.internal)
   }
-    
-
-  model.compare[[i]] <- try(anova(my.mod, null.mod))
-  # stop the loop if power is <0.5
-  if (low.power.override==FALSE){
-    if (i > 50 & (i %% 10==0)){
-    temp.power.checker <- matrix(unlist(model.compare[1:i]), ncol=6, nrow=i, 
-                                 byrow=TRUE)
-    sig.val.temp <-  ifelse(temp.power.checker[,6][1:i] < alpha, 1, 0)
-    pval.power.temp <- sum(sig.val.temp)/i
-    if (pval.power.temp < 0.5){
-      stop(paste("Calculated power is < ", pval.power.temp, ", auto stop at simulation ", 
-                 i, ". Set low.power.override==TRUE to run the simulations anyway.", sep = ""))
-    }
-    }
-  }
-    
-    if(i == nsim){
-      total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-      hr.est = total.est %/% 3600
-      min.est = total.est %/% 60
-      sec.est = round(total.est %% 60, 0)
-      message(paste0("Simulations Complete! Time Completed: ", Sys.time(), 
-                     "\nTotal Runtime: ", hr.est, 'Hr:', min.est, 'Min:', sec.est, 'Sec'))
-    }
-  }
-
-  ## Output objects
-  if(all.sim.data == TRUE){
-    complete.output.internal <-  list("estimates" = try(model.values),
-                                      "model.comparisons" = try(model.compare),
-                                      "converged" = converge.vector,
-                                      "sim.data" = sim.dat)
-  } else {
-    complete.output.internal <-  list("estimates" = try(model.values),
-                                      "model.comparisons" = try(model.compare),
-                                      "converged" = converge.vector)
-  }
-  
-  # turn off parallel computing
-  if (!exists("cores", mode = "NULL")){
-    parallel::stopCluster(cl)
-  }
-  
-  return(complete.output.internal)
-}

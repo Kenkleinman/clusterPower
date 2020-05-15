@@ -76,32 +76,59 @@
 #' @export
 
 
-cps.irgtt.normal <-  function(nsim = NULL, nsubjects = NULL, nclusters = NULL, difference = NULL,
-                      ICC = NULL, sigma_sq = NULL, sigma_b_sq = 0,
-                      ICC2 = ICC, sigma_sq2 = sigma_sq, sigma_b_sq2 = 0,
-                      alpha = 0.05, method = 'glmm', quiet = FALSE,
-                      all.sim.data = FALSE, seed = NA, poor.fit.override=FALSE){
-  if (sigma_b_sq == 0 & sigma_b_sq2 == 0){
-    warning("sigma_b_sq in both arms is 0. This is equivalent to a t-test. Did you mean to enter a sigma_b_sq value for the arm containing clustered observations?")
+
+cps.irgtt.normal <-
+  function(nsim = NULL,
+           nsubjects = NULL,
+           nclusters = NULL,
+           difference = NULL,
+           ICC = NULL,
+           sigma_sq = NULL,
+           sigma_b_sq = 0,
+           ICC2 = ICC,
+           sigma_sq2 = sigma_sq,
+           sigma_b_sq2 = 0,
+           alpha = 0.05,
+           method = 'glmm',
+           quiet = FALSE,
+           all.sim.data = FALSE,
+           seed = NA,
+           poor.fit.override = FALSE) {
+    if (sigma_b_sq == 0 & sigma_b_sq2 == 0) {
+      warning(
+        "sigma_b_sq in both arms is 0. This is equivalent to a t-test. Did you mean to enter a sigma_b_sq value for the arm containing clustered observations?"
+      )
+    }
+    if (sigma_b_sq != 0 & sigma_b_sq2 != 0) {
+      warning("sigma_b_sq is not zero for either arm. Did you want to use cps.normal()?")
+    }
+    if (sigma_b_sq != 0 & sigma_b_sq2 == 0) {
+      stop("Non-clustered group must be the reference group.")
+    }
+    if (sigma_b_sq2 != 0) {
+      nclust <- c(1, nclusters)
+    }
+    
+    sim = cps.normal(
+      nsim = nsim,
+      nsubjects = nsubjects,
+      nclusters = nclust,
+      difference = difference,
+      ICC = ICC,
+      ICC2 = ICC2,
+      sigma_sq = sigma_sq,
+      sigma_sq2 = sigma_sq2,
+      alpha = alpha,
+      sigma_b_sq = sigma_b_sq,
+      sigma_b_sq2 = sigma_b_sq2,
+      method = "glmm",
+      quiet = quiet,
+      all.sim.data = all.sim.data,
+      seed = seed,
+      irgtt = TRUE,
+      poor.fit.override = poor.fit.override
+    )
+    return(sim)
   }
-  if (sigma_b_sq != 0 & sigma_b_sq2 != 0){
-    warning("sigma_b_sq is not zero for either arm. Did you want to use cps.normal()?")
-  }
-  if (sigma_b_sq != 0 & sigma_b_sq2 == 0){
-    stop("Non-clustered group must be the reference group.")
-  }
-  if (sigma_b_sq2 != 0){
-    nclust <- c(1, nclusters)
-  }
-  
-  sim = cps.normal(nsim = nsim, nsubjects = nsubjects, nclusters = nclust, 
-                   difference = difference, ICC = ICC, ICC2 = ICC2, 
-                   sigma_sq = sigma_sq, sigma_sq2 = sigma_sq2, alpha = alpha, 
-                   sigma_b_sq = sigma_b_sq, sigma_b_sq2 = sigma_b_sq2, 
-                   method = "glmm", quiet = quiet, all.sim.data = all.sim.data,
-                   seed = seed, irgtt = TRUE, poor.fit.override=poor.fit.override)
-  return(sim)
-}
-  
-  
-  
+
+

@@ -18,30 +18,30 @@
 #' @export
 
 
+
 ## Create missing variance parameters
-createMissingVarianceParam <- function(ICC = NULL, 
+createMissingVarianceParam <- function(ICC = NULL,
                                        sigma_sq = NULL,
-                                       sigma_b_sq = NULL){
-  
+                                       sigma_b_sq = NULL) {
   parm1.arg.list <-  list(ICC, sigma_sq, sigma_b_sq)
   parm1.args <-  unlist(lapply(parm1.arg.list, is.null))
-  if(sum(parm1.args) > 1){
+  if (sum(parm1.args) > 1) {
     stop("At least two of the following terms must be specified: ICC, sigma_sq, sigma_b_sq")
   }
-  if(!is.null(c(ICC, sigma_sq)) && is.null(sigma_b_sq)){
+  if (!is.null(c(ICC, sigma_sq)) && is.null(sigma_b_sq)) {
     sigma_b_sq = ICC * sigma_sq / (1 - ICC)
     return(sigma_b_sq)
   }
-  if(!is.null(c(ICC, sigma_b_sq)) && is.null(sigma_sq)){
+  if (!is.null(c(ICC, sigma_b_sq)) && is.null(sigma_sq)) {
     sigma_sq = sigma_b_sq / ICC - sigma_b_sq
     return(sigma_sq)
   }
-  if(!is.null(c(sigma_sq, sigma_b_sq)) && is.null(ICC)){
+  if (!is.null(c(sigma_sq, sigma_b_sq)) && is.null(ICC)) {
     ICC = sigma_b_sq / (sigma_b_sq + sigma_sq)
     return(ICC)
   }
-  if(sum(parm1.args) == 0 && ICC != sigma_b_sq / (sigma_b_sq + sigma_sq)){
+  if (sum(parm1.args) == 0 &&
+      ICC != sigma_b_sq / (sigma_b_sq + sigma_sq)) {
     stop("At least one of the following terms has been misspecified: ICC, sigma_sq, sigma_b_sq")
   }
 }
-

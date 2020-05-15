@@ -85,370 +85,491 @@
 #' @export
 
 # Define function
-cps.binary = function(nsim = NULL, nsubjects = NULL, nclusters = NULL,
-                        p1 = NULL, p2 = NULL, or1 = NULL, or2 = NULL, or.diff = NULL, 
-                        sigma_b_sq = NULL, sigma_b_sq2 = NULL, alpha = 0.05, method = 'glmm', 
-                      quiet = TRUE, all.sim.data = FALSE, seed = NA, irgtt = FALSE){
 
-    if (!is.na(seed)){
-  set.seed(seed = seed)
+cps.binary = function(nsim = NULL,
+                      nsubjects = NULL,
+                      nclusters = NULL,
+                      p1 = NULL,
+                      p2 = NULL,
+                      or1 = NULL,
+                      or2 = NULL,
+                      or.diff = NULL,
+                      sigma_b_sq = NULL,
+                      sigma_b_sq2 = NULL,
+                      alpha = 0.05,
+                      method = 'glmm',
+                      quiet = TRUE,
+                      all.sim.data = FALSE,
+                      seed = NA,
+                      irgtt = FALSE) {
+  if (!is.na(seed)) {
+    set.seed(seed = seed)
   }
-    # Create objects to collect iteration-specific values
-    est.vector = NULL
-    se.vector = NULL
-    stat.vector = NULL
-    pval.vector = NULL
-    converge.ind = NULL
-    converge.vector = NULL
-    icc2.vector = NULL
-    lmer.icc.vector = NULL
-    converge.vector = NULL
-    simulated.datasets = list()
-    warning.list = list()
-    start.time = Sys.time()
-    
-    # Create progress bar
-    prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
-                                 total = nsim, clear = FALSE, width = 100)
-    prog.bar$tick(0)
-    
-    # Define wholenumber function
-    is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
-    
-    # Define expit function
-    expit = function(x)  1 / (1 + exp(-x))
-    
-    # Validate NSIM, NSUBJECTS, NCLUSTERS
-    sim.data.arg.list = list(nsim, nsubjects, nclusters, sigma_b_sq)
-    sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
-    if(sum(sim.data.args) > 0){
-      stop("NSIM, NSUBJECTS, NCLUSTERS & sigma_b_sq must all be specified. Please review your input values.")
+  # Create objects to collect iteration-specific values
+  est.vector = NULL
+  se.vector = NULL
+  stat.vector = NULL
+  pval.vector = NULL
+  converge.ind = NULL
+  converge.vector = NULL
+  icc2.vector = NULL
+  lmer.icc.vector = NULL
+  converge.vector = NULL
+  simulated.datasets = list()
+  warning.list = list()
+  start.time = Sys.time()
+  
+  # Create progress bar
+  prog.bar =  progress::progress_bar$new(
+    format = "(:spin) [:bar] :percent eta :eta",
+    total = nsim,
+    clear = FALSE,
+    width = 100
+  )
+  prog.bar$tick(0)
+  
+  # Define wholenumber function
+  is.wholenumber = function(x, tol = .Machine$double.eps ^ 0.5)
+    abs(x - round(x)) < tol
+  
+  # Define expit function
+  expit = function(x)
+    1 / (1 + exp(-x))
+  
+  # Validate NSIM, NSUBJECTS, NCLUSTERS
+  sim.data.arg.list = list(nsim, nsubjects, nclusters, sigma_b_sq)
+  sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
+  if (sum(sim.data.args) > 0) {
+    stop(
+      "NSIM, NSUBJECTS, NCLUSTERS & sigma_b_sq must all be specified. Please review your input values."
+    )
+  }
+  min1.warning = " must be an integer greater than or equal to 1"
+  if (!is.wholenumber(nsim) || nsim < 1) {
+    stop(paste0("NSIM", min1.warning))
+  }
+  if (!is.wholenumber(nsubjects) || nsubjects < 1) {
+    stop(paste0("NSUBJECTS", min1.warning))
+  }
+  if (!is.wholenumber(nclusters) || nclusters < 1) {
+    stop(paste0("NCLUSTERS", min1.warning))
+  }
+  if (length(nclusters) > 2) {
+    stop(
+      "NCLUSTERS can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)"
+    )
+  }
+  # Set cluster sizes for treatment arm (if not already specified)
+  if (length(nclusters) == 1) {
+    nclusters[2] = nclusters[1]
+  }
+  # Set sample sizes for each cluster (if not already specified)
+  if (length(nsubjects) == 1) {
+    nsubjects[1:sum(nclusters)] = nsubjects
+  }
+  if (length(nsubjects) == 2) {
+    nsubjects = c(rep(nsubjects[1], nclusters[1]), rep(nsubjects[2], nclusters[2]))
+  }
+  if (nclusters[1] == nclusters[2] &&
+      length(nsubjects) == nclusters[1]) {
+    nsubjects = rep(nsubjects, 2)
+  }
+  if (length(nclusters) == 2 &&
+      length(nsubjects) != 1 && length(nsubjects) != sum(nclusters)) {
+    stop(
+      "A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS"
+    )
+  }
+  
+  if (irgtt == FALSE) {
+    # Validate sigma_b_sq, sigma_b_sq2
+    min0.warning = " must be a numeric value greater than 0"
+    if (!is.numeric(sigma_b_sq) || sigma_b_sq <= 0) {
+      stop("sigma_b_sq", min0.warning)
     }
-    min1.warning = " must be an integer greater than or equal to 1"
-    if(!is.wholenumber(nsim) || nsim < 1){
-      stop(paste0("NSIM", min1.warning))
+    if (!is.null(sigma_b_sq2) && sigma_b_sq2 <= 0) {
+      stop("sigma_b_sq2", min0.warning)
     }
-    if(!is.wholenumber(nsubjects) || nsubjects < 1){
-      stop(paste0("NSUBJECTS", min1.warning))
+  }
+  # Set between-cluster variances
+  if (is.null(sigma_b_sq2)) {
+    sigma_b_sq[2] = sigma_b_sq
+  } else{
+    sigma_b_sq[2] = sigma_b_sq2
+  }
+  
+  # Validate P1, P2, & OR1, OR2, OR.DIFF
+  parm1.arg.list = list(p1, p2)
+  parm1.args = unlist(lapply(parm1.arg.list, is.null))
+  parm2.arg.list = list(or1, or2, or.diff)
+  parm2.args = unlist(lapply(parm2.arg.list, is.null))
+  if (sum(parm1.args) < 3 && sum(parm2.args) < 3) {
+    stop(
+      "Only one set of parameters may be supplied: Expected probabilities OR expected odds ratios"
+    )
+  }
+  if (sum(parm2.args) == 3 && sum(parm1.args) > 1) {
+    stop("Both terms must be specified: p1, p2")
+  }
+  if (sum(parm1.args) == 3 && sum(parm2.args) > 1) {
+    stop("At least two of the following terms must be specified: OR1, OR2, OR.DIFF")
+  }
+  if (sum(parm2.args) == 0 && or.diff != abs(or1 - or2)) {
+    stop("At least one of the following terms has been misspecified: OR1, OR2, OR.DIFF")
+  }
+  
+  # Validate ALPHA, METHOD, QUIET, ALL.SIM.DATA
+  if (!is.numeric(alpha) || alpha < 0) {
+    stop("ALPHA", min0.warning)
+  } else if (alpha > 1) {
+    stop("ALPHA must be a numeric value between 0 - 1")
+  }
+  if (!is.element(method, c('glmm', 'gee'))) {
+    stop(
+      "METHOD must be either 'glmm' (Generalized Linear Mixed Model)
+           or 'gee'(Generalized Estimating Equation)"
+    )
+  }
+  if (!is.logical(quiet)) {
+    stop(
+      "QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)"
+    )
+  }
+  if (!is.logical(all.sim.data)) {
+    stop(
+      "ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
+    )
+  }
+  
+  # Calculate all expected probabilities/odds ratios (if they have not been specified)
+  if (sum(parm1.args) == 3) {
+    if (is.null(or1)) {
+      or1 = abs(or.diff - or2)
     }
-    if(!is.wholenumber(nclusters) || nclusters < 1){
-      stop(paste0("NCLUSTERS", min1.warning))
+    if (is.null(or2)) {
+      or2 = abs(or1 - or.diff)
     }
-    if(length(nclusters) > 2){
-      stop("NCLUSTERS can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)")
+    if (is.null(or.diff)) {
+      or.diff = or1 - or2
     }
-    # Set cluster sizes for treatment arm (if not already specified)
-    if(length(nclusters) == 1){
-      nclusters[2] = nclusters[1]
-    }
-    # Set sample sizes for each cluster (if not already specified)
-    if(length(nsubjects) == 1){
-      nsubjects[1:sum(nclusters)] = nsubjects
-    } 
-    if(length(nsubjects) == 2){
-      nsubjects = c(rep(nsubjects[1], nclusters[1]), rep(nsubjects[2], nclusters[2]))
-    }
-    if(nclusters[1] == nclusters[2] && length(nsubjects) == nclusters[1]){
-      nsubjects = rep(nsubjects, 2)
-    }
-    if(length(nclusters) == 2 && length(nsubjects) != 1 && length(nsubjects) != sum(nclusters)){
-      stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS")
-    }
-    
-    if(irgtt==FALSE){
-      # Validate sigma_b_sq, sigma_b_sq2
-      min0.warning = " must be a numeric value greater than 0"
-      if(!is.numeric(sigma_b_sq) || sigma_b_sq <= 0){
-        stop("sigma_b_sq", min0.warning)
-      }
-      if(!is.null(sigma_b_sq2) && sigma_b_sq2 <= 0){
-        stop("sigma_b_sq2", min0.warning)
-      }
-    }
-    # Set between-cluster variances
-    if(is.null(sigma_b_sq2)){
-      sigma_b_sq[2] = sigma_b_sq
-    }else{
-      sigma_b_sq[2] = sigma_b_sq2
-    }
-    
-    # Validate P1, P2, & OR1, OR2, OR.DIFF
-    parm1.arg.list = list(p1, p2)
-    parm1.args = unlist(lapply(parm1.arg.list, is.null))
-    parm2.arg.list = list(or1, or2, or.diff)
-    parm2.args = unlist(lapply(parm2.arg.list, is.null))
-    if(sum(parm1.args) < 3 && sum(parm2.args) < 3){
-      stop("Only one set of parameters may be supplied: Expected probabilities OR expected odds ratios")
-    }
-    if(sum(parm2.args) == 3 && sum(parm1.args) > 1){
-      stop("Both terms must be specified: p1, p2")
-    }
-    if(sum(parm1.args) == 3 && sum(parm2.args) > 1){
-      stop("At least two of the following terms must be specified: OR1, OR2, OR.DIFF")
-    }
-    if(sum(parm2.args) == 0 && or.diff != abs(or1 - or2)){
-      stop("At least one of the following terms has been misspecified: OR1, OR2, OR.DIFF")
-    }
-    
-    # Validate ALPHA, METHOD, QUIET, ALL.SIM.DATA
-    if(!is.numeric(alpha) || alpha < 0){
-      stop("ALPHA", min0.warning)
-    } else if(alpha > 1){
-      stop("ALPHA must be a numeric value between 0 - 1")
-    }
-    if(!is.element(method, c('glmm', 'gee'))){
-      stop("METHOD must be either 'glmm' (Generalized Linear Mixed Model) 
-           or 'gee'(Generalized Estimating Equation)")
-    }
-    if(!is.logical(quiet)){
-      stop("QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)")
-    }
-    if(!is.logical(all.sim.data)){
-      stop("ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output")
-    }
-    
-    # Calculate all expected probabilities/odds ratios (if they have not been specified)
-    if(sum(parm1.args) == 3){
-      if(is.null(or1)){
-        or1 = abs(or.diff - or2)
-      }
-      if(is.null(or2)){
-        or2 = abs(or1 - or.diff)
-      }
-      if(is.null(or.diff)){
-        or.diff = or1 - or2
-      }
-      p1 = or1 / (1 + or1)
-      p2 = or2 / (1 + or2)
+    p1 = or1 / (1 + or1)
+    p2 = or2 / (1 + or2)
     #  p.diff = abs(p1 - p2)
-    }
+  }
+  
+  # Calculate ICC1 (sigma_b_sq / (sigma_b_sq + pi^2/3))
+  icc1 = mean(sapply(1:2, function(x)
+    sigma_b_sq[x] / (sigma_b_sq[x] + pi ^ 2 / 3)))
+  
+  # Create indicators for treatment group & cluster
+  trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])),
+          rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
+  clust = unlist(lapply(1:sum(nclusters), function(x)
+    rep(x, length.out = nsubjects[x])))
+  
+  # Calculate log odds for each group
+  logit.p1 = log(p1 / (1 - p1))
+  logit.p2 = log(p2 / (1 - p2))
+  
+  # Set warnings to OFF
+  # Note: Warnings will still be stored in 'warning.list'
+  options(warn = -1)
+  
+  ### Create simulation loop
+  while (sum(converge.vector == TRUE) != nsim) {
+    # Generate between-cluster effects for non-treatment and treatment
+    randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq[1]))
+    randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq[2]))
     
-    # Calculate ICC1 (sigma_b_sq / (sigma_b_sq + pi^2/3))
-    icc1 = mean(sapply(1:2, function(x) sigma_b_sq[x] / (sigma_b_sq[x] + pi^2 / 3)))
-    
-    # Create indicators for treatment group & cluster
-    trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])), 
-            rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
-    clust = unlist(lapply(1:sum(nclusters), function(x) rep(x, length.out = nsubjects[x])))
-    
-    # Calculate log odds for each group
-    logit.p1 = log(p1 / (1 - p1))
-    logit.p2 = log(p2 / (1 - p2))
-    
-    # Set warnings to OFF
-    # Note: Warnings will still be stored in 'warning.list'
-    options(warn = -1)
-    
-    ### Create simulation loop
-    while(sum(converge.vector == TRUE) != nsim){
-      # Generate between-cluster effects for non-treatment and treatment
-      randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq[1]))
-      randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq[2]))
-      
-      # Create non-treatment y-value
-      y0.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
+    # Create non-treatment y-value
+    y0.intercept = unlist(lapply(1:nclusters[1], function(x)
+      rep(randint.0[x], length.out = nsubjects[x])))
+    y0.linpred = y0.intercept + logit.p1
+    y0.prob = expit(y0.linpred)
+    y0 = unlist(lapply(y0.prob, function(x)
+      stats::rbinom(1, 1, x)))
+    if (length(table(y0)) != 2) {
+      warning(print(
+        "y0 is completely seperated. Repeating the random draw 1 time."
+      ))
+      randint.0 = stats::rnorm(nclusters[1],
+                               mean = 0,
+                               sd = sqrt(sigma_b_sq[1]))
+      y0.intercept = unlist(lapply(1:nclusters[1], function(x)
+        rep(randint.0[x], length.out = nsubjects[x])))
       y0.linpred = y0.intercept + logit.p1
       y0.prob = expit(y0.linpred)
-      y0 = unlist(lapply(y0.prob, function(x) stats::rbinom(1, 1, x)))
-      if (length(table(y0))!=2){
-        warning(print("y0 is completely seperated. Repeating the random draw 1 time."))
-        randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq[1]))
-        y0.intercept = unlist(lapply(1:nclusters[1], function(x) rep(randint.0[x], length.out = nsubjects[x])))
-        y0.linpred = y0.intercept + logit.p1
-        y0.prob = expit(y0.linpred)
-        y0 = unlist(lapply(y0.prob, function(x) stats::rbinom(1, 1, x)))
-      }
-
-      # Create treatment y-value
-      y1.intercept = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
+      y0 = unlist(lapply(y0.prob, function(x)
+        stats::rbinom(1, 1, x)))
+    }
+    
+    # Create treatment y-value
+    y1.intercept = unlist(lapply(1:nclusters[2], function(x)
+      rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
+    y1.linpred = y1.intercept + logit.p2
+    y1.prob = expit(y1.linpred)
+    y1 = unlist(lapply(y1.prob, function(x)
+      stats::rbinom(1, 1, x)))
+    if (length(table(y1)) != 2) {
+      warning(print(
+        "y1 is completely seperated. Repeating the random draw 1 time."
+      ))
+      randint.1 = stats::rnorm(nclusters[2],
+                               mean = 0,
+                               sd = sqrt(sigma_b_sq[2]))
+      y1.intercept = unlist(lapply(1:nclusters[2], function(x)
+        rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
       y1.linpred = y1.intercept + logit.p2
       y1.prob = expit(y1.linpred)
-      y1 = unlist(lapply(y1.prob, function(x) stats::rbinom(1, 1, x)))
-      if (length(table(y1))!=2){
-        warning(print("y1 is completely seperated. Repeating the random draw 1 time."))
-        randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq[2]))
-        y1.intercept = unlist(lapply(1:nclusters[2], function(x) rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
-        y1.linpred = y1.intercept + logit.p2
-        y1.prob = expit(y1.linpred)
-        y1 = unlist(lapply(y1.prob, function(x) stats::rbinom(1, 1, x)))
+      y1 = unlist(lapply(y1.prob, function(x)
+        stats::rbinom(1, 1, x)))
+    }
+    
+    
+    
+    # Create single response vector
+    y = c(y0, y1)
+    
+    # Create and store data frame for simulated dataset
+    sim.dat = data.frame(y = y, trt = trt, clust = clust)
+    if (all.sim.data == TRUE) {
+      simulated.datasets = append(simulated.datasets, list(sim.dat))
+    }
+    # Calculate ICC2 ([P(Yij = 1, Yih = 1)] - pij * pih) / sqrt(pij(1 - pij) * pih(1 - pih))
+    #icc2 = (mean(y0.prob) * mean(y1.prob) - p1*p2) / sqrt((p1 * (1 - p1)) * p2 * (1 - p2))
+    icc2 = (mean(y0.prob) - p1) * (mean(y1.prob) - p2) / sqrt((p1 * (1 - p1)) * p2 * (1 - p2))
+    # ^Equation above #11 (no number); Eldridge, Ukoumunne & Carlin, 2009 (p.386)
+    icc2.vector = append(icc2.vector, icc2)
+    
+    # Calculate LMER.ICC (lmer: sigma_b_sq / (sigma_b_sq + sigma))
+    if (irgtt == FALSE) {
+      lmer.mod = lme4::glmer(
+        y ~ trt + (1 | clust),
+        data = sim.dat,
+        family = stats::binomial(link = 'logit')
+      )
+      lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
+      lmer.icc.vector = append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
+    }
+    
+    # Fit GLMM (lmer)
+    if (method == 'glmm') {
+      if (irgtt == TRUE) {
+        my.mod <- lme4::glmer(
+          y ~ trt + (0 + trt | clust),
+          data = sim.dat,
+          family = stats::binomial(link = 'logit')
+        )
+      } else {
+        my.mod = try(lme4::glmer(
+          y ~ trt + (1 | clust),
+          data = sim.dat,
+          family = stats::binomial(link = 'logit')
+        ))
       }
-
-      
-      
-      # Create single response vector
-      y = c(y0, y1)
-      
-      # Create and store data frame for simulated dataset
-      sim.dat = data.frame(y = y, trt = trt, clust = clust)
-      if(all.sim.data == TRUE){
-        simulated.datasets = append(simulated.datasets, list(sim.dat))
-      }
-      # Calculate ICC2 ([P(Yij = 1, Yih = 1)] - pij * pih) / sqrt(pij(1 - pij) * pih(1 - pih))
-      #icc2 = (mean(y0.prob) * mean(y1.prob) - p1*p2) / sqrt((p1 * (1 - p1)) * p2 * (1 - p2))
-      icc2 = (mean(y0.prob) - p1) * (mean(y1.prob) - p2) / sqrt((p1 * (1 - p1)) * p2 * (1 - p2))
-      # ^Equation above #11 (no number); Eldridge, Ukoumunne & Carlin, 2009 (p.386)
-      icc2.vector = append(icc2.vector, icc2)
-      
-      # Calculate LMER.ICC (lmer: sigma_b_sq / (sigma_b_sq + sigma))
-      if(irgtt==FALSE){
-        lmer.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat,
-                            family = stats::binomial(link = 'logit'))
-        lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
-        lmer.icc.vector = append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
-      }
-      
-      # Fit GLMM (lmer)
-      if(method == 'glmm'){
-        if(irgtt==TRUE){
-          my.mod <- lme4::glmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
-                               family = stats::binomial(link = 'logit'))
-        } else {
-        my.mod = try(lme4::glmer(y ~ trt + (1|clust), data = sim.dat, 
-                                 family = stats::binomial(link = 'logit')))
-        }
-        model.converge = try(my.mod)
-        converge.ind = is.null(model.converge@optinfo$conv$lme4$messages)
-        converge.vector = append(converge.vector, converge.ind)
-        if (!isTRUE(converge.ind)){
-          model.id = paste0("Model ", length(converge.vector))
-          warning.list[model.id] = list(model.converge@optinfo$conv$lme4$messages)
-          glmm.values = NA
-          est.vector = append(est.vector, NA)
-          se.vector = append(se.vector, NA)
-          stat.vector = append(stat.vector, NA)
-          pval.vector = append(pval.vector, NA)
-        } else {
+      model.converge = try(my.mod)
+      converge.ind = is.null(model.converge@optinfo$conv$lme4$messages)
+      converge.vector = append(converge.vector, converge.ind)
+      if (!isTRUE(converge.ind)) {
+        model.id = paste0("Model ", length(converge.vector))
+        warning.list[model.id] = list(model.converge@optinfo$conv$lme4$messages)
+        glmm.values = NA
+        est.vector = append(est.vector, NA)
+        se.vector = append(se.vector, NA)
+        stat.vector = append(stat.vector, NA)
+        pval.vector = append(pval.vector, NA)
+      } else {
         glmm.values = summary(my.mod)$coefficient
         est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
         se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
         stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
         pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
-        }
-      }
-      # Fit GEE (geeglm)
-      if(method == 'gee'){
-        sim.dat = dplyr::arrange(sim.dat, clust)
-        my.mod = geepack::geeglm(y ~ trt, data = sim.dat,
-                                 family = stats::binomial(link = 'logit'), 
-                                 id = clust, corstr = "exchangeable")
-        gee.values = summary(my.mod)$coefficients
-        est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-        se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-        stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-        pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
-      }
-      
-      # Update simulation progress information
-      if(quiet == FALSE){
-        # Print simulation start message
-        if(length(est.vector) == 1){
-          avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-          time.est = avg.iter.time * (nsim - 1) / 60
-          hr.est = time.est %/% 60
-          min.est = round(time.est %% 60, 0)
-          message(paste0('Begin simulations :: Start Time: ', Sys.time(), 
-                       ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
-        }
-        # Print simulation complete message
-        if(sum(converge.vector == TRUE) == nsim){
-          message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
-        }
-      }
-      # Iterate progress bar
-      prog.bar$update(sum(converge.vector == TRUE) / nsim)
-      Sys.sleep(1/100)
-      
-      # Governor to prevent infinite non-convergence loop
-      converge.ratio <- sum(converge.vector == FALSE) / sum(converge.vector == TRUE)
-      if(converge.ratio > 4.0 && converge.ratio != Inf){
-        stop("WARNING! The number of non-convergent models exceeds the number of convergent models by a factor of 4. Consider reducing sigma_b_sq")
       }
     }
-    
-    ## Output objects
-    # Create object containing summary statement
-    if(irgtt==FALSE){
-    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
-                             " Simulations: Simple Design, Binary Outcome\nNote: ", sum(converge.vector == FALSE), 
-                             " additional models were fitted to account for non-convergent simulations.")
-    } else {
-    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
-                               " Simulations: IRGTT Design, Binary Outcome\nNote: ", sum(converge.vector == FALSE), 
-                               " additional models were fitted to account for non-convergent simulations.")
-      
+    # Fit GEE (geeglm)
+    if (method == 'gee') {
+      sim.dat = dplyr::arrange(sim.dat, clust)
+      my.mod = geepack::geeglm(
+        y ~ trt,
+        data = sim.dat,
+        family = stats::binomial(link = 'logit'),
+        id = clust,
+        corstr = "exchangeable"
+      )
+      gee.values = summary(my.mod)$coefficients
+      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
+      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
+      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
+      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
     }
-    # Create method object
-    long.method = switch(method, glmm = 'Generalized Linear Mixed Model', 
-                         gee = 'Generalized Estimating Equation')
     
-    # Store model estimate output in data frame
-    cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
-                             Std.err = as.vector(unlist(se.vector)),
-                             Test.statistic = as.vector(unlist(stat.vector)),
-                             p.value = as.vector(unlist(pval.vector)), 
-                             converge = as.vector(unlist(converge.vector)))
-
-    # Calculate and store power estimate & confidence intervals
-    cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
-    power.parms <- confint.calc(nsim = nsim, alpha = alpha,
-                                p.val = cps.model.temp[, 'p.value'], names.power = "trt")
+    # Update simulation progress information
+    if (quiet == FALSE) {
+      # Print simulation start message
+      if (length(est.vector) == 1) {
+        avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+        time.est = avg.iter.time * (nsim - 1) / 60
+        hr.est = time.est %/% 60
+        min.est = round(time.est %% 60, 0)
+        message(
+          paste0(
+            'Begin simulations :: Start Time: ',
+            Sys.time(),
+            ' :: Estimated completion time: ',
+            hr.est,
+            'Hr:',
+            min.est,
+            'Min'
+          )
+        )
+      }
+      # Print simulation complete message
+      if (sum(converge.vector == TRUE) == nsim) {
+        message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
+      }
+    }
+    # Iterate progress bar
+    prog.bar$update(sum(converge.vector == TRUE) / nsim)
+    Sys.sleep(1 / 100)
     
-    # Create object containing inputs
-    p1.p2.or = round(p1 / (1 - p1) / (p2 / (1 - p2)), 3) 
-    p2.p1.or = round(p2 / (1 - p2) / (p1 / (1 - p1)), 3) 
-    inputs = t(data.frame('Non.Treatment' = c("probability" = p1, "odds.ratio" = p1.p2.or), 
-                          'Treatment' = c("probability" = p2, 'odds.ratio' = p2.p1.or)))#, 
-                         # 'Difference' = c("probability" = p.diff, 'odds.ratio' = p2.p1.or - p1.p2.or)))
-
-    # Create object containing group-specific cluster sizes
-    cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]], 
-                         'Treatment' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
+    # Governor to prevent infinite non-convergence loop
+    converge.ratio <-
+      sum(converge.vector == FALSE) / sum(converge.vector == TRUE)
+    if (converge.ratio > 4.0 && converge.ratio != Inf) {
+      stop(
+        "WARNING! The number of non-convergent models exceeds the number of convergent models by a factor of 4. Consider reducing sigma_b_sq"
+      )
+    }
+  }
+  
+  ## Output objects
+  # Create object containing summary statement
+  if (irgtt == FALSE) {
+    summary.message = paste0(
+      "Monte Carlo Power Estimation based on ",
+      nsim,
+      " Simulations: Simple Design, Binary Outcome\nNote: ",
+      sum(converge.vector == FALSE),
+      " additional models were fitted to account for non-convergent simulations."
+    )
+  } else {
+    summary.message = paste0(
+      "Monte Carlo Power Estimation based on ",
+      nsim,
+      " Simulations: IRGTT Design, Binary Outcome\nNote: ",
+      sum(converge.vector == FALSE),
+      " additional models were fitted to account for non-convergent simulations."
+    )
     
-    # Create object containing number of clusters
-    n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), "Treatment" = c("n.clust" = nclusters[2])))
-    
-    if (irgtt==FALSE){
-      # Create object containing estimated ICC values
-      ICC = round(t(data.frame('P_h' = c('ICC' = icc1), 
-                             'P_c' = c('ICC' = mean(icc2.vector)), 
-                             'lmer' = c('ICC' = mean(lmer.icc.vector)))), 3)
-      # Create object containing all ICC values
-      # Note: P_h is a single calculated value. No vector to be appended.
-      icc.list = data.frame('P_c' = icc2.vector, 
+  }
+  # Create method object
+  long.method = switch(method, glmm = 'Generalized Linear Mixed Model',
+                       gee = 'Generalized Estimating Equation')
+  
+  # Store model estimate output in data frame
+  cps.model.est = data.frame(
+    Estimate = as.vector(unlist(est.vector)),
+    Std.err = as.vector(unlist(se.vector)),
+    Test.statistic = as.vector(unlist(stat.vector)),
+    p.value = as.vector(unlist(pval.vector)),
+    converge = as.vector(unlist(converge.vector))
+  )
+  
+  # Calculate and store power estimate & confidence intervals
+  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  power.parms <- confint.calc(
+    nsim = nsim,
+    alpha = alpha,
+    p.val = cps.model.temp[, 'p.value'],
+    names.power = "trt"
+  )
+  
+  # Create object containing inputs
+  p1.p2.or = round(p1 / (1 - p1) / (p2 / (1 - p2)), 3)
+  p2.p1.or = round(p2 / (1 - p2) / (p1 / (1 - p1)), 3)
+  inputs = t(data.frame(
+    'Non.Treatment' = c("probability" = p1, "odds.ratio" = p1.p2.or),
+    'Treatment' = c("probability" = p2, 'odds.ratio' = p2.p1.or)
+  ))#,
+  # 'Difference' = c("probability" = p.diff, 'odds.ratio' = p2.p1.or - p1.p2.or)))
+  
+  # Create object containing group-specific cluster sizes
+  cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]],
+                       'Treatment' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
+  
+  # Create object containing number of clusters
+  n.clusters = t(data.frame(
+    "Non.Treatment" = c("n.clust" = nclusters[1]),
+    "Treatment" = c("n.clust" = nclusters[2])
+  ))
+  
+  if (irgtt == FALSE) {
+    # Create object containing estimated ICC values
+    ICC = round(t(data.frame(
+      'P_h' = c('ICC' = icc1),
+      'P_c' = c('ICC' = mean(icc2.vector)),
+      'lmer' = c('ICC' = mean(lmer.icc.vector))
+    )), 3)
+    # Create object containing all ICC values
+    # Note: P_h is a single calculated value. No vector to be appended.
+    icc.list = data.frame('P_c' = icc2.vector,
                           'lmer' = lmer.icc.vector)
-    }
-    
-    # Create object containing group-specific variance parameters
-    var.parms = t(data.frame('Non.Treatment' = c('sigma_b_sq' = sigma_b_sq[1]), 
-                             'Treatment' = c('sigma_b_sq' = sigma_b_sq[2])))
-    
-    # Check & governor for inclusion of simulated datasets
-    # Note: If number of non-convergent models exceeds 5% of NSIM, override ALL.SIM.DATA and output all simulated data sets
-    if(all.sim.data == FALSE && (sum(converge.vector == FALSE) < sum(converge.vector == TRUE) * 0.05)){
-      simulated.datasets = NULL
-    }
-    
-    # Create list containing all output (class 'crtpwr') and return
-    if(irgtt==FALSE){
-    complete.output = structure(list("overview" = summary.message, "nsim" = nsim, 
-                                     "power" = power.parms, "method" = long.method, 
-                                     "alpha" = alpha, "cluster.sizes" = cluster.sizes, 
-                                     "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                     "inputs" = inputs, "ICC" = ICC, "icc.list" = icc.list, 
-                                     "model.estimates" = cps.model.est, 
-                                     "sim.data" = simulated.datasets, 
-                                     "warning.list" = warning.list,
-                                     "convergence" = converge.vector))
-    } else {
-    complete.output = structure(list("overview" = summary.message, "nsim" = nsim, 
-                                       "power" = power.parms, "method" = long.method, 
-                                       "alpha" = alpha, "cluster.sizes" = cluster.sizes, 
-                                       "n.clusters" = n.clusters, "variance.parms" = var.parms, 
-                                       "inputs" = inputs,
-                                       "model.estimates" = cps.model.est, 
-                                       "sim.data" = simulated.datasets, 
-                                       "warning.list" = warning.list,
-                                       "convergence" = converge.vector))
-    }
-    return(complete.output)
-    }
+  }
+  
+  # Create object containing group-specific variance parameters
+  var.parms = t(data.frame(
+    'Non.Treatment' = c('sigma_b_sq' = sigma_b_sq[1]),
+    'Treatment' = c('sigma_b_sq' = sigma_b_sq[2])
+  ))
+  
+  # Check & governor for inclusion of simulated datasets
+  # Note: If number of non-convergent models exceeds 5% of NSIM, override ALL.SIM.DATA and output all simulated data sets
+  if (all.sim.data == FALSE &&
+      (sum(converge.vector == FALSE) < sum(converge.vector == TRUE) * 0.05)) {
+    simulated.datasets = NULL
+  }
+  
+  # Create list containing all output (class 'crtpwr') and return
+  if (irgtt == FALSE) {
+    complete.output = structure(
+      list(
+        "overview" = summary.message,
+        "nsim" = nsim,
+        "power" = power.parms,
+        "method" = long.method,
+        "alpha" = alpha,
+        "cluster.sizes" = cluster.sizes,
+        "n.clusters" = n.clusters,
+        "variance.parms" = var.parms,
+        "inputs" = inputs,
+        "ICC" = ICC,
+        "icc.list" = icc.list,
+        "model.estimates" = cps.model.est,
+        "sim.data" = simulated.datasets,
+        "warning.list" = warning.list,
+        "convergence" = converge.vector
+      ),
+      class = "crtpwr"
+    )
+  } else {
+    complete.output = structure(
+      list(
+        "overview" = summary.message,
+        "nsim" = nsim,
+        "power" = power.parms,
+        "method" = long.method,
+        "alpha" = alpha,
+        "cluster.sizes" = cluster.sizes,
+        "n.clusters" = n.clusters,
+        "variance.parms" = var.parms,
+        "inputs" = inputs,
+        "model.estimates" = cps.model.est,
+        "sim.data" = simulated.datasets,
+        "warning.list" = warning.list,
+        "convergence" = converge.vector
+      ),
+      class = "crtpwr"
+    )
+  }
+  return(complete.output)
+}

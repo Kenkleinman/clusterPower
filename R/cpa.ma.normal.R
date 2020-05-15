@@ -66,50 +66,67 @@
 #'   NY: Oxford University Press; 1998.
 #' @export
 
-cpa.ma.normal <- function(alpha = 0.05, power = 0.80,
-                         narms = NA, nclusters = NA, nsubjects = NA,
-                         vara = NA, varc = NA, vare = NA, 
-                         tol = .Machine$double.eps^0.25){
-  
+
+cpa.ma.normal <- function(alpha = 0.05,
+                          power = 0.80,
+                          narms = NA,
+                          nclusters = NA,
+                          nsubjects = NA,
+                          vara = NA,
+                          varc = NA,
+                          vare = NA,
+                          tol = .Machine$double.eps ^ 0.25) {
   # if(!is.na(narms) && narms <= 2) {
   #   stop("'narms' must be greater than 2.")
   # }
   
-  if(!is.na(nclusters) && nclusters <= 1) {
+  if (!is.na(nclusters) && nclusters <= 1) {
     stop("'nclusters' must be greater than 1.")
   }
   
-  if(!is.na(nsubjects) && nsubjects <= 1) {
+  if (!is.na(nsubjects) && nsubjects <= 1) {
     stop("'nsubjects' must be greater than 1.")
   }
   
   # list of needed inputs
-  needlist <- list(alpha, power, narms, nclusters, nsubjects, vara, varc, vare)
-  neednames <- c("alpha", "power", "narms", "nclusters", "nsubjects", "vara", "varc", "vare")
+  needlist <-
+    list(alpha, power, narms, nclusters, nsubjects, vara, varc, vare)
+  neednames <-
+    c("alpha",
+      "power",
+      "narms",
+      "nclusters",
+      "nsubjects",
+      "vara",
+      "varc",
+      "vare")
   needind <- which(unlist(lapply(needlist, is.na)))
   # check to see that exactly one needed param is NA
   
   if (length(needind) != 1) {
     neederror = "Exactly one of 'alpha', 'power', 'narms', 'nclusters', 'nsubjects', 'vara', 'varb', and 'varc' must be NA."
     stop(neederror)
-  } 
+  }
   
   target <- neednames[needind]
   
   # evaluate power
   pwr <- quote({
     ndf <- narms - 1
-    ddf <- narms*(nclusters-1)
-    fcrit <- qf(alpha/2, ndf, ddf, lower.tail = FALSE)
-    ncp <- (vare+nsubjects*varc+nsubjects*nclusters*vara)/(vare+nsubjects*varc)
-    pf(fcrit, ndf, ddf, ncp, lower.tail = FALSE) 
+    ddf <- narms * (nclusters - 1)
+    fcrit <- qf(alpha / 2, ndf, ddf, lower.tail = FALSE)
+    ncp <-
+      (vare + nsubjects * varc + nsubjects * nclusters * vara) / (vare + nsubjects *
+                                                                    varc)
+    pf(fcrit, ndf, ddf, ncp, lower.tail = FALSE)
   })
   
   # calculate alpha
   if (is.na(alpha)) {
-    alpha <- stats::uniroot(function(alpha) eval(pwr) - power,
-                            interval = c(1e-10, 1 - 1e-10),
-                            tol = tol)$root
+    alpha <- stats::uniroot(function(alpha)
+      eval(pwr) - power,
+      interval = c(1e-10, 1 - 1e-10),
+      tol = tol)$root
   }
   
   # calculate power
@@ -119,44 +136,68 @@ cpa.ma.normal <- function(alpha = 0.05, power = 0.80,
   
   # calculate narms
   if (is.na(narms)) {
-    narms <- stats::uniroot(function(narms) eval(pwr) - power,
-                            interval = c(2 + 1e-10, 1e+07),
-                            tol = tol, extendInt = "upX")$root
+    narms <- stats::uniroot(
+      function(narms)
+        eval(pwr) - power,
+      interval = c(2 + 1e-10, 1e+07),
+      tol = tol,
+      extendInt = "upX"
+    )$root
   }
   
   # calculate nclusters
   if (is.na(nclusters)) {
-    nclusters <- stats::uniroot(function(nclusters) eval(pwr) - power,
-                                interval = c(2 + 1e-10, 1e+07),
-                                tol = tol, extendInt = "upX")$root
+    nclusters <- stats::uniroot(
+      function(nclusters)
+        eval(pwr) - power,
+      interval = c(2 + 1e-10, 1e+07),
+      tol = tol,
+      extendInt = "upX"
+    )$root
   }
   
   # calculate nsubjects
   if (is.na(nsubjects)) {
-    nsubjects <- stats::uniroot(function(nsubjects) eval(pwr) - power,
-                                interval = c(2 + 1e-10, 1e+07),
-                                tol = tol, extendInt = "upX")$root
+    nsubjects <- stats::uniroot(
+      function(nsubjects)
+        eval(pwr) - power,
+      interval = c(2 + 1e-10, 1e+07),
+      tol = tol,
+      extendInt = "upX"
+    )$root
   }
   
   # calculate vara
-  if (is.na(vara)){
-    vara <- stats::uniroot(function(vara) eval(pwr) - power,
-                           interval = c(1e-07, 1e+07),
-                           tol = tol, extendInt = "downX")$root
+  if (is.na(vara)) {
+    vara <- stats::uniroot(
+      function(vara)
+        eval(pwr) - power,
+      interval = c(1e-07, 1e+07),
+      tol = tol,
+      extendInt = "downX"
+    )$root
   }
   
   # calculate varc
-  if (is.na(varc)){
-    varc <- stats::uniroot(function(varc) eval(pwr) - power,
-                           interval = c(1e-07, 1e+07),
-                           tol = tol, extendInt = "downX")$root
+  if (is.na(varc)) {
+    varc <- stats::uniroot(
+      function(varc)
+        eval(pwr) - power,
+      interval = c(1e-07, 1e+07),
+      tol = tol,
+      extendInt = "downX"
+    )$root
   }
   
   # calculate vare
   if (is.na(vare)) {
-    vare <- stats::uniroot(function(vare) eval(pwr) - power,
-                           interval = c(1e-07, 1e+07),
-                           tol = tol, extendInt = "downX")$root
+    vare <- stats::uniroot(
+      function(vare)
+        eval(pwr) - power,
+      interval = c(1e-07, 1e+07),
+      tol = tol,
+      extendInt = "downX"
+    )$root
   }
   
   structure(get(target), names = target)
