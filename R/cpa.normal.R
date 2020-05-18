@@ -120,6 +120,19 @@ cpa.normal <- function(alpha = 0.05,
     stop("'nclusters' must be greater than 1.")
   }
   
+  # check for sufficient variance parameters
+  varname <-
+    c("vart",
+      "ICC",
+      "sigma_sq",
+      "sigma_b_sq"
+    )
+  varind <- which(is.na(varname))
+  if (length(varind) != 2) {
+    varerror = "At least 2 of ICC, vart, sigma_b,and sigma_b_sq must be supplied."
+    stop(varerror)
+  }
+  
   if (!is.na(sigma_b_sq) && is.na(vart)) {
     vart <- (sigma_b_sq / ICC)
   }
@@ -263,5 +276,5 @@ cpa.normal <- function(alpha = 0.05,
     )$root
   }
   
-  structure(c(get(target), vart, ICC), names = c(target, "vart", "ICC"))
+  structure(get(target), names = target)
 }
