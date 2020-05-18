@@ -120,11 +120,9 @@ context("Simple, binary outcome accuracy")
 # NOTE: does not match NIH reference value. Seems to consistently underestimate the nclusters needed
 # by 1. NIH estimates nclusters using a t-distribution. Do we need them to match more closely?
 
-# Ken says add user option to use t or normal distribution.
-
 test_that("binary case matches reference value from NIH calculator", {
   expect_equal(ceiling(as.numeric(
-    crtpwr.2prop(
+    cpa.binary(
       alpha = 0.05,
       power = 0.8,
       nclusters = NA,
@@ -132,7 +130,7 @@ test_that("binary case matches reference value from NIH calculator", {
       cv = 0,
       p1 = .1,
       p2 = .2,
-      icc = .05
+      ICC = .05
     )
   )), 13 - 1)
 })
@@ -143,7 +141,7 @@ test_that("binary case matches reference value from NIH calculator", {
 
 test_that("binary case matches CRTSize::n4props", {
   expect_equal(ceiling(as.numeric(
-    crtpwr.2prop(
+    cpa.binary(
       alpha = 0.05,
       power = 0.8,
       nclusters = NA,
@@ -151,7 +149,7 @@ test_that("binary case matches CRTSize::n4props", {
       cv = 0,
       p1 = .1,
       p2 = .2,
-      icc = .05
+      ICC = .05
     )
   )),
   ceiling(CRTSize::n4props(
@@ -179,7 +177,7 @@ test_that("simulation and analytic methods give similar power estimations for bi
                 nclusters = 12,
                 p1 = 0.1,
                 p2 = 0.2,
-                sigma_b = .4,
+                sigma_b_sq = .4,
                 alpha = 0.05,
                 method = 'glmm',
                 all.sim.data = FALSE
@@ -187,7 +185,7 @@ test_that("simulation and analytic methods give similar power estimations for bi
             print(sim.power$power)
             reference <-
               round(as.numeric(
-                crtpwr.2prop(
+                cpa.binary(
                   alpha = 0.05,
                   power = NA,
                   nclusters = 12,
@@ -195,7 +193,7 @@ test_that("simulation and analytic methods give similar power estimations for bi
                   cv = 0,
                   p1 = .1,
                   p2 = .2,
-                  icc = .05
+                  ICC = .05
                 )
               ), 1)
             print(paste("analytic power = ", reference, sep = ""))
