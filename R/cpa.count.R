@@ -10,10 +10,28 @@
 #'   defaults, so if those are the parameters of interest they must be
 #'   explicitly passed as \code{NA}.
 #'
+#'
 #' @section Authors:
 #' Jonathan Moyer (\email{jon.moyer@@gmail.com}), Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
 #' @section Note:
+#'
+#'  This function implements the approach of Hayes and Bennet (1999).  An estimate for the
+#'  intracluster correlation coefficient (ICC) is used to calculate a design effect that 
+#'  accounts for variance inflation due to clustering. 
+#'
+#'  The coefficient of variation \code{CVB} is the variance of the cluster rates divided by the
+#'  mean of the cluster rates.  In the case of equal observation time for each cluster member 
+#'  and equal numbers of observations per cluster,
+#'  this is the variance of the mean cluster count divided by the mean of the mean cluster count.
+#'      
+#'  The CVB refers neither to 
+#'  any natural parameter of a data generating model nor to any function of its parameters. 
+#'  For this reason we do not offer the user a option to input
+#'  the variance of the clusters.  If you prefer to use that input, we suggest using the
+#'  cps.count function.
+#'      
+#'         
 #'   This function was inspired by work from Stephane Champely (pwr.t.test) and
 #'   Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
 #'   solve power equation for unknowns, so you may see
@@ -36,8 +54,10 @@
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
 #'   
-#' @return #' @return The computed value of the NA parameter (from among \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-#'   \code{CV}, and \code{d})needed to satisfy the power and 
+#' @return 
+#' The computed value of the NA parameter (from among \code{alpha}, \code{power}, \code{nclusters},
+#'   \code{nsubjects},
+#'   \code{r1}, \code{r2} and \code{CVB}) needed to satisfy the power and 
 #' sample size equation.
 #'
 #' @examples 
@@ -59,6 +79,8 @@
 #' Results show that CVB as high as 0.107 can still yield power this high.
 #' 
 #' @references Donner A, Klar N. Design and Analysis of Cluster Randomization Trials in Health Research. Chichester, UK; 2009.
+#' 
+#' @references Hayes JR, Bennett S. Simple sample size calculation for cluster-randomized trials. International Journal of Epidemiology 1999; 28:319-326
 #' 
 #' @references Hayes JR, Moulton LH. Cluster Randomized Trials. Boca Raton, FL: CRC Press; 2009.
 #' @export

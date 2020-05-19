@@ -2,7 +2,7 @@
 #'
 #' Compute the power, number of clusters needed, number of subjects per cluster 
 #' needed, or other key parameters, for a simple parallel cluster randomized 
-#' trial with a continuous outcome.
+#' trial with a normal outcome.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
 #'   \code{CV}, and \code{d}  must be passed as \code{NA}.
@@ -60,7 +60,7 @@
 #'   at least four significant digits.
 #' 
 #' @return The computed value of the NA parameter (from among \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-#'   \code{CV}, and \code{d})needed to satisfy the power and 
+#'   \code{CV}, and \code{d}) needed to satisfy the power and 
 #' sample size equation.
 #'
 #' @examples 
