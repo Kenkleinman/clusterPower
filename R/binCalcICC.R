@@ -26,7 +26,9 @@
 #'   confidence interval types and corresponding estimated confidence 
 #'   intervals}	
 #' @examples 
-#' \dontrun{}
+#' \dontrun{
+#'   bin <- BinCalcICC(data = bin.ma.rct.unbal, nsim = 1000, index = 6)
+#' }
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}) and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
@@ -54,6 +56,9 @@ BinCalcICC <-
            alpha = 0.05,
            kappa = 0.45,
            nAGQ = 1,
+           index = 6,
+           sim.min = 1,
+           sim.max = 2,
            nsim = 1000) {
     #First, here's Akhtar Hossain's and Hirshikesh Chakraborty's iccbin function definition
     iccbin <-
@@ -132,7 +137,8 @@ BinCalcICC <-
         n0 <- (1 / (k - 1)) * (N - sum((ni ^ 2) / N))
         yi <- aggregate(y, by = list(cid), sum)[, 2]
         yisq <- yi ^ 2
-        msb <- (1 / (k - 1)) * (sum(yisq / ni) - (1 / N) * (sum(yi)) ^ 2)
+        msb <-
+          (1 / (k - 1)) * (sum(yisq / ni) - (1 / N) * (sum(yi)) ^ 2)
         msw <- (1 / (N - k)) * (sum(yi) - sum(yisq / ni))
         rho.aov <- (msb - msw) / (msb + (n0 - 1) * msw)
         if ("aov" %in% method) {
@@ -194,18 +200,21 @@ BinCalcICC <-
             lambda <- (N - k) * (N - 1 - n0 * (k - 1)) * rho.aov +
               N * (k - 1) * (n0 - 1)
             t0.zd <- (((k - 1) * n0 * N * (N - k)) ^ 2) / lambda ^ 4
-            t1.zd <- 2 * k + (1 / (piio * (1 - piio)) - 6) * sum(1 / ni)
+            t1.zd <-
+              2 * k + (1 / (piio * (1 - piio)) - 6) * sum(1 / ni)
             t2.zd <- ((1 / (piio * (1 - piio)) - 6) * sum(1 / ni) -
                         2 * N + 7 * k - (8 * (k ^ 2)) / N - (2 * k * (1 -
                                                                         k / N)) /
                         (piio * (1 - piio)) + (1 / (piio * (1 - piio)) -
                                                  3) * sum(ni ^
                                                             2)) * rho.aov
-            t3.zd <- ((N ^ 2 - k ^ 2) / (piio * (1 - piio)) - 2 * N -
-                        k + (4 * (k ^ 2)) / N + (7 - 8 * k / N - (2 * (1 -
-                                                                         k / N)) /
-                                                   (piio * (1 - piio))) * sum(ni ^ 2)) * rho.aov ^ 2
-            t4.zd <- (1 / (piio * (1 - piio)) - 4) * (((N - k) / N) ^ 2) *
+            t3.zd <-
+              ((N ^ 2 - k ^ 2) / (piio * (1 - piio)) - 2 * N -
+                 k + (4 * (k ^ 2)) / N + (7 - 8 * k / N - (2 * (1 -
+                                                                  k / N)) /
+                                            (piio * (1 - piio))) * sum(ni ^ 2)) * rho.aov ^ 2
+            t4.zd <-
+              (1 / (piio * (1 - piio)) - 4) * (((N - k) / N) ^ 2) *
               (sum(ni ^ 2) - N) * rho.aov ^ 3
             var.zd.rho.aov <- t0.zd * (t1.zd + t2.zd + t3.zd +
                                          t4.zd)
@@ -229,7 +238,8 @@ BinCalcICC <-
           n0 <- (1 / (k - 1)) * (N - sum((ni ^ 2) / N))
           yi <- aggregate(y, by = list(cid), sum)[, 2]
           yisq <- yi ^ 2
-          msbs <- (1 / (k)) * (sum(yisq / ni) - (1 / N) * (sum(yi)) ^ 2)
+          msbs <-
+            (1 / (k)) * (sum(yisq / ni) - (1 / N) * (sum(yi)) ^ 2)
           msw <- (1 / (N - k)) * (sum(yi) - sum(yisq / ni))
           rho.aovs <- (msbs - msw) / (msbs + (n0 - 1) * msw)
           if (rho.aovs < 0 | rho.aovs > 1) {
@@ -335,8 +345,9 @@ BinCalcICC <-
           p <- sum(yi) / sum(ni)
           wi <- ni / N
           sw <- sum(wi * (pii - piw) ^ 2)
-          rho.stab <- (1 / (n0 - 1)) * ((N * sw) / ((k - 1) * p * (1 -
-                                                                     p)) + kappa - 1)
+          rho.stab <-
+            (1 / (n0 - 1)) * ((N * sw) / ((k - 1) * p * (1 -
+                                                           p)) + kappa - 1)
           if (rho.stab < 0 | rho.stab > 1) {
             est <- c(est, "-")
             warning("ICC Not Estimable by 'Stabilized Moment' Method")
@@ -386,9 +397,10 @@ BinCalcICC <-
           }
           else {
             t0.fc <- 1 - rho.fc
-            t1.fc <- (1 / (piio * (1 - piio)) - 6) * (sum(1 / ni) / (N -
-                                                                       k) ^ 2) + (2 * N + 4 * k - (k /
-                                                                                                     (piio * (1 - piio)))) *
+            t1.fc <-
+              (1 / (piio * (1 - piio)) - 6) * (sum(1 / ni) / (N -
+                                                                k) ^ 2) + (2 * N + 4 * k - (k /
+                                                                                              (piio * (1 - piio)))) *
               (k / (N * (N - k) ^ 2)) + (sum(ni ^ 2) / (N ^ 2 * piio *
                                                           (1 - piio)) - ((3 * N - 2 * k) * (N - 2 * k) *
                                                                            sum(ni ^
@@ -413,9 +425,10 @@ BinCalcICC <-
           yi <- aggregate(y, by = list(cid), sum)[, 2]
           yisq <- yi ^ 2
           ni <- as.vector(table(cid))
-          rho.mak <- 1 - (k - 1) * sum((yi * (ni - yi)) / (ni * (ni -
-                                                                   1))) / (sum(yisq /
-                                                                                 ni ^ 2) + sum(yi / ni) * (k - 1 - sum(yi / ni)))
+          rho.mak <-
+            1 - (k - 1) * sum((yi * (ni - yi)) / (ni * (ni -
+                                                          1))) / (sum(yisq /
+                                                                        ni ^ 2) + sum(yi / ni) * (k - 1 - sum(yi / ni)))
           if (rho.mak < 0 | rho.mak > 1) {
             est <- c(est, "-")
             warning("ICC Not Estimable by 'Mak's Unweighted' Method")
@@ -462,8 +475,10 @@ BinCalcICC <-
             var.rho.peq <- t0.peq * (t1.peq + t2.peq)
             ci.rho.peq <- c(rho.peq - zalpha * sqrt(var.rho.peq),
                             rho.peq + zalpha * sqrt(var.rho.peq))
-            lci <- c(lci, ifelse(ci.rho.peq[1] < 0, 0, ci.rho.peq[1]))
-            uci <- c(uci, ifelse(ci.rho.peq[2] > 1, 1, ci.rho.peq[2]))
+            lci <-
+              c(lci, ifelse(ci.rho.peq[1] < 0, 0, ci.rho.peq[1]))
+            uci <-
+              c(uci, ifelse(ci.rho.peq[2] > 1, 1, ci.rho.peq[2]))
             if (ci.rho.peq[1] < 0 | ci.rho.peq[2] > 1) {
               warning(
                 "One or Both of 'Pearson Correlation Type' Confidence Limits Fell Outside of [0, 1]"
@@ -478,9 +493,10 @@ BinCalcICC <-
           yi <- aggregate(y, by = list(cid), sum)[, 2]
           ni <- as.vector(table(cid))
           mu.pgp <- sum(yi / ni) / k
-          rho.pgp <- (1 / (mu.pgp * (1 - mu.pgp))) * (sum((yi * (yi -
-                                                                   1)) / (ni * (ni - 1))) /
-                                                        k - mu.pgp ^ 2)
+          rho.pgp <-
+            (1 / (mu.pgp * (1 - mu.pgp))) * (sum((yi * (yi -
+                                                          1)) / (ni * (ni - 1))) /
+                                               k - mu.pgp ^ 2)
           if (rho.pgp < 0 | rho.pgp > 1) {
             est <- c(est, "-")
             warning(
@@ -524,7 +540,7 @@ BinCalcICC <-
         nw01 <- 0
         nw00 <- 0
         for (i in 1:k) {
-          dti <- dt[cid == ucid[i],]
+          dti <- dt[cid == ucid[i], ]
           wsamp1 <- c()
           wsamp2 <- c()
           for (m in 1:(nrow(dti) - 1)) {
@@ -561,9 +577,9 @@ BinCalcICC <-
         nb01 <- 0
         nb00 <- 0
         for (i in 1:(k - 1)) {
-          dti <- dt[cid == ucid[i],]
+          dti <- dt[cid == ucid[i], ]
           for (m in (i + 1):k) {
-            dtm <- dt[cid == ucid[m],]
+            dtm <- dt[cid == ucid[m], ]
             bsamp1 <- rep(dti$y, each = nrow(dtm))
             bsamp2 <- rep(dtm$y, times = nrow(dti))
             bsamp <- rbind(bsamp1, bsamp2)
@@ -612,18 +628,20 @@ BinCalcICC <-
           }
           else {
             t0.rm <- 1 / (16 * n * square(u1) * square(1 - u1))
-            t1.rm <- 1 / (n ^ 2 - sum(ni ^ 2)) + square(2 * alp * (1 -
-                                                                     alp) + 1)
+            t1.rm <-
+              1 / (n ^ 2 - sum(ni ^ 2)) + square(2 * alp * (1 -
+                                                              alp) + 1)
             t2.rm <- (alp * (1 - alp) / (sum(ni ^ 2) - n)) * ((1 +
                                                                  alp - rho.rm * alp) * (alp + rho.rm * (1 - alp)) +
                                                                 (1 - alp + rho.rm * alp) * (2 - alp - rho.rm *
                                                                                               (1 - alp)) + 2 * (1 + rho.rm) * (1 - alp *
                                                                                                                                  (1 - alp) * (1 + rho.rm))
             )
-            t3.rm <- ((alp * (1 - alp) * square(tw - tb) * square(1 -
-                                                                    2 * u1)) /
-                        (square(u1 * (1 - u1)))) * (1 / n + (rho.rm / n ^ 2) *
-                                                      sum(ni * (1 - ni)))
+            t3.rm <-
+              ((alp * (1 - alp) * square(tw - tb) * square(1 -
+                                                             2 * u1)) /
+                 (square(u1 * (1 - u1)))) * (1 / n + (rho.rm / n ^ 2) *
+                                               sum(ni * (1 - ni)))
             var.rho.rm <- t0.rm * (t1.rm + t2.rm + t3.rm)
             ci.rho.rm <- c(rho.rm - zalpha * sqrt(var.rho.rm),
                            rho.rm + zalpha * sqrt(var.rho.rm))
@@ -686,22 +704,34 @@ BinCalcICC <-
         list(estimates = estimates, ci = ci)
       }
     
-    
-    ## can iccbin only take colnames?
+    # apply iccbin to the simulated data
     o <- data[[index]]
     holder <- list()
-      for (j in 3:length(o)) {
-        ##colnames(o)[j]
-        holder[[j]] <- iccbin(cid = clust,
-                    y = ,
-                    data = dataset,
-  #                  method = method,
-  #                  ci.type = ci.type,
-  #                  alpha = alpha,
-  #                  kappa = kappa,
-  #                  nAGQ = nAGQ,
-  #                  M = nsim)
-   )   }
+    for (k in 1:(max(as.numeric(o$trt)))) {
+      holder[[k]] <- list()
+      o2 <- dplyr::filter(o, trt == k)
+      o2$clust <- as.factor(as.numeric(o2$clust))
+    for (j in (sim.min + 2):(sim.max + 2)) {
+      holder[[k]][[(j - 2)]] <- iccbin(
+        cid = clust,
+        y = colnames(o2)[j],
+        data = o2,
+        method = method,
+        ci.type = ci.type,
+        alpha = alpha,
+        kappa = kappa,
+        nAGQ = nAGQ,
+        M = nsim
+      )
+      
     }
-    
+    }
+    for (k in 1:(max(as.numeric(o$trt)))) {
+      for (j in (sim.min + 2):(sim.max + 2)) {
+    names(holder[[k]]) <- paste0("arm ", k)
+    names(holder[[k]][[(j - 2)]]) <- paste0("simulation index", k)
+      }
+    }
+    return(holder)
   }
+    
