@@ -59,8 +59,10 @@
 #'   at least four significant digits.
 #' @param dist Option to use normal (\code{"normal"}) or t (\code{"t"} distribution. 
 #'   
-#' @return The computed argument.
-#' 
+#' @return #' @return The computed value of the NA parameter (from among \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
+#'   \code{CV}, \code{p1}, \code{p2}, and \code{ICC})needed to satisfy the power and 
+#' sample size equation.
+#'
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, probability

@@ -1,4 +1,4 @@
-#' Power calculations for simple cluster randomized trials, continuous outcome
+#' Power calculations for simple cluster randomized trials with normal outcomes
 #'
 #' Compute the power, number of clusters needed, number of subjects per cluster 
 #' needed, or other key parameters, for a simple parallel cluster randomized 
