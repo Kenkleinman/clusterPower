@@ -17,8 +17,6 @@
 #'    "taylor", the exact relative efficiency will be calculated as described in
 #'    van Breukelen et al (2007).
 #'    
-#' 
-#'
 #' @section Note:
 #'   This function was inspired by work from Stephane Champely (pwr.t.test) and
 #'   Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
@@ -38,6 +36,7 @@
 #' Jonathan Moyer (\email{jon.moyer@@gmail.com}), 
 #' Alexandria C. Sakrejda (\email{acbro0@@umass.edu}),
 #' and Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#'
 #'
 #' @param alpha The level of significance of the test, the probability of a
 #'   Type I error.
@@ -60,8 +59,9 @@
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
 #' 
-#' @return The computed value of the missing parameter needed to satisfy the power and 
-#' sample size equation, plus the total variance and the ICC.
+#' @return The computed value of the NA parameter (from among \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
+#'   \code{CV}, and \code{d})needed to satisfy the power and 
+#' sample size equation.
 #'
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
