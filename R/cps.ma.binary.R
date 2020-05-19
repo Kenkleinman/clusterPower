@@ -116,7 +116,7 @@
 #'                             nclusters = 15,
 #'                             probs = c(0.15, 0.23, 0.22),
 #'                             sigma_b_sq = c(0.1, 0.1, 0.1), 
-#'                             alpha = 0.05, all.sim.data = FALSE, 
+#'                             alpha = 0.05, all.sim.data = TRUE, 
 #'                             seed = 123, cores="all") 
 #'                             
 #' bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 250, narms=3,
@@ -226,7 +226,7 @@ cps.ma.binary <- function(nsim = 1000,
   }
   
   if (narms < 3) {
-    message("Warning: LRT significance not calculable when narms<3. Use cps.binary() instead.")
+    message("Warning: LRT significance not calculable when narms < 3. Use cps.binary() instead.")
   }
   
   validateVariance(
