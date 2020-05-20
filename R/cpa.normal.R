@@ -130,7 +130,7 @@ cpa.normal <- function(alpha = 0.05,
     )
   varind <- which(is.na(varname))
   if (length(varind) != 2) {
-    varerror = "At least 2 of ICC, vart, sigma_b,and sigma_b_sq must be supplied."
+    varerror = "Two (2) of ICC, vart, sigma_b,and sigma_b_sq must be supplied."
     stop(varerror)
   }
   
