@@ -704,34 +704,41 @@ BinCalcICC <-
         list(estimates = estimates, ci = ci)
       }
     
+    
+    
     # apply iccbin to the simulated data
     o <- data[[index]]
     holder <- list()
+    narms <- max(as.numeric(o$trt))
+    armname <- vector(mode = "character", length = narms)
+    simname <-
+      vector(mode = "character", length = (sim.max - sim.min + 1))
     for (k in 1:(max(as.numeric(o$trt)))) {
+      armname[k] <- paste0("trt", k)
       holder[[k]] <- list()
       o2 <- dplyr::filter(o, trt == k)
       o2$clust <- as.factor(as.numeric(o2$clust))
-    for (j in (sim.min + 2):(sim.max + 2)) {
-      holder[[k]][[(j - 2)]] <- iccbin(
-        cid = clust,
-        y = colnames(o2)[j],
-        data = o2,
-        method = method,
-        ci.type = ci.type,
-        alpha = alpha,
-        kappa = kappa,
-        nAGQ = nAGQ,
-        M = nsim
-      )
-      
-    }
-    }
-    for (k in 1:(max(as.numeric(o$trt)))) {
       for (j in (sim.min + 2):(sim.max + 2)) {
-    names(holder[[k]]) <- paste0("arm ", k)
-    names(holder[[k]][[(j - 2)]]) <- paste0("simulation index", k)
+        simname[(j - 2)] <- paste0("simulation", j - 2)
+        holder[[k]][[(j - 2)]] <- iccbin(
+          cid = clust,
+          y = colnames(o2)[j],
+          data = o2,
+          method = method,
+          ci.type = ci.type,
+          alpha = alpha,
+          kappa = kappa,
+          nAGQ = nAGQ,
+          M = nsim
+        )
+        
       }
     }
+        names(holder) <- armname
+        browser()
+        #this is still messed up
+        for (i in 1:length(holder)) {
+        names(holder[[i]]) <- simname
+        }
     return(holder)
   }
-    
