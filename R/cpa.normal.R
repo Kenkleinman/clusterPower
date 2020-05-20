@@ -126,10 +126,10 @@ cpa.normal <- function(alpha = 0.05,
   
   # check for sufficient variance parameters
   varname <-
-    c("vart",
-      "ICC",
-      "sigma_sq",
-      "sigma_b_sq"
+    c(vart,
+      ICC,
+      sigma_sq,
+      sigma_b_sq
     )
   varind <- which(is.na(varname))
   if (length(varind) != 2) {
