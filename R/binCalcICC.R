@@ -24,7 +24,7 @@
 #'   corresponding estimates of Intracluster Correlation coefficients}
 #'   \item{confidence.intervals}{A dataframe containing names of 
 #'   confidence interval types and corresponding estimated confidence 
-#'   intervals}	
+#'   intervals}	}
 #' @examples 
 #' \dontrun{
 #'   bin <- BinCalcICC(data = bin.ma.rct.unbal, nsim = 1000, index = 6)

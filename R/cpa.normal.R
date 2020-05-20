@@ -1,5 +1,8 @@
 #' Power calculations for simple cluster randomized trials with normal outcomes
 #'
+#' @description 
+#' \loadmathjax
+#'
 #' Compute the power, number of clusters needed, number of subjects per cluster 
 #' needed, or other key parameters, for a simple parallel cluster randomized 
 #' trial with a normal outcome.
@@ -48,7 +51,7 @@
 #' @param sigma_b_sq Between-cluster variance.
 #' @param CV The coefficient of variation of the cluster sizes. When \code{CV} = 0,
 #'   the clusters all have the same size.
-#' @param d The difference in condition means \eqn{|\beta_1|}
+#' @param d The difference in condition means \mjseqn{|\beta_1|}
 #' @param ICC The intraclass correlation \eqn{\sigma_b^2 / (\sigma_b^2 + \sigma^2)}.
 #' Accepts a numeric between 0-1.
 #' @param vart The total variation of the outcome (the sum of within- and 
