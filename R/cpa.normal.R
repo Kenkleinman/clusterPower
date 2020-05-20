@@ -52,10 +52,10 @@
 #' @param CV The coefficient of variation of the cluster sizes. When \code{CV} = 0,
 #'   the clusters all have the same size.
 #' @param d The difference in condition means \mjseqn{|\beta_1|}
-#' @param ICC The intraclass correlation \eqn{\sigma_b^2 / (\sigma_b^2 + \sigma^2)}.
+#' @param ICC The intraclass correlation \mjseqn{\sigma_b^2 / (\sigma_b^2 + \sigma^2)}.
 #' Accepts a numeric between 0-1.
 #' @param vart The total variation of the outcome (the sum of within- and 
-#' between-cluster variation) \eqn{\sigma_b^2 + \sigma^2}.
+#' between-cluster variation) \mjseqn{\sigma_b^2 + \sigma^2}.
 #' @param method The method for calculating variance inflation due to unequal cluster
 #'   sizes. Either a method based on Taylor approximation of relative efficiency
 #'   ("taylor"), or weighting by cluster size ("weighted"). Default is \code{"taylor"}.
