@@ -22,6 +22,11 @@
 #' Non-convergent models are not included in the calculation of exact confidence 
 #' intervals.
 #' 
+#' @section Testing details:   
+#' This function has been verified against reference values from the NIH's GRT 
+#' Sample Size Calculator, PASS11, \code{CRTsize::n4prop}, and 
+#' \code{clusterPower::cpa.binary}.
+#' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
 #' @param nclusters Number of clusters per treatment group; accepts integer (required).

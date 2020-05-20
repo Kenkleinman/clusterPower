@@ -34,7 +34,6 @@
 #' Sample Size Calculator, PASS11, \code{CRTsize::n4means}, and
 #' \code{clusterPower::cps.normal}.
 #'
-#'
 #' @section Authors:
 #' Jonathan Moyer (\email{jon.moyer@@gmail.com}), 
 #' Alexandria C. Sakrejda (\email{acbro0@@umass.edu}),

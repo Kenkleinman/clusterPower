@@ -219,27 +219,44 @@ context("Simple, poisson (incidence rate) outcome accuracy")
 
 # incidence rate comparison
 test_that("incidence rate outcomes matches CRTSize::n4incidence", {
-  expect_equal(ceiling(as.numeric(
-    crtpwr.2rate(
+  expect_equal(round(as.numeric(
+    cpa.count(
       alpha = 0.05,
       power = 0.8,
+      nsubjects = 1000,
       nclusters = NA,
-      py = 1000,
       r1 = 0.01,
       r2 = 0.005,
-      cvb = 0.25
+      CVB = 0.25
     )
-  )),
-  ceiling(
+  ), 0),
+  round(
     CRTSize::n4incidence(
       le = 0.01,
       lc = 0.005,
       m = 1000,
       t = 1,
       CV = 0.25
-    )$n
-  ))
+    )$n, 0)
+  )
 })
+
+
+#test_that("incidence rate outcomes matches PASS 11", {
+#  expect_equal(round(as.numeric(
+#    cpa.count(
+#      alpha = 0.05,
+#      power = 0.8,
+#      nsubjects = 1000,
+#      nclusters = NA,
+#      r1 = 0.01,
+#      r2 = 0.005,
+#      CVB = 0.25
+#    )
+#  ), 0),
+#  
+#  )
+#})
 
 # compare simulation and analytic methods for poisson outcomes
 # test .7-.9 in increments of .25
@@ -253,25 +270,23 @@ test_that("simulation and analytic methods give similar power estimations for po
                 nclusters = 4,
                 c1 = 20,
                 c2 = 10,
-                sigma_b = 0.1,
+                sigma_b_sq = 0.1,
                 family = 'poisson',
                 analysis = 'poisson',
                 method = 'glmm',
                 alpha = 0.05,
                 quiet = FALSE,
-                all.sim.data = TRUE
+                all.sim.data = FALSE
               )
-            print(sim.power$power)
-            reference <- as.numeric(crtpwr.2rate(
+            reference <- as.numeric(cpa.count(
               alpha = 0.05,
               power = NA,
               nclusters = 4,
-              py = 120,
+              nsubjects = 120,
               r1 = 0.1,
               r2 = 0.2,
-              cvb = 0.1
+              CVB = 0.1
             ))
-            print(paste("analytic power = ", reference, sep = ""))
             expect_equal(sim.power$power[, 2] <= reference &
                            sim.power$power[, 3] >= reference,
                          TRUE)
