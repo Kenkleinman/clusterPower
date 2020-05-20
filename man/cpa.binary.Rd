@@ -46,7 +46,7 @@ error.}
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}
 
-\item{dist}{Option to use normal (\code{"normal"}) or t (\code{"t"} distribution.}
+\item{dist}{Option to use normal (\code{"normal"}) or t (\code{"t"}) distribution.}
 }
 \value{
 The computed value of the NA parameter (from among \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
@@ -54,13 +54,11 @@ The computed value of the NA parameter (from among \code{alpha}, \code{power}, \
 sample size equation.
 }
 \description{
-\loadmathjax
-}
-\details{
 Compute the power, number of clusters needed, number of subjects per cluster needed, 
 or other key parameters, for a simple parallel cluster randomized trial with a 
 binary outcome.
-
+}
+\details{
 Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
   \code{CV}, \code{p1}, \code{p2}, and \code{ICC} must be passed as \code{NA}.
   Note that \code{alpha}, \code{power}, and \code{CV} have non-\code{NA}
@@ -117,13 +115,13 @@ cpa.binary(nsubjects=10, p1=.1, p2=.2, ICC=.1)
 # The result, showing nclusters of greater than 37, suggests 38 clusters per 
 # condition should be used.
 
-# Find the minimum detectable \mjseqn{p1 > p2}, given 38 clusters per condition, 10 
+# Find the minimum detectable p2 > p1, given 38 clusters per condition, 10 
 # observations per cluster no variation in cluster size, ICC of 0.1, and probability of 
 # .1 in condition 2, with power of .8.
 
 cpa.binary(nsubjects=10, nclusters = 38, p1=.1, p2=NA, ICC=.1, p1inc = FALSE)
 
-# The result shows that p1 greater than 0.198922 can be detected with at least 80\% power.
+# The result shows that p2 greater than 0.198922 can be detected with at least 80\% power.
 
 }
 \references{
