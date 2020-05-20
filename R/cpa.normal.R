@@ -1,8 +1,11 @@
-#' Power calculations for simple cluster randomized trials, continuous outcome
+#' Power calculations for simple cluster randomized trials with normal outcomes
+#'
+#' @description 
+#' \loadmathjax
 #'
 #' Compute the power, number of clusters needed, number of subjects per cluster 
 #' needed, or other key parameters, for a simple parallel cluster randomized 
-#' trial with a continuous outcome.
+#' trial with a normal outcome.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
 #'   \code{CV}, and \code{d}  must be passed as \code{NA}.
@@ -17,8 +20,6 @@
 #'    "taylor", the exact relative efficiency will be calculated as described in
 #'    van Breukelen et al (2007).
 #'    
-#' 
-#'
 #' @section Note:
 #'   This function was inspired by work from Stephane Champely (pwr.t.test) and
 #'   Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
@@ -39,6 +40,7 @@
 #' Alexandria C. Sakrejda (\email{acbro0@@umass.edu}),
 #' and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
+#'
 #' @param alpha The level of significance of the test, the probability of a
 #'   Type I error.
 #' @param power The power of the test, 1 minus the probability of a Type II
@@ -49,7 +51,7 @@
 #' @param sigma_b_sq Between-cluster variance.
 #' @param CV The coefficient of variation of the cluster sizes. When \code{CV} = 0,
 #'   the clusters all have the same size.
-#' @param d The difference in condition means \eqn{|\beta_1|}
+#' @param d The difference in condition means \mjseqn{|\beta_1|}
 #' @param ICC The intraclass correlation \eqn{\sigma_b^2 / (\sigma_b^2 + \sigma^2)}.
 #' Accepts a numeric between 0-1.
 #' @param vart The total variation of the outcome (the sum of within- and 
@@ -60,8 +62,9 @@
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
 #' 
-#' @return The computed value of the missing parameter needed to satisfy the power and 
-#' sample size equation, plus the total variance and the ICC.
+#' @return The computed value of the NA parameter (from among \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
+#'   \code{CV}, and \code{d}) needed to satisfy the power and 
+#' sample size equation.
 #'
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
