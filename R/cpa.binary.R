@@ -10,25 +10,28 @@
 #'   defaults, so if those are the parameters of interest they must be
 #'   explicitly passed as \code{NA}.
 #'
-#' This function implements the approach of Donner and Klar (2000). An estimate for the
-#'  intracluster correlation coefficient (ICC) is used to calculate a design effect that 
-#'  accounts for variance inflation due to clustering. 
-#'  
-#'  There are several ways in
-#'  which estimates for the ICC for a binary outcome can be calculated, as described by
-#'  Wu, Crespi, and Wong (2012).  For this reason we do not offer the user a option to input
-#'  the variance of the clusters.  If you prefer to use that input, we suggest using the
-#'  cps.binary function.
+#' 
 #'
 #' @section Authors:
 #' Jonathan Moyer (\email{jon.moyer@@gmail.com}), Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
 #' @section Notes:
 #' 
-#'  Unlike in the case of normal distributed outcomes (cpa.normal), the ICC refers neither to 
-#'  any natural parameter of a data generatong model nor to any function of its parameters.  The
+#' 
+#' This function implements the approach of Donner and Klar (2000). An estimate for the
+#'  intracluster correlation coefficient (ICC) is used to calculate a design effect that 
+#'  accounts for variance inflation due to clustering. 
+#'  
+#'  There are several ways in
+#'  which estimates for the ICC for a binary outcome can be calculated, as described by
+#'  Wu, Crespi, and Wong (2012). The
 #'  user is advised to exercise caution in estimating, generating, and interpreting ICCs in
 #'  this setting.
+#' 
+#'  Unlike in the case of normal distributed outcomes (cpa.normal), the ICC refers neither to 
+#'  any natural parameter of a data generating model nor to any function of its parameters.   For this reason we do not offer the user a option to input
+#'  the variance of the clusters.  If you prefer to use that input, we suggest using the
+#'  cps.binary function.
 #' 
 #'   This function was inspired by work from Stephane Champely (pwr.t.test) and
 #'   Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
@@ -60,8 +63,11 @@
 #'   at least four significant digits.
 #' @param dist Option to use normal (\code{"normal"}) or t (\code{"t"} distribution. 
 #'   
-#' @return The computed argument.
-#' 
+#' @return
+#' The computed value of the NA parameter (from among \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
+#'   \code{CV}, \code{p1}, \code{p2}, and \code{ICC}) needed to satisfy the power and 
+#' sample size equation.
+#'
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, probability

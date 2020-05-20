@@ -3,6 +3,7 @@
 #' 
 #' @docType package
 #' @name clusterPower
+#' @title A package for calculating power for experiments with clustered data
 #' 
 #' @section Introduction:
 #' Most of the functions in this package are based on the generalized
