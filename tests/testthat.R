@@ -121,7 +121,7 @@ context("Simple, binary outcome accuracy")
 # by 1. NIH estimates nclusters using a t-distribution. Do we need them to match more closely?
 
 test_that("binary case matches reference value from NIH calculator", {
-  expect_equal(ceiling(as.numeric(
+  expect_equal(round(as.numeric(
     cpa.binary(
       alpha = 0.05,
       power = 0.8,
@@ -130,17 +130,32 @@ test_that("binary case matches reference value from NIH calculator", {
       cv = 0,
       p1 = .1,
       p2 = .2,
-      ICC = .05
+      ICC = .05,
+      tdist = TRUE
     )
-  )), 13 - 1)
+  ), 0), 12)
+})
+
+test_that("binary case matches reference value from PASS 11", {
+  expect_equal(round(as.numeric(
+    cpa.binary(
+      alpha = 0.05,
+      power = NA,
+      nclusters = 13,
+      nsubjects = 150,
+      cv = 0,
+      p1 = .1,
+      p2 = .2,
+      ICC = .05,
+      tdist = FALSE
+    )
+  ), 3), 0.86)
 })
 
 # p1=treatment, p2=control
-# NOTE: does not match n4props value. Seems to consistently underestimate the nclusters needed
-# by 1. n4props estimates nclusters using a t-distribution. Do we need them to match more closely?
 
 test_that("binary case matches CRTSize::n4props", {
-  expect_equal(ceiling(as.numeric(
+  expect_equal(round(as.numeric(
     cpa.binary(
       alpha = 0.05,
       power = 0.8,
@@ -149,22 +164,19 @@ test_that("binary case matches CRTSize::n4props", {
       cv = 0,
       p1 = .1,
       p2 = .2,
-      ICC = .05
+      ICC = .05,
+      tdist = FALSE
     )
-  )),
-  ceiling(CRTSize::n4props(
+  ), 0),
+  round(CRTSize::n4props(
     pe = .2,
     pc = .1,
     m = 150,
     ICC = .05
-  )$n - 1))
+  )$n - 1, 0))
 })
 
 # compare simulation and analytic methods for binary outcomes
-# NOTE: sigma_b has no default and may not be zero (although the help page
-# says "if sigma_b2 is not specified, between cluster variances are
-# assumed to be equal for both groups"). I'm probably not
-# understanding something. --- ASK KEN ABOUT THIS
 
 # Ken says: Should be a test for sigma b2=NA and if Sigb2=NA val set to sigma b.
 
@@ -182,9 +194,8 @@ test_that("simulation and analytic methods give similar power estimations for bi
                 method = 'glmm',
                 all.sim.data = FALSE
               )
-            print(sim.power$power)
             reference <-
-              round(as.numeric(
+              as.numeric(
                 cpa.binary(
                   alpha = 0.05,
                   power = NA,
@@ -195,8 +206,7 @@ test_that("simulation and analytic methods give similar power estimations for bi
                   p2 = .2,
                   ICC = .05
                 )
-              ), 1)
-            print(paste("analytic power = ", reference, sep = ""))
+              )
             expect_equal(sim.power$power[, 2] <= reference &
                            sim.power$power[, 3] >= reference,
                          TRUE)
@@ -213,13 +223,13 @@ test_that("incidence rate outcomes matches CRTSize::n4incidence", {
     cpa.count(
       alpha = 0.05,
       power = 0.8,
-      nclusters = NA,
       nsubjects = 1000,
+      nclusters = NA,
       r1 = 0.01,
       r2 = 0.005,
       CVB = 0.25
     )
-  ), 1),
+  ), 0),
   round(
     CRTSize::n4incidence(
       le = 0.01,
@@ -227,9 +237,26 @@ test_that("incidence rate outcomes matches CRTSize::n4incidence", {
       m = 1000,
       t = 1,
       CV = 0.25
-    )$n, 1
-  ))
+    )$n, 0)
+  )
 })
+
+
+#test_that("incidence rate outcomes matches PASS 11", {
+#  expect_equal(round(as.numeric(
+#    cpa.count(
+#      alpha = 0.05,
+#      power = 0.8,
+#      nsubjects = 1000,
+#      nclusters = NA,
+#      r1 = 0.01,
+#      r2 = 0.005,
+#      CVB = 0.25
+#    )
+#  ), 0),
+#  
+#  )
+#})
 
 # compare simulation and analytic methods for poisson outcomes
 # test .7-.9 in increments of .25

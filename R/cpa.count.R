@@ -41,8 +41,8 @@
 #'   power may not be acheiveable with any number of subjects or clusters.
 #'   
 #' @section Testing details:
-#' This function has been verified against reference values from PASS11 
-#' and \code{clusterPower::cps.count}.
+#' This function has been verified against reference values from 
+#' \code{CRTsize::n4incidence}, and \code{clusterPower::cps.count}.
 #'
 #' @param alpha The level of significance of the test, the probability of a
 #'   Type I error.
@@ -71,7 +71,6 @@
 #' 
 #' cpa.count(nsubjects=10, r1=0.10, r2=0.20, CVB=0.10)
 #' 
-#' # 
 #' # The result, showimg nclusters of greater than 24, suggests 25 clusters per
 #' # condition should be used.
 #' 
@@ -89,38 +88,46 @@
 #' @references Hayes JR, Moulton LH. Cluster Randomized Trials. Boca Raton, FL: CRC Press; 2009.
 #' @export
 
-cpa.count<- function(alpha = 0.05, power = 0.80,
-                        nclusters = NA, nsubjects = NA,
-                        r1 = NA, r2 = NA,
-                        CVB = NA, r1inc = TRUE,
-                        tol = .Machine$double.eps^0.25){
-  
-  if(!is.na(nclusters) && nclusters <= 1) {
+
+cpa.count <- function(alpha = 0.05,
+                      power = 0.80,
+                      nclusters = NA,
+                      nsubjects = NA,
+                      r1 = NA,
+                      r2 = NA,
+                      CVB = NA,
+                      r1inc = TRUE,
+                      tol = .Machine$double.eps ^ 0.25) {
+  if (!is.na(nclusters) && nclusters <= 1) {
     stop("'nclusters' must be greater than 1.")
   }
   
   needlist <- list(alpha, power, nclusters, nsubjects, r1, r2, CVB)
-  neednames <- c("alpha", "power", "nclusters", "nsubjects", "r1", "r2", "CVB")
+  neednames <-
+    c("alpha", "power", "nclusters", "nsubjects", "r1", "r2", "CVB")
   needind <- which(unlist(lapply(needlist, is.na))) # find NA index
   
   if (length(needind) != 1) {
-    stop("Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'r1', 'r2', or 'CVB' must be NA.")
+    stop(
+      "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'r1', 'r2', or 'CVB' must be NA."
+    )
   }
   
   target <- neednames[needind]
   
   pwr <- quote({
-    IF <- 1 + CVB^2*(r1^2 + r2^2)*nsubjects/(r1 + r2)
-    zcrit <- qnorm(alpha/2, lower.tail = FALSE)
-    vard <- (r1 + r2)*IF/nsubjects
-    pnorm(sqrt((nclusters - 1)*(r1 - r2)^2/vard) - zcrit, lower.tail = TRUE)
+    IF <- 1 + CVB ^ 2 * (r1 ^ 2 + r2 ^ 2) * nsubjects / (r1 + r2)
+    zcrit <- qnorm(alpha / 2, lower.tail = FALSE)
+    vard <- (r1 + r2) * IF / nsubjects
+    pnorm(sqrt((nclusters - 1) * (r1 - r2) ^ 2 / vard) - zcrit, lower.tail = TRUE)
   })
   
   # calculate alpha
   if (is.na(alpha)) {
-    alpha <- stats::uniroot(function(alpha) eval(pwr) - power,
-                            interval = c(1e-10, 1 - 1e-10),
-                            tol = tol)$root
+    alpha <- stats::uniroot(function(alpha)
+      eval(pwr) - power,
+      interval = c(1e-10, 1 - 1e-10),
+      tol = tol)$root
   }
   
   # calculate power
@@ -130,50 +137,75 @@ cpa.count<- function(alpha = 0.05, power = 0.80,
   
   # calculate nclusters
   if (is.na(nclusters)) {
-    nclusters <- stats::uniroot(function(nclusters) eval(pwr) - power,
-                                interval = c(2 + 1e-10, 1e+07),
-                                tol = tol)$root
+    nclusters <- stats::uniroot(function(nclusters)
+      eval(pwr) - power,
+      interval = c(2 + 1e-10, 1e+07),
+      tol = tol)$root
   }
   
   # calculate nsubjects
   if (is.na(nsubjects)) {
-    nsubjects <- stats::uniroot(function(nsubjects) eval(pwr) - power,
-                         interval = c(1e-10, 1e+07),
-                         tol = tol, extendInt = "upX")$root
+    nsubjects <- stats::uniroot(
+      function(nsubjects)
+        eval(pwr) - power,
+      interval = c(1e-10, 1e+07),
+      tol = tol,
+      extendInt = "upX"
+    )$root
   }
   
   # calculate r1
   if (is.na(r1)) {
-    if(r1inc){
-      r1 <- stats::uniroot(function(r1) eval(pwr) - power,
-                           interval = c(r2 + 1e-7, 1 - 1e-7),
-                           tol = tol, extendInt = "yes")$root
+    if (r1inc) {
+      r1 <- stats::uniroot(
+        function(r1)
+          eval(pwr) - power,
+        interval = c(r2 + 1e-7, 1 - 1e-7),
+        tol = tol,
+        extendInt = "yes"
+      )$root
     } else {
-      r1 <- stats::uniroot(function(r1) eval(pwr) - power,
-                           interval = c(1e-7, r2 - 1e-7),
-                           tol = tol, extendInt = "yes")$root
+      r1 <- stats::uniroot(
+        function(r1)
+          eval(pwr) - power,
+        interval = c(1e-7, r2 - 1e-7),
+        tol = tol,
+        extendInt = "yes"
+      )$root
     }
   }
   
   # calculate r2
   if (is.na(r2)) {
-    if(r1inc){
-      r2 <- stats::uniroot(function(r2) eval(pwr) - power,
-                           interval = c(1e-7, r1 - 1e-7),
-                           tol = tol, extendInt = "yes")$root
+    if (r1inc) {
+      r2 <- stats::uniroot(
+        function(r2)
+          eval(pwr) - power,
+        interval = c(1e-7, r1 - 1e-7),
+        tol = tol,
+        extendInt = "yes"
+      )$root
       
     } else {
-      r2 <- stats::uniroot(function(r2) eval(pwr) - power,
-                           interval = c(r1 + 1e-7, 1 - 1e-7),
-                           tol = tol, extendInt = "yes")$root
+      r2 <- stats::uniroot(
+        function(r2)
+          eval(pwr) - power,
+        interval = c(r1 + 1e-7, 1 - 1e-7),
+        tol = tol,
+        extendInt = "yes"
+      )$root
     }
   }
   
   # calculate CVB
   if (is.na(CVB)) {
-    CVB <- stats::uniroot(function(CVB) eval(pwr) - power,
-                          interval = c(1e-7, 1e+07),
-                          tol = tol, extendInt = "downX")$root
+    CVB <- stats::uniroot(
+      function(CVB)
+        eval(pwr) - power,
+      interval = c(1e-7, 1e+07),
+      tol = tol,
+      extendInt = "downX"
+    )$root
   }
   
   structure(get(target), names = target)

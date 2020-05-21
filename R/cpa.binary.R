@@ -43,7 +43,8 @@
 #'   
 #' @section Testing details:
 #' This function has been verified against reference values from the NIH's GRT
-#' Sample Size Calculator, PASS11, and \code{clusterPower::cps.binary}.
+#' Sample Size Calculator, PASS11, \code{CRTSize::n4props}, 
+#' and \code{clusterPower::cps.binary}.
 #'   
 #' @param alpha The level of significance of the test, the probability of a
 #'   Type I error.
@@ -95,6 +96,7 @@
 #' @export
 
 
+
 cpa.binary <- function(alpha = 0.05,
                        power = 0.80,
                        nclusters = NA,
@@ -138,14 +140,16 @@ cpa.binary <- function(alpha = 0.05,
       p <- (p1 + p2) / 2
       sdd <- sqrt(p * (1 - p) * 2 * DEFF / (nclusters * nsubjects))
     } else {
-      sdd <- sqrt((p1 * (1 - p1) + p2 * (1 - p2)) * DEFF / (nclusters * nsubjects))
+      sdd <-
+        sqrt((p1 * (1 - p1) + p2 * (1 - p2)) * DEFF / (nclusters * nsubjects))
     }
     if (tdist == FALSE) {
       zcrit <- qnorm(alpha / 2, lower.tail = FALSE)
       pnorm(abs(p1 - p2) / sdd - zcrit, lower.tail = TRUE)
     } else {
-      zcrit <- qt(alpha / 2, df = Inf, lower.tail = FALSE)
-      pt(abs(p1 - p2) / sdd - zcrit, df = Inf, lower.tail = TRUE)
+      tcrit <- qt(alpha / 2, 2 * (nclusters - 1), lower.tail = FALSE)
+      ncp <- abs(p1 - p2) / sdd
+      pt(tcrit, 2 * (nclusters - 1), ncp, lower.tail = FALSE)
     }
   })
   
