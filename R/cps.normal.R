@@ -123,8 +123,10 @@
 #' # with a difference of 3.75 between the arms, using 100 simulated data sets.  
 #'    
 #' \dontrun{
+#' 
 #' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 10, difference = 3.75,
 #'                         ICC = 0.3, sigma_sq = 20)
+#' 
 #' }
 #' 
 #' # Estimate power for a trial with 5 clusters in one arm, those clusters having 100 subjects 
@@ -134,8 +136,11 @@
 #' # using 100 simulated data sets.
 #' 
 #' \dontrun{
+#' 
 #' normal.sim = cps.normal(nsim = 100, nclusters = c(5,25), nsubjects = c(100,50), difference =3.75, 
-#'           sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1)}
+#'           sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1)
+#'           
+#'           }
 #' 
 #' 
 #' @author Alexander R. Bogdan, Alexandria C. Sakrejda 

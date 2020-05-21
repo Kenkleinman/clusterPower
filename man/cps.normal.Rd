@@ -144,7 +144,7 @@ The data generating model here is:
    
 where \mjseqn{b} are the random effects for the clusters and
 \mjseqn{b_i \sim N(0, \sigma_b^2)}
-and residual error \mjseqn{e_{ij} \sim N(0,\sigm^2)}
+and residual error \mjseqn{e_{ij} \sim N(0,\sigma^2)}
  
    
 For other cases, the data generating model is:
@@ -169,8 +169,10 @@ are generated independent of one another.
 # with a difference of 3.75 between the arms, using 100 simulated data sets.  
    
 \dontrun{
+
 normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 10, difference = 3.75,
                         ICC = 0.3, sigma_sq = 20)
+
 }
 
 # Estimate power for a trial with 5 clusters in one arm, those clusters having 100 subjects 
@@ -180,8 +182,11 @@ normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 10, difference =
 # using 100 simulated data sets.
 
 \dontrun{
+
 normal.sim = cps.normal(nsim = 100, nclusters = c(5,25), nsubjects = c(100,50), difference =3.75, 
-          sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1)}
+          sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1)
+          
+          }
 
 
 }
