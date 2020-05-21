@@ -39,6 +39,10 @@
 #'   invalid arguments are given.  This generally means that no solution exists for which the 
 #'   omitted parameter and the supplied parameters fulfill the equation.  In particular, the desired
 #'   power may not be acheiveable with any number of subjects or clusters.
+#'   
+#' @section Testing details:
+#' This function has been verified against reference values from PASS11 
+#' and \code{clusterPower::cps.count}.
 #'
 #' @param alpha The level of significance of the test, the probability of a
 #'   Type I error.
