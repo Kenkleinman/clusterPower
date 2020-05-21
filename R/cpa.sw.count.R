@@ -54,9 +54,8 @@ cpa.sw.count <-
            ICC = 0.01,
            sig.level = 0.05,
            which.var = "within",
-           X = NULL, 
+           X = NULL,
            all.returned.objects = FALSE) {
-    
     ## Validate user entries
     if (!is.integer(nclusters) ||
         nclusters < 1 ||
@@ -76,7 +75,7 @@ cpa.sw.count <-
         is.na(nsubjects)) {
       errorCondition(message = "nsubjects must be a positive scalar.")
     }
-    if (which.var != "total" || 
+    if (which.var != "total" ||
         which.var != "within" ||
         is.na(which.var)) {
       errorCondition(message = "which.var must be either 'total' or 'within'.")
@@ -86,8 +85,69 @@ cpa.sw.count <-
       errorCondition(message = "all.returned.objects must be logical.")
     }
     
+    #define Baio's HH.count
+    HH.count <-
+      function (lambda1,
+                RR,
+                I,
+                J,
+                K,
+                rho = 0,
+                sig.level = 0.05,
+                which.var = "within",
+                X = NULL)
+      {
+        if (is.null(X)) {
+          X <- sw.design.mat(I = I, J = J, H = NULL)
+        }
+        else {
+          row.names(X) <- sample(1:I, I)
+          colnames(X) <- c("Baseline", paste0("Time ",
+                                              1:J))
+        }
+        U <- sum(X)
+        W <- sum(apply(X, 2, sum) ^ 2)
+        V <- sum(apply(X, 1, sum) ^ 2)
+        lambda2 <- RR * lambda1
+        theta <- abs(lambda1 - lambda2)
+        if (which.var == "within") {
+          sigma.e = (sqrt(lambda1) + sqrt(lambda2)) / 2
+          sigma.a <- sqrt(rho * sigma.e ^ 2 / (1 - rho))
+          sigma.y <- sqrt(sigma.e ^ 2 + sigma.a ^ 2)
+        }
+        if (which.var == "total") {
+          sigma.y <- (sqrt(lambda1) + sqrt(lambda2)) / 2
+          sigma.a <- sqrt(sigma.y ^ 2 * rho)
+          sigma.e <- sqrt(sigma.y ^ 2 - sigma.a ^ 2)
+        }
+        sigma <- sqrt(sigma.e ^ 2 / K)
+        v <- (I * sigma ^ 2 * (sigma ^ 2 + ((J + 1) * sigma.a ^ 2))) / ((I *
+                                                                           U - W) * sigma ^
+                                                                          2 + (U ^ 2 + I * (J + 1) * U - (J + 1) *
+                                                                                 W - I * V) * sigma.a ^
+                                                                          2)
+        power <- pnorm(theta / sqrt(v) - qnorm(1 - sig.level / 2))
+        setting <-
+          list(
+            n.clusters = I,
+            n.time.points = J,
+            avg.cluster.size = K,
+            design.matrix = X
+          )
+        list(
+          power = power,
+          lambda1 = lambda1,
+          lambda2 = lambda2,
+          sigma.y = sigma.y,
+          sigma.e = sigma.e,
+          sigma.a = sigma.a,
+          setting = setting
+        )
+      }
+    
+    # execute the function
     o <-
-      SWSamp::HH.count(
+      HH.count(
         lambda1 = lambda1,
         RR = RR,
         I = nclusters,
@@ -101,5 +161,5 @@ cpa.sw.count <-
     if (all.returned.objects == FALSE) {
       o <- o$power
     }
-return(o)
+    return(o)
   }
