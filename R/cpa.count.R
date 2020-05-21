@@ -41,7 +41,7 @@
 #'   power may not be acheiveable with any number of subjects or clusters.
 #'   
 #' @section Testing details:
-#' This function has been verified against reference values from PASS11, 
+#' This function has been verified against reference values from 
 #' \code{CRTsize::n4incidence}, and \code{clusterPower::cps.count}.
 #'
 #' @param alpha The level of significance of the test, the probability of a

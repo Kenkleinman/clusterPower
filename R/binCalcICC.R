@@ -1,35 +1,38 @@
-#' BinCalcICC: calculate a bunch of ICC values for data from CRTs with binary outcomes.
-#' 
-#' @param cid	Column name indicating cluster id in the dataframe \code{data}
-#' @param y	Column name indicating binary response in the dataframe data
-#' @param data A dataframe containing \code{cid} and \code{y}
-#' @param method The method to be used to compute ICC. A single or multiple 
-#' methods can be used at a time. By default, all 16 methods will be used. See 
+#' BinCalcICC: calculate ICC values for data from CRTs with binary outcomes.
+#'
+#' @param data This dataframe can be obtained by setting all.sim.data = TRUE 
+#' for \code{cps.binary()} or \code{cps.ma.binary()}.
+#' @param method The method to be used to compute ICC. A single or multiple
+#' methods can be used at a time. By default, all 16 methods will be used. See
 #' Details for more.
-#' @param ci.type	Type of confidence interval to be computed. By default all 5 
+#' @param ci.type	Type of confidence interval to be computed. By default all 5
 #' types will be reported. See Details for more
-#' @param alpha	The significance level to be used while computing the confidence 
+#' @param alpha	The significance level to be used while computing the confidence
 #' interval. Default value is 0.05
-#' @param kappa	Value of Kappa to be used in computing Stabilized ICC when the 
+#' @param kappa	Value of Kappa to be used in computing Stabilized ICC when the
 #' method stab is chosen. Default value is 0.45
-#' @param nAGQ	An integer scaler, as in glmer function of package lme4, denoting the 
-#' number of points per axis for evaluating the adaptive Gauss-Hermite approximation 
-#' to the log-likelihood. Used when the method lin is chosen. Default value is 1
-#' @param nsim Number of Monte Carlo replicates used in ICC computation method 
-#' \code{sim}. Default is 1000
-#' 
+#' @param nAGQ	An integer scaler, as in glmer function of package lme4, denoting the
+#' number of points per axis for evaluating the adaptive Gauss-Hermite approximation
+#' to the log-likelihood. Used when the method lin is chosen. Default value is 1.
+#' @param sim.min	The number of the first simulation for which ICC will be calculated.
+#' Default is 1.
+#' @param sim.max	The number of the last simulation for which ICC will be calculated.
+#' Default is 10.
+#' @param nsim Number of Monte Carlo replicates used in ICC computation method
+#' \code{sim}. Default is 1000.
+#'
 #' @return A list with the following components:
 #' \describe{
-#'   \item{estimate}{A dataframe containing the name of methods used and 
+#'   \item{estimate}{A dataframe containing the name of methods used and
 #'   corresponding estimates of Intracluster Correlation coefficients}
-#'   \item{confidence.intervals}{A dataframe containing names of 
-#'   confidence interval types and corresponding estimated confidence 
+#'   \item{confidence.intervals}{A dataframe containing names of
+#'   confidence interval types and corresponding estimated confidence
 #'   intervals}	}
-#' @examples 
+#' @examples
 #' \dontrun{
 #'   bin <- BinCalcICC(data = bin.ma.rct.unbal, nsim = 1000, index = 6)
 #' }
-#' 
+#'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}) and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
 BinCalcICC <-
@@ -58,19 +61,19 @@ BinCalcICC <-
            nAGQ = 1,
            index = 6,
            sim.min = 1,
-           sim.max = 2,
+           sim.max = 10,
            nsim = 1000) {
     #First, here's Akhtar Hossain's and Hirshikesh Chakraborty's iccbin function definition
     iccbin <-
-      function (cid = cid,
-                y = y,
-                data = data,
-                method = method,
-                ci.type = ci.type,
-                alpha = alpha,
-                kappa = kappa,
-                nAGQ = nAGQ,
-                M = nsim)
+      function(cid = cid,
+               y = y,
+               data = data,
+               method = method,
+               ci.type = ci.type,
+               alpha = alpha,
+               kappa = kappa,
+               nAGQ = nAGQ,
+               M = nsim)
       {
         CALL <- match.call()
         ic <- list(cid = substitute(cid), y = substitute(y))
@@ -734,11 +737,6 @@ BinCalcICC <-
         
       }
     }
-        names(holder) <- armname
-        browser()
-        #this is still messed up
-        for (i in 1:length(holder)) {
-        names(holder[[i]]) <- simname
-        }
+    names(holder) <- armname
     return(holder)
   }
