@@ -101,7 +101,8 @@ This function implements the approach of Donner and Klar (2000). An estimate for
 \section{Testing details}{
 
 This function has been verified against reference values from the NIH's GRT
-Sample Size Calculator, PASS11, and \code{clusterPower::cps.binary}.
+Sample Size Calculator, PASS11, \code{CRTSize::n4props}, 
+and \code{clusterPower::cps.binary}.
 }
 
 \examples{

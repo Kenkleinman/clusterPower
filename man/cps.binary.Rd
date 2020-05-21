@@ -109,6 +109,13 @@ P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 Non-convergent models are not included in the calculation of exact confidence 
 intervals.
 }
+\section{Testing details}{
+   
+This function has been verified against reference values from the NIH's GRT 
+Sample Size Calculator, PASS11, \code{CRTsize::n4prop}, and 
+\code{clusterPower::cpa.binary}.
+}
+
 \examples{
 \dontrun{
 binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.8,

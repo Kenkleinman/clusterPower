@@ -1,7 +1,10 @@
-#' Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.
-#'
-#' This set of functions utilize iterative simulations to determine 
-#' approximate power for cluster-randomized controlled trials. Users 
+#' Power simulations for cluster-randomized trials: Parallel Designs, Normal Outcome
+#' 
+#' @description 
+#' \loadmathjaxr
+#' 
+#' This function uses Monte Carlo methods (simulations) to estimate 
+#' power for cluster-randomized trials. Users 
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
 #' 
@@ -9,35 +12,42 @@
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
 #' cluster, number of clusters per treatment arm, expected absolute difference 
-#' between treatments, two of the following: ICC, within-cluster variance, or 
-#' between-cluster variance; significance level, analytic method, progress updates, 
-#' and simulated data set output may also be specified.
+#' between treatments, and two of the following: ICC, within-cluster variance, or 
+#' between-cluster variance.  Defaults are provided for significance level, 
+#' analytic method, progress updates, 
+#' and whether the simulated data sets are retained.
+#' 
+#' Users have the option of specifying different variance parameters for each treatment
+#' group, different numbers of clusters for each treatmetnt group, and different numbers
+#' of units within each cluster. 
 #' 
 #' Non-convergent models are not included in the calculation of exact confidence 
 #' intervals.
 #' 
 #' @section Testing details:   
-#' This function has been verified against reference values from the NIH's GRT 
+#' This function has been verified, where possible, against reference values from the NIH's GRT 
 #' Sample Size Calculator, PASS11, \code{CRTsize::n4means}, and 
 #' \code{clusterPower::cpa.normal}.
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes, both groups), 
+#' @param nsubjects Number of subjects per cluster; accepts either a scalar (implying equal cluster sizes for the two groups), 
 #' a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
 #' (unequal cluster sizes within groups) (required).
-#' @param nclusters Number of clusters per group; accepts single integer or vector of length 2 for unequal number 
-#' of clusters per treatment group (required)
+#' @param nclusters Number of clusters per group; accepts single integer (implying equal numbers of clusters in the two groups)
+#' or vector of length 2 (unequal number of clusters per treatment group) (required)
 #' @param difference Expected absolute treatment effect; accepts numeric (required).
 #' At least 2 of the following must be specified:
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
 #' @param sigma_sq Within-cluster variance; accepts numeric
 #' @param sigma_b_sq Between-cluster variance; accepts numeric
 #' 
-#' If clusters differ between treatment groups, at least 2 of the following 
+#' If variance parameters differ between treatment groups, at least 2 of the following 
 #' must be specified:
 #' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
 #' @param sigma_sq2 Within-cluster variance for clusters in TREATMENT group
 #' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
+#' 
+#' Optional parameters:
 #' @param alpha Significance level; default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
@@ -62,7 +72,7 @@
 #'   \item Significance level
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters in each treatment group
-#'   \item Data frame reporting ICC for Treatment/Non-Treatment groups
+#'   \item Data frame reporting ICC and variance parameters for Treatment/Non-Treatment groups
 #'   \item Vector containing expected difference between groups based on user inputs
 #'   \item Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
