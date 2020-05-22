@@ -2,12 +2,12 @@
 % Please edit documentation in R/cps.normal.R
 \name{cps.normal}
 \alias{cps.normal}
-\title{Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.}
+\title{Power simulations for cluster-randomized trials: Parallel Designs, Normal Outcome}
 \usage{
 cps.normal(
   nsim = NULL,
-  nsubjects = NULL,
   nclusters = NULL,
+  nsubjects = NULL,
   difference = NULL,
   ICC = NULL,
   sigma_sq = NULL,
@@ -27,14 +27,16 @@ cps.normal(
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
 
-\item{nsubjects}{Number of subjects per cluster; accepts either a scalar (equal cluster sizes, both groups), 
+\item{nclusters}{Number of clusters per group; accepts single integer (implying equal numbers of clusters in the two groups)
+or vector of length 2 (unequal number of clusters per treatment group) (required)}
+
+\item{nsubjects}{Number of subjects per cluster; accepts either a scalar (implying equal cluster sizes for the two groups), 
 a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
 (unequal cluster sizes within groups) (required).}
 
-\item{nclusters}{Number of clusters per group; accepts single integer or vector of length 2 for unequal number 
-of clusters per treatment group (required)}
-
 \item{difference}{Expected absolute treatment effect; accepts numeric (required).
+
+
 At least 2 of the following must be specified:}
 
 \item{ICC}{Intra-cluster correlation coefficient; accepts a value between 0 - 1}
@@ -43,14 +45,17 @@ At least 2 of the following must be specified:}
 
 \item{sigma_b_sq}{Between-cluster variance; accepts numeric
 
-If clusters differ between treatment groups, at least 2 of the following 
+
+If variance parameters differ between treatment groups, at least 2 of the following 
 must be specified:}
 
 \item{ICC2}{Intra-cluster correlation coefficient for clusters in TREATMENT group}
 
 \item{sigma_sq2}{Within-cluster variance for clusters in TREATMENT group}
 
-\item{sigma_b_sq2}{Between-cluster variance for clusters in TREATMENT group}
+\item{sigma_b_sq2}{Between-cluster variance for clusters in TREATMENT group
+
+Optional parameters:}
 
 \item{alpha}{Significance level; default = 0.05.}
 
@@ -83,7 +88,7 @@ A list with the following components:
   \item Significance level
   \item Vector containing user-defined cluster sizes
   \item Vector containing user-defined number of clusters in each treatment group
-  \item Data frame reporting ICC for Treatment/Non-Treatment groups
+  \item Data frame reporting ICC and variance parameters for Treatment/Non-Treatment groups
   \item Vector containing expected difference between groups based on user inputs
   \item Data frame with columns: 
                   "Estimate" (Estimate of treatment effect for a given simulation), 
@@ -98,37 +103,91 @@ A list with the following components:
                   }
 }
 \description{
-This set of functions utilize iterative simulations to determine 
-approximate power for cluster-randomized controlled trials. Users 
+\loadmathjax
+
+This function uses Monte Carlo methods (simulations) to estimate 
+power for cluster-randomized trials. Users 
 can modify a variety of parameters to suit the simulations to their
 desired experimental situation.
-}
-\details{
-Runs the power simulation.
 
 Users must specify the desired number of simulations, number of subjects per 
 cluster, number of clusters per treatment arm, expected absolute difference 
-between treatments, two of the following: ICC, within-cluster variance, or 
-between-cluster variance; significance level, analytic method, progress updates, 
-and simulated data set output may also be specified.
+between treatments, and two of the following: ICC, within-cluster variance, or 
+between-cluster variance.  Defaults are provided for significance level, 
+analytic method, progress updates, 
+and whether the simulated data sets are retained.
+
+Users have the option of specifying different variance parameters for each treatment
+group, different numbers of clusters for each treatmetnt group, and different numbers
+of units within each cluster. 
 
 Non-convergent models are not included in the calculation of exact confidence 
 intervals.
 }
 \section{Testing details}{
    
-This function has been verified against reference values from the NIH's GRT 
+This function has been verified, where possible, against reference values from the NIH's GRT 
 Sample Size Calculator, PASS11, \code{CRTsize::n4means}, and 
 \code{clusterPower::cpa.normal}.
 }
 
-\examples{
-\dontrun{
-normal.sim = cps.normal(nsim = 1000, nsubjects = 50, nclusters = 10, difference = 3.75,
-                        ICC = 0.3, sigma_sq = 20,
-                        alpha = 0.05, method = 'glmm', 
-                        quiet = FALSE, all.sim.data = FALSE)
+\section{Notes}{
+
+
+For models with no \mjseqn{\sigma_2^2} or \mjseqn{\sigma_{b_2}^2}, the data generating
+model is:
+
+The data generating model here is:
+\mjsdeqn{y_{ij} = \beta_0 + \beta_1 x_{ij} 
+   + b_i + e_{ij} 
+   }
+   
+where \mjseqn{b} are the random effects for the clusters and
+\mjseqn{b_i \sim N(0, \sigma_b^2)}
+and residual error \mjseqn{e_{ij} \sim N(0,\sigma^2)}
+ 
+   
+For other cases, the data generating model is:
+\mjsdeqn{y_{ij} = \beta_0 + \beta_1 x_{ij} 
+   + b_i I(x_{ij}=0) + e_{ij} I(x_{ij}=0) 
+   + g_i I(x_{ij}=1) + f_{ij} I(x_{ij}=1)
+   }
+
+where \mjseqn{b} are the random effects for the clusters in group with 
+treatment group indicator \mjseqn{x_{ij} = 0, b_i \sim N(0, \sigma_b^2)}
+and \mjseqn{g} are the randon effects for the other treament group,
+\mjseqn{g_i \sim N(0, \sigma_{b_2}^2)}, and \mjseqn{e} and \mjseqn{f}
+are the residual errors in each group, distributed normal with variances
+\mjseqn{\sigma^2} and \mjseqn{\sigma_2^2}, respectively.  All random terms
+are generated independent of one another.
 }
+
+\examples{
+
+# Estimate power for an trial with 10 clusters in each arm and 50 subjects in each 
+# cluster, with an ICC of .3, sigma squared of 20 (implying sigma_b squared of 8.57143),
+# with a difference of 3.75 between the arms, using 100 simulated data sets.  
+   
+\dontrun{
+
+normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 10, difference = 3.75,
+                        ICC = 0.3, sigma_sq = 20)
+
+}
+
+# Estimate power for a trial with 5 clusters in one arm, those clusters having 100 subjects 
+# each, 25 clusters in the other arm, those clusters having 50 subjects each, the fist arm
+# having a sigma square of 20 and sigma_b squared of 8.57143, and the second a sigma squared
+# of 9 and a sigma_b squared of 1, with a difference of 3.75 between the arms,
+# using 100 simulated data sets.
+
+\dontrun{
+
+normal.sim = cps.normal(nsim = 100, nclusters = c(5,25), nsubjects = c(100,50), difference =3.75, 
+          sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1)
+          
+          }
+
 
 }
 \author{

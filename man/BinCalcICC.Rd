@@ -2,7 +2,7 @@
 % Please edit documentation in R/binCalcICC.R
 \name{BinCalcICC}
 \alias{BinCalcICC}
-\title{BinCalcICC: calculate a bunch of ICC values for data from CRTs with binary outcomes.}
+\title{BinCalcICC: calculate ICC values for data from CRTs with binary outcomes.}
 \usage{
 BinCalcICC(
   data = NULL,
@@ -14,48 +14,51 @@ BinCalcICC(
   nAGQ = 1,
   index = 6,
   sim.min = 1,
-  sim.max = 2,
+  sim.max = 10,
   nsim = 1000
 )
 }
 \arguments{
-\item{data}{A dataframe containing \code{cid} and \code{y}}
+\item{data}{This dataframe can be obtained by setting all.sim.data = TRUE 
+for \code{cps.binary()} or \code{cps.ma.binary()}.}
 
-\item{method}{The method to be used to compute ICC. A single or multiple 
-methods can be used at a time. By default, all 16 methods will be used. See 
+\item{method}{The method to be used to compute ICC. A single or multiple
+methods can be used at a time. By default, all 16 methods will be used. See
 Details for more.}
 
-\item{ci.type}{Type of confidence interval to be computed. By default all 5 
+\item{ci.type}{Type of confidence interval to be computed. By default all 5
 types will be reported. See Details for more}
 
-\item{alpha}{The significance level to be used while computing the confidence 
+\item{alpha}{The significance level to be used while computing the confidence
 interval. Default value is 0.05}
 
-\item{kappa}{Value of Kappa to be used in computing Stabilized ICC when the 
+\item{kappa}{Value of Kappa to be used in computing Stabilized ICC when the
 method stab is chosen. Default value is 0.45}
 
-\item{nAGQ}{An integer scaler, as in glmer function of package lme4, denoting the 
-number of points per axis for evaluating the adaptive Gauss-Hermite approximation 
-to the log-likelihood. Used when the method lin is chosen. Default value is 1}
+\item{nAGQ}{An integer scaler, as in glmer function of package lme4, denoting the
+number of points per axis for evaluating the adaptive Gauss-Hermite approximation
+to the log-likelihood. Used when the method lin is chosen. Default value is 1.}
 
-\item{nsim}{Number of Monte Carlo replicates used in ICC computation method 
-\code{sim}. Default is 1000}
+\item{sim.min}{The number of the first simulation for which ICC will be calculated.
+Default is 1.}
 
-\item{cid}{Column name indicating cluster id in the dataframe \code{data}}
+\item{sim.max}{The number of the last simulation for which ICC will be calculated.
+Default is 10.}
 
-\item{y}{Column name indicating binary response in the dataframe data}
+\item{nsim}{Number of Monte Carlo replicates used in ICC computation method
+\code{sim}. Default is 1000.}
 }
 \value{
 A list with the following components:
 \describe{
-  \item{estimate}{A dataframe containing the name of methods used and 
+  \item{estimate}{A dataframe containing the name of methods used and
   corresponding estimates of Intracluster Correlation coefficients}
-  \item{confidence.intervals}{A dataframe containing names of 
-  confidence interval types and corresponding estimated confidence 
+  \item{confidence.intervals}{A dataframe containing names of
+  confidence interval types and corresponding estimated confidence
   intervals}	}
 }
 \description{
-BinCalcICC: calculate a bunch of ICC values for data from CRTs with binary outcomes.
+BinCalcICC: calculate ICC values for data from CRTs with binary outcomes.
 }
 \examples{
 \dontrun{
