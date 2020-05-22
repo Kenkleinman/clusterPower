@@ -7,4 +7,5 @@
 #' @export
  cpa.irgtt.count <- function(x) {
 warning("No method exists for cpa.irgtt.count. See ?cpa.irgtt.count for details.")
-}
+ }
+ 
