@@ -1,4 +1,4 @@
-#' Power simulations for cluster-randomized trials: Simple Designs, Continuous Outcome.
+#' Power simulations for cluster-randomized trials: Parallel Designs, Continuous Outcome.
 #'
 #' This set of functions utilize iterative simulations to determine 
 #' approximate power for cluster-randomized controlled trials. Users 
@@ -116,12 +116,12 @@ cps.normal = function(nsim = NULL,
   }
   
   # Create vectors to collect iteration-specific values
-  est.vector = NULL
-  se.vector = NULL
-  stat.vector = NULL
-  pval.vector = NULL
+  est.vector = rep(NA, length = nsim)
+  se.vector = rep(NA, length = nsim)
+  stat.vector = rep(NA, length = nsim)
+  pval.vector = rep(NA, length = nsim)
   # This container keeps track of how many models failed to converge
-  converge.vector <- NULL
+  converge.vector <- rep(NA, length = nsim)
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -319,7 +319,7 @@ cps.normal = function(nsim = NULL,
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::lmeControl(opt = 'optim')
-            ))
+            ), silent = TRUE)
           glmm.values <-  summary(my.mod)$tTable
           # get the overall p-values (>Chisq)
           null.mod <-
@@ -330,11 +330,11 @@ cps.normal = function(nsim = NULL,
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::lmeControl(opt = 'optim')
-            ))
-          pval.vector = append(pval.vector, glmm.values['as.factor(trt2)1', 'p-value'])
-          est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
-          se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
-          stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
+            ), silent = TRUE)
+          pval.vector[i] = glmm.values['as.factor(trt2)1', 'p-value']
+          est.vector[i] = glmm.values['as.factor(trt2)1', 'Value']
+          se.vector[i] = glmm.values['as.factor(trt2)1', 'Std.Error']
+          stat.vector[i] = glmm.values['as.factor(trt2)1', 't-value']
           converge.vector[i] <-
             ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE)
         }
@@ -355,7 +355,7 @@ cps.normal = function(nsim = NULL,
           converge.vector = append(converge.vector, ifelse(any(
             grepl("singular",
                   my.mod@optinfo$conv$lme4$messages)
-          ) == FALSE, TRUE))
+          ) == FALSE, TRUE, FALSE))
           # option to stop the function early if fits are singular
           if (poor.fit.override == FALSE) {
             if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
@@ -370,6 +370,8 @@ cps.normal = function(nsim = NULL,
         if (sigma_sq != sigma_sq2 && sigma_b_sq != sigma_b_sq2) {
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
+          oldw <- getOption("warn")
+          options(warn = -1)
           my.mod <-
             try(nlme::lme(
               y ~ as.factor(trt2),
@@ -378,7 +380,8 @@ cps.normal = function(nsim = NULL,
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::lmeControl(opt = 'optim')
-            ))
+            ), silent = TRUE)
+          if (class(my.mod) != "try-error") {
           glmm.values <-  summary(my.mod)$tTable
           # get the overall p-values (>Chisq)
           null.mod <-
@@ -389,11 +392,13 @@ cps.normal = function(nsim = NULL,
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::lmeControl(opt = 'optim')
-            ))
-          pval.vector = append(pval.vector, glmm.values['as.factor(trt2)1', 'p-value'])
-          est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
-          se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
-          stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
+            ), silent = TRUE)
+          options(warn = oldw)
+          pval.vector[i] = glmm.values['as.factor(trt2)1', 'p-value']
+          est.vector[i] = glmm.values['as.factor(trt2)1', 'Value']
+          se.vector[i] = glmm.values['as.factor(trt2)1', 'Std.Error']
+          stat.vector[i] = glmm.values['as.factor(trt2)1', 't-value']
+          }
           converge.vector[i] <-
             ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE)
         }
@@ -407,14 +412,14 @@ cps.normal = function(nsim = NULL,
           null.mod <-
             stats::update.formula(my.mod, y ~ 1 + (1 + as.factor(trt) | clust))
           glmm.values = summary(my.mod)$coefficients
-          pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|t|)'])
-          est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-          se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-          stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          converge.vector = append(converge.vector, ifelse(any(
+          pval.vector[i] = glmm.values['trt', 'Pr(>|t|)']
+          est.vector[i] = glmm.values['trt', 'Estimate']
+          se.vector[i] = glmm.values['trt', 'Std. Error']
+          stat.vector[i] = glmm.values['trt', 't value']
+          converge.vector[i] = ifelse(any(
             grepl("singular",
                   my.mod@optinfo$conv$lme4$messages)
-          ) == FALSE, TRUE))
+          ) == FALSE, TRUE, FALSE)
           # option to stop the function early if fits are singular
           if (poor.fit.override == FALSE) {
             if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
@@ -428,6 +433,8 @@ cps.normal = function(nsim = NULL,
         if (sigma_sq != sigma_sq2 && sigma_b_sq == sigma_b_sq2) {
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
+          oldw <- getOption("warn")
+          options(warn = -1)
           my.mod <-
             try(nlme::lme(
               y ~ as.factor(trt2),
@@ -436,7 +443,7 @@ cps.normal = function(nsim = NULL,
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::lmeControl(opt = 'optim')
-            ))
+            ), silent = TRUE)
           glmm.values <-  summary(my.mod)$tTable
           # get the overall p-values (>Chisq)
           null.mod <-
@@ -447,11 +454,12 @@ cps.normal = function(nsim = NULL,
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::lmeControl(opt = 'optim')
-            ))
-          pval.vector = append(pval.vector, glmm.values['as.factor(trt2)1', 'p-value'])
-          est.vector = append(est.vector, glmm.values['as.factor(trt2)1', 'Value'])
-          se.vector = append(se.vector, glmm.values['as.factor(trt2)1', 'Std.Error'])
-          stat.vector = append(stat.vector, glmm.values['as.factor(trt2)1', 't-value'])
+            ), silent = TRUE)
+          options(warn = oldw)
+          pval.vector[i] = glmm.values['as.factor(trt2)1', 'p-value']
+          est.vector[i] = glmm.values['as.factor(trt2)1', 'Value']
+          se.vector[i] = glmm.values['as.factor(trt2)1', 'Std.Error']
+          stat.vector[i] = glmm.values['as.factor(trt2)1', 't-value']
           converge.vector[i] <-
             ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE)
         }
@@ -462,14 +470,14 @@ cps.normal = function(nsim = NULL,
           # get the overall p-values (>Chisq)
           null.mod <- update.formula(my.mod, y ~ 1 + (1 | clust))
           glmm.values = summary(my.mod)$coefficients
-          pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|t|)'])
-          est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-          se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-          stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          converge.vector = append(converge.vector, ifelse(any(
+          pval.vector[i] = glmm.values['trt', 'Pr(>|t|)']
+          est.vector[i] = glmm.values['trt', 'Estimate']
+          se.vector[i] = glmm.values['trt', 'Std. Error']
+          stat.vector[i] = glmm.values['trt', 't value']
+          converge.vector[i] = ifelse(any(
             grepl("singular",
                   my.mod@optinfo$conv$lme4$messages)
-          ) == TRUE, FALSE, TRUE))
+          ) == TRUE, FALSE, TRUE)
           # option to stop the function early if fits are singular
           if (poor.fit.override == FALSE) {
             if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
@@ -549,7 +557,7 @@ cps.normal = function(nsim = NULL,
     summary.message = paste0(
       "Monte Carlo Power Estimation based on ",
       nsim,
-      " Simulations: Simple Design, Continuous Outcome"
+      " Simulations: Parallel Design, Continuous Outcome"
     )
   } else {
     summary.message = paste0(
