@@ -625,7 +625,7 @@ cps.normal = function(nsim = NULL,
       "cluster.sizes" = cluster.sizes,
       "n.clusters" = n.clusters,
       "variance.parms" = var.parms,
-      "inputs" = difference,
+      "difference" = difference,
       "model.estimates" = cps.model.est,
       "convergence" = fail,
       "sim.data" = simulated.datasets
