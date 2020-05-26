@@ -90,6 +90,12 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
   power may not be acheiveable with any number of subjects or clusters.
 }
 
+\section{Testing details}{
+
+This function has been verified against reference values from 
+\code{CRTsize::n4incidence}, and \code{clusterPower::cps.count}.
+}
+
 \examples{
 # Find the number of clusters per condition needed for a trial with alpha = 0.05, 
 # power = 0.80, 10 person-years per cluster, rate in condition 1 of 0.10 
@@ -97,7 +103,6 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 
 cpa.count(nsubjects=10, r1=0.10, r2=0.20, CVB=0.10)
 
-# 
 # The result, showimg nclusters of greater than 24, suggests 25 clusters per
 # condition should be used.
 
