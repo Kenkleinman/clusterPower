@@ -5,6 +5,6 @@
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
 #' @export
-cpa.did.count <- function(x) {
-  warning("No method exists for cpa.did.count. See ?cpa.did.count for details.")
+cpa.did.count <- function() {
+  errorCondition("No method exists for cpa.did.count. Use cps.did.count() instead.")
 }

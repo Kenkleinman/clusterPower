@@ -5,7 +5,6 @@
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
 #' @export
- cpa.irgtt.count <- function(x) {
-warning("No method exists for cpa.irgtt.count. See ?cpa.irgtt.count for details.")
- }
- 
+cpa.irgtt.count <- function() {
+  errorCondition("No method exists for cpa.irgtt.count. Use cps.irgtt.count instead.")
+}
