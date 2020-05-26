@@ -90,6 +90,7 @@
 
 
 
+
 cps.sw.count = function(nsim = NULL,
                         nsubjects = NULL,
                         nclusters = NULL,

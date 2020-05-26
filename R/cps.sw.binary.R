@@ -88,6 +88,7 @@
 
 
 
+
 cps.sw.binary = function(nsim = NULL,
                          nsubjects = NULL,
                          nclusters = NULL,

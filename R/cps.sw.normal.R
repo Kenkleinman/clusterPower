@@ -90,6 +90,7 @@
 
 
 
+
 cps.sw.normal = function(nsim = NULL,
                          nsubjects = NULL,
                          nclusters = NULL,

@@ -90,9 +90,6 @@
 #' (\email{ken.kleinman@@gmail.com})
 #' 
 #' @export
-
-
-
 cps.normal = function(nsim = NULL,
                       nsubjects = NULL,
                       nclusters = NULL,
