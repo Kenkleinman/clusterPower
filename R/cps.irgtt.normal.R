@@ -10,10 +10,11 @@
 #' Runs the power simulation.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, expected absolute difference 
-#' between treatments, two of the following: ICC, within-cluster variance, or 
-#' between-cluster variance; significance level, analytic method, progress updates, 
-#' and simulated data set output may also be specified.
+#' cluster, number of clusters per treatment arm, expected means for the 
+#' non-treatment and treatment groups (respectively), two of the following: ICC, 
+#' within-cluster variance, or between-cluster variance; significance level, 
+#' analytic method, progress updates, and simulated data set output may also be 
+#' specified.
 #' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
@@ -21,7 +22,8 @@
 #' a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
 #' (unequal cluster sizes within groups) (required).
 #' @param nclusters Number of clusters in the clustered group; accepts a scalar (required)
-#' @param difference Expected absolute treatment effect; accepts numeric (required).
+#' @param mu Expected mean of the CONTROL arm; accepts numeric (required).
+#' @param mu2 Expected mean of the TREATMENT arm; accepts numeric (required).
 #' @param alpha Significance level; default = 0.05.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
@@ -50,7 +52,7 @@
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters in each treatment group
 #'   \item Data frame reporting ICC for Treatment/Non-Treatment groups
-#'   \item Vector containing expected difference between groups based on user inputs
+#'   \item Vector containing expected group means based on user inputs
 #'   \item Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.err" (Standard error for treatment effect estimate), 
@@ -65,9 +67,9 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = 10, 
-#'                        nclusters = 10, difference = .5,
-#'                         sigma_sq = 1, sigma_sq2 = 0.9, 
+#' irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = 12, 
+#'                        nclusters = 10, mu = 1.1, mu2 = 1.5,
+#'                         sigma_sq = 0.1, sigma_sq2 = 0.2, 
 #'                         sigma_b_sq2 = 0.1, alpha = 0.05,
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
@@ -81,7 +83,8 @@ cps.irgtt.normal <-
   function(nsim = NULL,
            nsubjects = NULL,
            nclusters = NULL,
-           difference = NULL,
+           mu = NULL,
+           mu2 = NULL,
            ICC = NULL,
            sigma_sq = NULL,
            sigma_b_sq = 0,
@@ -113,7 +116,8 @@ cps.irgtt.normal <-
       nsim = nsim,
       nsubjects = nsubjects,
       nclusters = nclust,
-      difference = difference,
+      mu = mu,
+      mu2 = mu2,
       ICC = ICC,
       ICC2 = ICC2,
       sigma_sq = sigma_sq,

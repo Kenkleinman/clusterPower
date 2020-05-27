@@ -28,6 +28,11 @@
 #' Non-convergent models are not included in the calculation of exact confidence 
 #' intervals.
 #' 
+#' @section Testing details:   
+#' This function has been verified, where possible, against reference values from the NIH's GRT 
+#' Sample Size Calculator, PASS11, \code{CRTsize::n4means}, \code{clusterPower::cps.normal}, and 
+#' \code{clusterPower::cpa.normal}.
+#' 
 #' @param narms Integer value representing the number of arms. 
 #' @param nclusters An integer or vector of integers representing the number 
 #' of clusters in each arm.
@@ -163,6 +168,7 @@
 #' 
 #' @export
 #' 
+
 
 
 cps.ma.normal <- function(nsim = 1000,
@@ -311,6 +317,26 @@ cps.ma.normal <- function(nsim = 1000,
     opt = opt
   )
   
+  # Create object containing summary statement
+  summary.message = paste0(
+    "Monte Carlo Power Estimation based on ",
+    nsim,
+    " Simulations: Parallel Design, Continuous Outcome, ",
+    narms,
+    " Arms."
+  )
+  
+  # Create method object
+  long.method = switch(method, glmm = 'Generalized Linear Mixed Model',
+                       gee = 'Generalized Estimating Equation')
+  
+  # Create object containing group-specific variance parameters
+  var.parms = t(data.frame(c(
+    'sigma_sq' = sigma_sq, 'sigma_b_sq' = sigma_b_sq
+  )))
+  rownames(var.parms) <- "variance.measures"
+  
+  
   models <- normal.ma.rct[[1]]
   
   #Organize output for GLMM
@@ -322,18 +348,18 @@ cps.ma.normal <- function(nsim = 1000,
     
     if (max(sigma_sq) != min(sigma_sq)) {
       for (i in 1:nsim) {
-        Estimates[i, ] <- models[[i]][20][[1]][, 1]
-        std.error[i, ] <- models[[i]][20][[1]][, 2]
-        t.val[i, ] <- models[[i]][20][[1]][, 4]
-        p.val[i, ] <- models[[i]][20][[1]][, 5]
+        Estimates[i,] <- models[[i]][20][[1]][, 1]
+        std.error[i,] <- models[[i]][20][[1]][, 2]
+        t.val[i,] <- models[[i]][20][[1]][, 4]
+        p.val[i,] <- models[[i]][20][[1]][, 5]
       }
       keep.names <- rownames(models[[1]][20][[1]])
     } else {
       for (i in 1:nsim) {
-        Estimates[i, ] <- models[[i]][[10]][, 1]
-        std.error[i, ] <- models[[i]][[10]][, 2]
-        t.val[i, ] <- models[[i]][[10]][, 4]
-        p.val[i, ] <- models[[i]][[10]][, 5]
+        Estimates[i,] <- models[[i]][[10]][, 1]
+        std.error[i,] <- models[[i]][[10]][, 2]
+        t.val[i,] <- models[[i]][[10]][, 4]
+        p.val[i,] <- models[[i]][[10]][, 5]
       }
       keep.names <- rownames(models[[1]][[10]])
     }
@@ -403,8 +429,7 @@ cps.ma.normal <- function(nsim = 1000,
     power.parms <- confint.calc(
       nsim = nsim,
       alpha = alpha,
-      p.val = as.vector(cps.model.temp2[, 2:length(cps.model.temp2)]),
-      names.power = names.power
+      p.val = as.vector(cps.model.temp2[, 2:length(cps.model.temp2)])
     )
     
     # Store simulation output in data frame
@@ -415,49 +440,88 @@ cps.ma.normal <- function(nsim = 1000,
     ## Output objects for GLMM
     
     # Create list containing all output (class 'crtpwr') and return
-    if (all.sim.data == TRUE) {
-      complete.output <-  list(
-        "power" <-  power.parms[-1, ],
-        "model.estimates" <-  ma.model.est,
-        "overall.power" <- LRT.holder,
-        "overall.power2" <-
-          prop_H0_rejection(
-            alpha = alpha,
-            nsim = nsim,
-            LRT.holder.abbrev = LRT.holder.abbrev
-          ),
-        "sim.data" <-  normal.ma.rct[[4]],
-        "convergence" <-  normal.ma.rct[[3]]
+    
+    if (all.sim.data == TRUE && return.all.models == FALSE) {
+      complete.output = structure(
+        list(
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms[-1,],
+          "beta" = power.parms[-1,]['Beta'],
+          "overall.power" = LRT.holder,
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "method" = long.method,
+          "alpha" = alpha,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "means" = means,
+          "model.estimates" = ma.model.est,
+          "convergence" = normal.ma.rct[[3]],
+          "sim.data" = normal.ma.rct[[4]]
+        ),
+        class = 'crtpwr'
       )
     }
+    
     if (return.all.models == TRUE) {
-      complete.output <-  list(
-        "power" <-  power.parms[-1, ],
-        "model.estimates" <-  ma.model.est,
-        "overall.power" <- LRT.holder,
-        "overall.power2" <-
-          prop_H0_rejection(
-            alpha = alpha,
-            nsim = nsim,
-            LRT.holder.abbrev = LRT.holder.abbrev
-          ),
-        "all.models" <-  normal.ma.rct
-      )
-    } else {
-      complete.output <-  list(
-        "power" <-  power.parms[-1, ],
-        "overall.power" <-
-          prop_H0_rejection(
-            alpha = alpha,
-            nsim = nsim,
-            LRT.holder.abbrev = LRT.holder.abbrev
-          ),
-        "convergence" <- normal.ma.rct[[3]]
+      complete.output = structure(
+        list(
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms[-1,],
+          "beta" = power.parms[-1,]['Beta'],
+          "overall.power" = LRT.holder,
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "method" = long.method,
+          "alpha" = alpha,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "means" = means,
+          "model.estimates" = ma.model.est,
+          "convergence" = normal.ma.rct[[3]],
+          "sim.data" = normal.ma.rct[[4]],
+          "all.models" <-  normal.ma.rct
+        ),
+        class = 'crtpwr'
       )
     }
-    class(complete.output) <- "crtpwr"
-    return(complete.output)
+    if (return.all.models == FALSE && all.sim.data == FALSE) {
+      complete.output = structure(
+        list(
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms[-1,],
+          "beta" = power.parms[-1,]['Beta'],
+          "overall.power" = LRT.holder,
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "method" = long.method,
+          "alpha" = alpha,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "means" = means,
+          "model.estimates" = ma.model.est,
+          "convergence" = normal.ma.rct[[3]]
+        ),
+        class = 'crtpwr'
+      )
+    }
   }
+  
   #Organize output for GEE method
   if (method == "gee") {
     # Organize the output
@@ -467,10 +531,10 @@ cps.ma.normal <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i, ] <- models[[i]]$coefficients[, 1]
-      std.error[i, ] <- models[[i]]$coefficients[, 2]
-      Wald[i, ] <- models[[i]]$coefficients[, 3]
-      Pr[i, ] <-
+      Estimates[i,] <- models[[i]]$coefficients[, 1]
+      std.error[i,] <- models[[i]]$coefficients[, 2]
+      Wald[i,] <- models[[i]]$coefficients[, 3]
+      Pr[i,] <-
         p.adjust(models[[i]]$coefficients[, 4], method = multi.p.method)
     }
     
@@ -526,33 +590,80 @@ cps.ma.normal <- function(nsim = 1000,
     ## Output objects for GEE
     
     # Create list containing all output (class 'crtpwr') and return
-    if (all.sim.data == TRUE) {
-      complete.output <-  list(
-        "power" <-  power.parms[-1, ],
-        "model.estimates" <-  ma.model.est,
-        "overall.power" <- LRT.holder,
-        "overall.power2" <-
-          prop_H0_rejection(
-            alpha = alpha,
-            nsim = nsim,
-            LRT.holder.abbrev = LRT.holder.abbrev
-          ),
-        "sim.data" <-  normal.ma.rct[[3]]
-      )
-    } else {
-      complete.output <-  list(
-        "power" <-  power.parms[-1, ],
-        "model.estimates" <-  ma.model.est,
-        "overall.power" <- LRT.holder,
-        "overall.power2" <-
-          prop_H0_rejection(
-            alpha = alpha,
-            nsim = nsim,
-            LRT.holder.abbrev = LRT.holder.abbrev
-          )
+    if (all.sim.data == TRUE & return.all.models == FALSE) {
+      complete.output = structure(
+        list(
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms[-1,],
+          "beta" = power.parms[-1,]['Beta'],
+          "overall.power" = LRT.holder,
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "method" = long.method,
+          "alpha" = alpha,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "means" = means,
+          "model.estimates" = ma.model.est,
+          "sim.data" = normal.ma.rct[[3]]
+        ),
+        class = 'crtpwr'
       )
     }
-    class(complete.output) <- "ctrpwr"
-    return(complete.output)
+    if (return.all.models == TRUE) {
+      complete.output = structure(
+        list(
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms[-1,],
+          "beta" = power.parms[-1,]['Beta'],
+          "overall.power" = LRT.holder,
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "method" = long.method,
+          "alpha" = alpha,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "means" = means,
+          "model.estimates" = ma.model.est,
+          "all.models" <-  normal.ma.rct
+        ),
+        class = 'crtpwr'
+      )
+    }
+    if (return.all.models == FALSE && all.sim.data == FALSE) {
+      complete.output = structure(
+        list(
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms[-1,],
+          "beta" = power.parms[-1,]['Beta'],
+          "overall.power" = LRT.holder,
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "method" = long.method,
+          "alpha" = alpha,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "means" = means,
+          "model.estimates" = ma.model.est
+        ),
+        class = 'crtpwr'
+      )
+    }
   }
+  return(complete.output)
 }

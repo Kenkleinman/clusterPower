@@ -5,6 +5,6 @@
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
 #' @export
-cpa.ma.binary <- function(x) {
-  warning("No method exists for cpa.ma.binary. See ?cpa.ma.binary for details.")
+cpa.ma.binary <- function() {
+  errorCondition("No method exists for cpa.ma.binary. Use cps.ma.binary instead.")
 }

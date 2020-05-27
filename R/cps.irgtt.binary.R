@@ -73,9 +73,6 @@
 #'   and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
 
-#FIXME add irgtt equation in cps.binary
-# Define function
-
 cps.irgtt.binary <-
   function(nsim = NULL,
            nsubjects = NULL,
@@ -88,6 +85,13 @@ cps.irgtt.binary <-
            quiet = TRUE,
            all.sim.data = FALSE,
            seed = NA) {
+    
+    if (length(nclusters) > 2) {
+      stop(
+        "NCLUSTERS can only be a vector of length 1 (no clusters in control group)."
+      )
+    }
+    
     if (sigma_b_sq == 0 & sigma_b_sq2 == 0) {
       warning(
         "sigma_b_sq in both arms is 0. This is equivalent to a t-test. Did you mean to
