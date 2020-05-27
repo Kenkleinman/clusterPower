@@ -67,9 +67,9 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = 10, 
-#'                        nclusters = 10, mu = 1, mu2 = 1.5,
-#'                         sigma_sq = 1, sigma_sq2 = 0.9, 
+#' irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = 12, 
+#'                        nclusters = 10, mu = 1.1, mu2 = 1.5,
+#'                         sigma_sq = 0.1, sigma_sq2 = 0.2, 
 #'                         sigma_b_sq2 = 0.1, alpha = 0.05,
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }

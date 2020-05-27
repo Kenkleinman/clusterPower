@@ -641,14 +641,13 @@ cps.normal = function(nsim = NULL,
     p.value = as.vector(unlist(pval.vector)),
     converge = as.vector(unlist(converge.vector))
   )
-  
+
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
   power.parms <- confint.calc(
     nsim = nsim,
     alpha = alpha,
-    p.val = cps.model.temp[, 'p.value'],
-    names.power = c("trt")
+    p.val = cps.model.temp[, 'p.value']
   )
   
   # Create object containing group-specific cluster sizes
@@ -676,7 +675,7 @@ cps.normal = function(nsim = NULL,
   ))
   
   fail <- unlist(converge.vector)
-  
+
   # Create list containing all output (class 'crtpwr') and return
   complete.output = structure(
     list(
@@ -685,6 +684,7 @@ cps.normal = function(nsim = NULL,
       "power" = power.parms,
       "method" = long.method,
       "alpha" = alpha,
+      "beta" = power.parms['Beta'],
       "cluster.sizes" = cluster.sizes,
       "n.clusters" = n.clusters,
       "variance.parms" = var.parms,

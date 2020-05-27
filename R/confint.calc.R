@@ -9,7 +9,6 @@
 #' @param nsim A scalar; the number of simulations chosen by the user.
 #' @param alpha A numeric; the user-selected alpha cutoff.
 #' @param p.val A vector of p-values.
-#' @param names.power A vector of labels containing the names of each arm.
 #' 
 #' @return A dataframe
 #' \describe{
@@ -18,7 +17,7 @@
 #' 
 #' @export confint.calc
 confint.calc <- function(nsim = nsim, alpha = alpha,
-                         p.val = p.val, names.power = names.power) {
+                         p.val = p.val) {
   sig.val <-  ifelse(p.val < alpha, 1, 0)
   if (isTRUE(is.data.frame(sig.val)) || isTRUE(is.matrix(sig.val))) {
     pval.power <- apply(sig.val, 2, FUN = sum)
@@ -34,12 +33,18 @@ confint.calc <- function(nsim = nsim, alpha = alpha,
   Power <- vector(length = length(pval.power))
   Lower.95.CI <- vector(length = length(pval.power))
   Upper.95.CI <- vector(length = length(pval.power))
+  Alpha <- vector(length = length(pval.power))
+  Beta <- vector(length = length(pval.power))
+  Names <- vector(length = length(pval.power))
   for (o in 1:length(pval.power)){
     Power[o] = power.parms[[o]]$estimate
     Lower.95.CI[o] = power.parms[[o]]$conf.int[1]
     Upper.95.CI[o] = power.parms[[o]]$conf.int[2]
+    Alpha[o] = alpha
+    Names[o] = paste0("Treatment.", o)
   }
-  power.parms <- data.frame(Power, Lower.95.CI, Upper.95.CI)
-  rownames(power.parms) <- names.power
+  Beta <- 1 - Power
+  power.parms <- data.frame(Power, Lower.95.CI, Upper.95.CI, Alpha, Beta)
+  rownames(power.parms) <- Names
   return(power.parms)
 }
