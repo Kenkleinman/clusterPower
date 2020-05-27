@@ -10,11 +10,11 @@
 #' desired experimental situation.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, expected absolute difference 
-#' between treatments, and two of the following: ICC, within-cluster variance, or 
-#' between-cluster variance.  Defaults are provided for significance level, 
-#' analytic method, progress updates, 
-#' and whether the simulated data sets are retained.
+#' cluster, number of clusters per treatment arm, expected means of the 
+#' non-treatment and treatment arms, and two of the following: ICC, 
+#' within-cluster variance, or between-cluster variance.  Defaults are provided 
+#' for significance level, analytic method, progress updates, and whether the 
+#' simulated data sets are retained.
 #' 
 #' Users have the option of specifying different variance parameters for each treatment
 #' group, different numbers of clusters for each treatmetnt group, and different numbers
@@ -34,8 +34,8 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (implying equal cluster sizes for the two groups), 
 #' a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
 #' (unequal cluster sizes within groups) (required).
-#' @param difference Expected absolute treatment effect; accepts numeric (required).
-#' 
+#' @param mu Expected mean of the CONTROL arm; accepts numeric (required).
+#' @param mu2 Expected mean of the TREATMENT arm; accepts numeric (required).
 #' 
 #' At least 2 of the following must be specified:
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
@@ -75,7 +75,7 @@
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters in each treatment group
 #'   \item Data frame reporting ICC and variance parameters for Treatment/Non-Treatment groups
-#'   \item Vector containing expected difference between groups based on user inputs
+#'   \item Vector containing expected group means based on user inputs
 #'   \item Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
 #'                   "Std.err" (Standard error for treatment effect estimate), 
@@ -121,27 +121,26 @@
 #' 
 #' # Estimate power for an trial with 10 clusters in each arm and 50 subjects in each 
 #' # cluster, with an ICC of .3, sigma squared of 20 (implying sigma_b squared of 8.57143),
-#' # with a difference of 3.75 between the arms, using 100 simulated data sets.  
+#' # with estimated arm means of 1 and 4.75 in the control and experimental groups, 
+#' # respectively, using 100 simulated data sets.  
 #'    
 #' \dontrun{
 #' 
-#' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 10, difference = 3.75,
-#'                         ICC = 0.3, sigma_sq = 20)
-#' 
+#' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 10, mu = 1, 
+#'   mu2 = 4.75, ICC = 0.3, sigma_sq = 20)
 #' }
 #' 
 #' # Estimate power for a trial with 5 clusters in one arm, those clusters having 100 subjects 
 #' # each, 25 clusters in the other arm, those clusters having 50 subjects each, the fist arm
 #' # having a sigma square of 20 and sigma_b squared of 8.57143, and the second a sigma squared
-#' # of 9 and a sigma_b squared of 1, with a difference of 3.75 between the arms,
-#' # using 100 simulated data sets.
+#' # of 9 and a sigma_b squared of 1, with estimated arm means of 1 and 4.75 in the control and 
+#' # experimental groups, respectively, using 100 simulated data sets.
 #' 
 #' \dontrun{
 #' 
-#' normal.sim = cps.normal(nsim = 100, nclusters = c(5,25), nsubjects = c(100,50), difference =3.75, 
-#'           sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1)
-#'           
-#'           }
+#' normal.sim = cps.normal(nsim = 100, nclusters = c(5,25), nsubjects = c(100,50), mu = 1, 
+#'   mu2 = 4.75, sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1)
+#' }
 #' 
 #' 
 #' @author Alexander R. Bogdan, Alexandria C. Sakrejda 
@@ -156,7 +155,8 @@
 cps.normal = function(nsim = NULL,
                       nclusters = NULL,
                       nsubjects = NULL,
-                      difference = NULL,
+                      mu = NULL,
+                      mu2 = NULL,
                       ICC = NULL,
                       sigma_sq = NULL,
                       sigma_b_sq = NULL,
@@ -195,11 +195,11 @@ cps.normal = function(nsim = NULL,
   prog.bar$tick(0)
   
   # Validate NSIM, NCLUSTERS, NSUBJECTS
-  sim.data.arg.list = list(nsim, nclusters, nsubjects, difference)
+  sim.data.arg.list = list(nsim, nclusters, nsubjects)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if (sum(sim.data.args) > 0) {
     stop(
-      "NSIM, NCLUSTERS, NSUBJECTS & DIFFERENCE must all be specified. Please review your input values."
+      "NSIM, NCLUSTERS, & NSUBJECTS must all be specified. Please review your input values."
     )
   }
   min1.warning = " must be an integer greater than or equal to 1"
@@ -274,10 +274,13 @@ cps.normal = function(nsim = NULL,
     ICC2 <- ICC
   }
   
-  # Validate DIFFERENCE, ALPHA
-  min0.warning = " must be a numeric value greater than 0"
-  if (!is.numeric(difference) || difference < 0) {
-    stop("DIFFERENCE", min0.warning)
+  # Validate mu, mu2, ALPHA
+  if (is.null(mu) || is.null(mu2)) {
+    stop("MU and MU2 are required.")
+  }
+  min0.warning = " must be numeric."
+  if (!is.numeric(mu) || !is.numeric(mu2)) {
+    stop("MU and MU2", min0.warning)
   }
   if (!is.numeric(alpha) || alpha < 0 || alpha > 1) {
     stop("ALPHA must be a numeric value between 0 - 1")
@@ -343,7 +346,7 @@ cps.normal = function(nsim = NULL,
       rep(randint.0[x], length.out = nsubjects[x])))
     y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x)
       stats::rnorm(
-        x, mean = 0, sd = sqrt(sigma_sq)
+        x, mean = mu, sd = sqrt(sigma_sq)
       )))
     y.0 = y0.bclust + y0.wclust
     
@@ -352,7 +355,7 @@ cps.normal = function(nsim = NULL,
       rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
     y1.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])],
                               function(x)
-                                stats::rnorm(x, mean = difference, sd = sqrt(sigma_sq2))))
+                                stats::rnorm(x, mean = mu2, sd = sqrt(sigma_sq2))))
     y.1 = y1.bclust + y1.wclust
     
     # Create single response vector
@@ -685,7 +688,7 @@ cps.normal = function(nsim = NULL,
       "cluster.sizes" = cluster.sizes,
       "n.clusters" = n.clusters,
       "variance.parms" = var.parms,
-      "difference" = difference,
+      "means" = c(mu, mu2),
       "model.estimates" = cps.model.est,
       "convergence" = fail,
       "sim.data" = simulated.datasets
