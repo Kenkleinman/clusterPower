@@ -131,12 +131,12 @@ test_that("continuous case matches CRTSize", {
 
 #Normal simulation methods
 
-test_that("continuous simulation method matches a reference", {
-  nsubjects.example <-
-    list(c(20, 20, 20, 25), c(15, 20, 20, 21), c(17, 20, 21))
-  means.example <- c(22, 21, 21.5)
-  sigma_sq.example <- c(1, 1, 0.9)
-  sigma_b_sq.example <- c(0.1, 0.15, 0.1)
+test_that("continuous simulation method matches a reference (previous value)", {
+  nsubjects.example <- list(c(20,20,20,20, 20, 75, 20, 20, 20, 75), 
+       c(20, 20, 25, 25, 25, 25, 25, 25), c(40, 25, 40, 20, 20, 20, 20, 20))
+     means.example <- c(1, 1.75, 0)
+     sigma_sq.example <- c(2, 1.2, 2)
+     sigma_b_sq.example <- c(1.1, 1.15, 1.1)
   multi.cps.normal.unbal <-
     cps.ma.normal(
       nsim = 100,
@@ -151,12 +151,17 @@ test_that("continuous simulation method matches a reference", {
       all.sim.data = FALSE,
       seed = 123,
       cores = "all",
-      poor.fit.override = FALSE
+      poor.fit.override = FALSE,
+      opt = "nlminb"
     )
-  expect_equal(round(multi.cps.normal.unbal[[1]][, 1], 1), c(0.9, 0.3))
+  prev.value <- t(data.frame(0.34, 0.45))
+  prev.value <- data.frame(as.numeric(prev.value))
+  rownames(prev.value) <- c("Treatment.2", "Treatment.3")
+  colnames(prev.value) <- "Power"
+  expect_equal(round(multi.cps.normal.unbal[['power']]['Power'], 2), prev.value)
 })
 
-#doesn't pass, compare normal to t distributed rndom number generation
+
 test_that("normal vs t-dist comparison", {
   q <- 10
   nc <- sample.int(200, q)
@@ -167,7 +172,7 @@ test_that("normal vs t-dist comparison", {
   holder <- data.frame(nc, ns, icc., sig, sigb)
   same <- rep(NA, length = q)
   for (i in 1:q) {
-    multi.cps.norm <- cps.ma.normal(
+    multi.cps.normal <- cps.ma.normal(
       nsim = 200,
       narms = 2,
       nclusters = nc[i],
@@ -199,14 +204,13 @@ test_that("normal vs t-dist comparison", {
       poor.fit.override = TRUE,
       cores = "all"
     )
-    if (round(multi.cps.normal[[1]][, 1], 1) == round(multi.cps.tdist[[1]][, 1], 1)) {
+    if (round(multi.cps.normal[['power']]['Power'], 2) == round(multi.cps.tdist[['power']]['Power'], 2)) {
       same[i] <- 1
     }  else {
       same[i] <- 0
     }
-    #expect_equal(round(multi.cps.normal[[1]][,1], 1), round(as.numeric(analytic.mean)))
-    print(paste("Interation", i, "of 10."))
   } # end of loop
+    expect_equal(same, rep(1, times = q))
 })
 
 
@@ -242,33 +246,34 @@ test_that("continuous simulation method matches the analytic method", {
         nsim = 200,
         nsubjects = ns[i],
         nclusters = nc[i],
-        difference = 1,
+        mu = 1,
+        mu2 = 2,
         ICC = icc.[i],
-        sigma = sig[i],
+        sigma_sq = sig[i],
         alpha = 0.05,
         method = 'glmm',
         quiet = FALSE,
         all.sim.data = FALSE
       )
-    analytic.mean <- crtpwr.2mean(
+    analytic.mean <- cpa.normal(
       alpha = 0.05,
       power = NA,
       nclusters = nc[i],
       nsubjects = ns[i],
-      icc = icc.[i],
+      ICC = icc.[i],
       vart = sig[i] + sigb[i],
       method = "weighted",
       tol = .Machine$double.eps ^ 0.25,
       d = 1
     )
+    print(paste("Interation", i, "of 10."))
     if (round(twoarm.mean$power[1], 1) == round(as.numeric(analytic.mean))) {
       same[i] <- 1
     }  else {
       same[i] <- 0
     }
-    #expect_equal(round(multi.cps.normal[[1]][,1], 1), round(as.numeric(analytic.mean)))
-    print(paste("Interation", i, "of 10."))
   } # end of loop
+    #expect_equal(round(multi.cps.normal[[1]][,1], 1), round(as.numeric(analytic.mean)))
 })
 
 #FAIL: 'continuous simulation method matches the 2-arm simulation method'

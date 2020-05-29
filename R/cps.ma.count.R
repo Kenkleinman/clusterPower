@@ -338,8 +338,7 @@ cps.ma.count <- function(nsim = 1000,
     power.parms <- confint.calc(
       nsim = nsim,
       alpha = alpha,
-      p.val = as.vector(cps.model.temp2[, 2:length(cps.model.temp2)]),
-      names.power = names.power
+      p.val = as.vector(cps.model.temp2[, 2:length(cps.model.temp2)])
     )
     
     # Store simulation output in data frame
@@ -463,8 +462,7 @@ cps.ma.count <- function(nsim = 1000,
     power.parms <- confint.calc(
       nsim = nsim,
       alpha = alpha,
-      p.val = p.val,
-      names.power = names.power
+      p.val = p.val
     )
     
     

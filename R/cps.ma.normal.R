@@ -277,12 +277,10 @@ cps.ma.normal <- function(nsim = 1000,
     if (isTRUE(length(sigma_sq) == 0 & length(sigma_b_sq) != 0)) {
       sigma_sq <-
         createMissingVarianceParam(sigma_b_sq = sigma_b_sq, ICC = ICC)
-      return(sigma_sq)
     }
     if (isTRUE(length(sigma_b_sq) == 0 & length(sigma_sq) != 0)) {
       sigma_b_sq <-
         createMissingVarianceParam(sigma_sq = sigma_sq, ICC = ICC)
-      return(sigma_b_sq)
     }
   }
   
@@ -448,13 +446,13 @@ cps.ma.normal <- function(nsim = 1000,
           "nsim" = nsim,
           "power" =  power.parms[-1,],
           "beta" = power.parms[-1,]['Beta'],
-          "overall.power" = LRT.holder,
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
           "n.clusters" = nclusters,
@@ -475,13 +473,13 @@ cps.ma.normal <- function(nsim = 1000,
           "nsim" = nsim,
           "power" =  power.parms[-1,],
           "beta" = power.parms[-1,]['Beta'],
-          "overall.power" = LRT.holder,
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
           "n.clusters" = nclusters,
@@ -502,13 +500,13 @@ cps.ma.normal <- function(nsim = 1000,
           "nsim" = nsim,
           "power" =  power.parms[-1,],
           "beta" = power.parms[-1,]['Beta'],
-          "overall.power" = LRT.holder,
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
           "n.clusters" = nclusters,
@@ -578,8 +576,7 @@ cps.ma.normal <- function(nsim = 1000,
     power.parms <- confint.calc(
       nsim = nsim,
       alpha = alpha,
-      p.val = Pr,
-      names.power = names.power
+      p.val = Pr
     )
     
     # Store GEE simulation output in data frame
@@ -597,13 +594,13 @@ cps.ma.normal <- function(nsim = 1000,
           "nsim" = nsim,
           "power" =  power.parms[-1,],
           "beta" = power.parms[-1,]['Beta'],
-          "overall.power" = LRT.holder,
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
           "n.clusters" = nclusters,
@@ -622,13 +619,13 @@ cps.ma.normal <- function(nsim = 1000,
           "nsim" = nsim,
           "power" =  power.parms[-1,],
           "beta" = power.parms[-1,]['Beta'],
-          "overall.power" = LRT.holder,
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
           "n.clusters" = nclusters,
@@ -647,13 +644,13 @@ cps.ma.normal <- function(nsim = 1000,
           "nsim" = nsim,
           "power" =  power.parms[-1,],
           "beta" = power.parms[-1,]['Beta'],
-          "overall.power" = LRT.holder,
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
           "n.clusters" = nclusters,

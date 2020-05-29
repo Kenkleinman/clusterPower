@@ -374,8 +374,7 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
   power.parms <- confint.calc(nsim = nsim, alpha = alpha,
-                              p.val = cps.model.temp[, 'p.value'], 
-                              names.power = "trt")
+                              p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs
   c1.c2.rr = round(exp(log(c1) - log(c2)), 3)
