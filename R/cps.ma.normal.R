@@ -79,7 +79,8 @@
 #' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
 #' the overall model comparisons, and the convergence report vector. This is equivalent
 #' to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.
-#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'nloptwrap'.
+#' @param optmethod Option to fit with a different optimizer (using the package \code{optimx}). Default is 'nlminb'.
+#' @param sim.data.only Option to skip model fitting and analysis and return the simulated data.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{
@@ -140,7 +141,7 @@
 #'                        all.sim.data = FALSE,
 #'                        seed = 123, cores = "all",
 #'                        poor.fit.override = FALSE,
-#'                        opt = "nlminb")
+#'                        optmethod = "nlminb")
 #'                        
 #'  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3, 
 #'                                    nclusters = c(10,11,10), nsubjects = 25,
@@ -151,17 +152,17 @@
 #'                                    all.sim.data = FALSE, seed = 123,
 #'                                    poor.fit.override = TRUE, 
 #'                                    cores="all",
-#'                                    opt = "nlminb")
+#'                                    optmethod = "nlminb")
 #' }
 #' multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
 #'                                   nclusters = 10, nsubjects = 25, 
 #'                                   means = c(22.0, 21.0, 22.5),
-#'                                   sigma_sq = 1, 
-#'                                   sigma_b_sq = 1, alpha = 0.05,
+#'                                   sigma_sq = 0.1, 
+#'                                   sigma_b_sq = 0.1, alpha = 0.05,
 #'                                   quiet = FALSE, ICC=NULL, method = 'glmm',
 #'                                   all.sim.data = FALSE, seed = 123,
 #'                                   poor.fit.override = TRUE, cores="all",
-#'                                   opt = "auto")
+#'                                   optmethod = "nlm")
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
 #'   and Ken Kleinman (\email{ken.kleinman@@gmail.com})
@@ -190,7 +191,8 @@ cps.ma.normal <- function(nsim = 1000,
                           low.power.override = FALSE,
                           tdist = FALSE,
                           return.all.models = FALSE,
-                          opt = "nloptwrap") {
+                          optmethod = "nlminb",
+                          sim.data.only = FALSE) {
   # create narms and nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
     # create narms and nclusters if not supplied by the user
@@ -277,12 +279,10 @@ cps.ma.normal <- function(nsim = 1000,
     if (isTRUE(length(sigma_sq) == 0 & length(sigma_b_sq) != 0)) {
       sigma_sq <-
         createMissingVarianceParam(sigma_b_sq = sigma_b_sq, ICC = ICC)
-      return(sigma_sq)
     }
     if (isTRUE(length(sigma_b_sq) == 0 & length(sigma_sq) != 0)) {
       sigma_b_sq <-
         createMissingVarianceParam(sigma_sq = sigma_sq, ICC = ICC)
-      return(sigma_b_sq)
     }
   }
   
@@ -314,8 +314,14 @@ cps.ma.normal <- function(nsim = 1000,
     poor.fit.override = poor.fit.override,
     low.power.override = low.power.override,
     tdist = tdist,
-    opt = opt
+    optmethod = optmethod,
+    sim.data.only = sim.data.only,
+    return.all.models = return.all.models 
   )
+
+  if (sim.data.only == TRUE || return.all.models == TRUE) {
+    return(normal.ma.rct)
+  }
   
   # Create object containing summary statement
   summary.message = paste0(
@@ -448,13 +454,13 @@ cps.ma.normal <- function(nsim = 1000,
           "nsim" = nsim,
           "power" =  power.parms[-1,],
           "beta" = power.parms[-1,]['Beta'],
-          "overall.power" = LRT.holder,
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
           "n.clusters" = nclusters,
@@ -475,13 +481,13 @@ cps.ma.normal <- function(nsim = 1000,
           "nsim" = nsim,
           "power" =  power.parms[-1,],
           "beta" = power.parms[-1,]['Beta'],
-          "overall.power" = LRT.holder,
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
           "n.clusters" = nclusters,
@@ -502,13 +508,13 @@ cps.ma.normal <- function(nsim = 1000,
           "nsim" = nsim,
           "power" =  power.parms[-1,],
           "beta" = power.parms[-1,]['Beta'],
-          "overall.power" = LRT.holder,
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
           "n.clusters" = nclusters,
@@ -578,8 +584,7 @@ cps.ma.normal <- function(nsim = 1000,
     power.parms <- confint.calc(
       nsim = nsim,
       alpha = alpha,
-      p.val = Pr,
-      names.power = names.power
+      p.val = Pr
     )
     
     # Store GEE simulation output in data frame
@@ -597,13 +602,13 @@ cps.ma.normal <- function(nsim = 1000,
           "nsim" = nsim,
           "power" =  power.parms[-1,],
           "beta" = power.parms[-1,]['Beta'],
-          "overall.power" = LRT.holder,
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
           "n.clusters" = nclusters,
@@ -622,13 +627,13 @@ cps.ma.normal <- function(nsim = 1000,
           "nsim" = nsim,
           "power" =  power.parms[-1,],
           "beta" = power.parms[-1,]['Beta'],
-          "overall.power" = LRT.holder,
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
           "n.clusters" = nclusters,
@@ -647,13 +652,13 @@ cps.ma.normal <- function(nsim = 1000,
           "nsim" = nsim,
           "power" =  power.parms[-1,],
           "beta" = power.parms[-1,]['Beta'],
-          "overall.power" = LRT.holder,
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
           "n.clusters" = nclusters,

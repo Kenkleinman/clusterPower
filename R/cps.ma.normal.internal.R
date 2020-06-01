@@ -51,7 +51,8 @@
 #' calculated power is returned regardless of value. 
 #' @param tdist Logical; use t-distribution instead of normal distribution 
 #' for simulation values, default = FALSE.
-#' @param opt Option to fit with a different optimizer (using the package \code{optimx}).
+#' @param optmethod Option to fit with a different optimizer (using the package 
+#' \code{optimx}). Defaults to \code{nlminb}.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{estimates}{List of \code{length(nsim)} containing gee- or glmm-fitted model 
@@ -84,7 +85,7 @@
 #'                               seed = 123, cores = "all",
 #'                               low.power.override = FALSE,
 #'                               poor.fit.override = FALSE, 
-#'                               opt = "nlm")
+#'                               optmethod = "nlm")
 #'                               }
 #' @export
 
@@ -100,11 +101,13 @@ cps.ma.normal.internal <-
            method = 'glmm',
            all.sim.data = FALSE,
            seed = NA,
-           cores = "all",
+           cores = NULL,
            poor.fit.override = FALSE,
            low.power.override = FALSE,
            tdist = FALSE,
-           opt = "optim") {
+           optmethod = "nlminb",
+           sim.data.only = FALSE, 
+           return.all.models = FALSE) {
     # Create vectors to collect iteration-specific values
     simulated.datasets = list()
     
@@ -145,7 +148,7 @@ cps.ma.normal.internal <-
     clust = list()
     for (i in 1:sum(nclusters)) {
       clust[[i]] <- lapply(seq(1, sum(nclusters))[i],
-                           function (x) {
+                           function(x) {
                              rep.int(x, unlist(str.nsubjects)[i])
                            })
     }
@@ -167,8 +170,9 @@ cps.ma.normal.internal <-
     }
     
     # Create simulation loop
-    require(foreach)
-    foreach::foreach(i = 1:nsim, .packages = c("optimx")) %do% {
+ #   require(foreach)
+ #   foreach::foreach(i = 1:nsim, .packages = c("optimx")) %do% {
+    for (i in 1:nsim) {
       sim.dat[[i]] = data.frame(y = NA,
                                 trt = as.factor(unlist(trt)),
                                 clust = as.factor(unlist(clust)))
@@ -204,8 +208,21 @@ cps.ma.normal.internal <-
       # Create data frame for simulated dataset
       y <- as.vector(unlist(y.bclust) + unlist(y.wclust))
       sim.dat[[i]][["y"]] <- y
-      
+    }
+    
+    if (sim.data.only == TRUE) {
+      # turn off parallel computing
+      if (!exists("cores", mode = "NULL")) {
+        parallel::stopCluster(cl)
+      }
+      return(sim.dat)
+    }
+    
+    for (i in 1:nsim) {  
       # Update simulation progress information
+      y <- sim.dat[[i]][["y"]]
+      trt <- sim.dat[[i]][["trt"]]
+      clust <- sim.dat[[i]][["clust"]]
       if (quiet == FALSE) {
         if (i == 1) {
           message(paste0('Begin simulations :: Start Time: ', Sys.time()))
@@ -218,12 +235,12 @@ cps.ma.normal.internal <-
       # trt and clust are re-coded as trt2 and clust2 to work nicely with lme. This can be changed later.
       # Fit GLMM (lmer)
       if (method == 'glmm') {
-        if (max(sigma_sq) != min(sigma_sq) &
+        if (max(sigma_sq) != min(sigma_sq) &&
             max(sigma_b_sq) != min(sigma_b_sq)) {
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
-          if (opt != "nlm" && opt != "nlminb" && opt != "auto") {
-            stop("opt must be either nlm or nlminb for this model type.")
+          if (optmethod != "nlm" && optmethod != "nlminb" && optmethod != "auto") {
+            stop("optmethod must be either nlm or nlminb for this model type.")
           }
           my.mod <-
             try(nlme::lme(
@@ -233,7 +250,7 @@ cps.ma.normal.internal <-
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::nlmeControl(
-                opt = opt,
+                opt = 'optim',
                 niterEM = 100,
                 msMaxIter = 100
               )
@@ -248,7 +265,7 @@ cps.ma.normal.internal <-
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::nlmeControl(
-                opt = opt,
+                opt = 'optim',
                 niterEM = 100,
                 msMaxIter = 100
               )
@@ -262,29 +279,20 @@ cps.ma.normal.internal <-
           }
         }
         
-        if (max(sigma_sq) == min(sigma_sq) &
+        if (max(sigma_sq) == min(sigma_sq) &&
             max(sigma_b_sq) != min(sigma_b_sq)) {
-          my.mod <-
+            if (!isTRUE(class(my.mod) == "nlme")) {
+              if (i == 1) {
+                my.mod <-
             lmerTest::lmer(y ~ trt + (1 + as.factor(trt) | clust),
                            REML = FALSE,
-                           data = sim.dat[[i]])
-          if (!isTRUE(class(my.mod) == "nlme")) {
-            if (i == 1) {
-              if (opt == "auto") {
+                           data = sim.dat[[1]])
+              if (optmethod == "auto") {
                 require("optimx")
                 goodopt <- optimizerSearch(my.mod)
                 
               } else {
-                goodopt <- opt
-              }
-            }
-          }
-          if (isTRUE(class(my.mod) == "nlme")) {
-            if (i == 1) {
-              if (opt == "auto") {
-                goodopt <- "nlminb"
-              } else {
-                goodopt <- opt
+                goodopt <- optmethod
               }
             }
           }
@@ -293,7 +301,9 @@ cps.ma.normal.internal <-
               y ~ trt + (1 + as.factor(trt) | clust),
               REML = FALSE,
               data = sim.dat[[i]],
-              lme4::lmerControl(optimizer = goodopt)
+              lme4::lmerControl(optimizer = "nloptwrap",
+                                optCtrl  = list(algorithm = goodopt)
+              )
             )
           # get the overall p-values (>Chisq)
           null.mod <-
@@ -301,8 +311,8 @@ cps.ma.normal.internal <-
           # option to stop the function early if fits are singular
           converge.vector[i] <-
             ifelse(is.null(my.mod@optinfo$conv$lme4$messages),
-                   FALSE,
-                   TRUE)
+                   TRUE,
+                   FALSE)
           if (poor.fit.override == FALSE) {
             if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
               stop("more than 25% of simulations are singular fit: check model specifications")
@@ -310,12 +320,12 @@ cps.ma.normal.internal <-
           }
         }
         
-        if (max(sigma_sq) != min(sigma_sq) &
+        if (max(sigma_sq) != min(sigma_sq) &&
             max(sigma_b_sq) == min(sigma_b_sq)) {
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
-          if (opt != "nlm" && opt != "nlminb") {
-            stop("opt must be either nlm or nlminb for this model type.")
+          if (optmethod != "nlm" && optmethod != "nlminb") {
+            stop("optmethod must be either nlm or nlminb for this model type.")
           }
           my.mod <-
             try(nlme::lme(
@@ -325,7 +335,7 @@ cps.ma.normal.internal <-
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::nlmeControl(
-                opt = opt,
+                opt = 'optim',
                 niterEM = 100,
                 msMaxIter = 100
               )
@@ -339,7 +349,7 @@ cps.ma.normal.internal <-
                                        as.factor(trt2)),
             method = "ML",
             control = nlme::nlmeControl(
-              opt = opt,
+              opt = 'optim',
               niterEM = 100,
               msMaxIter = 100
             )
@@ -353,17 +363,17 @@ cps.ma.normal.internal <-
           }
         }
         
-        if (max(sigma_sq) == min(sigma_sq) &
+        if (max(sigma_sq) == min(sigma_sq) &&
             max(sigma_b_sq) == min(sigma_b_sq)) {
-          my.mod <- lmerTest::lmer(y ~ trt + (1 | clust), REML = FALSE,
-                                   data = sim.dat[[i]])
           if (i == 1) {
             if (!isTRUE(class(my.mod) == "nlme")) {
-              if (opt == "auto") {
+          my.mod <- lmerTest::lmer(y ~ trt + (1 | clust), REML = FALSE,
+                                   data = sim.dat[[1]])
+              if (optmethod == "auto") {
                 require("optimx")
                 goodopt <- optimizerSearch(my.mod)
               } else {
-                goodopt <- opt
+                goodopt <- optmethod
               }
             }
           }
@@ -371,15 +381,16 @@ cps.ma.normal.internal <-
             y ~ trt + (1 | clust),
             REML = FALSE,
             data = sim.dat[[i]],
-            lme4::lmerControl(optimizer = goodopt)
-          )
+            lme4::lmerControl(optimizer = "nloptwrap",
+                              optCtrl  = list(algorithm = goodopt)
+          ))
           # get the overall p-values (>Chisq)
           null.mod <- update.formula(my.mod, y ~ 1 + (1 | clust))
           # option to stop the function early if fits are singular
           converge.vector[i] <-
             ifelse(is.null(my.mod@optinfo$conv$lme4$messages),
-                   FALSE,
-                   TRUE)
+                   TRUE,
+                   FALSE)
           if (poor.fit.override == FALSE) {
             if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
               stop("more than 25% of simulations are singular fit: check model specifications")
@@ -388,7 +399,10 @@ cps.ma.normal.internal <-
         }
         
         model.values[[i]] <-  summary(my.mod)
-      }
+      } #end of loop
+      
+      
+      
       # Fit GEE (geeglm)
       if (method == 'gee') {
         data.holder = dplyr::arrange(sim.dat[[i]], clust)

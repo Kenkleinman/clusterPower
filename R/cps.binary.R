@@ -485,8 +485,7 @@ cps.binary = function(nsim = NULL,
   power.parms <- confint.calc(
     nsim = nsim,
     alpha = alpha,
-    p.val = cps.model.temp[, 'p.value'],
-    names.power = "trt"
+    p.val = cps.model.temp[, 'p.value']
   )
   
   # Create object containing inputs
