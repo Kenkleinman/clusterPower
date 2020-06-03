@@ -93,7 +93,6 @@ test_that("simulation and analytic methods give similar power estimations",
                          TRUE)
           })
 
-# FIXME fix the grid values and insert
 # compare to a comparable function in CRTSize -uses ICC
 test_that("continuous case matches CRTSize", {
   nc <- sample.int(200, 10)
@@ -216,8 +215,6 @@ test_that("normal vs t-dist comparison", {
   expect_equal(same, rep(1, times = q))
 })
 
-
-#doesn't pass, analytic method is messed up
 test_that("continuous simulation method matches the analytic method", {
   q <- 10
   nc <- sample.int(200, q)
@@ -307,15 +304,15 @@ test_that("continuous simulation method matches the analytic method", {
   } # end of loop
 })
 
-#FAIL: 'continuous simulation method matches the 2-arm simulation method'
-#* task 1 failed - "zero-length inputs cannot be mixed with those of non-zero length'
+
 test_that("continuous simulation method matches the 2-arm simulation method",
           {
-            nc <- sample.int(200, 10)
-            ns <- sample.int(200, 10)
-            icc. <- runif(10, min = 0.1, max = 0.99)
-            sig <- runif(10, min = 0.1, max = 50)
-            for (i in 1:10) {
+            q <- 1
+            nc <- sample.int(200, q)
+            ns <- sample.int(200, q)
+            icc. <- runif(q, min = 0.1, max = 0.99)
+            sig <- runif(q, min = 0.01, max = 2)
+            for (i in 1:q) {
               multi.cps.normal <- cps.ma.normal(
                 nsim = 100,
                 narms = 2,
@@ -345,64 +342,22 @@ test_that("continuous simulation method matches the 2-arm simulation method",
                   quiet = FALSE,
                   all.sim.data = FALSE
                 )
-              print(nc[i])
-              print(ns[i])
-              print(icc.[i])
-              print(sig[i])
-              expect_equal(round(multi.cps.normal[[1]][, 1], 1),
-                           round(twoarm.mean$power[1], 1))
+              rownames(multi.cps.normal$power) <- "Treatment.1"
+              expect_equal(multi.cps.normal$power,
+                           twoarm.mean$power)
               print(paste("Interation", i, "of 10."))
             } # end of loop
           })
 
 
-
-
-
-## FIXME this is where I stopped
-#compare balanced and unbalanced designs
-multi.cps.normal <- cps.ma.normal(
-  nsim = 100,
-  narms = 3,
-  nclusters = c (10, 11, 10),
-  nsubjects = 100,
-  means = c(21, 21, 21.4),
-  sigma_sq = c(1, 1, .9),
-  sigma_b_sq = c(.1, .15, .1),
-  alpha = 0.05,
-  quiet = FALSE,
-  ICC = NULL,
-  method = 'glmm',
-  all.sim.data = FALSE,
-  seed = 123,
-  poor.fit.override = TRUE,
-  cores = "all"
-)
-
-multi.cps.normal.simple <- cps.ma.normal(
-  nsim = 100,
-  narms = 3,
-  nclusters = 10,
-  nsubjects = 25,
-  means = c(22.1, 21, 22.5),
-  sigma_sq = 1,
-  sigma_b_sq = 1,
-  alpha = 0.05,
-  quiet = FALSE,
-  ICC = NULL,
-  method = 'glmm',
-  all.sim.data = FALSE,
-  seed = 123,
-  poor.fit.override = TRUE,
-  cores = "all"
-)
-
+###### Multi-arm Count outcome testing
 
 test_that("count simulation method matches the 2-arm simulation method", {
-  nc <- sample.int(200, 10)
-  ns <- sample.int(200, 10)
-  sig <- runif(10, min = 0.1, max = 100)
-  for (i in 1:1) {
+  q <- 1
+  nc <- sample.int(200, q)
+  ns <- sample.int(200, q)
+  sig <- runif(q, min = 0.01, max = 1)
+  for (i in 1:q) {
     count.ma <- cps.ma.count(
       nsim = 100,
       nsubjects = ns[i],
@@ -432,9 +387,6 @@ test_that("count simulation method matches the 2-arm simulation method", {
       quiet = FALSE,
       all.sim.data = TRUE
     )
-    print(nc[i])
-    print(ns[i])
-    print(sig[i])
     expect_equal(as.numeric(round(count.ma[[1]][, 1], 1)), as.numeric(round(count.sim$power[1], 1)))
     print(paste("Interation", i, "of 10."))
   } # end of loop

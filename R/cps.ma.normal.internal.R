@@ -90,6 +90,7 @@
 #' @export
 
 
+
 cps.ma.normal.internal <-
   function(nsim = 1000,
            str.nsubjects = NULL,
@@ -106,7 +107,7 @@ cps.ma.normal.internal <-
            low.power.override = FALSE,
            tdist = FALSE,
            optmethod = "nlminb",
-           sim.data.only = FALSE, 
+           sim.data.only = FALSE,
            return.all.models = FALSE) {
     # Create vectors to collect iteration-specific values
     simulated.datasets = list()
@@ -170,8 +171,8 @@ cps.ma.normal.internal <-
     }
     
     # Create simulation loop
- #   require(foreach)
- #   foreach::foreach(i = 1:nsim, .packages = c("optimx")) %do% {
+    #   require(foreach)
+    #   foreach::foreach(i = 1:nsim, .packages = c("optimx")) %do% {
     for (i in 1:nsim) {
       sim.dat[[i]] = data.frame(y = NA,
                                 trt = as.factor(unlist(trt)),
@@ -218,7 +219,7 @@ cps.ma.normal.internal <-
       return(sim.dat)
     }
     
-    for (i in 1:nsim) {  
+    for (i in 1:nsim) {
       # Update simulation progress information
       y <- sim.dat[[i]][["y"]]
       trt <- sim.dat[[i]][["trt"]]
@@ -239,7 +240,8 @@ cps.ma.normal.internal <-
             max(sigma_b_sq) != min(sigma_b_sq)) {
           trt2 <- unlist(trt)
           clust2 <- unlist(clust)
-          if (optmethod != "nlm" && optmethod != "nlminb" && optmethod != "auto") {
+          if (optmethod != "nlm" &&
+              optmethod != "nlminb" && optmethod != "auto") {
             stop("optmethod must be either nlm or nlminb for this model type.")
           }
           my.mod <-
@@ -281,19 +283,17 @@ cps.ma.normal.internal <-
         
         if (max(sigma_sq) == min(sigma_sq) &&
             max(sigma_b_sq) != min(sigma_b_sq)) {
-            if (!isTRUE(class(my.mod) == "nlme")) {
-              if (i == 1) {
-                my.mod <-
-            lmerTest::lmer(y ~ trt + (1 + as.factor(trt) | clust),
-                           REML = FALSE,
-                           data = sim.dat[[1]])
-              if (optmethod == "auto") {
-                require("optimx")
-                goodopt <- optimizerSearch(my.mod)
-                
-              } else {
-                goodopt <- optmethod
-              }
+          if (i == 1) {
+            my.mod <-
+              lmerTest::lmer(y ~ trt + (1 + as.factor(trt) | clust),
+                             REML = FALSE,
+                             data = sim.dat[[1]])
+            if (optmethod == "auto") {
+              require("optimx")
+              goodopt <- optimizerSearch(my.mod)
+              
+            } else {
+              goodopt <- optmethod
             }
           }
           my.mod <-
@@ -301,13 +301,15 @@ cps.ma.normal.internal <-
               y ~ trt + (1 + as.factor(trt) | clust),
               REML = FALSE,
               data = sim.dat[[i]],
-              lme4::lmerControl(optimizer = "nloptwrap",
-                                optCtrl  = list(algorithm = goodopt)
+              lme4::lmerControl(
+                optimizer = "nloptwrap",
+                optCtrl  = list(algorithm = goodopt)
               )
             )
           # get the overall p-values (>Chisq)
           null.mod <-
-            update.formula(my.mod, y ~ 1 + (1 + as.factor(trt) | clust))
+            update.formula(my.mod, y ~ 1 + (1 + as.factor(trt) |
+                                              clust))
           # option to stop the function early if fits are singular
           converge.vector[i] <-
             ifelse(is.null(my.mod@optinfo$conv$lme4$messages),
@@ -366,24 +368,24 @@ cps.ma.normal.internal <-
         if (max(sigma_sq) == min(sigma_sq) &&
             max(sigma_b_sq) == min(sigma_b_sq)) {
           if (i == 1) {
-            if (!isTRUE(class(my.mod) == "nlme")) {
-          my.mod <- lmerTest::lmer(y ~ trt + (1 | clust), REML = FALSE,
-                                   data = sim.dat[[1]])
-              if (optmethod == "auto") {
-                require("optimx")
-                goodopt <- optimizerSearch(my.mod)
-              } else {
-                goodopt <- optmethod
-              }
+            my.mod <- lmerTest::lmer(y ~ trt + (1 | clust), REML = FALSE,
+                                     data = sim.dat[[1]])
+            if (optmethod == "auto") {
+              require("optimx")
+              goodopt <- optimizerSearch(my.mod)
+            } else {
+              goodopt <- optmethod
             }
           }
           my.mod <-  lmerTest::lmer(
             y ~ trt + (1 | clust),
             REML = FALSE,
             data = sim.dat[[i]],
-            lme4::lmerControl(optimizer = "nloptwrap",
-                              optCtrl  = list(algorithm = goodopt)
-          ))
+            lme4::lmerControl(
+              optimizer = "nloptwrap",
+              optCtrl  = list(algorithm = goodopt)
+            )
+          )
           # get the overall p-values (>Chisq)
           null.mod <- update.formula(my.mod, y ~ 1 + (1 | clust))
           # option to stop the function early if fits are singular
