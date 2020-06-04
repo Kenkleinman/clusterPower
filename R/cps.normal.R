@@ -5,7 +5,6 @@
 #' 
 #' This function uses Monte Carlo methods (simulations) to estimate 
 #' power for cluster-randomized trials. Users 
-
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
 #' 
@@ -33,8 +32,8 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (implying equal cluster sizes for the two groups), 
 #' a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
 #' (unequal cluster sizes within groups) (required).
-#' @param mu Expected mean of the first (reference) arm; accepts numeric (required).
-#' @param mu2 Expected mean of the second arm; accepts numeric (required).
+#' @param mu Mean in the first arm; accepts numeric, default 0 (required).
+#' @param mu2 Mean in the second arm; accepts numeric (required).
 #' 
 #' At least 2 of the following must be specified:
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
@@ -42,11 +41,13 @@
 #' @param sigma_b_sq Between-cluster variance; accepts numeric
 #' 
 #' 
-#' If variance parameters differ between arms, at least 2 of the following 
+#' The defaults for the following are all NA, implying equal variance parameters 
+#' for the two groups. If one of the following is given, variance parameters differ 
+#' between treatment groups, and at least 2 of the following 
 #' must be specified:
-#' @param ICC2 Intra-cluster correlation coefficient for clusters in the first arm
-#' @param sigma_sq2 Within-cluster variance for clusters in second arm
-#' @param sigma_b_sq2 Between-cluster variance for clusters in second arm
+#' @param ICC2 Intra-cluster correlation coefficient for clusters in the second group
+#' @param sigma_sq2 Within-cluster variance for clusters in the second group
+#' @param sigma_b_sq2 Between-cluster variance for clusters in the second group
 #' 
 #' Optional parameters:
 #' @param alpha Significance level; default = 0.05.
@@ -90,39 +91,47 @@
 #' 
 #' @section Notes:
 #'
-#' For models with no \mjseqn{\sigma_2^2} or \mjseqn{\sigma_{b_2}^2}, the data generating
-#' model is:
-#' 
 #' The data generating model here is:
-#' \mjsdeqn{y_{ij} = \beta_0 + \beta_1 x_{ij} 
-#'    + b_i + e_{ij} 
-#'    }
-#'    
-#'where \mjseqn{b} are the random effects for the clusters and
-#' \mjseqn{b_i \sim N(0, \sigma_b^2)}
-#' and residual error \mjseqn{e_{ij} \sim N(0,\sigma^2)}
+#' \mjsdeqn{y_{ij} = \mu + b_i + e_{ij} }
+#' for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)} 
+#' and \mjseqn{e_{ij} \sim N(0,\sigma^2)}, while for the second group, 
 #'  
-#'    
-#' For other cases, the data generating model is:
-#' \mjsdeqn{y_{ij} = \beta_0 + \beta_1 x_{ij} 
+#' \mjsdeqn{y_{ij} = \mu_2 + b_i + e_{ij} }
+#' where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)} 
+#' and \mjseqn{e_{ij} \sim N(0,\sigma_2^2)}; if none of 
+#' \mjseqn{\sigma_2^2, \sigma_{b_2}^2} or \code{ICC2} are used, then the second group uses
+#' \mjseqn{b_i \sim N(0,\sigma_b^2)} 
+#' and \mjseqn{e_{ij} \sim N(0,\sigma^2)}.
+#' 
+#' All random terms are generated indepent of one another.
+#' 
+#' 
+#' For calls without \mjseqn{\sigma_2^2, \sigma_{b_2}^2} or \code{ICC2}, and using
+#' \code{method="glmm"} the fitted model is:
+#' \mjsdeqn{y_{ij}|b_i = \mu + \beta_1 x_{ij}  + b_i + e_{ij}}
+#'
+#' with \mjseqn{\beta_1 = \mu_2 - \mu},
+#' treatment group indicator \mjseqn{x_{ij} = 0} for the first group, with
+#' \mjseqn{b_i \sim N(0, \sigma_b^2)} and \mjseqn{e_{ij} \sim N(0,\sigma^2)},
+#' the random effects distribution and and residual distribution common for both
+#' treatment groups.
+#' 
+#' Otherwise, for \code{method="glmm"} the fitted model is:
+#' \mjsdeqn{y_{ij}|b_i = \mu + \beta_1 x_{ij} 
 #'    + b_i I(x_{ij}=0) + e_{ij} I(x_{ij}=0) 
 #'    + g_i I(x_{ij}=1) + f_{ij} I(x_{ij}=1)
 #'    }
 #'
-#' where \mjseqn{b} are the random effects for the clusters in group with 
-#' arm indicator \mjseqn{x_{ij} = 0, b_i \sim N(0, \sigma_b^2)}
-#' and \mjseqn{g} are the randon effects for the other treament group,
-#' \mjseqn{g_i \sim N(0, \sigma_{b_2}^2)}, and \mjseqn{e} and \mjseqn{f}
-#' are the residual errors in each group, distributed normal with variances
-#' \mjseqn{\sigma^2} and \mjseqn{\sigma_2^2}, respectively.  All random terms
-#' are generated independent of one another.  
+#' with \mjseqn{\beta_1}, \mjseqn{x_{ij}, b_i}, and \mjseqn{e_{ij}} as above, with
+#' \mjseqn{g_i \sim N(0, \sigma_{b_2}^2)} and \mjseqn{f \sim N(0,\sigma_2^2)}, the 
+#' random effects and residual distribution in the second group.
 #' 
 #' @examples
 #' 
 #' # Estimate power for an trial with 10 clusters in each arm and 50 subjects in each 
-#' # cluster, with an ICC of .3, sigma squared of 20 (implying sigma_b squared of 8.57143),
-#' # with estimated arm means of 1 and 4.75 in the control and experimental groups, 
-#' # respectively, using 100 simulated data sets.  
+#' # cluster, with an ICC of .3, sigma squared of 20 (implying sigma_b squared of 8.57143) 
+#' # in each group, with arm means of 1 and 4.75 in the two groups using 100 simulated 
+#' # data sets.  
 #'    
 #' \dontrun{
 #' 
@@ -132,14 +141,14 @@
 #' 
 #' # Estimate power for a trial with 5 clusters in one arm, those clusters having 100 subjects 
 #' # each, 25 clusters in the other arm, those clusters having 50 subjects each, the fist arm
-#' # having a sigma square of 20 and sigma_b squared of 8.57143, and the second a sigma squared
-#' # of 9 and a sigma_b squared of 1, with estimated arm means of 1 and 4.75 in the control and 
-#' # experimental groups, respectively, using 100 simulated data sets.
+#' # having a sigma squared of 20 and sigma_b squared of 8.57143, and the second a sigma squared
+#' # of 9 and a sigma_b squared of 1, with estimated arm means of 1 and 4.75 in the first and 
+#' # second groups, respectively, using 100 simulated data sets.
 #' 
 #' \dontrun{
 #' 
-#' normal.sim = cps.normal(nsim = 100, nclusters = c(5,25), nsubjects = c(100,50), mu = 1, 
-#'   mu2 = 4.75, sigma_sq = 20, sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1)
+#' normal.sim2 = cps.normal(nsim = 100, nclusters = c(5,25), nsubjects = c(100,50), mu = 1, 
+#'   mu2 = 4.75, sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1)
 #' }
 #' 
 #' 
