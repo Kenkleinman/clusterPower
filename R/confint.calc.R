@@ -41,7 +41,7 @@ confint.calc <- function(nsim = nsim, alpha = alpha,
     Lower.95.CI[o] = power.parms[[o]]$conf.int[1]
     Upper.95.CI[o] = power.parms[[o]]$conf.int[2]
     Alpha[o] = alpha
-    Names[o] = paste0("Treatment.", o)
+    Names[o] = paste0("Arm.", o + 1)
   }
   Beta <- 1 - Power
   power.parms <- data.frame(Power, Lower.95.CI, Upper.95.CI, Alpha, Beta)

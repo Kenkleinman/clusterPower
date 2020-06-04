@@ -5,7 +5,7 @@
 #' approximate power for multi-arm cluster-randomized controlled trials with a 
 #' normally-distributed outcome of interest. Users can modify a variety of 
 #' parameters to suit the simulations to their desired experimental situation. 
-#' This function returns the summary power values for each treatment arm.
+#' This function returns the summary power values for each arm.
 #' 
 #' Users must specify the desired number of simulations, the group/arm means, 
 #' and two of the following: ICC, within-cluster variance, or between-cluster 
@@ -18,7 +18,7 @@
 #' for details).
 #' 
 #' Users must also supply the number of arms, the subjects per 
-#' cluster, and the number of clusters per treatment arm. For a balanced design, 
+#' cluster, and the number of clusters per arm. For a balanced design, 
 #' users can provide these values with the arguments \code{narms}, 
 #' \code{nsubjects}, and \code{nclusters}, respectively. For unbalanced 
 #' designs, the user may provide a list of vectors with one vector per arm,
@@ -110,7 +110,7 @@
 #'   \item{simulated.data}{
 #'   List of \code{nsim} data frames, each containing: 
 #'                   "y" (Simulated response value), 
-#'                   "trt" (Indicator for treatment group), 
+#'                   "trt" (Indicator for arm), 
 #'                   "clust" (Indicator for cluster).
 #'                   }
 #'   \item{model.fit.warning.percent}{
@@ -151,7 +151,7 @@
 #'                                    quiet = FALSE, ICC=NULL, method = 'glmm',
 #'                                    all.sim.data = FALSE, seed = 123,
 #'                                    poor.fit.override = TRUE, 
-#'                                    cores="all",
+#'                                    cores = NULL,
 #'                                    optmethod = "nlminb")
 #' }
 #' multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
@@ -337,13 +337,23 @@ cps.ma.normal <- function(nsim = 1000,
                        gee = 'Generalized Estimating Equation')
   
   # Create object containing group-specific variance parameters
-  var.parms = t(data.frame(c(
-    'sigma_sq' = sigma_sq, 'sigma_b_sq' = sigma_b_sq
-  )))
-  rownames(var.parms) <- "variance.measures"
+  armnames <- vector(mode = "character", length = narms)
+  for (i in 1:narms) {
+    armnames[i] <- paste0("Arm.", i)
+  }
   
+  var.parms = data.frame(
+    'sigma_sq' = sigma_sq, 
+    'sigma_b_sq' = sigma_b_sq,
+    "means" = means
+  )
+  rownames(var.parms) <- armnames
   
   models <- normal.ma.rct[[1]]
+  
+  # Create object containing group-specific cluster sizes
+  names(str.nsubjects) <- armnames
+  cluster.sizes <- str.nsubjects
   
   #Organize output for GLMM
   if (method == "glmm") {
@@ -444,9 +454,8 @@ cps.ma.normal <- function(nsim = 1000,
       ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))]
     
     ## Output objects for GLMM
-    
     # Create list containing all output (class 'crtpwr') and return
-    
+
     if (all.sim.data == TRUE && return.all.models == FALSE) {
       complete.output = structure(
         list(
@@ -463,6 +472,7 @@ cps.ma.normal <- function(nsim = 1000,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
           "n.clusters" = nclusters,
           "variance.parms" = var.parms,
           "means" = means,
@@ -490,6 +500,7 @@ cps.ma.normal <- function(nsim = 1000,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
           "n.clusters" = nclusters,
           "variance.parms" = var.parms,
           "means" = means,
@@ -517,6 +528,7 @@ cps.ma.normal <- function(nsim = 1000,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
           "n.clusters" = nclusters,
           "variance.parms" = var.parms,
           "means" = means,
@@ -611,6 +623,7 @@ cps.ma.normal <- function(nsim = 1000,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
           "n.clusters" = nclusters,
           "variance.parms" = var.parms,
           "means" = means,
@@ -636,6 +649,7 @@ cps.ma.normal <- function(nsim = 1000,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
           "n.clusters" = nclusters,
           "variance.parms" = var.parms,
           "means" = means,
@@ -661,6 +675,7 @@ cps.ma.normal <- function(nsim = 1000,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
           "n.clusters" = nclusters,
           "variance.parms" = var.parms,
           "means" = means,

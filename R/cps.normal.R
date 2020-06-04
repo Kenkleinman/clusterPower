@@ -10,13 +10,12 @@
 #' desired experimental situation.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, expected means of the 
-#' non-treatment and treatment arms, and two of the following: ICC, 
-#' within-cluster variance, or between-cluster variance.  Defaults are provided 
-#' for significance level, analytic method, progress updates, and whether the 
-#' simulated data sets are retained.
+#' cluster, number of clusters per arm, expected means of the arms, and two of 
+#' the following: ICC, within-cluster variance, or between-cluster variance.  
+#' Defaults are provided for significance level, analytic method, progress 
+#' updates, and whether the simulated data sets are retained.
 #' 
-#' Users have the option of specifying different variance parameters for each treatment
+#' Users have the option of specifying different variance parameters for each
 #' group, different numbers of clusters for each treatmetnt group, and different numbers
 #' of units within each cluster. 
 #' 
@@ -30,12 +29,12 @@
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nclusters Number of clusters per group; accepts single integer (implying equal numbers of clusters in the two groups)
-#' or vector of length 2 (unequal number of clusters per treatment group) (required)
+#' or vector of length 2 (unequal number of clusters per arm) (required)
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (implying equal cluster sizes for the two groups), 
 #' a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
 #' (unequal cluster sizes within groups) (required).
-#' @param mu Expected mean of the CONTROL arm; accepts numeric (required).
-#' @param mu2 Expected mean of the TREATMENT arm; accepts numeric (required).
+#' @param mu Expected mean of the first (reference) arm; accepts numeric (required).
+#' @param mu2 Expected mean of the second arm; accepts numeric (required).
 #' 
 #' At least 2 of the following must be specified:
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
@@ -43,11 +42,11 @@
 #' @param sigma_b_sq Between-cluster variance; accepts numeric
 #' 
 #' 
-#' If variance parameters differ between treatment groups, at least 2 of the following 
+#' If variance parameters differ between arms, at least 2 of the following 
 #' must be specified:
-#' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
-#' @param sigma_sq2 Within-cluster variance for clusters in TREATMENT group
-#' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
+#' @param ICC2 Intra-cluster correlation coefficient for clusters in the first arm
+#' @param sigma_sq2 Within-cluster variance for clusters in second arm
+#' @param sigma_b_sq2 Between-cluster variance for clusters in second arm
 #' 
 #' Optional parameters:
 #' @param alpha Significance level; default = 0.05.
@@ -73,8 +72,8 @@
 #'   \item Analytic method used for power estimation
 #'   \item Significance level
 #'   \item Vector containing user-defined cluster sizes
-#'   \item Vector containing user-defined number of clusters in each treatment group
-#'   \item Data frame reporting ICC and variance parameters for Treatment/Non-Treatment groups
+#'   \item Vector containing user-defined number of clusters in each arm
+#'   \item Data frame reporting ICC, variance parameters, and means for each arm
 #'   \item Vector containing expected group means based on user inputs
 #'   \item Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
@@ -84,7 +83,7 @@
 #'                   "sig.val" (Is p-value less than alpha?)
 #'   \item List of data frames, each containing: 
 #'                   "y" (Simulated response value), 
-#'                   "trt" (Indicator for treatment group), 
+#'                   "trt" (Indicator for arm), 
 #'                   "clust" (Indicator for cluster)
 #'                   }
 #' 
@@ -110,7 +109,7 @@
 #'    }
 #'
 #' where \mjseqn{b} are the random effects for the clusters in group with 
-#' treatment group indicator \mjseqn{x_{ij} = 0, b_i \sim N(0, \sigma_b^2)}
+#' arm indicator \mjseqn{x_{ij} = 0, b_i \sim N(0, \sigma_b^2)}
 #' and \mjseqn{g} are the randon effects for the other treament group,
 #' \mjseqn{g_i \sim N(0, \sigma_{b_2}^2)}, and \mjseqn{e} and \mjseqn{f}
 #' are the residual errors in each group, distributed normal with variances
@@ -126,8 +125,8 @@
 #'    
 #' \dontrun{
 #' 
-#' normal.sim = cps.normal(nsim = 100, nsubjects = 50, nclusters = 10, mu = 1, 
-#'   mu2 = 4.75, ICC = 0.3, sigma_sq = 20)
+#' normal.sim = cps.normal(nsim = 100, nsubjects = 25, nclusters = 10, mu = 0, 
+#'   mu2 = 0.5, ICC = 0.05, sigma_sq = 2)
 #' }
 #' 
 #' # Estimate power for a trial with 5 clusters in one arm, those clusters having 100 subjects 
@@ -139,7 +138,7 @@
 #' \dontrun{
 #' 
 #' normal.sim = cps.normal(nsim = 100, nclusters = c(5,25), nsubjects = c(100,50), mu = 1, 
-#'   mu2 = 4.75, sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1)
+#'   mu2 = 4.75, sigma_sq = 20, sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1)
 #' }
 #' 
 #' 
@@ -155,7 +154,7 @@
 cps.normal = function(nsim = NULL,
                       nclusters = NULL,
                       nsubjects = NULL,
-                      mu = NULL,
+                      mu = 0,
                       mu2 = NULL,
                       ICC = NULL,
                       sigma_sq = NULL,
@@ -198,9 +197,7 @@ cps.normal = function(nsim = NULL,
   sim.data.arg.list = list(nsim, nclusters, nsubjects)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if (sum(sim.data.args) > 0) {
-    stop(
-      "NSIM, NCLUSTERS, & NSUBJECTS must all be specified. Please review your input values."
-    )
+    stop("NSIM, NCLUSTERS, & NSUBJECTS must all be specified. Please review your input values.")
   }
   min1.warning = " must be an integer greater than or equal to 1"
   if (!is.wholenumber(nsim) || nsim < 1) {
@@ -218,7 +215,7 @@ cps.normal = function(nsim = NULL,
     )
   }
   
-  # Set cluster sizes for treatment arm (if not already specified)
+  # Set cluster sizes for arm (if not already specified)
   if (length(nclusters) == 1) {
     nclusters[2] = nclusters[1]
   }
@@ -235,12 +232,13 @@ cps.normal = function(nsim = NULL,
     nsubjects = rep(nsubjects, 2)
   }
   if (length(nclusters) == 2 &&
-      length(nsubjects) != 1 && length(nsubjects) != sum(nclusters)) {
+      length(nsubjects) != 1 &&
+      length(nsubjects) != sum(nclusters)) {
     stop(
       "A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS"
     )
   }
-
+  
   ## Create variance parameters
   # sigma_b_sq, sigma_sq, ICC
   if (!is.null(c(ICC, sigma_sq)) && is.null(sigma_b_sq)) {
@@ -263,7 +261,7 @@ cps.normal = function(nsim = NULL,
     ICC2 = sigma_b_sq2 / (sigma_b_sq2 + sigma_sq2)
   }
   
-  # Set within/between cluster variances & ICC for treatment group (if not already specified)
+  # Set within/between cluster variances & ICC for arm (if not already specified)
   if (isTRUE(is.null(sigma_sq2))) {
     sigma_sq2 <- sigma_sq
   }
@@ -301,7 +299,7 @@ cps.normal = function(nsim = NULL,
   parm2.args = unlist(lapply(parm2.arg.list, is.null))
   if (sum(parm2.args) > 1 && sum(parm2.args) != 3) {
     stop(
-      "At least two of the following terms must be provided to simulate treatment-specific
+      "At least two of the following terms must be provided to simulate arm-specific
          variances: ICC2, sigma_sq2, sigma_b_sq2"
     )
   }
@@ -329,7 +327,7 @@ cps.normal = function(nsim = NULL,
     )
   }
   
-  # Create indicators for treatment group & cluster
+  # Create indicators for arm & cluster
   trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])),
           rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
   clust = unlist(lapply(1:sum(nclusters), function(x)
@@ -337,11 +335,11 @@ cps.normal = function(nsim = NULL,
   
   # Create simulation loop
   for (i in 1:nsim) {
-    # Generate between-cluster effects for non-treatment and treatment
+    # Generate between-cluster effects 
     randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq))
     randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq2))
     
-    # Create non-treatment y-value
+    # Create y-value for the first arm
     y0.bclust = unlist(lapply(1:nclusters[1], function(x)
       rep(randint.0[x], length.out = nsubjects[x])))
     y0.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x)
@@ -350,12 +348,14 @@ cps.normal = function(nsim = NULL,
       )))
     y.0 = y0.bclust + y0.wclust
     
-    # Create treatment y-value
+    # Create y-value for the second arm
     y1.bclust = unlist(lapply(1:nclusters[2], function(x)
       rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
     y1.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])],
                               function(x)
-                                stats::rnorm(x, mean = mu2, sd = sqrt(sigma_sq2))))
+                                stats::rnorm(
+                                  x, mean = mu2, sd = sqrt(sigma_sq2)
+                                )))
     y.1 = y1.bclust + y1.wclust
     
     # Create single response vector
@@ -382,7 +382,8 @@ cps.normal = function(nsim = NULL,
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::lmeControl(opt = 'optim')
-            ), silent = TRUE)
+            ),
+            silent = TRUE)
           glmm.values <-  summary(my.mod)$tTable
           # get the overall p-values (>Chisq)
           null.mod <-
@@ -393,7 +394,8 @@ cps.normal = function(nsim = NULL,
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::lmeControl(opt = 'optim')
-            ), silent = TRUE)
+            ),
+            silent = TRUE)
           pval.vector[i] = glmm.values['as.factor(trt2)1', 'p-value']
           est.vector[i] = glmm.values['as.factor(trt2)1', 'Value']
           se.vector[i] = glmm.values['as.factor(trt2)1', 'Std.Error']
@@ -409,7 +411,8 @@ cps.normal = function(nsim = NULL,
                            data = sim.dat)
           # get the overall p-values (>Chisq)
           null.mod <-
-            stats::update.formula(my.mod, y ~ 1 + (0 + as.factor(trt) | clust))
+            stats::update.formula(my.mod, y ~ 1 + (0 + as.factor(trt) |
+                                                     clust))
           glmm.values = summary(my.mod)$coefficients
           pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|t|)'])
           est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
@@ -443,24 +446,26 @@ cps.normal = function(nsim = NULL,
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::lmeControl(opt = 'optim')
-            ), silent = TRUE)
+            ),
+            silent = TRUE)
           if (class(my.mod) != "try-error") {
-          glmm.values <-  summary(my.mod)$tTable
-          # get the overall p-values (>Chisq)
-          null.mod <-
-            try(nlme::lme(
-              y ~ 1,
-              random =  ~ 1 + as.factor(trt2) | clust2,
-              weights = nlme::varIdent(form =  ~ 1 |
-                                         as.factor(trt2)),
-              method = "ML",
-              control = nlme::lmeControl(opt = 'optim')
-            ), silent = TRUE)
-          options(warn = oldw)
-          pval.vector[i] = glmm.values['as.factor(trt2)1', 'p-value']
-          est.vector[i] = glmm.values['as.factor(trt2)1', 'Value']
-          se.vector[i] = glmm.values['as.factor(trt2)1', 'Std.Error']
-          stat.vector[i] = glmm.values['as.factor(trt2)1', 't-value']
+            glmm.values <-  summary(my.mod)$tTable
+            # get the overall p-values (>Chisq)
+            null.mod <-
+              try(nlme::lme(
+                y ~ 1,
+                random =  ~ 1 + as.factor(trt2) | clust2,
+                weights = nlme::varIdent(form =  ~ 1 |
+                                           as.factor(trt2)),
+                method = "ML",
+                control = nlme::lmeControl(opt = 'optim')
+              ),
+              silent = TRUE)
+            options(warn = oldw)
+            pval.vector[i] = glmm.values['as.factor(trt2)1', 'p-value']
+            est.vector[i] = glmm.values['as.factor(trt2)1', 'Value']
+            se.vector[i] = glmm.values['as.factor(trt2)1', 'Std.Error']
+            stat.vector[i] = glmm.values['as.factor(trt2)1', 't-value']
           }
           converge.vector[i] <-
             ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE)
@@ -473,7 +478,8 @@ cps.normal = function(nsim = NULL,
                            data = sim.dat)
           # get the overall p-values (>Chisq)
           null.mod <-
-            stats::update.formula(my.mod, y ~ 1 + (1 + as.factor(trt) | clust))
+            stats::update.formula(my.mod, y ~ 1 + (1 + as.factor(trt) |
+                                                     clust))
           glmm.values = summary(my.mod)$coefficients
           pval.vector[i] = glmm.values['trt', 'Pr(>|t|)']
           est.vector[i] = glmm.values['trt', 'Estimate']
@@ -506,7 +512,8 @@ cps.normal = function(nsim = NULL,
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::lmeControl(opt = 'optim')
-            ), silent = TRUE)
+            ),
+            silent = TRUE)
           glmm.values <-  summary(my.mod)$tTable
           # get the overall p-values (>Chisq)
           null.mod <-
@@ -517,7 +524,8 @@ cps.normal = function(nsim = NULL,
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::lmeControl(opt = 'optim')
-            ), silent = TRUE)
+            ),
+            silent = TRUE)
           options(warn = oldw)
           pval.vector[i] = glmm.values['as.factor(trt2)1', 'p-value']
           est.vector[i] = glmm.values['as.factor(trt2)1', 'Value']
@@ -641,41 +649,41 @@ cps.normal = function(nsim = NULL,
     p.value = as.vector(unlist(pval.vector)),
     converge = as.vector(unlist(converge.vector))
   )
-
+  
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
-  power.parms <- confint.calc(
-    nsim = nsim,
-    alpha = alpha,
-    p.val = cps.model.temp[, 'p.value']
-  )
+  power.parms <- confint.calc(nsim = nsim,
+                              alpha = alpha,
+                              p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing group-specific cluster sizes
-  cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]],
-                       'Treatment' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
+  cluster.sizes = list('Arm.1' = nsubjects[1:nclusters[1]],
+                       'Arm.2' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
   
   # Create object containing number of clusters
   n.clusters = t(data.frame(
-    "Non.Treatment" = c("n.clust" = nclusters[1]),
-    "Treatment" = c("n.clust" = nclusters[2])
+    "Arm.1" = c("n.clust" = nclusters[1]),
+    "Arm.2" = c("n.clust" = nclusters[2])
   ))
   
   # Create object containing group-specific variance parameters
   var.parms = t(data.frame(
-    'Non.Treatment' = c(
+    'Arm.1' = c(
       'ICC' = ICC[1],
       'sigma_sq' = sigma_sq[1],
-      'sigma_b_sq' = sigma_b_sq[1]
+      'sigma_b_sq' = sigma_b_sq[1],
+      'mu' = mu
     ),
-    'Treatment' = c(
+    'Arm.2' = c(
       'ICC' = ICC2,
       'sigma_sq' = sigma_sq2,
-      'sigma_b_sq' = sigma_b_sq2
+      'sigma_b_sq' = sigma_b_sq2,
+      'mu' = mu2
     )
   ))
   
   fail <- unlist(converge.vector)
-
+  
   # Create list containing all output (class 'crtpwr') and return
   complete.output = structure(
     list(

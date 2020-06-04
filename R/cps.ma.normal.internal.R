@@ -252,7 +252,7 @@ cps.ma.normal.internal <-
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::nlmeControl(
-                opt = 'optim',
+                opt = optmethod,
                 niterEM = 100,
                 msMaxIter = 100
               )
@@ -267,7 +267,7 @@ cps.ma.normal.internal <-
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::nlmeControl(
-                opt = 'optim',
+                opt = optmethod,
                 niterEM = 100,
                 msMaxIter = 100
               )
@@ -337,7 +337,7 @@ cps.ma.normal.internal <-
                                          as.factor(trt2)),
               method = "ML",
               control = nlme::nlmeControl(
-                opt = 'optim',
+                opt = optmethod,
                 niterEM = 100,
                 msMaxIter = 100
               )
@@ -351,7 +351,7 @@ cps.ma.normal.internal <-
                                        as.factor(trt2)),
             method = "ML",
             control = nlme::nlmeControl(
-              opt = 'optim',
+              opt = optmethod,
               niterEM = 100,
               msMaxIter = 100
             )
