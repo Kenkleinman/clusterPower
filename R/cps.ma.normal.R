@@ -173,6 +173,8 @@
 
 
 
+
+
 cps.ma.normal <- function(nsim = 1000,
                           nsubjects = NULL,
                           narms = NULL,
@@ -317,9 +319,9 @@ cps.ma.normal <- function(nsim = 1000,
     tdist = tdist,
     optmethod = optmethod,
     nofit = nofit,
-    return.all.models = return.all.models 
+    return.all.models = return.all.models
   )
-
+  
   if (nofit == TRUE || return.all.models == TRUE) {
     return(normal.ma.rct)
   }
@@ -343,11 +345,9 @@ cps.ma.normal <- function(nsim = 1000,
     armnames[i] <- paste0("Arm.", i)
   }
   
-  var.parms = data.frame(
-    'sigma_sq' = sigma_sq, 
-    'sigma_b_sq' = sigma_b_sq,
-    "means" = means
-  )
+  var.parms = data.frame('sigma_sq' = sigma_sq,
+                         'sigma_b_sq' = sigma_b_sq,
+                         "means" = means)
   rownames(var.parms) <- armnames
   
   models <- normal.ma.rct[[1]]
@@ -456,7 +456,7 @@ cps.ma.normal <- function(nsim = 1000,
     
     ## Output objects for GLMM
     # Create list containing all output (class 'crtpwr') and return
-
+    
     if (all.sim.data == TRUE && return.all.models == FALSE) {
       complete.output = structure(
         list(
@@ -594,11 +594,9 @@ cps.ma.normal <- function(nsim = 1000,
     LRT.holder.abbrev <- sum(sig.LRT)
     
     # Calculate and store power estimate & confidence intervals
-    power.parms <- confint.calc(
-      nsim = nsim,
-      alpha = alpha,
-      p.val = Pr
-    )
+    power.parms <- confint.calc(nsim = nsim,
+                                alpha = alpha,
+                                p.val = Pr)
     
     # Store GEE simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)

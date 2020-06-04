@@ -337,7 +337,7 @@ cps.normal = function(nsim = NULL,
   
   # Create simulation loop
   for (i in 1:nsim) {
-    # Generate between-cluster effects 
+    # Generate between-cluster effects
     randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq))
     randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq2))
     
@@ -368,25 +368,27 @@ cps.normal = function(nsim = NULL,
     if (all.sim.data == TRUE) {
       simulated.datasets[[i]] = sim.dat
     }
-
-  # option to return simulated data only
-  if (nofit == TRUE) {
-    if (i == 1) {
-      nofitop <- data.frame(trt = trt, clust = clust, y1 = y)
-    } else {
-      nofitop[,i + 2] <- y
-    }
-    if (i != nsim) {
-      next()
-    }
-    if (i == nsim) {
-      temp1 <- seq(1:nsim)
-      temp2 <- paste0("y", temp1)
-      colnames(nofitop) <- c("trt", "clust", temp2)
-    return(nofitop)
-    }
+    
+    # option to return simulated data only
+    if (nofit == TRUE) {
+      if (i == 1) {
+        nofitop <- data.frame(trt = trt,
+                              clust = clust,
+                              y1 = y)
+      } else {
+        nofitop[, i + 2] <- y
       }
-   
+      if (i != nsim) {
+        next()
+      }
+      if (i == nsim) {
+        temp1 <- seq(1:nsim)
+        temp2 <- paste0("y", temp1)
+        colnames(nofitop) <- c("trt", "clust", temp2)
+        return(nofitop)
+      }
+    }
+    
     # trt and clust are re-coded as trt2 and clust2 to work nicely with lme. This can be changed later.
     # Fit GLMM (lmer)
     if (method == 'glmm') {
