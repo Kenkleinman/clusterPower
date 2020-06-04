@@ -370,8 +370,7 @@ test_that("count simulation method matches the 2-arm simulation method", {
       method = 'glmm',
       all.sim.data = FALSE,
       multi.p.method = "none",
-      poor.fit.override = TRUE,
-      cores = "all"
+      poor.fit.override = TRUE
     )
     count.sim = cps.count(
       nsim = 100,

@@ -8,8 +8,6 @@ setMethod(
     cat(paste0("\n", object[['overview']], "\n"))
     cat(paste0("\nPower Estimate (alpha = ", object[['alpha']], "):\n"))
     print(object[['power']], row.names = FALSE)
-    #cat("\nType II Error Probability:\n")
-    #print(object[['beta']])
     cat(paste("\nMethod:", object[['method']], "\n"))
     if (isTRUE(exists("LRT.holder"))) {
       cat("\nOverall Study Power Estimate:\n")

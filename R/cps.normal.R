@@ -59,6 +59,7 @@
 #' group treatment trial? For details, see ?cps.irgtt.normal.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
 #' of fits fail to converge.
+#' @param nofit Option to return only the simulated data, no analysis. Defaults to FALSE.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -168,7 +169,8 @@ cps.normal = function(nsim = NULL,
                       all.sim.data = FALSE,
                       seed = NA,
                       poor.fit.override = FALSE,
-                      irgtt = FALSE) {
+                      irgtt = FALSE,
+                      nofit = FALSE) {
   # option for reproducibility
   if (!is.na(seed)) {
     set.seed(seed = seed)
@@ -364,9 +366,27 @@ cps.normal = function(nsim = NULL,
     # Create data frame for simulated dataset
     sim.dat = data.frame(y = y, trt = trt, clust = clust)
     if (all.sim.data == TRUE) {
-      simulated.datasets = append(simulated.datasets, list(sim.dat))
+      simulated.datasets[[i]] = sim.dat
     }
-    
+
+  # option to return simulated data only
+  if (nofit == TRUE) {
+    if (i == 1) {
+      nofitop <- data.frame(trt = trt, clust = clust, y1 = y)
+    } else {
+      nofitop[,i + 2] <- y
+    }
+    if (i != nsim) {
+      next()
+    }
+    if (i == nsim) {
+      temp1 <- seq(1:nsim)
+      temp2 <- paste0("y", temp1)
+      colnames(nofitop) <- c("trt", "clust", temp2)
+    return(nofitop)
+    }
+      }
+   
     # trt and clust are re-coded as trt2 and clust2 to work nicely with lme. This can be changed later.
     # Fit GLMM (lmer)
     if (method == 'glmm') {
@@ -692,7 +712,6 @@ cps.normal = function(nsim = NULL,
       "power" = power.parms,
       "method" = long.method,
       "alpha" = alpha,
-      "beta" = power.parms['Beta'],
       "cluster.sizes" = cluster.sizes,
       "n.clusters" = n.clusters,
       "variance.parms" = var.parms,

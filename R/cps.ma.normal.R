@@ -79,8 +79,9 @@
 #' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
 #' the overall model comparisons, and the convergence report vector. This is equivalent
 #' to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.
-#' @param optmethod Option to fit with a different optimizer (using the package \code{optimx}). Default is 'nlminb'.
-#' @param sim.data.only Option to skip model fitting and analysis and return the simulated data.
+#' @param optmethod Option to fit with a different optimizer. Default is 'nlminb', but some
+#' incompatible model types will trigger a list of compatible optimizer options.
+#' @param nofit Option to skip model fitting and analysis and return the simulated data. Defaults to 
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{
@@ -162,7 +163,7 @@
 #'                                   quiet = FALSE, ICC=NULL, method = 'glmm',
 #'                                   all.sim.data = FALSE, seed = 123,
 #'                                   poor.fit.override = TRUE, cores="all",
-#'                                   optmethod = "nlm")
+#'                                   optmethod = "NLOPT_LN_NELDERMEAD")
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
 #'   and Ken Kleinman (\email{ken.kleinman@@gmail.com})
@@ -192,7 +193,7 @@ cps.ma.normal <- function(nsim = 1000,
                           tdist = FALSE,
                           return.all.models = FALSE,
                           optmethod = "nlminb",
-                          sim.data.only = FALSE) {
+                          nofit = FALSE) {
   # create narms and nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
     # create narms and nclusters if not supplied by the user
@@ -315,11 +316,11 @@ cps.ma.normal <- function(nsim = 1000,
     low.power.override = low.power.override,
     tdist = tdist,
     optmethod = optmethod,
-    sim.data.only = sim.data.only,
+    nofit = nofit,
     return.all.models = return.all.models 
   )
 
-  if (sim.data.only == TRUE || return.all.models == TRUE) {
+  if (nofit == TRUE || return.all.models == TRUE) {
     return(normal.ma.rct)
   }
   
