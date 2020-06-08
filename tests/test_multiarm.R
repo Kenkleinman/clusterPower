@@ -326,7 +326,8 @@ test_that("continuous simulation method matches the 2-arm simulation method",
                 method = 'glmm',
                 all.sim.data = FALSE,
                 poor.fit.override = TRUE,
-                optmethod = "NLOPT_LN_NELDERMEAD"
+                optmethod = "NLOPT_LN_NELDERMEAD",
+                nofit = FALSE
               )
               twoarm.mean <-
                 cps.normal(
@@ -340,7 +341,8 @@ test_that("continuous simulation method matches the 2-arm simulation method",
                   alpha = 0.05,
                   method = 'glmm',
                   quiet = FALSE,
-                  all.sim.data = FALSE
+                  all.sim.data = FALSE,
+                  nofit = FALSE
                 )
               rownames(multi.cps.normal$power) <- "Treatment.1"
               expect_equal(multi.cps.normal$power,

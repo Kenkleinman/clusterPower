@@ -107,7 +107,7 @@ cps.ma.normal.internal <-
            low.power.override = FALSE,
            tdist = FALSE,
            optmethod = "nlminb",
-           sim.data.only = FALSE,
+           nofit = FALSE,
            return.all.models = FALSE) {
     # Create vectors to collect iteration-specific values
     simulated.datasets = list()
@@ -211,7 +211,7 @@ cps.ma.normal.internal <-
       sim.dat[[i]][["y"]] <- y
     }
     
-    if (sim.data.only == TRUE) {
+    if (nofit == TRUE) {
       # turn off parallel computing
       if (!exists("cores", mode = "NULL")) {
         parallel::stopCluster(cl)
