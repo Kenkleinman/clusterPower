@@ -310,24 +310,22 @@ test_that("continuous simulation method matches the 2-arm simulation method",
             q <- 1
             nc <- sample.int(200, q)
             ns <- sample.int(200, q)
+            prob1 <- runif(q, min = 0, max = 1)
+            prob2 <- runif(q, min = 0, max = 1)
             icc. <- runif(q, min = 0.1, max = 0.99)
             sig <- runif(q, min = 0.01, max = 2)
             for (i in 1:q) {
-              multi.cps.normal <- cps.ma.normal(
-                nsim = 100,
+              multi.cps.bin <- cps.ma.binary(
+                nsim = 100, nsubjects = ns[i], 
                 narms = 2,
                 nclusters = nc[i],
-                nsubjects = ns[i],
-                means = c(0, 1),
-                ICC = icc.[i],
-                sigma_sq = sig[i],
-                alpha = 0.05,
-                quiet = FALSE,
-                method = 'glmm',
-                all.sim.data = FALSE,
-                poor.fit.override = TRUE,
-                optmethod = "NLOPT_LN_NELDERMEAD",
-                nofit = FALSE
+                probs = c(prob1[i], prob2[i]),
+                sigma_b_sq = sig[i], alpha = 0.05,
+                quiet = FALSE, method = 'glmm', 
+                all.sim.data = FALSE, 
+                multi.p.method = "none",
+                seed = 123, cores = "all", 
+                poor.fit.override = TRUE  
               )
               twoarm.mean <-
                 cps.normal(
@@ -344,9 +342,15 @@ test_that("continuous simulation method matches the 2-arm simulation method",
                   all.sim.data = FALSE,
                   nofit = FALSE
                 )
-              rownames(multi.cps.normal$power) <- "Treatment.1"
-              expect_equal(multi.cps.normal$power,
-                           twoarm.mean$power)
+            }
+            expect_equal(
+              data.table::between(
+                twoarm.mean$power$Power,
+                multi.cps.normal$power$Lower.95.CI,
+                multi.cps.normal$power$Upper.95.CI
+              ),
+              TRUE
+            )
               print(paste("Interation", i, "of 10."))
             } # end of loop
           })

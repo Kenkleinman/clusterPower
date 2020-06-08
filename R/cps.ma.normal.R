@@ -81,7 +81,8 @@
 #' to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.
 #' @param optmethod Option to fit with a different optimizer. Default is 'nlminb', but some
 #' incompatible model types will trigger a list of compatible optimizer options.
-#' @param nofit Option to skip model fitting and analysis and return the simulated data. Defaults to 
+#' @param nofit Option to skip model fitting and analysis and return the simulated data. 
+#' Defaults to \code{FALSE}. 
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{

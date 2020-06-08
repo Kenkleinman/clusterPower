@@ -205,7 +205,9 @@ cps.ma.binary.internal <-
           str.nsubjects = str.nsubjects
         )
       )
-    
+    if (nofit == TRUE) {
+      return(sim.dat)
+    }
     require(foreach)
     `%fun%` <- `%dopar%`
     if (is.na(cores)) {
@@ -318,6 +320,7 @@ cps.ma.binary.internal <-
       }
       
       # stop the loop if power is <0.5
+      if (narms > 2) {
       if (low.power.override == FALSE) {
         if (i > 50 & (i %% 10 == 0)) {
           temp.power.checker <-
@@ -357,7 +360,7 @@ cps.ma.binary.internal <-
       ) %fun% {
         car::Anova(my.mod[[i]], type = "II")
       }
-      
+      }
       if (is.na(cores) & quiet == FALSE) {
         # Iterate progress bar
         prog.bar$update(4 / 5)

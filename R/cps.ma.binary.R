@@ -72,6 +72,8 @@
 #' @param tdist Logical value indicating whether simulated data should be 
 #' drawn from a t-distribution rather than the normal distribution. 
 #' Default = FALSE.
+#' @param nofit Option to skip model fitting and analysis and return the simulated data. 
+#' Defaults to \code{FALSE}. 
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
 #' @param optmethod User-specified optimizer methods available for the optimizer specified in \code{opt} option.
 #' @return A list with the following components:
@@ -147,6 +149,7 @@ cps.ma.binary <- function(nsim = 1000,
                           tdist = FALSE,
                           poor.fit.override = FALSE,
                           low.power.override = FALSE,
+                          nofit = FALSE,
                           opt = "bobyqa",
                           optmethod = "Nelder-Mead") {
   # use this later to determine total elapsed time
@@ -261,9 +264,14 @@ cps.ma.binary <- function(nsim = 1000,
     low.power.override = low.power.override,
     tdist = tdist,
     cores = cores,
+    nofit = nofit,
     opt = opt,
     optmethod = optmethod
   )
+  
+  if (nofit == TRUE) {
+    return(binary.ma.rct)
+  }
   
   models <- binary.ma.rct[[1]]
   
