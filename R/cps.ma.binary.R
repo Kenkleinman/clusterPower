@@ -13,9 +13,9 @@
 #' cluster, number of clusters per treatment arm, group probabilities, and the 
 #' between-cluster variance. Significance level, analytic method, progress 
 #' updates, poor/singular fit override, and whether or not to return the 
-#' simulated data may also be specified. The internal function can be called directly by the user to return the fitted 
-#' models rather than the power summaries (see \code{?cps.ma.normal.internal}
-#' for details).
+#' simulated data may also be specified. The internal function can be called 
+#' directly by the user to return the fitted models rather than the power 
+#' summaries (see \code{?cps.ma.normal.internal} for details).
 #' 
 #' Because the model for binary outcomes may be slower to fit than those for 
 #' other distributions, this function may be slower than its normal or 

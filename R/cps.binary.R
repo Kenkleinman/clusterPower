@@ -34,19 +34,23 @@
 #' @param p2 Expected probability of outcome in treatment group
 #' @param sigma_b_sq Between-cluster variance; if sigma_b_sq2 is not specified, 
 #' between cluster variances are assumed to be equal for both groups. Accepts numeric.
-#' If between cluster variances differ between treatment groups, sigma_b_sq2 must also be specified:
+#' If between cluster variances differ between treatment groups, sigma_b_sq2 must also be 
+#' specified:
 #' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
 #' @param alpha Significance level; default = 0.05
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time, default is TRUE.
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) 
+#' or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' @param quiet When set to FALSE, displays simulation progress and estimated completion 
+#' time, default is TRUE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE
 #' @param seed Option to set the seed. Default is NA.
-#' 
 #' At least 2 of the following 3 arguments must be specified when using expected odds ratios:
 #' @param or1 Expected odds ratio for outcome in non-treatment group
 #' @param or2 Expected odds ratio for outcome in treatment group
-#' @param or.diff Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2
-#
+#' @param or.diff Expected difference in odds ratio for outcome between groups, defined as 
+#' or.diff = or1 - or2
+#' @param nofit Option to skip model fitting and analysis and return the simulated data. 
+#' Defaults to \code{FALSE}. 
 #'  
 #' @return A list with the following components
 #' \itemize{
@@ -74,11 +78,15 @@
 #'   Includes model number for cross-referencing against \code{model.estimates}
 #' }
 #' 
-#' @author Alexander R. Bogdan, Alexandria C. Sakrejda, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' @author Alexander R. Bogdan, Alexandria C. Sakrejda, and 
+#' Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
-#' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and Advanced Multilevel Modelling. London, 1999: Sage.
-#' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation Coefficient in Cluster Randomized Trials: 
-#' A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. doi: 10.1111/j.1751-5823.2009.00092.x
+#' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and 
+#' Advanced Multilevel Modelling. London, 1999: Sage.
+#' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation 
+#' Coefficient in Cluster Randomized Trials: 
+#' A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. 
+#' doi: 10.1111/j.1751-5823.2009.00092.x
 #' 
 #' @examples 
 #' \dontrun{
@@ -106,6 +114,7 @@ cps.binary = function(nsim = NULL,
                       quiet = TRUE,
                       all.sim.data = FALSE,
                       seed = NA,
+                      nofit = FALSE,
                       irgtt = FALSE) {
   if (!is.na(seed)) {
     set.seed(seed = seed)
@@ -180,7 +189,8 @@ cps.binary = function(nsim = NULL,
     nsubjects = rep(nsubjects, 2)
   }
   if (length(nclusters) == 2 &&
-      length(nsubjects) != 1 && length(nsubjects) != sum(nclusters)) {
+      length(nsubjects) != 1 &&
+      length(nsubjects) != sum(nclusters)) {
     stop(
       "A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS"
     )
@@ -337,9 +347,32 @@ cps.binary = function(nsim = NULL,
     
     # Create and store data frame for simulated dataset
     sim.dat = data.frame(y = y, trt = trt, clust = clust)
-    if (all.sim.data == TRUE) {
+    if (all.sim.data == TRUE && nofit == FALSE) {
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
+    
+    # option to return simulated data only
+    if (nofit == TRUE) {
+      for (q in 1:nsim) {
+        if (q == 1) {
+          nofitop <- data.frame(trt = trt,
+                                clust = clust,
+                                y1 = y)
+        } else {
+          nofitop[, q + 2] <- y
+        }
+        if (q == nsim) {
+          temp1 <- seq(1:nsim)
+          temp2 <- paste0("y", temp1)
+          colnames(nofitop) <- c("trt", "clust", temp2)
+        }
+      }
+        if (q != nsim) {
+          next()
+        }
+        return(nofitop)
+    }
+    
     # Calculate ICC2 ([P(Yij = 1, Yih = 1)] - pij * pih) / sqrt(pij(1 - pij) * pih(1 - pih))
     #icc2 = (mean(y0.prob) * mean(y1.prob) - p1*p2) / sqrt((p1 * (1 - p1)) * p2 * (1 - p2))
     icc2 = (mean(y0.prob) - p1) * (mean(y1.prob) - p2) / sqrt((p1 * (1 - p1)) * p2 * (1 - p2))
@@ -482,11 +515,9 @@ cps.binary = function(nsim = NULL,
   
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
-  power.parms <- confint.calc(
-    nsim = nsim,
-    alpha = alpha,
-    p.val = cps.model.temp[, 'p.value']
-  )
+  power.parms <- confint.calc(nsim = nsim,
+                              alpha = alpha,
+                              p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs
   p1.p2.or = round(p1 / (1 - p1) / (p2 / (1 - p2)), 3)

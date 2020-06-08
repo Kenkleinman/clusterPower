@@ -91,6 +91,7 @@ cps.ma.binary.internal <-
            low.power.override = FALSE,
            tdist = FALSE,
            cores = cores,
+           nofit = FALSE,
            opt = opt,
            optmethod = optmethod) {
     # Create vectors to collect iteration-specific values
@@ -206,6 +207,10 @@ cps.ma.binary.internal <-
         )
       )
     if (nofit == TRUE) {
+      sim.dat <- data.frame(trt, clust, sim.dat)
+      sim.num <- 1:nsim
+      temp <- paste0("y", sim.num)
+      colnames(sim.dat) <- c("arm", "cluster", temp)
       return(sim.dat)
     }
     require(foreach)
