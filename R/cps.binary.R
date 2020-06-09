@@ -1,41 +1,36 @@
-#' Power simulations for cluster-randomized trials: Simple Designs, Binary Outcome.
+#' Power simulations for cluster-randomized trials: Parallel Designs, Binary Outcome.
 #'
-#' This function utilizes iterative simulations to determine 
-#' approximate power for cluster-randomized controlled trials. Users 
+#' @description 
+#' \loadmathjax
+#'
+#'
+#' This function uses Monte Carlo methods (simulations) to estimate 
+#' power for cluster-randomized trials. Users 
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
-#' 
-#' Runs the power simulation for binary outcomes.
-#' 
+#'  
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, two of the following three terms: 
-#' expected probability of outcome in non-treatment group, expected probability of 
-#' outcome in treatment group, expected difference in probabilities between groups
-#' ; significance level, analytic method, progress updates, 
-#' and simulated data set output may also be specified.
+#' cluster, number of clusters per treatment arm, and two of the following three 
+#' parameters: expected probability of the outcome in one group, expected 
+#' probability of the outcome in the second group,
+#' and expected difference in probabilities between groups.
+#' Default values are provided for significance level, analytic method, 
+#' progress updates, and simulated data set output.
 #' 
-#' The following equations are used to estimate intra-cluster correltation coefficients:
-#' P_h: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \pi^{2}/3}}
-#' P_c: \deqn{ICC = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_{j}\pi_{h}}{\sqrt{\pi_{j}(1 - \pi_{j})\pi_{h}(1 - \pi_{h})}}}
-#' P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
-#' 
-#' Non-convergent models are not included in the calculation of exact confidence 
-#' intervals.
-#' 
-#' @section Testing details:   
-#' This function has been verified against reference values from the NIH's GRT 
-#' Sample Size Calculator, PASS11, \code{CRTsize::n4prop}, and 
-#' \code{clusterPower::cpa.binary}.
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
 #' @param nclusters Number of clusters per treatment group; accepts integer (required).
-#' @param p1 Expected probability of outcome in non-treatment group
-#' @param p2 Expected probability of outcome in treatment group
-#' @param sigma_b_sq Between-cluster variance; if sigma_b_sq2 is not specified, 
-#' between cluster variances are assumed to be equal for both groups. Accepts numeric.
+#' @param p1 Expected probability of outcome in first group
+#' @param p2 Expected probability of outcome in second group
+#' @param sigma_b_sq Between-cluster variance; accepts numeric (required).
+#' 
+#' If sigma_b_sq2 is not specified, 
+#' between cluster variances are assumed to be equal for both groups. 
 #' If between cluster variances differ between treatment groups, sigma_b_sq2 must also be specified:
 #' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
+#' 
+#' 
 #' @param alpha Significance level; default = 0.05
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time, default is TRUE.
@@ -74,11 +69,46 @@
 #'   Includes model number for cross-referencing against \code{model.estimates}
 #' }
 #' 
-#' @author Alexander R. Bogdan, Alexandria C. Sakrejda, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' @section Notes:
 #' 
-#' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and Advanced Multilevel Modelling. London, 1999: Sage.
+#' An intracluster correlation coefficient (ICC) is neither a natural parameter of the
+#' data generating model nor a function of its parameters.  Several methods for
+#' calculation have been suggested. (Wu, Crespi, and Wong, 2012).  We provide
+#' several versions of ICCs for comparison:
+#' 
+#' \mjsdeqn{P_h = \frac{\sigma_b}{\sigma_b + \pi^2/3}}
+#' \mjsdeqn{P_c = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_j \pi_h }
+#' {\sqrt{\pi_j (1 - \pi_j )\pi_h (1 - \pi_h )}}}
+#' \mjsdeqn{P_{lmer} = \frac{\sigma_b }{\sigma_b + \sigma_w }}
+#' 
+#' Of these, \mjseqn{P_h} and \mjseqn{P_c} are based on parameters of the data
+#' generating model.  \mjseqn{P_h} should only be used when \mjseqn{\sigma_{b_2}^2}
+#' is not used.  \mjseqn{P_{lmer}} is based on the data analysis via GLMM and should 
+#' only be used with that \code{method}, and also should not be used when 
+#' \mjseqn{\sigma_{b_2}^2} is used.
+#' 
+#' 
+#' Non-convergent models are not included in the calculation of exact confidence 
+#' intervals.
+#' 
+#' @section Testing details:   
+#' This function has been verified against reference values from the NIH's GRT 
+#' Sample Size Calculator, PASS11, \code{CRTsize::n4prop}, and 
+#' \code{clusterPower::cpa.binary}.
+#' 
+#' 
+#' @author Alexander R. Bogdan, Alexandria C. Sakrejda 
+#' (\email{acbro0@@umass.edu}), and Ken Kleinman 
+#' (\email{ken.kleinman@@gmail.com})
+#' #' 
 #' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation Coefficient in Cluster Randomized Trials: 
 #' A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. doi: 10.1111/j.1751-5823.2009.00092.x
+#' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and Advanced Multilevel Modelling. London, 1999: Sage.
+#' @references Wu S, Crespi CM, Wong WK. Comparison of Methods for Estimating Intraclass
+#' Correlation Coefficient for Binary Responses in Cancer Prevention Cluster Randomized
+#' Trials. Contemp Clin Trials. 2012; 33(5): 869-880. doi:10.1016/j.cct.2012.05.004 
+#' London: Arnold; 2000.
+#' 
 #' 
 #' @examples 
 #' \dontrun{
