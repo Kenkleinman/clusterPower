@@ -353,21 +353,19 @@ cps.binary = function(nsim = NULL,
     
     # option to return simulated data only
     if (nofit == TRUE) {
-      for (q in 1:nsim) {
-        if (q == 1) {
+        if (!exists("nofitop")) {
           nofitop <- data.frame(trt = trt,
                                 clust = clust,
                                 y1 = y)
         } else {
-          nofitop[, q + 2] <- y
+          nofitop[, length(nofitop) + 1] <- y
         }
-        if (q == nsim) {
+        if (length(nofitop) == (nsim + 2)) {
           temp1 <- seq(1:nsim)
           temp2 <- paste0("y", temp1)
           colnames(nofitop) <- c("trt", "clust", temp2)
         }
-      }
-        if (q != nsim) {
+        if (length(nofitop) != (nsim + 2)) {
           next()
         }
         return(nofitop)

@@ -41,6 +41,8 @@
 #' simulation values, default = FALSE.
 #' @param cores A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to NA, no parallel computing is used.
+#' @param nofit Option to skip model fitting and analysis and return the simulated data. 
+#' Defaults to \code{FALSE}. 
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
 #' @param optmethod User-specified optimizer methods available for the optimizer specified in \code{opt} option.
 #' 
