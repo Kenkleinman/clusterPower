@@ -35,6 +35,9 @@
 #' @param alpha Significance level. Default = 0.05.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
+#' @param seed Option to set the seed. Default is NA.
+#' @param nofit Option to skip model fitting and analysis and return the simulated data. 
+#' Defaults to \code{FALSE}. 
 #' @param optimizer Option to fit with a different optimizer (using the package \code{optimx}). Defaults to L-BFGS-B.
 #' 
 #' @return A list with the following components
@@ -82,12 +85,25 @@
 #' @export
 
 # Define function
-cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL, c2 = NULL, 
-                     c.diff = NULL, sigma_b_sq = NULL, sigma_b_sq2 = NULL, family = 'poisson', 
-                     analysis = 'poisson', method = 'glmm', alpha = 0.05, quiet = FALSE, 
-                     all.sim.data = FALSE, irgtt = FALSE, seed = NA, optimizer = "L-BFGS-B"){
-  
-  if (!is.na(seed)){
+cps.count = function(nsim = NULL,
+                     nsubjects = NULL,
+                     nclusters = NULL,
+                     c1 = NULL,
+                     c2 = NULL,
+                     c.diff = NULL,
+                     sigma_b_sq = NULL,
+                     sigma_b_sq2 = NULL,
+                     family = 'poisson',
+                     analysis = 'poisson',
+                     method = 'glmm',
+                     alpha = 0.05,
+                     quiet = FALSE,
+                     all.sim.data = FALSE,
+                     irgtt = FALSE,
+                     seed = NA,
+                     nofit = FALSE,
+                     optimizer = "L-BFGS-B") {
+  if (!is.na(seed)) {
     set.seed(seed = seed)
   }
   # Create vectors to collect iteration-specific values
@@ -100,139 +116,163 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
   start.time = Sys.time()
   
   # Create progress bar
-  prog.bar =  progress::progress_bar$new(format = "(:spin) [:bar] :percent eta :eta", 
-                                         total = nsim, clear = FALSE, width = 100)
+  prog.bar =  progress::progress_bar$new(
+    format = "(:spin) [:bar] :percent eta :eta",
+    total = nsim,
+    clear = FALSE,
+    width = 100
+  )
   prog.bar$tick(0)
   
   # Create wholenumber function
-  is.wholenumber = function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
+  is.wholenumber = function(x, tol = .Machine$double.eps ^ 0.5)
+    abs(x - round(x)) < tol
   
   # Validate NSIM, NSUBJECTS, NCLUSTERS
   sim.data.arg.list = list(nsim, nclusters, nsubjects, sigma_b_sq)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
-  if(sum(sim.data.args) > 0){
-    stop("NSIM, NSUBJECTS, NCLUSTERS & sigma_b_sq must all be specified. Please review your input values.")
+  if (sum(sim.data.args) > 0) {
+    stop(
+      "NSIM, NSUBJECTS, NCLUSTERS & sigma_b_sq must all be specified. Please review your input values."
+    )
   }
   min1.warning = " must be an integer greater than or equal to 1"
-  if(!is.wholenumber(nsim) || nsim < 1){
+  if (!is.wholenumber(nsim) || nsim < 1) {
     stop(paste0("NSIM", min1.warning))
   }
-  if(!is.wholenumber(nclusters) || nclusters < 1){
+  if (!is.wholenumber(nclusters) || nclusters < 1) {
     stop(paste0("NCLUSTERS", min1.warning))
   }
-  if(!is.wholenumber(nsubjects) || nsubjects < 1){
+  if (!is.wholenumber(nsubjects) || nsubjects < 1) {
     stop(paste0("NSUBJECTS", min1.warning))
   }
-  if(length(nclusters) > 2){
-    stop("NCLUSTERS can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)")
+  if (length(nclusters) > 2) {
+    stop(
+      "NCLUSTERS can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)"
+    )
   }
   # Set cluster sizes for treatment arm (if not already specified)
-  if(length(nclusters) == 1){
-    if (irgtt == TRUE){
+  if (length(nclusters) == 1) {
+    if (irgtt == TRUE) {
       nclusters[2] = nclusters[1]
       nclusters[1] = 1
     } else {
-    nclusters[2] = nclusters[1]
+      nclusters[2] = nclusters[1]
     }
   }
   # Set sample sizes for each cluster (if not already specified)
-  if(length(nsubjects) == 1){
+  if (length(nsubjects) == 1) {
     nsubjects = c(nsubjects, nsubjects)
-  } 
-  if(nclusters[1] == nclusters[2] && length(nsubjects) == nclusters[1]){
+  }
+  if (nclusters[1] == nclusters[2] &&
+      length(nsubjects) == nclusters[1]) {
     nsubjects = rep(nsubjects, 2)
   }
-  if(length(nclusters) == 2 && length(nsubjects) != 1 && length(nsubjects) != length(nclusters)){
-    stop("A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS")
+  if (length(nclusters) == 2 &&
+      length(nsubjects) != 1 && length(nsubjects) != length(nclusters)) {
+    stop(
+      "A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS"
+    )
   }
   
   # Validate sigma_b_sq, sigma_b_sq2, ALPHA
-  if (irgtt==FALSE){
+  if (irgtt == FALSE) {
     min0.warning = " must be a numeric value greater than 0"
-    if(!is.numeric(sigma_b_sq) || sigma_b_sq <= 0){
+    if (!is.numeric(sigma_b_sq) || sigma_b_sq <= 0) {
       stop("sigma_b_sq", min0.warning)
     }
-    if(!is.null(sigma_b_sq2) && sigma_b_sq2 <= 0){
+    if (!is.null(sigma_b_sq2) && sigma_b_sq2 <= 0) {
       stop("sigma_b_sq2", min0.warning)
     }
   }
-  if(!is.numeric(alpha) || alpha < 0 || alpha > 1){
+  if (!is.numeric(alpha) || alpha < 0 || alpha > 1) {
     stop("ALPHA must be a numeric value between 0 - 1")
   }
   
   # Validate C1, C2, C.DIFF
   parm1.arg.list = list(c1, c2, c.diff)
   parm1.args = unlist(lapply(parm1.arg.list, is.null))
-  if(sum(parm1.args) > 1){
+  if (sum(parm1.args) > 1) {
     stop("At least two of the following terms must be specified: C1, C2, C.DIFF")
   }
-  if(sum(parm1.args) == 0 && c.diff != abs(c1 - c2)){
+  if (sum(parm1.args) == 0 && c.diff != abs(c1 - c2)) {
     stop("At least one of the following terms has be misspecified: C1, C2, C.DIFF")
   }
   
   # Validate FAMILY, ANALYSIS, METHOD, QUIET
-  if(!is.element(family, c('poisson', 'neg.binom'))){
-    stop("FAMILY must be either 'poisson' (Poisson distribution) 
-         or 'neg.binom'(Negative binomial distribution)")
+  if (!is.element(family, c('poisson', 'neg.binom'))) {
+    stop(
+      "FAMILY must be either 'poisson' (Poisson distribution)
+         or 'neg.binom'(Negative binomial distribution)"
+    )
   }
-  if(!is.element(analysis, c('poisson', 'neg.binom'))){
-    stop("ANALYSIS must be either 'poisson' (Poisson regression) 
-         or 'neg.binom'(Negative binomial regression)")
+  if (!is.element(analysis, c('poisson', 'neg.binom'))) {
+    stop(
+      "ANALYSIS must be either 'poisson' (Poisson regression)
+         or 'neg.binom'(Negative binomial regression)"
+    )
   }
-  if(!is.element(method, c('glmm', 'gee'))){
-    stop("METHOD must be either 'glmm' (Generalized Linear Mixed Model) 
-         or 'gee'(Generalized Estimating Equation)")
+  if (!is.element(method, c('glmm', 'gee'))) {
+    stop(
+      "METHOD must be either 'glmm' (Generalized Linear Mixed Model)
+         or 'gee'(Generalized Estimating Equation)"
+    )
   }
-  if(!is.logical(quiet)){
-    stop("QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)")
+  if (!is.logical(quiet)) {
+    stop(
+      "QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)"
+    )
   }
   
   # Calculate inputs & variance parameters
-  if(is.null(c1)){
+  if (is.null(c1)) {
     c1 = abs(c.diff - c2)
   }
-  if(is.null(c2)){
+  if (is.null(c2)) {
     c2 = abs(c1 - c.diff)
   }
-  if(is.null(c.diff)){
+  if (is.null(c.diff)) {
     c.diff = c1 - c2
   }
-  if(is.null(sigma_b_sq2)){
+  if (is.null(sigma_b_sq2)) {
     sigma_b_sq[2] = sigma_b_sq
-  }else{
+  } else{
     sigma_b_sq[2] = sigma_b_sq2
   }
   
   # Create indicators for treatment group & cluster
-  trt = c(rep(0, length.out = nsubjects[1]*nclusters[1]), 
-          rep(1, length.out = nsubjects[2]*nclusters[2]))
-  clust = c(rep(1:nclusters[1], each = nsubjects[1]), rep((nclusters[1] + 1):(nclusters[1] + nclusters[2]), 
-                                                          each = nsubjects[2]))
+  trt = c(
+    rep(0, length.out = nsubjects[1] * nclusters[1]),
+    rep(1, length.out = nsubjects[2] * nclusters[2])
+  )
+  clust = c(rep(1:nclusters[1], each = nsubjects[1]),
+            rep((nclusters[1] + 1):(nclusters[1] + nclusters[2]),
+                each = nsubjects[2]))
   # Create simulation loop
-  for(i in 1:nsim){
+  for (i in 1:nsim) {
     # Generate between-cluster effects for non-treatment and treatment
     randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq[1]))
     randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq[2]))
     
     # Create non-treatment y-value
     y0.intercept <- rep(randint.0, each = nsubjects[1])
-    y0.linpred = y0.intercept + log(c1) 
+    y0.linpred = y0.intercept + log(c1)
     y0.prob = exp(y0.linpred)
-    if(family == 'poisson'){
+    if (family == 'poisson') {
       y0 = stats::rpois(length(y0.prob), y0.prob)
     }
-    if(family == 'neg.binom'){
+    if (family == 'neg.binom') {
       y0 = stats::rnbinom(length(y0.prob), size = 1, mu = y0.prob)
     }
-      
+    
     # Create treatment y-value
     y1.intercept <- rep(randint.1, each = nsubjects[2])
     y1.linpred = y1.intercept + log(c2) #+ log((c1 / (1 - c1)) / (c2 / (1 - c2)))
     y1.prob = exp(y1.linpred)
-    if(family == 'poisson'){
+    if (family == 'poisson') {
       y1 = stats::rpois(length(y1.prob), y1.prob)
     }
-    if(family == 'neg.binom'){
+    if (family == 'neg.binom') {
       y1 = stats::rnbinom(length(y1.prob), size = 1, mu = y1.prob)
     }
     
@@ -240,83 +280,153 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     y = c(y0, y1)
     
     # Create and store data for simulated dataset
-    sim.dat = data.frame(y = as.integer(y), trt = as.factor(trt), clust = as.factor(clust))
-    if(all.sim.data == TRUE){
+    sim.dat = data.frame(y = as.integer(y),
+                         trt = as.factor(trt),
+                         clust = as.factor(clust))
+    if (all.sim.data == TRUE) {
       simulated.datasets = append(simulated.datasets, list(sim.dat))
+    }
+    
+    # option to return simulated data only
+    if (nofit == TRUE) {
+      if (!exists("nofitop")) {
+        nofitop <- data.frame(trt = trt,
+                              clust = clust,
+                              y1 = y)
+      } else {
+        nofitop[, length(nofitop) + 1] <- y
+      }
+      if (length(nofitop) == (nsim + 2)) {
+        temp1 <- seq(1:nsim)
+        temp2 <- paste0("y", temp1)
+        colnames(nofitop) <- c("arm", "cluster", temp2)
+      }
+      if (length(nofitop) != (nsim + 2)) {
+        next()
+      }
+      return(nofitop)
     }
     
     # Fit GLMM (lmer)
     if (method == 'glmm') {
-      if (i == 1){
+      if (i == 1) {
         require("optimx")
         if (isTRUE(optimizer == "auto")) {
           if (irgtt == FALSE) {
             if (analysis == 'poisson') {
-              my.mod = lme4::glmer(y ~ as.factor(trt) + (1|clust), data = sim.dat, 
-                                   family = stats::poisson(link = 'log'))
+              my.mod = lme4::glmer(
+                y ~ as.factor(trt) + (1 | clust),
+                data = sim.dat,
+                family = stats::poisson(link = 'log')
+              )
             }
             if (analysis == 'neg.binom') {
-              my.mod = lme4::glmer.nb(y ~ as.factor(trt) + (1|clust), data = sim.dat)
+              my.mod = lme4::glmer.nb(y ~ as.factor(trt) + (1 |
+                                                              clust), data = sim.dat)
             }
           }
-          if (irgtt == TRUE){
+          if (irgtt == TRUE) {
             if (analysis == 'poisson') {
-              my.mod <- lme4::glmer(y ~ trt + (0 + as.factor(trt)|clust), data = sim.dat, 
-                                    family = stats::poisson(link = 'log'))
+              my.mod <-
+                lme4::glmer(
+                  y ~ trt + (0 + as.factor(trt) | clust),
+                  data = sim.dat,
+                  family = stats::poisson(link = 'log')
+                )
             }
-            if (analysis == 'neg.binom') { # this is not tested
-              my.mod = lme4::glmer.nb(y ~ trt + (0 + as.factor(trt)|clust), data = sim.dat)
-            }        
+            if (analysis == 'neg.binom') {
+              # this is not tested
+              my.mod = lme4::glmer.nb(y ~ trt + (0 + as.factor(trt) |
+                                                   clust), data = sim.dat)
+            }
           }
           goodopt <- optimizerSearch(my.mod)
         } else {
-        goodopt <- optimizer
-    }
-  }
-      if (irgtt == FALSE){
-        if (analysis == 'poisson'){
-          my.mod = lme4::glmer(y ~ trt + (1|clust), data = sim.dat, 
-                               family = stats::poisson(link = 'log'),
-                               control = lme4::glmerControl(optimizer = "optimx", 
-                                                            optCtrl = list(method = goodopt, 
-                                                                           starttests = FALSE, kkt = FALSE)))
+          goodopt <- optimizer
         }
-        if(analysis == 'neg.binom'){
-          my.mod = lme4::glmer.nb(y ~ trt + (1|clust), data = sim.dat, 
-                                  control = lme4::glmerControl(optimizer = "optimx", 
-                                                               optCtrl = list(method = goodopt,
-                                                                              starttests = FALSE, kkt = FALSE)))
-        }
-      } 
-      if (irgtt == TRUE){
-        if(analysis == 'poisson'){
-          my.mod <- lme4::glmer(y ~ trt + (0 + trt|clust), data = sim.dat, 
-                               family = stats::poisson(link = 'log'),                                
-                               control = lme4::glmerControl(optimizer = "optimx", 
-                                                            optCtrl = list(method = goodopt,
-                                                                           starttests = FALSE, kkt = FALSE))
+      }
+      if (irgtt == FALSE) {
+        if (analysis == 'poisson') {
+          my.mod = lme4::glmer(
+            y ~ trt + (1 | clust),
+            data = sim.dat,
+            family = stats::poisson(link = 'log'),
+            control = lme4::glmerControl(
+              optimizer = "optimx",
+              optCtrl = list(
+                method = goodopt,
+                starttests = FALSE,
+                kkt = FALSE
+              )
+            )
           )
         }
-        if(analysis == 'neg.binom'){ # this is not tested
-          my.mod = lme4::glmer.nb(y ~ trt + (0 + trt|clust), data = sim.dat,
-                                  control = lme4::glmerControl(optimizer = "optimx", 
-                                                               optCtrl = list(method = goodopt,
-                                                                              starttests = FALSE, kkt = FALSE)))
-        }        
+        if (analysis == 'neg.binom') {
+          my.mod = lme4::glmer.nb(
+            y ~ trt + (1 | clust),
+            data = sim.dat,
+            control = lme4::glmerControl(
+              optimizer = "optimx",
+              optCtrl = list(
+                method = goodopt,
+                starttests = FALSE,
+                kkt = FALSE
+              )
+            )
+          )
+        }
+      }
+      if (irgtt == TRUE) {
+        if (analysis == 'poisson') {
+          my.mod <- lme4::glmer(
+            y ~ trt + (0 + trt | clust),
+            data = sim.dat,
+            family = stats::poisson(link = 'log'),
+            control = lme4::glmerControl(
+              optimizer = "optimx",
+              optCtrl = list(
+                method = goodopt,
+                starttests = FALSE,
+                kkt = FALSE
+              )
+            )
+          )
+        }
+        if (analysis == 'neg.binom') {
+          # this is not tested
+          my.mod = lme4::glmer.nb(
+            y ~ trt + (0 + trt | clust),
+            data = sim.dat,
+            control = lme4::glmerControl(
+              optimizer = "optimx",
+              optCtrl = list(
+                method = goodopt,
+                starttests = FALSE,
+                kkt = FALSE
+              )
+            )
+          )
+        }
       }
       glmm.values = summary(my.mod)$coefficient
       est.vector = append(est.vector, glmm.values['trt1', 'Estimate'])
       se.vector = append(se.vector, glmm.values['trt1', 'Std. Error'])
       stat.vector = append(stat.vector, glmm.values['trt1', 'z value'])
       pval.vector = append(pval.vector, glmm.values['trt1', 'Pr(>|z|)'])
-      converge.vector = append(converge.vector, ifelse(any( grepl("singular", my.mod@optinfo$conv$lme4$messages) )==TRUE, FALSE, TRUE) )
+      converge.vector = append(converge.vector, ifelse(any(
+        grepl("singular", my.mod@optinfo$conv$lme4$messages)
+      ) == TRUE, FALSE, TRUE))
     }
     # Fit GEE (geeglm)
-    if(method == 'gee'){
+    if (method == 'gee') {
       sim.dat = dplyr::arrange(sim.dat, clust)
-      my.mod = geepack::geeglm(y ~ trt, data = sim.dat,
-                               family = stats::poisson(link = 'log'), 
-                               id = clust, corstr = "exchangeable")
+      my.mod = geepack::geeglm(
+        y ~ trt,
+        data = sim.dat,
+        family = stats::poisson(link = 'log'),
+        id = clust,
+        corstr = "exchangeable"
+      )
       gee.values = summary(my.mod)$coefficients
       est.vector = append(est.vector, gee.values['trt', 'Estimate'])
       se.vector = append(se.vector, gee.values['trt', 'Std.err'])
@@ -325,89 +435,133 @@ cps.count = function(nsim = NULL, nsubjects = NULL, nclusters = NULL, c1 = NULL,
     }
     
     # Update simulation progress information
-    if(quiet == FALSE){
-      if(i == 1){
+    if (quiet == FALSE) {
+      if (i == 1) {
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
         min.est = round(time.est %% 60, 0)
-        message(paste0('Begin simulations :: Start Time: ', Sys.time(), ' :: Estimated completion time: ', hr.est, 'Hr:', min.est, 'Min'))
+        message(
+          paste0(
+            'Begin simulations :: Start Time: ',
+            Sys.time(),
+            ' :: Estimated completion time: ',
+            hr.est,
+            'Hr:',
+            min.est,
+            'Min'
+          )
+        )
       }
       # Iterate progress bar
       prog.bar$update(i / nsim)
-      Sys.sleep(1/100)
+      Sys.sleep(1 / 100)
       
-      if(i == nsim){
+      if (i == nsim) {
         message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
-      } 
+      }
     }
   }
   
   ## Output objects
   # Create object containing summary statement
-  if (irgtt==FALSE){
-    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
-                             " Simulations: Simple Design, Count Outcome\nData Simulated from ", 
-                             switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'), 
-                             " distribution\nAnalyzed using ", 
-                             switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'), 
-                             " regression")
+  if (irgtt == FALSE) {
+    summary.message = paste0(
+      "Monte Carlo Power Estimation based on ",
+      nsim,
+      " Simulations: Simple Design, Count Outcome\nData Simulated from ",
+      switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
+      " distribution\nAnalyzed using ",
+      switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
+      " regression"
+    )
   } else {
-    summary.message = paste0("Monte Carlo Power Estimation based on ", nsim, 
-                             " Simulations: IRGTT Design, Count Outcome\nData Simulated from ", 
-                             switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'), 
-                             " distribution\nAnalyzed using ", 
-                             switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'), 
-                             " regression")    
+    summary.message = paste0(
+      "Monte Carlo Power Estimation based on ",
+      nsim,
+      " Simulations: IRGTT Design, Count Outcome\nData Simulated from ",
+      switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
+      " distribution\nAnalyzed using ",
+      switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
+      " regression"
+    )
   }
   # Create method object
-  long.method = switch(method, glmm = 'Generalized Linear Mixed Model', 
+  long.method = switch(method, glmm = 'Generalized Linear Mixed Model',
                        gee = 'Generalized Estimating Equation')
   
   # Store simulation output in data frame
-  cps.model.est = data.frame(Estimate = as.vector(unlist(est.vector)),
-                           Std.err = as.vector(unlist(se.vector)),
-                           Test.statistic = as.vector(unlist(stat.vector)),
-                           p.value = as.vector(unlist(pval.vector)),
-                           converge = as.vector(unlist(converge.vector)))
+  cps.model.est = data.frame(
+    Estimate = as.vector(unlist(est.vector)),
+    Std.err = as.vector(unlist(se.vector)),
+    Test.statistic = as.vector(unlist(stat.vector)),
+    p.value = as.vector(unlist(pval.vector)),
+    converge = as.vector(unlist(converge.vector))
+  )
   
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
-  power.parms <- confint.calc(nsim = nsim, alpha = alpha,
+  power.parms <- confint.calc(nsim = nsim,
+                              alpha = alpha,
                               p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs
   c1.c2.rr = round(exp(log(c1) - log(c2)), 3)
   c2.c1.rr = round(exp(log(c2) - log(c1)), 3)
-  inputs = t(data.frame('Non.Treatment' = c("count" = c1, "risk.ratio" = c1.c2.rr), 
-                        'Treatment' = c("count" = c2, 'risk.ratio' = c2.c1.rr), 
-                        'Difference' = c("count" = c.diff, 'risk.ratio' = c2.c1.rr - c1.c2.rr)))
+  inputs = t(data.frame(
+    'Non.Treatment' = c("count" = c1, "risk.ratio" = c1.c2.rr),
+    'Treatment' = c("count" = c2, 'risk.ratio' = c2.c1.rr),
+    'Difference' = c("count" = c.diff, 'risk.ratio' = c2.c1.rr - c1.c2.rr)
+  ))
   
   # Create object containing group-specific cluster sizes
-  cluster.sizes = list('Non.Treatment' = rep (nsubjects[1], length.out = nclusters[1]), 
-                       'Treatment' = rep(nsubjects[2], length.out = nclusters[2]))
+  cluster.sizes = list(
+    'Non.Treatment' = rep (nsubjects[1], length.out = nclusters[1]),
+    'Treatment' = rep(nsubjects[2], length.out = nclusters[2])
+  )
   
   # Create object containing number of clusters
-  n.clusters = t(data.frame("Non.Treatment" = c("n.clust" = nclusters[1]), 
-                            "Treatment" = c("n.clust" = nclusters[2])))
+  n.clusters = t(data.frame(
+    "Non.Treatment" = c("n.clust" = nclusters[1]),
+    "Treatment" = c("n.clust" = nclusters[2])
+  ))
   
   # Create object containing group-specific variance parameters
-  var.parms = t(data.frame('Non.Treatment' = c('sigma_b_sq' = sigma_b_sq[1]), 
-                           'Treatment' = c('sigma_b_sq' = sigma_b_sq[2])))
+  var.parms = t(data.frame(
+    'Non.Treatment' = c('sigma_b_sq' = sigma_b_sq[1]),
+    'Treatment' = c('sigma_b_sq' = sigma_b_sq[2])
+  ))
   
   # Create object containing FAMILY & REGRESSION parameters
-  dist.parms = rbind('Family:' = paste0(switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'), ' distribution'), 
-                     'Analysis:' = paste0(switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'), ' distribution'))
+  dist.parms = rbind(
+    'Family:' = paste0(switch(
+      family, poisson = 'Poisson', neg.binom = 'Negative Binomial'
+    ), ' distribution'),
+    'Analysis:' = paste0(switch(
+      analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'
+    ), ' distribution')
+  )
   colnames(dist.parms) = "Data Simuation & Analysis Parameters"
   
   
   # Create list containing all output (class 'crtpwr') and return
-  complete.output = structure(list("overview" = summary.message, "nsim" = nsim, "power" = power.parms, "method" = long.method, 
-                                   "dist.parms" = dist.parms, "alpha" = alpha, "cluster.sizes" = cluster.sizes, 
-                                   "n.clusters" = n.clusters, "variance.parms" = var.parms, "inputs" = inputs, 
-                                   "model.estimates" = cps.model.est, "sim.data" = simulated.datasets,
-                                   "convergence" = converge.vector), 
-                              class = 'crtpwr')
+  complete.output = structure(
+    list(
+      "overview" = summary.message,
+      "nsim" = nsim,
+      "power" = power.parms,
+      "method" = long.method,
+      "dist.parms" = dist.parms,
+      "alpha" = alpha,
+      "cluster.sizes" = cluster.sizes,
+      "n.clusters" = n.clusters,
+      "variance.parms" = var.parms,
+      "inputs" = inputs,
+      "model.estimates" = cps.model.est,
+      "sim.data" = simulated.datasets,
+      "convergence" = converge.vector
+    ),
+    class = 'crtpwr'
+  )
   return(complete.output)
-  }
-
+}

@@ -73,6 +73,11 @@
 #' @param tdist Logical value indicating whether simulated data should be 
 #' drawn from a t-distribution rather than the normal distribution. 
 #' Default = FALSE.
+#' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
+#' the overall model comparisons, and the convergence report vector. This is equivalent
+#' to the output of cps.ma.count.internal(). See ?cps.ma.count.internal() for details.
+#' @param nofit Option to skip model fitting and analysis and return the simulated data. 
+#' Defaults to \code{FALSE}. 
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
 #' @return A list with the following components:
 #' \describe{
@@ -149,6 +154,7 @@ cps.ma.count <- function(nsim = 1000,
                          tdist = FALSE,
                          poor.fit.override = FALSE,
                          low.power.override = FALSE,
+                         nofit = nofit,
                          opt = "NLOPT_LN_BOBYQA") {
   # use this later to determine total elapsed time
   start.time <- Sys.time()
@@ -255,6 +261,10 @@ cps.ma.count <- function(nsim = 1000,
     family = family,
     opt = opt
   )
+  
+  if (nofit == TRUE || return.all.models == TRUE) {
+    return(count.ma.rct)
+  }
   
   models <- count.ma.rct[[1]]
   

@@ -51,6 +51,9 @@
 #' calculated power is returned regardless of value. 
 #' @param tdist Logical; use t-distribution instead of normal distribution 
 #' for simulation values, default = FALSE.
+#' @param return.all.models Logical; Returns all of the fitted models and the simulated data.
+#' @param nofit Option to skip model fitting and analysis and return the simulated data. 
+#' Defaults to \code{FALSE}. 
 #' @param optmethod Option to fit with a different optimizer (using the package 
 #' \code{optimx}). Defaults to \code{nlminb}.
 #' @return A list with the following components:
