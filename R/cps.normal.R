@@ -62,7 +62,7 @@
 #' of fits fail to converge.
 #' @param nofit Option to return only the simulated data, no analysis. Defaults to FALSE.
 #' 
-#' @return A list with the following components:
+#' @return If \code{nofit = FALSE} then a list with the following components:
 #' \itemize{
 #'   \item Character string indicating total number of simulations and simulation type
 #'   \item Number of simulations
@@ -88,6 +88,9 @@
 #'                   "trt" (Indicator for arm), 
 #'                   "clust" (Indicator for cluster)
 #'                   }
+#' 
+#' If \code{nofit = TRUE} then a dataframe with \code{nsim} + 2 columns and a row for 
+#' each simulated subject.
 #' 
 #' @section Notes:
 #'
