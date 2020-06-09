@@ -208,6 +208,8 @@ cps.ma.binary.internal <-
           str.nsubjects = str.nsubjects
         )
       )
+    
+    #option to return simulated data only
     if (nofit == TRUE) {
       sim.dat <- data.frame(trt, clust, sim.dat)
       sim.num <- 1:nsim
@@ -215,6 +217,7 @@ cps.ma.binary.internal <-
       colnames(sim.dat) <- c("arm", "cluster", temp)
       return(sim.dat)
     }
+    
     require(foreach)
     `%fun%` <- `%dopar%`
     if (is.na(cores)) {

@@ -124,10 +124,10 @@
 #'                             alpha = 0.05, all.sim.data = FALSE, 
 #'                             seed = 123, cores="all", poor.fit.override=TRUE) 
 #'                             
-#' count.ma.rct.bal <- cps.ma.count(nsim = 50, nsubjects = 20, narms=3,
-#'                             nclusters=10,
+#' count.ma.rct.bal <- cps.ma.count(nsim = 100, nsubjects = 100, narms=3,
+#'                             nclusters=4,
 #'                             counts = c(30, 35, 70),
-#'                             sigma_b_sq = 1, alpha = 0.05,
+#'                             sigma_b_sq = 0.001, alpha = 0.05,
 #'                             quiet = FALSE, method = 'glmm', 
 #'                             all.sim.data = FALSE, 
 #'                             multi.p.method="none",
@@ -154,7 +154,8 @@ cps.ma.count <- function(nsim = 1000,
                          tdist = FALSE,
                          poor.fit.override = FALSE,
                          low.power.override = FALSE,
-                         nofit = nofit,
+                         return.all.models = FALSE,
+                         nofit = FALSE,
                          opt = "NLOPT_LN_BOBYQA") {
   # use this later to determine total elapsed time
   start.time <- Sys.time()
@@ -259,9 +260,11 @@ cps.ma.count <- function(nsim = 1000,
     tdist = tdist,
     cores = cores,
     family = family,
+    nofit = nofit,
     opt = opt
   )
   
+  #option to return simulated data only
   if (nofit == TRUE || return.all.models == TRUE) {
     return(count.ma.rct)
   }

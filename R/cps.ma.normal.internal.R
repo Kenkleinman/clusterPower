@@ -214,6 +214,7 @@ cps.ma.normal.internal <-
       sim.dat[[i]][["y"]] <- y
     }
     
+    #option to return simulated data only
     if (nofit == TRUE) {
       # turn off parallel computing
       if (!exists("cores", mode = "NULL")) {

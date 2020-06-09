@@ -155,6 +155,7 @@ cps.ma.count.internal <-
     if (length(trt) != length(clust)) {
       stop("trt and clust are not the same length, see line 134")
     }
+    gc()
     sim.dat <- matrix(nrow = length(clust), ncol = nsim)
     
     # function to produce the simulated data
@@ -194,6 +195,7 @@ cps.ma.count.internal <-
         }
         randintrandint <- exp(randint.holder)
       }
+
       # Create y-value
       y.intercept <- vector(mode = "numeric",
                             length = sum(unlist(str.nsubjects.)))
@@ -223,7 +225,12 @@ cps.ma.count.internal <-
       )
     )
     
+    #option to return simulated data only
     if (nofit == TRUE) {
+      sim.dat <- data.frame(trt, clust, sim.dat)
+      sim.num <- 1:nsim
+      temp <- paste0("y", sim.num)
+      colnames(sim.dat) <- c("arm", "cluster", temp)
       return(sim.dat)
     }
     

@@ -323,6 +323,7 @@ cps.ma.normal <- function(nsim = 1000,
     return.all.models = return.all.models
   )
   
+  #option to return simulated data only
   if (nofit == TRUE || return.all.models == TRUE) {
     return(normal.ma.rct)
   }

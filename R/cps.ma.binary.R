@@ -269,6 +269,7 @@ cps.ma.binary <- function(nsim = 1000,
     optmethod = optmethod
   )
   
+  #option to return simulated data only
   if (nofit == TRUE) {
     return(binary.ma.rct)
   }
