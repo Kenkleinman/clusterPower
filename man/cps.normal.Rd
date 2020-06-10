@@ -143,17 +143,16 @@ Sample Size Calculator, PASS11, \code{CRTsize::n4means}, and
 \section{Notes}{
 
 
-The data generating model here is:
-\mjsdeqn{y_{ij} = \mu + b_i + e_{ij} }
+The data generating model is:
+\mjsdeqn{y_{ij} \sim N(\mu + b_i, \sigma^2) }
 for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)} 
-and \mjseqn{e_{ij} \sim N(0,\sigma^2)}, while for the second group, 
+, while for the second group, 
  
-\mjsdeqn{y_{ij} = \mu_2 + b_i + e_{ij} }
-where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)} 
-and \mjseqn{e_{ij} \sim N(0,\sigma_2^2)}; if none of 
+\mjsdeqn{y_{ij} \sim N(\mu_2 + b_i, \sigma_2^2) }
+where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if none of 
 \mjseqn{\sigma_2^2, \sigma_{b_2}^2} or \code{ICC2} are used, then the second group uses
 \mjseqn{b_i \sim N(0,\sigma_b^2)} 
-and \mjseqn{e_{ij} \sim N(0,\sigma^2)}.
+and \mjseqn{y_{ij} \sim N(\mu_2 + b_i, \sigma_2)} .
 
 All random terms are generated indepent of one another.
 

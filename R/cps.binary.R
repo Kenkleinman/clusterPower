@@ -37,10 +37,10 @@
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE
 #' @param seed Option to set the seed. Default is NA.
 #' 
-#' At least 2 of the following 3 arguments must be specified when using expected odds ratios:
-#' @param or1 Expected odds ratio for outcome in non-treatment group
-#' @param or2 Expected odds ratio for outcome in treatment group
-#' @param or.diff Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2
+#' At least 2 of the following 3 arguments must be specified when using odds:
+#' @param or1 Odds for the outcome in the first group
+#' @param or2 Odds for the outcome in the second group
+#' @param or.diff Difference in odds of the outcome between the groups, defined as or.diff = or1 - or2
 #
 #'  
 #' @return A list with the following components
@@ -70,6 +70,23 @@
 #' }
 #' 
 #' @section Notes:
+#' 
+#' 
+#' 
+#' 
+#' The data generating model is:
+#' \mjsdeqn{y_{ij} \sim Bernoulli(\frac{e^{p_1 + b_i}}{1 + e^{p_1 + b_i} }) }
+#' for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)} 
+#' , while for the second group, 
+#'  
+#' \mjsdeqn{y_{ij} \sim Bernoulli(\frac{e^{p_2 + b_i}}{1 + e^{p_2 + b_i} }) }
+#' where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if 
+#' \mjseqn{\sigma_{b_2}^2} is not used, then the second group uses
+#' \mjseqn{b_i \sim N(0,\sigma_b^2)}.
+#' 
+#' All random terms are generated indepent of one another.
+#' 
+#' 
 #' 
 #' An intracluster correlation coefficient (ICC) is neither a natural parameter of the
 #' data generating model nor a function of its parameters.  Several methods for
@@ -111,11 +128,30 @@
 #' 
 #' 
 #' @examples 
+#' 
+#' 
+#' # Estimate power for a trial with 10 clusters in each arm, 20 subjects in 
+#' # each cluster, with a probability of 0.8 in the first arm and 0.5 in the 
+#' # second arm, with a sigma_b_sq in the first arm of 1 and in the second arm
+#' # of 1.2
+#' 
 #' \dontrun{
 #' binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.8,
 #'                         p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
 #'                         method = 'glmm', all.sim.data = FALSE)
 #' }
+#'
+#' # Estimate power for a trial just as above, except that in the first arm,
+#' # the clusters have 10 subjects in 9 of the 10 clusters and 100 in the tenth
+#' # cluster, while in the second arm, all clusters have 20 subjects.
+#' 
+#' \dontrun{
+#' binary.sim2 = cps.binary(nsim = 100, nsubjects = c(c(rep(10,9),100),rep(20,10)), nclusters = 10, p1 = 0.8,
+#'                         p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
+#'                         method = 'glmm', all.sim.data = FALSE)
+#' }
+#'
+#'
 #'
 #' @export
 
