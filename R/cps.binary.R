@@ -69,10 +69,7 @@
 #'   Includes model number for cross-referencing against \code{model.estimates}
 #' }
 #' 
-#' @section Notes:
-#' 
-#' 
-#' 
+#' @details 
 #' 
 #' The data generating model is:
 #' \mjsdeqn{y_{ij} \sim Bernoulli(\frac{e^{p_1 + b_i}}{1 + e^{p_1 + b_i} }) }
@@ -87,26 +84,19 @@
 #' All random terms are generated indepent of one another.
 #' 
 #' 
+#' Non-convergent models are not included in the calculation of exact confidence 
+#' intervals.
+#' 
+#' 
+#' @seealso 
 #' 
 #' An intracluster correlation coefficient (ICC) is neither a natural parameter of the
 #' data generating model nor a function of its parameters.  Several methods for
 #' calculation have been suggested. (Wu, Crespi, and Wong, 2012).  We provide
-#' several versions of ICCs for comparison:
-#' 
-#' \mjsdeqn{P_h = \frac{\sigma_b}{\sigma_b + \pi^2/3}}
-#' \mjsdeqn{P_c = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_j \pi_h }
-#' {\sqrt{\pi_j (1 - \pi_j )\pi_h (1 - \pi_h )}}}
-#' \mjsdeqn{P_{lmer} = \frac{\sigma_b }{\sigma_b + \sigma_w }}
-#' 
-#' Of these, \mjseqn{P_h} and \mjseqn{P_c} are based on parameters of the data
-#' generating model.  \mjseqn{P_h} should only be used when \mjseqn{\sigma_{b_2}^2}
-#' is not used.  \mjseqn{P_{lmer}} is based on the data analysis via GLMM and should 
-#' only be used with that \code{method}, and also should not be used when 
-#' \mjseqn{\sigma_{b_2}^2} is used.
+#' several versions of ICCs for comparison.  These can be accessed in the 
+#' \code{bincalcICC()} function.
 #' 
 #' 
-#' Non-convergent models are not included in the calculation of exact confidence 
-#' intervals.
 #' 
 #' @section Testing details:   
 #' This function has been verified against reference values from the NIH's GRT 

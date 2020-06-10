@@ -133,16 +133,7 @@ of units within each cluster.
 Non-convergent models are not included in the calculation of exact confidence 
 intervals.
 }
-\section{Testing details}{
-   
-This function has been verified, where possible, against reference values from the NIH's GRT 
-Sample Size Calculator, PASS11, \code{CRTsize::n4means}, and 
-\code{clusterPower::cpa.normal}.
-}
-
-\section{Notes}{
-
-
+\details{
 The data generating model is:
 \mjsdeqn{y_{ij} \sim N(\mu + b_i, \sigma^2) }
 for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)} 
@@ -176,6 +167,12 @@ Otherwise, for \code{method="glmm"} the fitted model is:
 with \mjseqn{\beta_1}, \mjseqn{x_{ij}, b_i}, and \mjseqn{e_{ij}} as above, with
 \mjseqn{g_i \sim N(0, \sigma_{b_2}^2)} and \mjseqn{f \sim N(0,\sigma_2^2)}, the 
 random effects and residual distribution in the second group.
+}
+\section{Testing details}{
+   
+This function has been verified, where possible, against reference values from the NIH's GRT 
+Sample Size Calculator, PASS11, \code{CRTsize::n4means}, and 
+\code{clusterPower::cpa.normal}.
 }
 
 \examples{

@@ -92,7 +92,7 @@
 #' If \code{nofit = TRUE} then a dataframe with \code{nsim} + 2 columns and a row for 
 #' each simulated subject.
 #' 
-#' @section Notes:
+#' @details 
 #'
 #' The data generating model is:
 #' \mjsdeqn{y_{ij} \sim N(\mu + b_i, \sigma^2) }
