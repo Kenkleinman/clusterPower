@@ -76,6 +76,8 @@
 #' Defaults to \code{FALSE}. 
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
 #' @param optmethod User-specified optimizer methods available for the optimizer specified in \code{opt} option.
+#' @param return.all.models Logical; Returns all of the fitted models and the simulated data.
+#' Defaults to FALSE.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{Data frame with columns "power" (Estimated statistical power), 
@@ -151,7 +153,8 @@ cps.ma.binary <- function(nsim = 1000,
                           low.power.override = FALSE,
                           nofit = FALSE,
                           opt = "bobyqa",
-                          optmethod = "Nelder-Mead") {
+                          optmethod = "Nelder-Mead",
+                          return.all.models = FALSE) {
   # use this later to determine total elapsed time
   start.time <- Sys.time()
   
@@ -266,7 +269,8 @@ cps.ma.binary <- function(nsim = 1000,
     cores = cores,
     nofit = nofit,
     opt = opt,
-    optmethod = optmethod
+    optmethod = optmethod,
+    return.all.models = return.all.models
   )
   
   #option to return simulated data only
@@ -375,43 +379,122 @@ cps.ma.binary <- function(nsim = 1000,
     )
     
     ## Output objects for GLMM
+  
+    # Create object containing summary statement
+    summary.message = paste0(
+      "Monte Carlo Power Estimation based on ",
+      nsim,
+      " Simulations: Parallel Design, Binary Outcome, ",
+      narms,
+      " Arms."
+    )
     
+    # Create method object
+    long.method = switch(method, glmm = 'Generalized Linear Mixed Model',
+                         gee = 'Generalized Estimating Equation')
+    
+    # Create object containing group-specific variance parameters
+    armnames <- vector(mode = "character", length = narms)
+    for (i in 1:narms) {
+      armnames[i] <- paste0("Arm.", i)
+    }
+    
+    var.parms = data.frame('sigma_b_sq' = sigma_b_sq,
+                           "probs" = probs)
+    rownames(var.parms) <- armnames
+    
+    # Create object containing group-specific cluster sizes
+    names(str.nsubjects) <- armnames
+    cluster.sizes <- str.nsubjects
+      
     # Create list containing all output (class 'crtpwr') and return
-    if (all.sim.data == TRUE) {
-      complete.output <-  structure(
+    
+    
+    if (all.sim.data == TRUE && return.all.models == FALSE) {
+      complete.output = structure(
         list(
-          "power" <-  power.parms[-1, ],
-          "model.estimates" <-  ma.model.est,
-          "overall.power" <- LRT.holder,
-          "overall.power2" <-
-            try(prop_H0_rejection(alpha = alpha,
-                                  nsim = nsim,
-                                  LRT.holder.abbrev =
-                                    LRT.holder.abbrev))
-          ,
-          "sim.data" <-  binary.ma.rct[[3]],
-          "failed.to.converge" <-
-            binary.ma.rct[[4]]
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms[-1,],
+          "beta" = power.parms[-1,]['Beta'],
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "overall.power" = LRT.holder,
+          "method" = long.method,
+          "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "probs" = probs,
+          "model.estimates" = ma.model.est,
+          "convergence" = binary.ma.rct[[3]],
+          "sim.data" = binary.ma.rct[[4]]
         ),
-        class = "crtpwr"
-      )
-    } else {
-      complete.output <- structure(
-        list(
-          "power" <-  power.parms[-1, ],
-          "overall.power" <-
-            try(prop_H0_rejection(alpha = alpha,
-                                  nsim = nsim,
-                                  LRT.holder.abbrev =
-                                    LRT.holder.abbrev))
-          ,
-          "proportion.failed.to.converge" <-
-            binary.ma.rct[[3]]
-        ),
-        class = "crtpwr"
+        class = 'crtpwr'
       )
     }
+    
+    if (return.all.models == TRUE) {
+      complete.output = structure(
+        list(
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms[-1,],
+          "beta" = power.parms[-1,]['Beta'],
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "overall.power" = LRT.holder,
+          "method" = long.method,
+          "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "probs" = probs,
+          "model.estimates" = ma.model.est,
+          "convergence" = binary.ma.rct[[3]],
+          "sim.data" = binary.ma.rct[[4]],
+          "all.models" <-  binary.ma.rct
+        ),
+        class = 'crtpwr'
+      )
+    }
+    if (return.all.models == FALSE && all.sim.data == FALSE) {
+      complete.output = structure(
+        list(
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms[-1,],
+          "beta" = power.parms[-1,]['Beta'],
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "overall.power" = LRT.holder,
+          "method" = long.method,
+          "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "probs" = probs,
+          "model.estimates" = ma.model.est,
+          "convergence" = binary.ma.rct[[3]]
+        ),
+        class = 'crtpwr'
+      )
+    }
+    
     return(complete.output)
+  
   } # end of GLMM options
   
   #Organize output for GEE method
@@ -468,7 +551,7 @@ cps.ma.binary <- function(nsim = 1000,
     # Calculate and store power estimate & confidence intervals
     sig.val <-  ifelse(Pr < alpha, 1, 0)
     pval.power <-
-      apply (
+      apply(
         sig.val,
         2,
         FUN = function(x) {

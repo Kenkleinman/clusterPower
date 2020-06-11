@@ -31,6 +31,17 @@
 #'   intervals}	}
 #' @examples
 #' \dontrun{
+#' bin.ma.rct.unbal <- cps.ma.binary(nsim = 61, 
+#'                             nsubjects = list(rep(200, times=15), 
+#'                             rep(150, times=15), 
+#'                             rep(170, times=15)), 
+#'                             narms = 3,
+#'                             nclusters = 15,
+#'                             probs = c(0.15, 0.23, 0.22),
+#'                             sigma_b_sq = c(0.1, 0.1, 0.1), 
+#'                             alpha = 0.05, all.sim.data = TRUE, 
+#'                             seed = 123, cores="all") 
+#' 
 #'   bin <- BinCalcICC(data = bin.ma.rct.unbal, nsim = 1000, index = 6)
 #' }
 #'
