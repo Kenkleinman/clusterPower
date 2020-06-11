@@ -30,12 +30,6 @@
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
 #' @param nclusters Number of clusters per treatment group; accepts integer (required).
-#' @param p1 Expected probability of outcome in non-treatment group
-#' @param p2 Expected probability of outcome in treatment group
-#' @param sigma_b_sq Between-cluster variance; if sigma_b_sq2 is not specified, 
-#' between cluster variances are assumed to be equal for both groups. Accepts numeric.
-#' If between cluster variances differ between treatment groups, sigma_b_sq2 must also be 
-#' specified:
 #' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
 #' @param alpha Significance level; default = 0.05
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) 
@@ -44,13 +38,6 @@
 #' time, default is TRUE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE
 #' @param seed Option to set the seed. Default is NA.
-#' At least 2 of the following 3 arguments must be specified when using expected odds ratios:
-#' @param or1 Expected odds ratio for outcome in non-treatment group
-#' @param or2 Expected odds ratio for outcome in treatment group
-#' @param or.diff Expected difference in odds ratio for outcome between groups, defined as 
-#' or.diff = or1 - or2
-#' @param nofit Option to skip model fitting and analysis and return the simulated data. 
-#' Defaults to \code{FALSE}. 
 #'  
 #' @return A list with the following components
 #' \itemize{
@@ -78,15 +65,6 @@
 #'   Includes model number for cross-referencing against \code{model.estimates}
 #' }
 #' 
-#' @author Alexander R. Bogdan, Alexandria C. Sakrejda, and 
-#' Ken Kleinman (\email{ken.kleinman@@gmail.com})
-#' 
-#' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and 
-#' Advanced Multilevel Modelling. London, 1999: Sage.
-#' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation 
-#' Coefficient in Cluster Randomized Trials: 
-#' A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. 
-#' doi: 10.1111/j.1751-5823.2009.00092.x
 #' 
 #' @examples 
 #' \dontrun{
