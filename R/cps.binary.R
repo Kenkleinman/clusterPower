@@ -1,31 +1,22 @@
-#' Power simulations for cluster-randomized trials: Simple Designs, Binary Outcome.
+#' Power simulations for cluster-randomized trials: Parallel Designs, Binary Outcome.
 #'
-#' This function utilizes iterative simulations to determine 
-#' approximate power for cluster-randomized controlled trials. Users 
+#' @description 
+#' \loadmathjax
+#'
+#'
+#' This function uses Monte Carlo methods (simulations) to estimate 
+#' power for cluster-randomized trials. Users 
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
-#' 
-#' Runs the power simulation for binary outcomes.
-#' 
+#'  
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, two of the following three terms: 
-#' expected probability of outcome in non-treatment group, expected probability of 
-#' outcome in treatment group, expected difference in probabilities between groups
-#' ; significance level, analytic method, progress updates, 
-#' and simulated data set output may also be specified.
+#' cluster, number of clusters per treatment arm, and two of the following three 
+#' parameters: expected probability of the outcome in one group, expected 
+#' probability of the outcome in the second group,
+#' and expected difference in probabilities between groups.
+#' Default values are provided for significance level, analytic method, 
+#' progress updates, and simulated data set output.
 #' 
-#' The following equations are used to estimate intra-cluster correltation coefficients:
-#' P_h: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \pi^{2}/3}}
-#' P_c: \deqn{ICC = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_{j}\pi_{h}}{\sqrt{\pi_{j}(1 - \pi_{j})\pi_{h}(1 - \pi_{h})}}}
-#' P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
-#' 
-#' Non-convergent models are not included in the calculation of exact confidence 
-#' intervals.
-#' 
-#' @section Testing details:   
-#' This function has been verified against reference values from the NIH's GRT 
-#' Sample Size Calculator, PASS11, \code{CRTsize::n4prop}, and 
-#' \code{clusterPower::cpa.binary}.
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
@@ -38,6 +29,8 @@
 #' between cluster variances are assumed to be equal for both groups. 
 #' If between cluster variances differ between treatment groups, sigma_b_sq2 must also be specified:
 #' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
+#' 
+#' 
 #' @param alpha Significance level; default = 0.05
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) 
 #' or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
@@ -127,11 +120,30 @@
 #' 
 #' 
 #' @examples 
+#' 
+#' 
+#' # Estimate power for a trial with 10 clusters in each arm, 20 subjects in 
+#' # each cluster, with a probability of 0.8 in the first arm and 0.5 in the 
+#' # second arm, with a sigma_b_sq in the first arm of 1 and in the second arm
+#' # of 1.2
+#' 
 #' \dontrun{
 #' binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.8,
 #'                         p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
 #'                         method = 'glmm', all.sim.data = FALSE)
 #' }
+#'
+#' # Estimate power for a trial just as above, except that in the first arm,
+#' # the clusters have 10 subjects in 9 of the 10 clusters and 100 in the tenth
+#' # cluster, while in the second arm, all clusters have 20 subjects.
+#' 
+#' \dontrun{
+#' binary.sim2 = cps.binary(nsim = 100, nsubjects = c(c(rep(10,9),100),rep(20,10)), nclusters = 10, p1 = 0.8,
+#'                         p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
+#'                         method = 'glmm', all.sim.data = FALSE)
+#' }
+#'
+#'
 #'
 #' @export
 

@@ -1,24 +1,25 @@
 #' BinCalcICC: calculate ICC values for data from CRTs with binary outcomes.
 #'
-#' @param data This dataframe can be obtained by setting all.sim.data = TRUE 
-#' for \code{cps.binary()} or \code{cps.ma.binary()}.
+#' @param data A dataframe of the sort generated  
+#' by \code{cps.binary()} or \code{cps.ma.binary()}; can be generate by
+#' using \code{all.sim.data = TRUE}.
 #' @param method The method to be used to compute ICC. A single or multiple
 #' methods can be used at a time. By default, all 16 methods will be used. See
-#' Details for more.
-#' @param ci.type	Type of confidence interval to be computed. By default all 5
-#' types will be reported. See Details for more
+#' Details for more information.
+#' @param ci.type	 The type of confidence interval to be computed. By default all 5
+#' types will be reported. See Details for more information.
 #' @param alpha	The significance level to be used while computing the confidence
-#' interval. Default value is 0.05
+#' interval. Default value is 0.05.
 #' @param kappa	Value of Kappa to be used in computing Stabilized ICC when the
-#' method stab is chosen. Default value is 0.45
-#' @param nAGQ	An integer scaler, as in glmer function of package lme4, denoting the
+#' method stab is chosen. Default value is 0.45.
+#' @param nAGQ	An integer, as in glmer function of package lme4, denoting the
 #' number of points per axis for evaluating the adaptive Gauss-Hermite approximation
 #' to the log-likelihood. Used when the method lin is chosen. Default value is 1.
 #' @param sim.min	The number of the first simulation for which ICC will be calculated.
 #' Default is 1.
 #' @param sim.max	The number of the last simulation for which ICC will be calculated.
 #' Default is 10.
-#' @param nsim Number of Monte Carlo replicates used in ICC computation method
+#' @param nsim Number of Monte Carlo replicates used in ICC computation method.
 #' \code{sim}. Default is 1000.
 #'
 #' @return A list with the following components:
