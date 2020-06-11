@@ -62,7 +62,7 @@
 #' of fits fail to converge.
 #' @param nofit Option to return only the simulated data, no analysis. Defaults to FALSE.
 #' 
-#' @return A list with the following components:
+#' @return If \code{nofit = FALSE} then a list with the following components:
 #' \itemize{
 #'   \item Character string indicating total number of simulations and simulation type
 #'   \item Number of simulations
@@ -89,19 +89,21 @@
 #'                   "clust" (Indicator for cluster)
 #'                   }
 #' 
-#' @section Notes:
+#' If \code{nofit = TRUE} then a dataframe with \code{nsim} + 2 columns and a row for 
+#' each simulated subject.
+#' 
+#' @details 
 #'
-#' The data generating model here is:
-#' \mjsdeqn{y_{ij} = \mu + b_i + e_{ij} }
+#' The data generating model is:
+#' \mjsdeqn{y_{ij} \sim N(\mu + b_i, \sigma^2) }
 #' for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)} 
-#' and \mjseqn{e_{ij} \sim N(0,\sigma^2)}, while for the second group, 
+#' , while for the second group, 
 #'  
-#' \mjsdeqn{y_{ij} = \mu_2 + b_i + e_{ij} }
-#' where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)} 
-#' and \mjseqn{e_{ij} \sim N(0,\sigma_2^2)}; if none of 
+#' \mjsdeqn{y_{ij} \sim N(\mu_2 + b_i, \sigma_2^2) }
+#' where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if none of 
 #' \mjseqn{\sigma_2^2, \sigma_{b_2}^2} or \code{ICC2} are used, then the second group uses
 #' \mjseqn{b_i \sim N(0,\sigma_b^2)} 
-#' and \mjseqn{e_{ij} \sim N(0,\sigma^2)}.
+#' and \mjseqn{y_{ij} \sim N(\mu_2 + b_i, \sigma_2)} .
 #' 
 #' All random terms are generated indepent of one another.
 #' 
