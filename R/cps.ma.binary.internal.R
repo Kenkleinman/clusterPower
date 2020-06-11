@@ -332,7 +332,8 @@ cps.ma.binary.internal <-
       # stop the loop if power is <0.5
       if (narms > 2) {
       if (low.power.override == FALSE) {
-        if (i > 50 & (i %% 10 == 0)) {
+        if (i > 50 && (i %% 10 == 0)) {
+          browser()
           temp.power.checker <-
             matrix(
               unlist(model.compare[1:i]),
