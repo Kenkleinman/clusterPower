@@ -31,7 +31,7 @@
 #'   intervals}	}
 #' @examples
 #' \dontrun{
-#' bin.ma.rct.unbal <- cps.ma.binary(nsim = 100, 
+#' bin.ma.rct.unbal <- cps.ma.binary(nsim = 61, 
 #'                             nsubjects = list(rep(200, times=15), 
 #'                             rep(150, times=15), 
 #'                             rep(170, times=15)), 

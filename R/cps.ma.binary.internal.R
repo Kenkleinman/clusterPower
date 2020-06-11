@@ -45,6 +45,8 @@
 #' Defaults to \code{FALSE}. 
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
 #' @param optmethod User-specified optimizer methods available for the optimizer specified in \code{opt} option.
+#' @param return.all.models Logical; Returns all of the fitted models and the simulated data.
+#' Defaults to FALSE.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -95,7 +97,8 @@ cps.ma.binary.internal <-
            cores = cores,
            nofit = FALSE,
            opt = opt,
-           optmethod = optmethod) {
+           optmethod = optmethod,
+           return.all.models = FALSE) {
     # Create vectors to collect iteration-specific values
     simulated.datasets = list()
     
@@ -331,15 +334,14 @@ cps.ma.binary.internal <-
       
       # stop the loop if power is <0.5
       if (narms > 2) {
-      if (low.power.override == FALSE) {
-        if (i > 50 && (i %% 10 == 0)) {
+      if (low.power.override == FALSE && i > 50 && (i %% 10 == 0) && length(model.compare) != 0) {
           temp.power.checker <-
-            matrix(
+            try(matrix(
               unlist(model.compare[1:i]),
               ncol = 3,
               nrow = i,
               byrow = TRUE
-            )
+            ))
           sig.val.temp <-
             ifelse(temp.power.checker[, 3][1:i] < alpha, 1, 0)
           pval.power.temp <- sum(sig.val.temp) / i
@@ -354,7 +356,6 @@ cps.ma.binary.internal <-
                 sep = ""
               )
             )
-          }
         }
       }
       
