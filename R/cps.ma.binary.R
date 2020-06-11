@@ -13,9 +13,9 @@
 #' cluster, number of clusters per treatment arm, group probabilities, and the 
 #' between-cluster variance. Significance level, analytic method, progress 
 #' updates, poor/singular fit override, and whether or not to return the 
-#' simulated data may also be specified. The internal function can be called directly by the user to return the fitted 
-#' models rather than the power summaries (see \code{?cps.ma.normal.internal}
-#' for details).
+#' simulated data may also be specified. The internal function can be called 
+#' directly by the user to return the fitted models rather than the power 
+#' summaries (see \code{?cps.ma.normal.internal} for details).
 #' 
 #' Because the model for binary outcomes may be slower to fit than those for 
 #' other distributions, this function may be slower than its normal or 
@@ -72,6 +72,8 @@
 #' @param tdist Logical value indicating whether simulated data should be 
 #' drawn from a t-distribution rather than the normal distribution. 
 #' Default = FALSE.
+#' @param nofit Option to skip model fitting and analysis and return the simulated data. 
+#' Defaults to \code{FALSE}. 
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
 #' @param optmethod User-specified optimizer methods available for the optimizer specified in \code{opt} option.
 #' @return A list with the following components:
@@ -147,6 +149,7 @@ cps.ma.binary <- function(nsim = 1000,
                           tdist = FALSE,
                           poor.fit.override = FALSE,
                           low.power.override = FALSE,
+                          nofit = FALSE,
                           opt = "bobyqa",
                           optmethod = "Nelder-Mead") {
   # use this later to determine total elapsed time
@@ -261,9 +264,15 @@ cps.ma.binary <- function(nsim = 1000,
     low.power.override = low.power.override,
     tdist = tdist,
     cores = cores,
+    nofit = nofit,
     opt = opt,
     optmethod = optmethod
   )
+  
+  #option to return simulated data only
+  if (nofit == TRUE) {
+    return(binary.ma.rct)
+  }
   
   models <- binary.ma.rct[[1]]
   

@@ -73,6 +73,11 @@
 #' @param tdist Logical value indicating whether simulated data should be 
 #' drawn from a t-distribution rather than the normal distribution. 
 #' Default = FALSE.
+#' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
+#' the overall model comparisons, and the convergence report vector. This is equivalent
+#' to the output of cps.ma.count.internal(). See ?cps.ma.count.internal() for details.
+#' @param nofit Option to skip model fitting and analysis and return the simulated data. 
+#' Defaults to \code{FALSE}. 
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
 #' @return A list with the following components:
 #' \describe{
@@ -119,10 +124,10 @@
 #'                             alpha = 0.05, all.sim.data = FALSE, 
 #'                             seed = 123, cores="all", poor.fit.override=TRUE) 
 #'                             
-#' count.ma.rct.bal <- cps.ma.count(nsim = 50, nsubjects = 20, narms=3,
-#'                             nclusters=10,
+#' count.ma.rct.bal <- cps.ma.count(nsim = 100, nsubjects = 100, narms=3,
+#'                             nclusters=4,
 #'                             counts = c(30, 35, 70),
-#'                             sigma_b_sq = 1, alpha = 0.05,
+#'                             sigma_b_sq = 0.001, alpha = 0.05,
 #'                             quiet = FALSE, method = 'glmm', 
 #'                             all.sim.data = FALSE, 
 #'                             multi.p.method="none",
@@ -149,6 +154,8 @@ cps.ma.count <- function(nsim = 1000,
                          tdist = FALSE,
                          poor.fit.override = FALSE,
                          low.power.override = FALSE,
+                         return.all.models = FALSE,
+                         nofit = FALSE,
                          opt = "NLOPT_LN_BOBYQA") {
   # use this later to determine total elapsed time
   start.time <- Sys.time()
@@ -253,8 +260,14 @@ cps.ma.count <- function(nsim = 1000,
     tdist = tdist,
     cores = cores,
     family = family,
+    nofit = nofit,
     opt = opt
   )
+  
+  #option to return simulated data only
+  if (nofit == TRUE || return.all.models == TRUE) {
+    return(count.ma.rct)
+  }
   
   models <- count.ma.rct[[1]]
   

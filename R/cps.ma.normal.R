@@ -81,7 +81,8 @@
 #' to the output of cps.ma.normal.internal(). See ?cps.ma.normal.internal() for details.
 #' @param optmethod Option to fit with a different optimizer. Default is 'nlminb', but some
 #' incompatible model types will trigger a list of compatible optimizer options.
-#' @param nofit Option to skip model fitting and analysis and return the simulated data. Defaults to 
+#' @param nofit Option to skip model fitting and analysis and return the simulated data. 
+#' Defaults to \code{FALSE}. 
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{
@@ -170,6 +171,8 @@
 #' 
 #' @export
 #' 
+
+
 
 
 
@@ -317,9 +320,10 @@ cps.ma.normal <- function(nsim = 1000,
     tdist = tdist,
     optmethod = optmethod,
     nofit = nofit,
-    return.all.models = return.all.models 
+    return.all.models = return.all.models
   )
-
+  
+  #option to return simulated data only
   if (nofit == TRUE || return.all.models == TRUE) {
     return(normal.ma.rct)
   }
@@ -343,11 +347,9 @@ cps.ma.normal <- function(nsim = 1000,
     armnames[i] <- paste0("Arm.", i)
   }
   
-  var.parms = data.frame(
-    'sigma_sq' = sigma_sq, 
-    'sigma_b_sq' = sigma_b_sq,
-    "means" = means
-  )
+  var.parms = data.frame('sigma_sq' = sigma_sq,
+                         'sigma_b_sq' = sigma_b_sq,
+                         "means" = means)
   rownames(var.parms) <- armnames
   
   models <- normal.ma.rct[[1]]
@@ -456,7 +458,7 @@ cps.ma.normal <- function(nsim = 1000,
     
     ## Output objects for GLMM
     # Create list containing all output (class 'crtpwr') and return
-
+    
     if (all.sim.data == TRUE && return.all.models == FALSE) {
       complete.output = structure(
         list(
@@ -594,11 +596,9 @@ cps.ma.normal <- function(nsim = 1000,
     LRT.holder.abbrev <- sum(sig.LRT)
     
     # Calculate and store power estimate & confidence intervals
-    power.parms <- confint.calc(
-      nsim = nsim,
-      alpha = alpha,
-      p.val = Pr
-    )
+    power.parms <- confint.calc(nsim = nsim,
+                                alpha = alpha,
+                                p.val = Pr)
     
     # Store GEE simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)

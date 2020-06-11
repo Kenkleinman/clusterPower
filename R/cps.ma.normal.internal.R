@@ -51,6 +51,9 @@
 #' calculated power is returned regardless of value. 
 #' @param tdist Logical; use t-distribution instead of normal distribution 
 #' for simulation values, default = FALSE.
+#' @param return.all.models Logical; Returns all of the fitted models and the simulated data.
+#' @param nofit Option to skip model fitting and analysis and return the simulated data. 
+#' Defaults to \code{FALSE}. 
 #' @param optmethod Option to fit with a different optimizer (using the package 
 #' \code{optimx}). Defaults to \code{nlminb}.
 #' @return A list with the following components:
@@ -107,7 +110,7 @@ cps.ma.normal.internal <-
            low.power.override = FALSE,
            tdist = FALSE,
            optmethod = "nlminb",
-           sim.data.only = FALSE,
+           nofit = FALSE,
            return.all.models = FALSE) {
     # Create vectors to collect iteration-specific values
     simulated.datasets = list()
@@ -211,7 +214,8 @@ cps.ma.normal.internal <-
       sim.dat[[i]][["y"]] <- y
     }
     
-    if (sim.data.only == TRUE) {
+    #option to return simulated data only
+    if (nofit == TRUE) {
       # turn off parallel computing
       if (!exists("cores", mode = "NULL")) {
         parallel::stopCluster(cl)

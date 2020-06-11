@@ -41,6 +41,8 @@
 #' simulation values, default = FALSE.
 #' @param cores A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
 #' When this option is set to NA, no parallel computing is used.
+#' @param nofit Option to skip model fitting and analysis and return the simulated data. 
+#' Defaults to \code{FALSE}. 
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
 #' @param optmethod User-specified optimizer methods available for the optimizer specified in \code{opt} option.
 #' 
@@ -91,6 +93,7 @@ cps.ma.binary.internal <-
            low.power.override = FALSE,
            tdist = FALSE,
            cores = cores,
+           nofit = FALSE,
            opt = opt,
            optmethod = optmethod) {
     # Create vectors to collect iteration-specific values
@@ -206,6 +209,15 @@ cps.ma.binary.internal <-
         )
       )
     
+    #option to return simulated data only
+    if (nofit == TRUE) {
+      sim.dat <- data.frame(trt, clust, sim.dat)
+      sim.num <- 1:nsim
+      temp <- paste0("y", sim.num)
+      colnames(sim.dat) <- c("arm", "cluster", temp)
+      return(sim.dat)
+    }
+    
     require(foreach)
     `%fun%` <- `%dopar%`
     if (is.na(cores)) {
@@ -318,6 +330,7 @@ cps.ma.binary.internal <-
       }
       
       # stop the loop if power is <0.5
+      if (narms > 2) {
       if (low.power.override == FALSE) {
         if (i > 50 & (i %% 10 == 0)) {
           temp.power.checker <-
@@ -357,7 +370,7 @@ cps.ma.binary.internal <-
       ) %fun% {
         car::Anova(my.mod[[i]], type = "II")
       }
-      
+      }
       if (is.na(cores) & quiet == FALSE) {
         # Iterate progress bar
         prog.bar$update(4 / 5)

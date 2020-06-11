@@ -43,10 +43,15 @@
 #' calculated power is returned regardless of value. 
 #' @param tdist Logical; use t-distribution instead of normal distribution for 
 #' simulation values, default = FALSE.
-#' @param cores A string ("all") NA, or numeric value indicating the number of cores to be used for parallel computing. 
+#' @param cores A string ("all") NA, or numeric value indicating the number of 
+#' cores to be used for parallel computing. 
 #' When this option is set to NA, no parallel computing is used.
-#'  @param opt Option to fit with a different optimizer algorithm. Setting this to "auto" tests an example fit using 
-#'  the \code{nloptr} package and selects the first algorithm that converges.
+#' @param nofit Option to skip model fitting and analysis and return the 
+#' simulated data. 
+#' Defaults to \code{FALSE}. 
+#' @param opt Option to fit with a different optimizer algorithm. Setting this 
+#' to "auto" tests an example fit using 
+#' the \code{nloptr} package and selects the first algorithm that converges.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -100,6 +105,7 @@ cps.ma.count.internal <-
            low.power.override = FALSE,
            tdist = FALSE,
            cores = cores,
+           nofit = FALSE,
            opt = opt) {
     # Create vectors to collect iteration-specific values
     simulated.datasets = list()
@@ -134,7 +140,7 @@ cps.ma.count.internal <-
     clust1 = list()
     for (i in 1:sum(nclusters)) {
       clust1[[i]] <- lapply(seq(1, sum(nclusters))[i],
-                            function (x) {
+                            function(x) {
                               rep.int(x, unlist(str.nsubjects)[i])
                             })
     }
@@ -149,6 +155,7 @@ cps.ma.count.internal <-
     if (length(trt) != length(clust)) {
       stop("trt and clust are not the same length, see line 134")
     }
+    gc()
     sim.dat <- matrix(nrow = length(clust), ncol = nsim)
     
     # function to produce the simulated data
@@ -188,6 +195,7 @@ cps.ma.count.internal <-
         }
         randintrandint <- exp(randint.holder)
       }
+
       # Create y-value
       y.intercept <- vector(mode = "numeric",
                             length = sum(unlist(str.nsubjects.)))
@@ -216,6 +224,15 @@ cps.ma.count.internal <-
         family. = family
       )
     )
+    
+    #option to return simulated data only
+    if (nofit == TRUE) {
+      sim.dat <- data.frame(trt, clust, sim.dat)
+      sim.num <- 1:nsim
+      temp <- paste0("y", sim.num)
+      colnames(sim.dat) <- c("arm", "cluster", temp)
+      return(sim.dat)
+    }
     
     require(foreach)
     `%fun%` <- `%dopar%`
