@@ -30,6 +30,13 @@
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
 #' @param nclusters Number of clusters per treatment group; accepts integer (required).
+#' @param p1 Expected probability of outcome in first group
+#' @param p2 Expected probability of outcome in second group
+#' @param sigma_b_sq Between-cluster variance; accepts numeric (required).
+#' 
+#' If sigma_b_sq2 is not specified, 
+#' between cluster variances are assumed to be equal for both groups. 
+#' If between cluster variances differ between treatment groups, sigma_b_sq2 must also be specified:
 #' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
 #' @param alpha Significance level; default = 0.05
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) 
@@ -38,6 +45,12 @@
 #' time, default is TRUE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE
 #' @param seed Option to set the seed. Default is NA.
+#' 
+#' At least 2 of the following 3 arguments must be specified when using odds:
+#' @param or1 Odds for the outcome in the first group
+#' @param or2 Odds for the outcome in the second group
+#' @param or.diff Difference in odds of the outcome between the groups, defined as or.diff = or1 - or2
+#
 #'  
 #' @return A list with the following components
 #' \itemize{
@@ -64,6 +77,53 @@
 #'   \item List of warning messages produced by non-convergent models; 
 #'   Includes model number for cross-referencing against \code{model.estimates}
 #' }
+#' 
+#' @details 
+#' 
+#' The data generating model is:
+#' \mjsdeqn{y_{ij} \sim Bernoulli(\frac{e^{p_1 + b_i}}{1 + e^{p_1 + b_i} }) }
+#' for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)} 
+#' , while for the second group, 
+#'  
+#' \mjsdeqn{y_{ij} \sim Bernoulli(\frac{e^{p_2 + b_i}}{1 + e^{p_2 + b_i} }) }
+#' where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if 
+#' \mjseqn{\sigma_{b_2}^2} is not used, then the second group uses
+#' \mjseqn{b_i \sim N(0,\sigma_b^2)}.
+#' 
+#' All random terms are generated indepent of one another.
+#' 
+#' 
+#' Non-convergent models are not included in the calculation of exact confidence 
+#' intervals.
+#' 
+#' 
+#' @seealso 
+#' 
+#' An intracluster correlation coefficient (ICC) is neither a natural parameter of the
+#' data generating model nor a function of its parameters.  Several methods for
+#' calculation have been suggested. (Wu, Crespi, and Wong, 2012).  We provide
+#' several versions of ICCs for comparison.  These can be accessed in the 
+#' \code{bincalcICC()} function.
+#' 
+#' 
+#' 
+#' @section Testing details:   
+#' This function has been verified against reference values from the NIH's GRT 
+#' Sample Size Calculator, PASS11, \code{CRTsize::n4prop}, and 
+#' \code{clusterPower::cpa.binary}.
+#' 
+#' 
+#' @author Alexander R. Bogdan, Alexandria C. Sakrejda 
+#' (\email{acbro0@@umass.edu}), and Ken Kleinman 
+#' (\email{ken.kleinman@@gmail.com})
+#' #' 
+#' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation Coefficient in Cluster Randomized Trials: 
+#' A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. doi: 10.1111/j.1751-5823.2009.00092.x
+#' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and Advanced Multilevel Modelling. London, 1999: Sage.
+#' @references Wu S, Crespi CM, Wong WK. Comparison of Methods for Estimating Intraclass
+#' Correlation Coefficient for Binary Responses in Cancer Prevention Cluster Randomized
+#' Trials. Contemp Clin Trials. 2012; 33(5): 869-880. doi:10.1016/j.cct.2012.05.004 
+#' London: Arnold; 2000.
 #' 
 #' 
 #' @examples 
