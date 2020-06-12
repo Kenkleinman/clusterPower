@@ -123,7 +123,7 @@
 #'                             alpha = 0.05, all.sim.data = TRUE, 
 #'                             seed = 123, cores="all") 
 #'                             
-#' bin.ma.rct.bal <- cps.ma.binary(nsim = 50, nsubjects = 250, narms=3,
+#' bin.ma.rct.bal <- cps.ma.binary(nsim = 100, nsubjects = 250, narms=3,
 #'                             nclusters=10,
 #'                             probs = c(0.30, 0.5, 0.7),
 #'                             sigma_b_sq = 0.01, alpha = 0.05,
@@ -407,7 +407,7 @@ cps.ma.binary <- function(nsim = 1000,
     names(str.nsubjects) <- armnames
     cluster.sizes <- str.nsubjects
       
-    # Create list containing all output (class 'crtpwr') and return
+    # Create list containing all output (class 'crtpwr.ma') and return
     
     
     if (all.sim.data == TRUE && return.all.models == FALSE) {
@@ -434,7 +434,7 @@ cps.ma.binary <- function(nsim = 1000,
           "convergence" = binary.ma.rct[[3]],
           "sim.data" = binary.ma.rct[[4]]
         ),
-        class = 'crtpwr'
+        class = 'crtpwr.ma'
       )
     }
     
@@ -463,7 +463,7 @@ cps.ma.binary <- function(nsim = 1000,
           "sim.data" = binary.ma.rct[[4]],
           "all.models" <-  binary.ma.rct
         ),
-        class = 'crtpwr'
+        class = 'crtpwr.ma'
       )
     }
     if (return.all.models == FALSE && all.sim.data == FALSE) {
@@ -489,7 +489,7 @@ cps.ma.binary <- function(nsim = 1000,
           "model.estimates" = ma.model.est,
           "convergence" = binary.ma.rct[[3]]
         ),
-        class = 'crtpwr'
+        class = 'crtpwr.ma'
       )
     }
     
@@ -590,7 +590,7 @@ cps.ma.binary <- function(nsim = 1000,
     )
     
     ## Output objects for GEE
-    # Create list containing all output (class 'crtpwr') and return
+    # Create list containing all output (class 'crtpwr.ma') and return
     if (all.sim.data == TRUE) {
       complete.output <-  list(
         "power" <-  power.parms[-1, ],

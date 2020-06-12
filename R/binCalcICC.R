@@ -42,12 +42,12 @@
 #'                             alpha = 0.05, all.sim.data = TRUE, 
 #'                             seed = 123, cores="all") 
 #' 
-#'   bin <- BinCalcICC(data = bin.ma.rct.unbal, nsim = 1000, index = 6)
+#'   bin <- binCalcICC(data = bin.ma.rct.unbal, nsim = 1000, index = 6)
 #' }
 #'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}) and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
-BinCalcICC <-
+binCalcICC <-
   function(data = NULL,
            method = c(
              "aov",
@@ -720,7 +720,7 @@ BinCalcICC <-
       }
     
     
-    
+    browser()
     # apply iccbin to the simulated data
     o <- data[[index]]
     holder <- list()

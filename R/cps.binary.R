@@ -140,7 +140,7 @@
 #' \dontrun{
 #' binary.sim2 = cps.binary(nsim = 100, nsubjects = c(c(rep(10,9),100),rep(20,10)), nclusters = 10, p1 = 0.8,
 #'                         p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
-#'                         method = 'glmm', all.sim.data = FALSE)
+#'                         method = 'glmm', all.sim.data = TRUE)
 #' }
 #'
 #'

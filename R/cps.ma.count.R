@@ -382,7 +382,7 @@ cps.ma.count <- function(nsim = 1000,
     
     ## Output objects for GLMM
     
-    # Create list containing all output (class 'crtpwr') and return
+    # Create list containing all output (class 'crtpwr.ma') and return
     if (all.sim.data == TRUE) {
       complete.output <-  structure(
         list(
@@ -399,7 +399,7 @@ cps.ma.count <- function(nsim = 1000,
           "failed.to.converge" <-
             count.ma.rct[[4]]
         ),
-        class = "crtpwr"
+        class = "crtpwr.ma"
       )
     } else {
       complete.output <-  structure(
@@ -414,7 +414,7 @@ cps.ma.count <- function(nsim = 1000,
           "proportion.failed.to.converge" <-
             count.ma.rct[[3]]
         ),
-        class = "crtpwr"
+        class = "crtpwr.ma"
       )
     }
     return(complete.output)
@@ -505,7 +505,7 @@ cps.ma.count <- function(nsim = 1000,
     )
     
     ## Output objects for GEE
-    # Create list containing all output (class 'crtpwr') and return
+    # Create list containing all output (class 'crtpwr.ma') and return
     if (all.sim.data == TRUE) {
       complete.output <- structure(
         list(
@@ -533,7 +533,7 @@ cps.ma.count <- function(nsim = 1000,
                                   nsim = nsim,
                                   LRT.holder.abbrev = LRT.holder.abbrev))
         ),
-        class = "crtpwr"
+        class = "crtpwr.ma"
       )
     }# end of return options
     return(complete.output)
