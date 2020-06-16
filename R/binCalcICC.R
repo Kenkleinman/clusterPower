@@ -737,7 +737,7 @@ binCalcICC <-
           if (simnum > 1 && j == 1 && k == 1) {
             start.time = Sys.time()
           }
-          holder[j][[k]] <- iccbin(
+          holder[j][k] <- iccbin(
             cid = clust,
             y = y,
             data = o3,
@@ -757,25 +757,26 @@ binCalcICC <-
         }
       }
     } else {
+     # browser()
       simnum <- sim.max - sim.min + 1
+      temp <- data.frame("trt" = o[, 1],
+                       "clust" = o[, 2],
+                       "y" = o[, (sim.min + 2):(sim.max + 2)])
+      for (j in (sim.min:sim.max)) {
+        holder[[j]] <- list()
       for (k in 1:narms) {
-        o2 <- o[o[, 1] == k, ]
+        holder[[j]][[k]] <- list()
+        o2 <- temp[temp[, 1] == k, ]
         o2$clust <- as.factor(as.numeric(o2[, 2]))
-        temp <- o2[, (sim.min + 2):(sim.max + 3)] 
-        # retain an extra column to prevent vectorization of temp
-        # when sim.min == sim.max
-        for (j in (sim.min:sim.max)) {
-          o3 <- data.frame("trt" = o2[, 1],
-                           "clust" = o2[, 2],
-                           "y" = temp[,j])
+        y <- o2[, k + 2]
           options(warn = -1)
           if (simnum > 1 && j == 1 && k == 1) {
             start.time = Sys.time()
           }
-          holder[j][[k]] <- iccbin(
+          holder[j][k] <- iccbin(
             cid = clust,
             y = y,
-            data = o3,
+            data = o2,
             method = method,
             ci.type = ci.type,
             alpha = alpha,
