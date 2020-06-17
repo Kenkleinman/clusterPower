@@ -68,7 +68,9 @@
 #'   \item Number of simulations
 #'   \item Data frame with columns "Power" (Estimated statistical power), 
 #'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound).
+#'                "upper.95.ci" (Upper 95% confidence interval bound),
+#'                "Alpha" (Probability of committing a type I error or rejecting a true null),
+#'                "Beta" (Probability of committing a type II error or failing to reject a false null).
 #'                Note that non-convergent models are returned for review, 
 #'                but not included in this calculation.
 #'   \item Analytic method used for power estimation
@@ -82,15 +84,15 @@
 #'                   "Std.err" (Standard error for treatment effect estimate), 
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value", 
-#'                   "sig.val" (Is p-value less than alpha?)
-#'   \item List of data frames, each containing: 
+#'                   "converge", (Did the model converge?)
+#'   \item If all.sim.data = TRUE, list of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for arm), 
 #'                   "clust" (Indicator for cluster)
 #'                   }
 #' 
-#' If \code{nofit = TRUE} then a dataframe with \code{nsim} + 2 columns and a row for 
-#' each simulated subject.
+#' If \code{nofit = TRUE} then function returns a dataframe with \code{nsim} + 2 columns 
+#' and a row for each simulated subject.
 #' 
 #' @details 
 #'
