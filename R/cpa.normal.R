@@ -68,20 +68,42 @@
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
-#' # of 1 unit,  ICC = 0.1 and a variance of five units.
+#' # of 1 unit,  ICC = 0.1 and a variance of five units:
 #' 
-#' cpa.normal(nsubjects=10, d=1, ICC=.1, vart=5)
+#' cpa.normal(nsubjects = 10, d = 1, ICC = .1, vart = 5)
 #'  
 #' # The result, showing nclusters of greater than 15, suggests 16 clusters per 
 #' # condition should be used.
 #' 
 #' # Find the power achieved with 16 clusters, 10 subjects per cluster,
 #' # difference between condition of 1 unit, ICC = .1, and total variance
-#' # of 5 units
+#' # of 5 units:
 #' 
-#' cpa.normal(power = NA, nclusters= 16, nsubjects=10 ,d=1, sigma_b_sq=.5, vart=5)
+#' cpa.normal(power = NA, nclusters = 16, nsubjects = 10, d = 1,
+#'            sigma_b_sq = .5, vart = 5)
 #' 
 #' # The result shows the power is 0.801766.
+#' 
+#' # Find the power achieved with with cluster sizes given in the nsubjects vector
+#' # and nclusters given by the length of the vector.
+#' 
+#' cpa.normal(alpha = .05, power = NA, nsubjects = c(100, 50, 25, 100, 100),
+#'            d = .2, ICC = .1, sigma_b_sq = .1)
+#' 
+#' # The result shows the power is 0.13315.
+#'
+#' # Find the power achieved with 20 clusters per arm, where
+#' # the clusters have a mean size of 100 and coefficient of variation of .5:
+#' 
+#' cpa.normal(alpha = .05, power = NA, nclusters = 20, nsubjects = 100, CV = .5,
+#'            d = .2, ICC = .1, sigma_b_sq = .1)
+#' 
+#' # The result shows the power is 0.4559881.
+#'
+#' # The code below generates an error because
+#' # the number of subjects per cluster needed is 10^306.
+#' 
+#' cpa.normal(power=.8, nclusters=40, nsubjects=NA, d=.2, ICC=.1, sigma_b_sq=.1)
 #' 
 #' @references Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation
 #'   Coefficient in Cluster Randomized Trials: A Review of Definitions. Int Stat Rev.
@@ -227,7 +249,7 @@ cpa.normal <- function(alpha = 0.05,
         eval(pwr) - power,
       interval = c(2 + 1e-10, 1e+07),
       tol = tol,
-      extendInt = "upX"
+      extendInt = "upX", maxiter = 2000
     )$root
   }
   
@@ -238,7 +260,7 @@ cpa.normal <- function(alpha = 0.05,
         eval(pwr) - power,
       interval = c(2 + 1e-10, 1e+07),
       tol = tol,
-      extendInt = "upX"
+      extendInt = "upX", maxiter = 2000
     )$root
   }
   
@@ -249,7 +271,7 @@ cpa.normal <- function(alpha = 0.05,
         eval(pwr) - power,
       interval = c(1e-10, 1e+07),
       tol = tol,
-      extendInt = "downX"
+      extendInt = "downX", maxiter = 2000
     )$root
   }
   
