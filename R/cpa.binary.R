@@ -54,8 +54,8 @@
 #' @param nsubjects The mean of the cluster sizes.
 #' @param cv The coefficient of variation of the cluster sizes. When \code{cv} = 0,
 #'   (default) the clusters all have the same size.
-#' @param p1 The expected proportion in one of the conditions, a numeric between 0-1.
-#' @param p2 The expected proportion in the other condition, a numeric between 0-1.
+#' @param p1 The proportion with the outcome in one of the conditions, a numeric between 0-1.
+#' @param p2 The proportion with the outcome in the other condition, a numeric between 0-1.
 #' @param ICC The intraclass correlation, a numeric between 0-1.  (See Details, below.)
 #' @param pooled Logical indicating if pooled standard error should be used.
 #' @param p1inc Logical indicating if p1 is expected to be greater than p2.  Only needed if \code{p1} or \code{p2} is \code{NA}.

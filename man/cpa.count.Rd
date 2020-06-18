@@ -27,9 +27,9 @@ error.}
 
 \item{nsubjects}{The number of units of person-time of observation per cluster}
 
-\item{r1}{The expected mean event rate per unit time in one of the conditions}
+\item{r1}{The mean event rate per unit time in one of the conditions}
 
-\item{r2}{The expected mean event rate per unit time in the other condition}
+\item{r2}{The mean event rate per unit time in the other condition}
 
 \item{CVB}{The between-cluster coefficient of variation}
 

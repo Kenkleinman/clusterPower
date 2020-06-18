@@ -33,9 +33,9 @@ error.}
 \item{cv}{The coefficient of variation of the cluster sizes. When \code{cv} = 0,
 (default) the clusters all have the same size.}
 
-\item{p1}{The expected proportion in one of the conditions, a numeric between 0-1.}
+\item{p1}{The proportion with the outcome in one of the conditions, a numeric between 0-1.}
 
-\item{p2}{The expected proportion in the other condition, a numeric between 0-1.}
+\item{p2}{The proportion with the outcome in the other condition, a numeric between 0-1.}
 
 \item{ICC}{The intraclass correlation, a numeric between 0-1.  (See Details, below.)}
 

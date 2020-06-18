@@ -50,8 +50,8 @@
 #'   error.
 #' @param nclusters The number of clusters per condition. It must be greater than 1
 #' @param nsubjects The number of units of person-time of observation per cluster
-#' @param r1 The expected mean event rate per unit time in one of the conditions
-#' @param r2 The expected mean event rate per unit time in the other condition
+#' @param r1 The mean event rate per unit time in one of the conditions
+#' @param r2 The mean event rate per unit time in the other condition
 #' @param CVB The between-cluster coefficient of variation
 #' @param r1inc Logical indicating if r1 is expected to be greater than r2. This is
 #'   only important to specify if one of r1 or r2 is NA.
