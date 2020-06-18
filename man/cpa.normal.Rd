@@ -2,7 +2,7 @@
 % Please edit documentation in R/cpa.normal.R
 \name{cpa.normal}
 \alias{cpa.normal}
-\title{Power calculations for simple cluster randomized trials with normal outcomes}
+\title{Analytic power calculations for parallel arm cluster-randomized trials with normal outcomes}
 \usage{
 cpa.normal(
   alpha = 0.05,

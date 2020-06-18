@@ -2,7 +2,7 @@
 % Please edit documentation in R/cpa.binary.R
 \name{cpa.binary}
 \alias{cpa.binary}
-\title{Power calculations for simple cluster randomized trials, binary outcome}
+\title{Analytic power calculations for parallel arm cluster-randomized trials with binary outcomes}
 \usage{
 cpa.binary(
   alpha = 0.05,
@@ -55,7 +55,7 @@ sample size equation.
 }
 \description{
 Compute the power, number of clusters needed, number of subjects per cluster needed, 
-or other key parametersgfor a simple parallel cluster randomized trial with a 
+or other key parameters for a parallel cluster randomized trial with a 
 binary outcome.
 }
 \details{

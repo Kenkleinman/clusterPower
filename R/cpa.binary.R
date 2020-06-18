@@ -1,4 +1,4 @@
-#' Power calculations for simple cluster randomized trials, binary outcome
+#' Analytic power calculations for parallel arm cluster-randomized trials with binary outcomes
 #'
 #' Compute the power, number of clusters needed, number of subjects per cluster needed, 
 #' or other key parameters for a parallel cluster randomized trial with a 

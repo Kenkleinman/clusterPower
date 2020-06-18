@@ -1,4 +1,4 @@
-#' Power calculations for simple cluster randomized trials with normal outcomes
+#' Analytic power calculations for parallel arm cluster-randomized trials with normal outcomes
 #'
 #' @description 
 #' \loadmathjax

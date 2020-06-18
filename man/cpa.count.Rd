@@ -40,14 +40,14 @@ only important to specify if one of r1 or r2 is NA.}
 at least four significant digits.}
 }
 \value{
-The computed value of the NA parameter (from among \code{alpha}, \code{power}, \code{nclusters},
+The computed value of the NA parameter (among \code{alpha}, \code{power}, \code{nclusters},
   \code{nsubjects},
   \code{r1}, \code{r2} and \code{CVB}) needed to satisfy the power and 
 sample size equation.
 }
 \description{
 Compute the power, number of clusters needed, number of subjects per cluster 
-needed, or other key parameters, for a simple parallel cluster randomized 
+needed, or other key parameters for a simple parallel cluster randomized 
 trial with a count outcome.
 }
 \details{
@@ -70,14 +70,14 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
  accounts for variance inflation due to clustering. 
 
  The coefficient of variation \code{CVB} is the variance of the cluster rates divided by the
- mean of the cluster rates.  In the case of equal observation time for each cluster member 
- and equal numbers of observations per cluster,
- this is the variance of the mean cluster count divided by the mean of the mean cluster count.
-     
+ mean of the cluster rates.  
+ 
+       
+                   
  The CVB refers neither to 
  any natural parameter of a data generating model nor to any function of its parameters. 
  For this reason we do not offer the user a option to input
- the variance of the clusters.  If you prefer to use that input, we suggest using the
+ the variance between the cluster means.  If you prefer to use that input, we suggest using the
  cps.count function.
      
         
@@ -106,12 +106,12 @@ cpa.count(nsubjects=10, r1=0.10, r2=0.20, CVB=0.10)
 # The result, showimg nclusters of greater than 24, suggests 25 clusters per
 # condition should be used.
 
-Find the largest CVB compatible with 80\% power when there are 25 clusters, 10
-subject-units of time per cluster, and a rate of 0.1 and 0.2 in each condition.  
+# Find the largest CVB compatible with 80\% power when there are 25 clusters, 10
+# subject-units of time per cluster, and a rate of 0.1 and 0.2 in each condition.  
 
 cpa.count(nsubjects=10, nclusters= 25,r1=0.10, r2=0.20, CVB=NA)
 
-Results show that CVB as high as 0.107 can still yield power this high.
+# Results show that CVB as high as 0.107 can still yield power this high.
 
 }
 \references{
