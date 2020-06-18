@@ -140,7 +140,7 @@
 #' \dontrun{
 #' binary.sim2 = cps.binary(nsim = 100, nsubjects = c(c(rep(10,9),100),rep(20,10)), nclusters = 10, p1 = 0.8,
 #'                         p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
-#'                         method = 'glmm', all.sim.data = FALSE)
+#'                         method = 'gee', all.sim.data = FALSE)
 #' }
 #'
 #'
@@ -455,6 +455,7 @@ cps.binary = function(nsim = NULL,
       se.vector = append(se.vector, gee.values['trt', 'Std.err'])
       stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
       pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+      converge.vector = append(converge.vector, ifelse(summary(my.mod)$error == 0, TRUE, FALSE))
     }
     
     # Update simulation progress information
@@ -495,14 +496,13 @@ cps.binary = function(nsim = NULL,
       )
     }
   }
-  
   ## Output objects
   # Create object containing summary statement
   if (irgtt == FALSE) {
     summary.message = paste0(
       "Monte Carlo Power Estimation based on ",
       nsim,
-      " Simulations: Simple Design, Binary Outcome\nNote: ",
+      " Simulations: Simple Design, Binary Outcome. Note: ",
       sum(converge.vector == FALSE),
       " additional models were fitted to account for non-convergent simulations."
     )

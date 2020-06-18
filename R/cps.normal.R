@@ -152,7 +152,7 @@
 #' \dontrun{
 #' 
 #' normal.sim2 = cps.normal(nsim = 100, nclusters = c(5,25), nsubjects = c(100,50), mu = 1, 
-#'   mu2 = 4.75, sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1)
+#'   mu2 = 4.75, sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1, method = "gee")
 #' }
 #' 
 #' 
@@ -605,10 +605,11 @@ cps.normal = function(nsim = NULL,
                                id = clust,
                                corstr = "exchangeable")
       gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+      est.vector[i] = gee.values['trt', 'Estimate']
+      se.vector[i] = gee.values['trt', 'Std.err']
+      stat.vector[i] = gee.values['trt', 'Wald']
+      pval.vector[i] = gee.values['trt', 'Pr(>|W|)']
+      converge.vector[i] <- ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     
     # Update simulation progress information
