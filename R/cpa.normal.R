@@ -84,6 +84,7 @@
 #' 
 #' # The result shows the power is 0.801766.
 #' 
+#' XX KK: the three examples below are new.
 #' # Find the power achieved with with cluster sizes given in the nsubjects vector
 #' # and nclusters given by the length of the vector.
 #' 
