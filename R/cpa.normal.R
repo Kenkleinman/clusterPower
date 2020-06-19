@@ -112,6 +112,9 @@ cpa.normal <- function(alpha = 0.05,
   
   # if nsubjects is a vector,
   if (length(nsubjects) > 1) {
+    if (!is.na(CV) || !is.na(nclusters)) {
+    warningCondition("When nsubjects is a vector, user-entered CV and nclusters is ignored.")
+    }
     nvec <- nsubjects
     nsubjects <- mean(nvec)
     nsd <- stats::sd(nvec)
