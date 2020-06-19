@@ -457,7 +457,7 @@ cps.ma.normal <- function(nsim = 1000,
       ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))]
     
     ## Output objects for GLMM
-    # Create list containing all output (class 'crtpwr') and return
+    # Create list containing all output (class 'crtpwr.ma') and return
     
     if (all.sim.data == TRUE && return.all.models == FALSE) {
       complete.output = structure(
@@ -483,7 +483,7 @@ cps.ma.normal <- function(nsim = 1000,
           "convergence" = normal.ma.rct[[3]],
           "sim.data" = normal.ma.rct[[4]]
         ),
-        class = 'crtpwr'
+        class = 'crtpwr.ma'
       )
     }
     
@@ -512,7 +512,7 @@ cps.ma.normal <- function(nsim = 1000,
           "sim.data" = normal.ma.rct[[4]],
           "all.models" <-  normal.ma.rct
         ),
-        class = 'crtpwr'
+        class = 'crtpwr.ma'
       )
     }
     if (return.all.models == FALSE && all.sim.data == FALSE) {
@@ -538,7 +538,7 @@ cps.ma.normal <- function(nsim = 1000,
           "model.estimates" = ma.model.est,
           "convergence" = normal.ma.rct[[3]]
         ),
-        class = 'crtpwr'
+        class = 'crtpwr.ma'
       )
     }
   }
@@ -607,7 +607,7 @@ cps.ma.normal <- function(nsim = 1000,
     
     ## Output objects for GEE
     
-    # Create list containing all output (class 'crtpwr') and return
+    # Create list containing all output (class 'crtpwr.ma') and return
     if (all.sim.data == TRUE & return.all.models == FALSE) {
       complete.output = structure(
         list(
@@ -631,7 +631,7 @@ cps.ma.normal <- function(nsim = 1000,
           "model.estimates" = ma.model.est,
           "sim.data" = normal.ma.rct[[3]]
         ),
-        class = 'crtpwr'
+        class = 'crtpwr.ma'
       )
     }
     if (return.all.models == TRUE) {
@@ -657,7 +657,7 @@ cps.ma.normal <- function(nsim = 1000,
           "model.estimates" = ma.model.est,
           "all.models" <-  normal.ma.rct
         ),
-        class = 'crtpwr'
+        class = 'crtpwr.ma'
       )
     }
     if (return.all.models == FALSE && all.sim.data == FALSE) {
@@ -682,7 +682,7 @@ cps.ma.normal <- function(nsim = 1000,
           "means" = means,
           "model.estimates" = ma.model.est
         ),
-        class = 'crtpwr'
+        class = 'crtpwr.ma'
       )
     }
   }

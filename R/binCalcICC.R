@@ -15,10 +15,10 @@
 #' @param nAGQ	An integer, as in glmer function of package lme4, denoting the
 #' number of points per axis for evaluating the adaptive Gauss-Hermite approximation
 #' to the log-likelihood. Used when the method lin is chosen. Default value is 1.
-#' @param sim.min	The number of the first simulation for which ICC will be calculated.
-#' Default is 1.
-#' @param sim.max	The number of the last simulation for which ICC will be calculated.
-#' Default is 10.
+#' @param sim.min	Optional, integer. The number of the first simulation for which ICC will be calculated.
+#' Default is NULL, which returns ICC for all simulations.
+#' @param sim.max	Optional, integer. The number of the last simulation for which ICC 
+#' will be calculated. Default is NULL, which returns ICC for all simulations.
 #' @param nsim Number of Monte Carlo replicates used in ICC computation method.
 #' \code{sim}. Default is 1000.
 #'
@@ -42,12 +42,12 @@
 #'                             alpha = 0.05, all.sim.data = TRUE, 
 #'                             seed = 123, cores="all") 
 #' 
-#'   bin <- BinCalcICC(data = bin.ma.rct.unbal, nsim = 1000, index = 6)
+#'   bin <- binCalcICC(data = bin.ma.rct.unbal, nsim = 1000, sim.min = 1, sim.max = 1)
 #' }
 #'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}) and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
-BinCalcICC <-
+binCalcICC <-
   function(data = NULL,
            method = c(
              "aov",
@@ -71,9 +71,8 @@ BinCalcICC <-
            alpha = 0.05,
            kappa = 0.45,
            nAGQ = 1,
-           index = 6,
-           sim.min = 1,
-           sim.max = 10,
+           sim.min = NULL,
+           sim.max = NULL,
            nsim = 1000) {
     #First, here's Akhtar Hossain's and Hirshikesh Chakraborty's iccbin function definition
     iccbin <-
@@ -555,7 +554,7 @@ BinCalcICC <-
         nw01 <- 0
         nw00 <- 0
         for (i in 1:k) {
-          dti <- dt[cid == ucid[i], ]
+          dti <- dt[cid == ucid[i],]
           wsamp1 <- c()
           wsamp2 <- c()
           for (m in 1:(nrow(dti) - 1)) {
@@ -592,9 +591,9 @@ BinCalcICC <-
         nb01 <- 0
         nb00 <- 0
         for (i in 1:(k - 1)) {
-          dti <- dt[cid == ucid[i], ]
+          dti <- dt[cid == ucid[i],]
           for (m in (i + 1):k) {
-            dtm <- dt[cid == ucid[m], ]
+            dtm <- dt[cid == ucid[m],]
             bsamp1 <- rep(dti$y, each = nrow(dtm))
             bsamp2 <- rep(dtm$y, times = nrow(dti))
             bsamp <- rbind(bsamp1, bsamp2)
@@ -718,37 +717,85 @@ BinCalcICC <-
         row.names(ci) <- NULL
         list(estimates = estimates, ci = ci)
       }
-    
-    
-    
+
     # apply iccbin to the simulated data
-    o <- data[[index]]
+    o <- data$sim.data
+    narms <- max(as.numeric(o[, 1]))
     holder <- list()
-    narms <- max(as.numeric(o$trt))
-    armname <- vector(mode = "character", length = narms)
-    simname <-
-      vector(mode = "character", length = (sim.max - sim.min + 1))
-    for (k in 1:(max(as.numeric(o$trt)))) {
-      armname[k] <- paste0("trt", k)
-      holder[[k]] <- list()
-      o2 <- dplyr::filter(o, trt == k)
-      o2$clust <- as.factor(as.numeric(o2$clust))
-      for (j in (sim.min + 2):(sim.max + 2)) {
-        simname[(j - 2)] <- paste0("simulation", j - 2)
-        holder[[k]][[(j - 2)]] <- iccbin(
-          cid = clust,
-          y = colnames(o2)[j],
-          data = o2,
-          method = method,
-          ci.type = ci.type,
-          alpha = alpha,
-          kappa = kappa,
-          nAGQ = nAGQ,
-          M = nsim
-        )
-        
+    holder[] <- list()
+    
+    if (is.null(sim.min) || is.null(sim.max)) {
+      simnum <- length(o) - 2
+      for (k in 1:narms) {
+        o2 <- o[o[, 1] == k, ]
+        o2$clust <- as.factor(as.numeric(o2[, 2]))
+        for (j in (1:simnum)) {
+          o3 <- data.frame("trt" = o2[, 1],
+                           "clust" = o2[, 2],
+                           "y" = o2[, j + 2])
+          options(warn = -1)
+          if (simnum > 1 && j == 1 && k == 1) {
+            start.time = Sys.time()
+          }
+          holder[j][k] <- iccbin(
+            cid = clust,
+            y = y,
+            data = o3,
+            method = method,
+            ci.type = ci.type,
+            alpha = alpha,
+            kappa = kappa,
+            nAGQ = nAGQ,
+            M = nsim
+          )
+          if (simnum > 1 && j == 2 && k == 1) {
+            atime <- difftime(Sys.time(), start.time)
+            est <- round(as.numeric(atime) * (narms * simnum)/60, 2)
+            print(paste0("Estimated time to completion: ", est, "minutes."))
+          }
+          options(warn = 0)
+        }
+      }
+    } else {
+     # browser()
+      simnum <- sim.max - sim.min + 1
+      temp <- data.frame("trt" = o[, 1],
+                       "clust" = o[, 2],
+                       "y" = o[, (sim.min + 2):(sim.max + 2)])
+      for (j in (sim.min:sim.max)) {
+        holder[[j]] <- list()
+      for (k in 1:narms) {
+        holder[[j]][[k]] <- list()
+        o2 <- temp[temp[, 1] == k, ]
+        o2$clust <- as.factor(as.numeric(o2[, 2]))
+        y <- o2[, k + 2]
+          options(warn = -1)
+          if (simnum > 1 && j == 1 && k == 1) {
+            start.time = Sys.time()
+          }
+          holder[j][k] <- iccbin(
+            cid = clust,
+            y = y,
+            data = o2,
+            method = method,
+            ci.type = ci.type,
+            alpha = alpha,
+            kappa = kappa,
+            nAGQ = nAGQ,
+            M = nsim
+          )
+          if (simnum > 1 && j == 2 && k == 1) {
+            atime <- difftime(Sys.time(), start.time)
+            est <- round(as.numeric(atime) * (narms * simnum)/60, 2)
+            print(paste0("Estimated time to completion: ", est,  " minutes."))
+          }
+          options(warn = 0)
+        }
       }
     }
-    names(holder) <- armname
+    armname <- vector(mode = "character", length = narms)
+    armname <- paste0("arm", 1:narms)
+    simname <- paste0("simulation", 1:simnum)
+    #implement labels later
     return(holder)
   }

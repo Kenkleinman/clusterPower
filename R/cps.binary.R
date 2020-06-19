@@ -38,20 +38,17 @@
 #' time, default is TRUE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE
 #' @param seed Option to set the seed. Default is NA.
-#' 
-#' At least 2 of the following 3 arguments must be specified when using odds:
-#' @param or1 Odds for the outcome in the first group
-#' @param or2 Odds for the outcome in the second group
-#' @param or.diff Difference in odds of the outcome between the groups, defined as or.diff = or1 - or2
-#
 #'  
 #' @return A list with the following components
 #' \itemize{
-#'   \item Character string indicating total number of simulations, simulation type, and number of convergent models
+#'   \item Character string indicating total number of simulations, simulation type, 
+#'   and number of convergent models
 #'   \item Number of simulations
 #'   \item Data frame with columns "Power" (Estimated statistical power), 
 #'   "lower.95.ci" (Lower 95% confidence interval bound), 
 #'   "upper.95.ci" (Upper 95% confidence interval bound),
+#'   "Alpha" (Probability of committing a type I error or rejecting a true null),
+#'   "Beta" (Probability of committing a type II error or failing to reject a false null).
 #'   Note that non-convergent models are returned for review, 
 #'   but not included in this calculation.
 #'   \item Analytic method used for power estimation
@@ -59,16 +56,19 @@
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters
 #'   \item Data frame reporting sigma_b_sq for each group
-#'   \item Vector containing expected difference in probabilities based on user inputs
+#'   \item Vector containing user-supplied outcome probability and estimated odds ratio
 #'   \item Data frame containing three estimates of ICC
-#'   \item Data frame with columns: "Estimate" (Estimate of treatment effect for a given simulation), 
-#'   "Std.err" (Standard error for treatment effect estimate), "Test.statistic" (z-value (for GLMM) or 
-#'   Wald statistic (for GEE)), "p.value", "converge" (Did simulated model converge?), 
-#'   "sig.val" (Is p-value less than alpha?)
-#'   \item List of data frames, each containing: "y" (Simulated response value), 
+#'   \item Data frame with columns: 
+#'   "Estimate" (Estimate of treatment effect for a given simulation), 
+#'   "Std.err" (Standard error for treatment effect estimate), 
+#'   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
+#'   "p.value", 
+#'   "converge" (Did simulated model converge?)
+#'   \item If all.sim.data = TRUE, list of data frames, each containing: "y" (Simulated response value), 
 #'   "trt" (Indicator for treatment group), "clust" (Indicator for cluster)
 #'   \item List of warning messages produced by non-convergent models; 
 #'   Includes model number for cross-referencing against \code{model.estimates}
+#'   \item Logical vector reporting whether models converged.
 #' }
 #' 
 #' @details 
@@ -140,7 +140,7 @@
 #' \dontrun{
 #' binary.sim2 = cps.binary(nsim = 100, nsubjects = c(c(rep(10,9),100),rep(20,10)), nclusters = 10, p1 = 0.8,
 #'                         p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
-#'                         method = 'glmm', all.sim.data = FALSE)
+#'                         method = 'gee', all.sim.data = FALSE)
 #' }
 #'
 #'
@@ -154,9 +154,6 @@ cps.binary = function(nsim = NULL,
                       nclusters = NULL,
                       p1 = NULL,
                       p2 = NULL,
-                      or1 = NULL,
-                      or2 = NULL,
-                      or.diff = NULL,
                       sigma_b_sq = NULL,
                       sigma_b_sq2 = NULL,
                       alpha = 0.05,
@@ -263,26 +260,13 @@ cps.binary = function(nsim = NULL,
     sigma_b_sq[2] = sigma_b_sq2
   }
   
-  # Validate P1, P2, & OR1, OR2, OR.DIFF
+  # Validate P1, P2
   parm1.arg.list = list(p1, p2)
   parm1.args = unlist(lapply(parm1.arg.list, is.null))
-  parm2.arg.list = list(or1, or2, or.diff)
-  parm2.args = unlist(lapply(parm2.arg.list, is.null))
-  if (sum(parm1.args) < 3 && sum(parm2.args) < 3) {
-    stop(
-      "Only one set of parameters may be supplied: Expected probabilities OR expected odds ratios"
-    )
-  }
-  if (sum(parm2.args) == 3 && sum(parm1.args) > 1) {
+  if (sum(parm1.args) > 1) {
     stop("Both terms must be specified: p1, p2")
   }
-  if (sum(parm1.args) == 3 && sum(parm2.args) > 1) {
-    stop("At least two of the following terms must be specified: OR1, OR2, OR.DIFF")
-  }
-  if (sum(parm2.args) == 0 && or.diff != abs(or1 - or2)) {
-    stop("At least one of the following terms has been misspecified: OR1, OR2, OR.DIFF")
-  }
-  
+
   # Validate ALPHA, METHOD, QUIET, ALL.SIM.DATA
   if (!is.numeric(alpha) || alpha < 0) {
     stop("ALPHA", min0.warning)
@@ -304,22 +288,6 @@ cps.binary = function(nsim = NULL,
     stop(
       "ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
     )
-  }
-  
-  # Calculate all expected probabilities/odds ratios (if they have not been specified)
-  if (sum(parm1.args) == 3) {
-    if (is.null(or1)) {
-      or1 = abs(or.diff - or2)
-    }
-    if (is.null(or2)) {
-      or2 = abs(or1 - or.diff)
-    }
-    if (is.null(or.diff)) {
-      or.diff = or1 - or2
-    }
-    p1 = or1 / (1 + or1)
-    p2 = or2 / (1 + or2)
-    #  p.diff = abs(p1 - p2)
   }
   
   # Calculate ICC1 (sigma_b_sq / (sigma_b_sq + pi^2/3))
@@ -487,6 +455,7 @@ cps.binary = function(nsim = NULL,
       se.vector = append(se.vector, gee.values['trt', 'Std.err'])
       stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
       pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+      converge.vector = append(converge.vector, ifelse(summary(my.mod)$error == 0, TRUE, FALSE))
     }
     
     # Update simulation progress information
@@ -510,7 +479,7 @@ cps.binary = function(nsim = NULL,
         )
       }
       # Print simulation complete message
-      if (sum(converge.vector == TRUE) == nsim) {
+      if (sum(converge.vector) == nsim) {
         message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
       }
     }
@@ -527,14 +496,13 @@ cps.binary = function(nsim = NULL,
       )
     }
   }
-  
   ## Output objects
   # Create object containing summary statement
   if (irgtt == FALSE) {
     summary.message = paste0(
       "Monte Carlo Power Estimation based on ",
       nsim,
-      " Simulations: Simple Design, Binary Outcome\nNote: ",
+      " Simulations: Simple Design, Binary Outcome. Note: ",
       sum(converge.vector == FALSE),
       " additional models were fitted to account for non-convergent simulations."
     )
