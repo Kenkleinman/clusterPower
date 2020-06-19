@@ -2,7 +2,7 @@
 % Please edit documentation in R/cpa.binary.R
 \name{cpa.binary}
 \alias{cpa.binary}
-\title{Power calculations for simple cluster randomized trials, binary outcome}
+\title{Analytic power calculations for parallel arm cluster-randomized trials with binary outcomes}
 \usage{
 cpa.binary(
   alpha = 0.05,
@@ -33,29 +33,29 @@ error.}
 \item{cv}{The coefficient of variation of the cluster sizes. When \code{cv} = 0,
 (default) the clusters all have the same size.}
 
-\item{p1}{The expected proportion in one of the conditions, a numeric between 0-1.}
+\item{p1}{The proportion with the outcome in one of the conditions, a numeric between 0-1.}
 
-\item{p2}{The expected proportion in the other condition, a numeric between 0-1.}
+\item{p2}{The proportion with the outcome in the other condition, a numeric between 0-1.}
 
-\item{ICC}{The intraclass correlation, a numeric between 0-1.}
+\item{ICC}{The intraclass correlation, a numeric between 0-1.  (See Details, below.)}
 
 \item{pooled}{Logical indicating if pooled standard error should be used.}
 
-\item{p1inc}{Logical indicating if p1 is expected to be greater than p2.}
+\item{p1inc}{Logical indicating if p1 is expected to be greater than p2.  Only needed if \code{p1} or \code{p2} is \code{NA}.}
+
+\item{tdist}{If \code{TRUE} use t distribution with df equal to the number of clusters - 2.  Otherwise use the normal distribution.}
 
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}
-
-\item{dist}{Option to use normal (\code{"normal"}) or t (\code{"t"}) distribution.}
 }
 \value{
-The computed value of the NA parameter (from among \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
+The computed value of the NA parameter (among \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
   \code{CV}, \code{p1}, \code{p2}, and \code{ICC}) needed to satisfy the power and 
 sample size equation.
 }
 \description{
 Compute the power, number of clusters needed, number of subjects per cluster needed, 
-or other key parameters, for a simple parallel cluster randomized trial with a 
+or other key parameters for a parallel cluster randomized trial with a 
 binary outcome.
 }
 \details{
@@ -86,7 +86,7 @@ This function implements the approach of Donner and Klar (2000). An estimate for
 
  Unlike in the case of normal distributed outcomes (cpa.normal), the ICC refers neither to 
  any natural parameter of a data generating model nor to any function of its parameters.   For this reason we do not offer the user a option to input
- the variance of the clusters.  If you prefer to use that input, we suggest using the
+ the variance between the clusters.  If you prefer to use that input, we suggest using the
  cps.binary function.
 
   This function was inspired by work from Stephane Champely (pwr.t.test) and

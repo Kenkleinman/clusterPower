@@ -1,7 +1,7 @@
 #' Analytic power calculations for parallel arm cluster-randomized trials with count outcomes
 #'
 #' Compute the power, number of clusters needed, number of subjects per cluster 
-#' needed, or other key parameters, for a simple parallel cluster randomized 
+#' needed, or other key parameters for a simple parallel cluster randomized 
 #' trial with a count outcome.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
@@ -21,14 +21,14 @@
 #'  accounts for variance inflation due to clustering. 
 #'
 #'  The coefficient of variation \code{CVB} is the variance of the cluster rates divided by the
-#'  mean of the cluster rates.  In the case of equal observation time for each cluster member 
-#'  and equal numbers of observations per cluster,
-#'  this is the variance of the mean cluster count divided by the mean of the mean cluster count.
-#'      
+#'  mean of the cluster rates.  
+#'  
+#'        
+#'                    
 #'  The CVB refers neither to 
 #'  any natural parameter of a data generating model nor to any function of its parameters. 
 #'  For this reason we do not offer the user a option to input
-#'  the variance of the clusters.  If you prefer to use that input, we suggest using the
+#'  the variance between the cluster means.  If you prefer to use that input, we suggest using the
 #'  cps.count function.
 #'      
 #'         
@@ -50,8 +50,8 @@
 #'   error.
 #' @param nclusters The number of clusters per condition. It must be greater than 1
 #' @param nsubjects The number of units of person-time of observation per cluster
-#' @param r1 The expected mean event rate per unit time in one of the conditions
-#' @param r2 The expected mean event rate per unit time in the other condition
+#' @param r1 The mean event rate per unit time in one of the conditions
+#' @param r2 The mean event rate per unit time in the other condition
 #' @param CVB The between-cluster coefficient of variation
 #' @param r1inc Logical indicating if r1 is expected to be greater than r2. This is
 #'   only important to specify if one of r1 or r2 is NA.
@@ -59,7 +59,7 @@
 #'   at least four significant digits.
 #'   
 #' @return 
-#' The computed value of the NA parameter (from among \code{alpha}, \code{power}, \code{nclusters},
+#' The computed value of the NA parameter (among \code{alpha}, \code{power}, \code{nclusters},
 #'   \code{nsubjects},
 #'   \code{r1}, \code{r2} and \code{CVB}) needed to satisfy the power and 
 #' sample size equation.
@@ -74,12 +74,12 @@
 #' # The result, showimg nclusters of greater than 24, suggests 25 clusters per
 #' # condition should be used.
 #' 
-#' Find the largest CVB compatible with 80% power when there are 25 clusters, 10
-#' subject-units of time per cluster, and a rate of 0.1 and 0.2 in each condition.  
+#' # Find the largest CVB compatible with 80% power when there are 25 clusters, 10
+#' # subject-units of time per cluster, and a rate of 0.1 and 0.2 in each condition.  
 #' 
 #' cpa.count(nsubjects=10, nclusters= 25,r1=0.10, r2=0.20, CVB=NA)
 #' 
-#' Results show that CVB as high as 0.107 can still yield power this high.
+#' # Results show that CVB as high as 0.107 can still yield power this high.
 #' 
 #' @references Donner A, Klar N. Design and Analysis of Cluster Randomization Trials in Health Research. Chichester, UK; 2009.
 #' 

@@ -1,10 +1,10 @@
-#' Power calculations for simple cluster randomized trials with normal outcomes
+#' Analytic power calculations for parallel arm cluster-randomized trials with normal outcomes
 #'
 #' @description 
 #' \loadmathjax
 #'
 #' Compute the power, number of clusters needed, number of subjects per cluster 
-#' needed, or other key parameters, for a simple parallel cluster randomized 
+#' needed, or other key parameters for a simple parallel cluster randomized 
 #' trial with a normal outcome.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
@@ -12,10 +12,10 @@
 #'   Note that \code{alpha}, \code{power}, and \code{CV} have non-\code{NA}
 #'   defaults, so if those are the parameters of interest they must be
 #'   explicitly passed as \code{NA}. The user must supply sufficient variance 
-#'   parameters to produce values for both ICC and vart by providing 2 of the 
+#'   parameters to produce values for both the ICC and the total variance by providing 2 of the 
 #'   following: \code{ICC}, \code{vart}, \code{sigma_b_sq}, or \code{sigma_sq}.
 #'
-#' If \code{nsubjects} is a vector the values, \code{nclusters} and \code{CV} will be recalculated
+#' If \code{nsubjects} is a vector, the values \code{nclusters} and \code{CV} will be recalculated
 #'    using the values in \code{nsubjects}. If \code{nsubjects} is a vector and \code{method} is
 #'    "taylor", the exact relative efficiency will be calculated as described in
 #'    van Breukelen et al (2007).
@@ -46,11 +46,11 @@
 #'   error.
 #' @param nclusters The number of clusters per condition. It must be greater than 1.
 #' @param nsubjects The mean of the cluster sizes, or a vector of cluster sizes for one arm.
-#' @param sigma_sq Within-cluster variance.
-#' @param sigma_b_sq Between-cluster variance.
+#' @param sigma_sq Within-cluster (residual) variance, \mjseqn{\sigma^2}.
+#' @param sigma_b_sq Between-cluster variance \mjseqn{\sigma^2_b}.
 #' @param CV The coefficient of variation of the cluster sizes. When \code{CV} = 0,
 #'   the clusters all have the same size.
-#' @param d The difference in condition means \mjseqn{|\beta_1|}
+#' @param d The difference in condition means.
 #' @param ICC The intraclass correlation \mjseqn{\sigma_b^2 / (\sigma_b^2 + \sigma^2)}.
 #' Accepts a numeric between 0-1.
 #' @param vart The total variation of the outcome (the sum of within- and 
@@ -68,20 +68,44 @@
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
-#' # of 1 unit,  ICC = 0.1 and a variance of five units.
+#' # of 1 unit,  ICC = 0.1 and a variance of five units:
 #' 
-#' cpa.normal(nsubjects=10, d=1, ICC=.1, vart=5)
+#' cpa.normal(nsubjects = 10, d = 1, ICC = .1, vart = 5)
 #'  
 #' # The result, showing nclusters of greater than 15, suggests 16 clusters per 
 #' # condition should be used.
 #' 
 #' # Find the power achieved with 16 clusters, 10 subjects per cluster,
 #' # difference between condition of 1 unit, ICC = .1, and total variance
-#' # of 5 units
+#' # of 5 units:
 #' 
-#' cpa.normal(power = NA, nclusters= 16, nsubjects=10 ,d=1, sigma_b_sq=.5, vart=5)
+#' cpa.normal(power = NA, nclusters = 16, nsubjects = 10, d = 1,
+#'            sigma_b_sq = .5, vart = 5)
 #' 
 #' # The result shows the power is 0.801766.
+#' 
+#' XX JN: Can you be clearer about the N of clusters and cluster sizes?
+#' # Find the power achieved with with cluster sizes given in the nsubjects vector
+#' # and nclusters given by the length of the vector.
+#' 
+#' cpa.normal(alpha = .05, power = NA, nsubjects = c(100, 50, 25, 100, 100),
+#'            d = .2, ICC = .1, sigma_b_sq = .1)
+#' 
+#' # The result shows the power is 0.13315.
+#'
+#' # Find the power achieved with 20 clusters per arm, where
+#' # the cluster sizes vary but have a mean size of 100 and coefficient of variation of .5:
+#' 
+#' cpa.normal(alpha = .05, power = NA, nclusters = 20, nsubjects = 100, CV = .5,
+#'            d = .2, ICC = .1, sigma_b_sq = .1)
+#' 
+#' # The result shows the power is 0.4559881.
+#'
+#' # The code below generates an error because the uniroot function
+#' # cannot find a solution within its default settings.
+#' 
+#' XX JN: Can you make this example a "don't run"?
+#' cpa.normal(power=.8, nclusters=40, nsubjects=NA, d=.2, ICC=.1, sigma_b_sq=.1)
 #' 
 #' @references Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation
 #'   Coefficient in Cluster Randomized Trials: A Review of Definitions. Int Stat Rev.
@@ -230,7 +254,7 @@ cpa.normal <- function(alpha = 0.05,
         eval(pwr) - power,
       interval = c(2 + 1e-10, 1e+07),
       tol = tol,
-      extendInt = "upX"
+      extendInt = "upX", maxiter = 2000
     )$root
   }
   
@@ -241,7 +265,7 @@ cpa.normal <- function(alpha = 0.05,
         eval(pwr) - power,
       interval = c(2 + 1e-10, 1e+07),
       tol = tol,
-      extendInt = "upX"
+      extendInt = "upX", maxiter = 2000
     )$root
   }
   
@@ -252,7 +276,7 @@ cpa.normal <- function(alpha = 0.05,
         eval(pwr) - power,
       interval = c(1e-10, 1e+07),
       tol = tol,
-      extendInt = "downX"
+      extendInt = "downX", maxiter = 2000
     )$root
   }
   
