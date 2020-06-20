@@ -68,7 +68,7 @@
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
-#' # of 1 unit,  ICC = 0.1 and a variance of five units:
+#' # of 1 unit, ICC = 0.1, and a variance of five units:
 #' 
 #' cpa.normal(nsubjects = 10, d = 1, ICC = .1, vart = 5)
 #'  
@@ -84,9 +84,10 @@
 #' 
 #' # The result shows the power is 0.801766.
 #' 
-#' XX JN: Can you be clearer about the N of clusters and cluster sizes?
-#' # Find the power achieved with with cluster sizes given in the nsubjects vector
-#' # and nclusters given by the length of the vector.
+#' XX KK: Reworded the paragraph below.
+#' # Find the power achieved when each trial arm has 5 clusters of
+#' # sizes 100, 50, 25, 100, and 100. When a vector of cluster sizes 
+#' # is provided (as in this example), the "ncluster" argument is ignored.
 #' 
 #' cpa.normal(alpha = .05, power = NA, nsubjects = c(100, 50, 25, 100, 100),
 #'            d = .2, ICC = .1, sigma_b_sq = .1)
@@ -101,11 +102,11 @@
 #' 
 #' # The result shows the power is 0.4559881.
 #'
-#' # The code below generates an error because the uniroot function
-#' # cannot find a solution within its default settings.
-#' 
-#' XX JN: Can you make this example a "don't run"?
-#' cpa.normal(power=.8, nclusters=40, nsubjects=NA, d=.2, ICC=.1, sigma_b_sq=.1)
+#'
+#' XX KK: Removed the last example that breaks the function
+#' because Lexi changed the default for uniroot and it's all good now.
+#'
+#'  
 #' 
 #' @references Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation
 #'   Coefficient in Cluster Randomized Trials: A Review of Definitions. Int Stat Rev.

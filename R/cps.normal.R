@@ -134,7 +134,7 @@
 #' 
 #' # Estimate power for a trial with 10 clusters in each arm and 25 subjects in each 
 #' # cluster, with an ICC of .3, sigma squared of 20 (implying sigma_b^2 of 8.57143) 
-#' # in each group, with arm means of 1 and 4.75 in the two groups using 100 simulated 
+#' # in each group, with arm means of 1 and 4.75 in the two groups, using 100 simulated 
 #' # data sets.  
 #'    
 #' \dontrun{
@@ -146,17 +146,49 @@
 #' # The resulting estimated power should be somewhere around 0.77.
 #' 
 #' 
+#' XX KK: added "gee" to the last sentence here.
 #' # Estimate power for a trial with 5 clusters in one arm, those clusters having 25 subjects 
 #' # each, 25 clusters in the other arm, those clusters having 5 subjects each, the first arm
 #' # having a sigma squared of 20 and sigma_b squared of 8.57143, and the second a sigma squared
 #' # of 9 and a sigma_b squared of 1, with estimated arm means of 1 and 4.75 in the first and 
-#' # second groups, respectively, using 100 simulated data sets.
+#' # second groups, respectively, using 100 simulated data sets analyzed by the GEE method.
 #' 
 #' \dontrun{
 #' 
 #' normal.sim2 = cps.normal(nsim = 100, nclusters = c(5,25), nsubjects = c(25,5), mu = 1, 
 #'   mu2 = 4.75, sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1, method = "gee")
 #' }
+#' 
+#' 
+#' XX KK: Added this example to show a more complex setup
+#' # Estimate power for a trial with 5 clusters in one arm, those clusters having
+#' # 4, 5, 6, 7, 7, and 7 subjects each, and 10 clusters in the other arm,
+#' # those clusters having 5 subjects each, with sigma_b_sq = .3 and and ICC of .3 in both arms.
+#' # We have estimated arm means of 1 and 2 in the first and second arms, respectively, and we use
+#' # 100 simulated data sets analyzed by the GLMM method.
+#' 
+#' \dontrun{
+#' normal.sim2 = cps.normal(nsim = 100, nclusters = c(6,10), nsubjects = c(4, 5, 6, 7, 7, 7, rep(5, times = 10)),
+#'   mu = 1, mu2 = 2, sigma_b_sq = .3, ICC = .3, method = "glmm")
+#' }
+#' 
+#' # The resulting estimated power (if you set seed = 1) should be about 0.76.
+#' 
+#' XX KK: Added this example to show a MORE more complex setup
+#' # Estimate power for a trial with 3 clusters in one arm, those clusters having 25, 35, and 45 subjects 
+#' # each, and 10 clusters in the other arm, those clusters having 5 subjects each, the first arm
+#' # having a sigma squared of 20 and sigma_b squared of 8.57143, and the second a sigma squared
+#' # of 9 and a sigma_b squared of 1, with estimated arm means of 1 and 4.75 in the first and 
+#' # second groups, respectively, using 100 simulated data sets analyzed by the GLMM method.
+#' 
+#' \dontrun{
+#' 
+#' normal.sim2 = cps.normal(nsim = 100, nclusters = c(3,10), nsubjects = c(25, 35, 45, rep(5, times = 10)),
+#'   mu = 1, mu2 = 4.75, sigma_sq = 20, sigma_b_sq = 8.8571429,
+#'   sigma_sq2 = 9, sigma_b_sq2 = 1, method = "glmm")
+#' }
+#' 
+#' # The resulting estimated power (if you set seed = 1) should be about 0.71.
 #' 
 #' 
 #' @author Alexander R. Bogdan, Alexandria C. Sakrejda 
