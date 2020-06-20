@@ -4,7 +4,7 @@
 #' \loadmathjax
 #' 
 #' This function uses Monte Carlo methods (simulations) to estimate 
-#' power for cluster-randomized trials. Users 
+#' power for parallel design cluster-randomized trials with normal outcomes. Users 
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
 #' 
@@ -15,7 +15,7 @@
 #' updates, and whether the simulated data sets are retained.
 #' 
 #' Users have the option of specifying different variance parameters for each
-#' group, different numbers of clusters for each treatmetnt group, and different numbers
+#' arm, different numbers of clusters for each treatment group, and different numbers
 #' of units within each cluster. 
 #' 
 #' Non-convergent models are not included in the calculation of exact confidence 
@@ -26,50 +26,50 @@
 #' Sample Size Calculator, PASS11, \code{CRTsize::n4means}, and 
 #' \code{clusterPower::cpa.normal}.
 #' 
-#' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nclusters Number of clusters per group; accepts single integer (implying equal numbers of clusters in the two groups)
-#' or vector of length 2 (unequal number of clusters per arm) (required)
+#' @param nsim Number of datasets to simulate; accepts integer.  Required.
+#' @param nclusters Number of clusters per condition; accepts single integer (implying equal numbers of clusters in the two groups)
+#' or vector of length 2 (unequal number of clusters per arm).  Required.
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (implying equal cluster sizes for the two groups), 
-#' a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
-#' (unequal cluster sizes within groups) (required).
-#' @param mu Mean in the first arm; accepts numeric, default 0 (required).
-#' @param mu2 Mean in the second arm; accepts numeric (required).
+#' a vector of length two (equal cluster sizes within arm), or a vector of length \code{sum(nclusters)} 
+#' (unequal cluster sizes within arm).  Required.
+#' @param mu Mean in the first arm; accepts numeric, default 0.  Required..
+#' @param mu2 Mean in the second arm; accepts numeric.  Required.
 #' 
 #' At least 2 of the following must be specified:
-#' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
-#' @param sigma_sq Within-cluster variance; accepts numeric
-#' @param sigma_b_sq Between-cluster variance; accepts numeric
+#' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 and 1.
+#' @param sigma_sq Within-cluster variance; accepts numeric.
+#' @param sigma_b_sq Between-cluster variance; accepts numeric.
 #' 
 #' 
 #' The defaults for the following are all NA, implying equal variance parameters 
 #' for the two groups. If one of the following is given, variance parameters differ 
 #' between treatment groups, and at least 2 of the following 
 #' must be specified:
-#' @param ICC2 Intra-cluster correlation coefficient for clusters in the second group
-#' @param sigma_sq2 Within-cluster variance for clusters in the second group
-#' @param sigma_b_sq2 Between-cluster variance for clusters in the second group
+#' @param ICC2 Intra-cluster correlation coefficient for clusters in the second arm.
+#' @param sigma_sq2 Within-cluster variance for clusters in the second arm.
+#' @param sigma_b_sq2 Between-cluster variance for clusters in the second arm.
 #' 
 #' Optional parameters:
 #' @param alpha Significance level; default = 0.05.
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
-#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM, default) or 
+#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee').
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
-#' @param seed Option to set the seed. Default is NA.
+#' @param seed Option to set the seed. Default, NA, selects a seed based on the system clock.
 #' @param irgtt Logical. Is the experimental design an individually randomized 
 #' group treatment trial? For details, see ?cps.irgtt.normal.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
 #' of fits fail to converge.
-#' @param nofit Option to return only the simulated data, no analysis. Defaults to FALSE.
+#' @param nofit Option to return only the simulated data, no analysis. Defaults: FALSE.
 #' 
-#' @return If \code{nofit = FALSE} then a list with the following components:
+#' @return If \code{nofit = FALSE}, a list with the following components:
 #' \itemize{
 #'   \item Character string indicating total number of simulations and simulation type
 #'   \item Number of simulations
 #'   \item Data frame with columns "Power" (Estimated statistical power), 
-#'                "lower.95.ci" (Lower 95% confidence interval bound), 
-#'                "upper.95.ci" (Upper 95% confidence interval bound),
-#'                "Alpha" (Probability of committing a type I error or rejecting a true null),
+#'                "lower.95.ci" (Lower 95\% confidence interval bound), 
+#'                "upper.95.ci" (Upper 95\% confidence interval bound),
+#'                "Alpha" (Probability of committing a type I or \mjseqn{\alpha} error or rejecting a true null),
 #'                "Beta" (Probability of committing a type II error or failing to reject a false null).
 #'                Note that non-convergent models are returned for review, 
 #'                but not included in this calculation.
@@ -91,7 +91,7 @@
 #'                   "clust" (Indicator for cluster)
 #'                   }
 #' 
-#' If \code{nofit = TRUE} then function returns a dataframe with \code{nsim} + 2 columns 
+#' If \code{nofit = TRUE}, a dataframe with \code{nsim} + 2 columns 
 #' and a row for each simulated subject.
 #' 
 #' @details 
@@ -105,7 +105,7 @@
 #' where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if none of 
 #' \mjseqn{\sigma_2^2, \sigma_{b_2}^2} or \code{ICC2} are used, then the second group uses
 #' \mjseqn{b_i \sim N(0,\sigma_b^2)} 
-#' and \mjseqn{y_{ij} \sim N(\mu_2 + b_i, \sigma_2)} .
+#' and \mjseqn{y_{ij} \sim N(\mu_2 + b_i, \sigma^2)} .
 #' 
 #' All random terms are generated indepent of one another.
 #' 
