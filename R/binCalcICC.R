@@ -554,7 +554,7 @@ binCalcICC <-
         nw01 <- 0
         nw00 <- 0
         for (i in 1:k) {
-          dti <- dt[cid == ucid[i], ]
+          dti <- dt[cid == ucid[i],]
           wsamp1 <- c()
           wsamp2 <- c()
           for (m in 1:(nrow(dti) - 1)) {
@@ -591,9 +591,9 @@ binCalcICC <-
         nb01 <- 0
         nb00 <- 0
         for (i in 1:(k - 1)) {
-          dti <- dt[cid == ucid[i], ]
+          dti <- dt[cid == ucid[i],]
           for (m in (i + 1):k) {
-            dtm <- dt[cid == ucid[m], ]
+            dtm <- dt[cid == ucid[m],]
             bsamp1 <- rep(dti$y, each = nrow(dtm))
             bsamp2 <- rep(dtm$y, times = nrow(dti))
             bsamp <- rbind(bsamp1, bsamp2)
@@ -717,7 +717,7 @@ binCalcICC <-
         row.names(ci) <- NULL
         list(estimates = estimates, ci = ci)
       }
-
+    
     # apply iccbin to the simulated data
     o <- data$sim.data
     narms <- max(as.numeric(o[, 1]))
@@ -730,7 +730,7 @@ binCalcICC <-
       holder[[j]] <- list()
       for (k in 1:narms) {
         holder[[j]][[k]] <- list()
-        o2 <- temp[temp[, 1] == k,]
+        o2 <- temp[temp[, 1] == k, ]
         o2$clust <- as.factor(as.numeric(o2[, 2]))
         y <- o2[3]
         options(warn = -1)
@@ -750,7 +750,7 @@ binCalcICC <-
         )
         if (simnum > 1 && j == 1 && k == 1) {
           atime <- difftime(Sys.time(), start.time)
-          est <- round(as.numeric(atime) * (narms * simnum) / 60, 2)
+          est <- round(as.numeric(atime) * (narms * simnum) / 60, 0)
           print(paste0("Estimated time to completion: ", est,  " minutes."))
         }
         options(warn = 0)
@@ -761,6 +761,8 @@ binCalcICC <-
     simname <- paste0("simulation", 1:simnum)
     names(holder) <- simname
     browser()
-    #implement labels later
+    for (i in 1:simnum) {
+      names(holder[[i]]) <- armname
+    }
     return(holder)
   }

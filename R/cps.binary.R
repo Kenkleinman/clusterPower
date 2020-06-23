@@ -304,10 +304,6 @@ cps.binary = function(nsim = NULL,
   logit.p1 = log(p1 / (1 - p1))
   logit.p2 = log(p2 / (1 - p2))
   
-  # Set warnings to OFF
-  # Note: Warnings will still be stored in 'warning.list'
-  options(warn = -1)
-  
   ### Create simulation loop
   while (sum(converge.vector == TRUE) != nsim) {
     # Generate between-cluster effects for non-treatment and treatment
@@ -406,6 +402,10 @@ cps.binary = function(nsim = NULL,
       lmer.icc.vector = append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
     }
     
+    # Set warnings to OFF
+    # Note: Warnings will still be stored in 'warning.list'
+    options(warn = -1)
+    
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       if (irgtt == TRUE) {
@@ -440,6 +440,11 @@ cps.binary = function(nsim = NULL,
         pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
       }
     }
+    
+    # Set warnings to OFF
+    # Note: Warnings will still be stored in 'warning.list'
+    options(warn = 0)
+    
     # Fit GEE (geeglm)
     if (method == 'gee') {
       sim.dat = dplyr::arrange(sim.dat, clust)
@@ -541,8 +546,7 @@ cps.binary = function(nsim = NULL,
   inputs = t(data.frame(
     'Non.Treatment' = c("probability" = p1, "odds.ratio" = p1.p2.or),
     'Treatment' = c("probability" = p2, 'odds.ratio' = p2.p1.or)
-  ))#,
-  # 'Difference' = c("probability" = p.diff, 'odds.ratio' = p2.p1.or - p1.p2.or)))
+  ))
   
   # Create object containing group-specific cluster sizes
   cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]],
@@ -574,7 +578,8 @@ cps.binary = function(nsim = NULL,
   ))
   
   # Check & governor for inclusion of simulated datasets
-  # Note: If number of non-convergent models exceeds 5% of NSIM, override ALL.SIM.DATA and output all simulated data sets
+  # Note: If number of non-convergent models exceeds 5% of NSIM, 
+  # override ALL.SIM.DATA and output all simulated data sets
   if (all.sim.data == FALSE &&
       (sum(converge.vector == FALSE) < sum(converge.vector == TRUE) * 0.05)) {
     simulated.datasets = NULL

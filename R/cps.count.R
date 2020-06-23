@@ -307,6 +307,10 @@ cps.count = function(nsim = NULL,
       return(nofitop)
     }
     
+    # Set warnings to OFF
+    # Note: Warnings will still be stored in 'warning.list'
+    options(warn = -1)
+    
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       if (i == 1) {
@@ -433,6 +437,10 @@ cps.count = function(nsim = NULL,
       stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
       pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
     }
+    
+    # Set warnings to ON
+    # Note: Warnings stored in 'warning.list'
+    options(warn = 0)
     
     # Update simulation progress information
     if (quiet == FALSE) {
