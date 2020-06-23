@@ -628,10 +628,7 @@ cps.ma.count.internal <-
       complete.output.internal <-  list(
         "estimates" = model.values,
         "model.comparisons" = model.compare,
-        "converged" =  paste((1 - (
-          sum(unlist(converged)) / nsim
-        )) * 100,
-        "% did not converge", sep = ""),
+        "converged" = unlist(converged),
         "optimizer algorithm" = goodopt
       )
     }

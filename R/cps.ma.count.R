@@ -298,7 +298,7 @@ cps.ma.count <- function(nsim = 1000,
   }
   
   var.parms = data.frame('sigma_b_sq' = sigma_b_sq,
-                         "means" = means)
+                         "counts" = counts)
   rownames(var.parms) <- armnames
   # Create object containing group-specific cluster sizes
   names(str.nsubjects) <- armnames
@@ -386,7 +386,7 @@ cps.ma.count <- function(nsim = 1000,
     power.parms <- confint.calc(
       nsim = nsim,
       alpha = alpha,
-      p.val = as.vector(cps.model.temp2[, 2:length(cps.model.temp2)])
+      p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])
     )
     
     # Store simulation output in data frame
@@ -417,14 +417,13 @@ cps.ma.count <- function(nsim = 1000,
     
     ## Output objects for GLMM
     # Create list containing all output (class 'crtpwr.ma') and return
-    
     if (all.sim.data == TRUE && return.all.models == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1, ],
-          "beta" = power.parms[-1, ]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
@@ -437,10 +436,10 @@ cps.ma.count <- function(nsim = 1000,
           "cluster.sizes" = cluster.sizes,
           "n.clusters" = nclusters,
           "variance.parms" = var.parms,
-          "means" = means,
+          "counts" = counts,
           "model.estimates" = ma.model.est,
-          "convergence" = normal.ma.rct[[3]],
-          "sim.data" = normal.ma.rct[[4]]
+          "convergence" = count.ma.rct[[3]],
+          "sim.data" = count.ma.rct[[4]]
         ),
         class = 'crtpwr.ma'
       )
@@ -451,8 +450,8 @@ cps.ma.count <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1, ],
-          "beta" = power.parms[-1, ]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
@@ -465,11 +464,11 @@ cps.ma.count <- function(nsim = 1000,
           "cluster.sizes" = cluster.sizes,
           "n.clusters" = nclusters,
           "variance.parms" = var.parms,
-          "means" = means,
+          "counts" = counts,
           "model.estimates" = ma.model.est,
-          "convergence" = normal.ma.rct[[3]],
-          "sim.data" = normal.ma.rct[[4]],
-          "all.models" <-  normal.ma.rct
+          "convergence" = count.ma.rct[[3]],
+          "sim.data" = count.ma.rct[[4]],
+          "all.models" <-  count.ma.rct
         ),
         class = 'crtpwr.ma'
       )
@@ -479,8 +478,8 @@ cps.ma.count <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1, ],
-          "beta" = power.parms[-1, ]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
@@ -493,9 +492,9 @@ cps.ma.count <- function(nsim = 1000,
           "cluster.sizes" = cluster.sizes,
           "n.clusters" = nclusters,
           "variance.parms" = var.parms,
-          "means" = means,
+          "counts" = counts,
           "model.estimates" = ma.model.est,
-          "convergence" = normal.ma.rct[[3]]
+          "convergence" = count.ma.rct[[3]]
         ),
         class = 'crtpwr.ma'
       )
@@ -552,11 +551,11 @@ cps.ma.count <- function(nsim = 1000,
     # Proportion of times P(>F)
     sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
     LRT.holder.abbrev <- sum(sig.LRT) / nsim
-    
+
     # Calculate and store power estimate & confidence intervals
     power.parms <- confint.calc(nsim = nsim,
                                 alpha = alpha,
-                                p.val = p.val)
+                                p.val = Pr)
     
     
     # Store GEE simulation output in data frame
@@ -583,7 +582,7 @@ cps.ma.count <- function(nsim = 1000,
         'Sec'
       )
     )
-    
+
     # Create list containing all output (class 'crtpwr.ma') and return
     if (all.sim.data == TRUE & return.all.models == FALSE) {
       complete.output = structure(
@@ -604,9 +603,9 @@ cps.ma.count <- function(nsim = 1000,
           "cluster.sizes" = cluster.sizes,
           "n.clusters" = nclusters,
           "variance.parms" = var.parms,
-          "means" = means,
+          "counts" = counts,
           "model.estimates" = ma.model.est,
-          "sim.data" = normal.ma.rct[[3]]
+          "sim.data" = count.ma.rct[[3]]
         ),
         class = 'crtpwr.ma'
       )
@@ -630,9 +629,9 @@ cps.ma.count <- function(nsim = 1000,
           "cluster.sizes" = cluster.sizes,
           "n.clusters" = nclusters,
           "variance.parms" = var.parms,
-          "means" = means,
+          "counts" = counts,
           "model.estimates" = ma.model.est,
-          "all.models" <-  normal.ma.rct
+          "all.models" <-  count.ma.rct
         ),
         class = 'crtpwr.ma'
       )
@@ -656,7 +655,7 @@ cps.ma.count <- function(nsim = 1000,
           "cluster.sizes" = cluster.sizes,
           "n.clusters" = nclusters,
           "variance.parms" = var.parms,
-          "means" = means,
+          "counts" = counts,
           "model.estimates" = ma.model.est
         ),
         class = 'crtpwr.ma'
