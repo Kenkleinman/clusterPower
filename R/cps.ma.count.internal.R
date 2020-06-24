@@ -588,10 +588,15 @@ cps.ma.count.internal <-
         prog.bar$update(3 / 5)
         Sys.sleep(1 / 100)
       }
+      null.mod <- list()
+      null.mod[[i]] <- geepack::geeglm(sim.dat[, i] ~ 1,
+                                 family = stats::quasipoisson(link = 'log'),
+                                 id = clust,
+                                 corstr = "exchangeable")
       # get the overall p-values (>Chisq)
       model.compare <-
         foreach::foreach(i = 1:nsim, .inorder = FALSE) %fun% {
-          anova(my.mod[[i]])
+          try(anova(my.mod[[i]], null.mod[[i]]))
         }
       if (is.na(cores) & quiet == FALSE) {
         # Iterate progress bar

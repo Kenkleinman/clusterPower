@@ -415,10 +415,14 @@ cps.ma.normal.internal <-
         data.holder = dplyr::arrange(sim.dat[[i]], clust)
         
         # Iterate progress bar
-        prog.bar$update(i / nsim)
-        Sys.sleep(1 / 100)
-        
-        my.mod = geepack::geeglm(y ~ trt,
+       # prog.bar$update(i / nsim)
+      #  Sys.sleep(1 / 100)
+
+        my.mod = geepack::geeglm(y ~ as.factor(trt),
+                                 data = data.holder,
+                                 id = clust,
+                                 corstr = "exchangeable")
+        null.mod = geepack::geeglm(y ~ 1,
                                  data = data.holder,
                                  id = clust,
                                  corstr = "exchangeable")

@@ -105,7 +105,6 @@
 #' Sample Size Calculator, PASS11, \code{CRTsize::n4prop}, and 
 #' \code{clusterPower::cpa.binary}.
 #' 
-#' 
 #' @author Alexander R. Bogdan, Alexandria C. Sakrejda 
 #' (\email{acbro0@@umass.edu}), and Ken Kleinman 
 #' (\email{ken.kleinman@@gmail.com})
@@ -118,9 +117,7 @@
 #' Trials. Contemp Clin Trials. 2012; 33(5): 869-880. doi:10.1016/j.cct.2012.05.004 
 #' London: Arnold; 2000.
 #' 
-#' 
 #' @examples 
-#' 
 #' 
 #' # Estimate power for a trial with 10 clusters in each arm, 20 subjects in 
 #' # each cluster, with a probability of 0.8 in the first arm and 0.5 in the 

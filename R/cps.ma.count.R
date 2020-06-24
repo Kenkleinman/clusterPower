@@ -31,6 +31,11 @@
 #'
 #' Non-convergent models are not included in the calculation of exact confidence
 #' intervals.
+#' 
+#' @section Testing details:   
+#' This function has been verified, where possible, against reference values from PASS11, 
+#' \code{CRTsize::n4incidence}, \code{clusterPower::cps.count}, and 
+#' \code{clusterPower::cpa.count}.
 #'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster (required); accepts an
@@ -555,7 +560,7 @@ cps.ma.count <- function(nsim = 1000,
     # Calculate and store power estimate & confidence intervals
     power.parms <- confint.calc(nsim = nsim,
                                 alpha = alpha,
-                                p.val = Pr)
+                                p.val = Pr[,2:narms])
     
     
     # Store GEE simulation output in data frame
@@ -589,8 +594,8 @@ cps.ma.count <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1, ],
-          "beta" = power.parms[-1, ]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
@@ -615,8 +620,8 @@ cps.ma.count <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1, ],
-          "beta" = power.parms[-1, ]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
@@ -641,8 +646,8 @@ cps.ma.count <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1, ],
-          "beta" = power.parms[-1, ]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
