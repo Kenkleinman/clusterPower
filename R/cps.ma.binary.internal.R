@@ -407,7 +407,7 @@ cps.ma.binary.internal <-
     
     # Fit GEE (geeglm)
     if (method == 'gee') {
-      if (quiet == FALSE) {
+      if (quiet == FALSE && nsim > 100) {
         sim.start <- Sys.time()
         geepack::geeglm(
           sim.dat[, 1] ~ trt,
@@ -415,6 +415,7 @@ cps.ma.binary.internal <-
           id = clust,
           corstr = "exchangeable"
         )
+        avg.iter.time <- Sys.time() - sim.start
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
         min.est = round(time.est %% 60, 0)

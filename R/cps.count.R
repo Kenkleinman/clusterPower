@@ -17,28 +17,42 @@
 #' Non-convergent models are not included in the calculation of exact confidence 
 #' intervals.
 #' 
+#' @section Testing details:   
+#' This function has been verified, where possible, against reference values from PASS11, 
+#' \code{CRTsize::n4incidence}, \code{clusterPower::cps.count}, and 
+#' \code{clusterPower::cpa.count}.
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per cluster; accepts a single integer or a vector of 2 integers (if nsubjects differs between arms) (required). 
-#' @param nclusters Number of clusters per treatment group; accepts a single integer or a vector of 2 integers (if nsubjects differs between arms) (required).
+#' @param nsubjects Number of subjects per cluster; accepts a single integer or a vector 
+#' of 2 integers (if nsubjects differs between arms) (required). 
+#' @param nclusters Number of clusters per treatment group; accepts a single integer 
+#' or a vector of 2 integers (if nsubjects differs between arms) (required).
 #' At least 2 of the following 3 arguments must be specified:
 #' @param c1 Expected outcome count in non-treatment group
 #' @param c2 Expected outcome count in treatment group
-#' @param c.diff Expected difference in outcome count between groups, defined as c.diff = c1 - c2
+#' @param c.diff Expected difference in outcome count between groups, defined as 
+#' c.diff = c1 - c2
 #' @param sigma_b_sq Between-cluster variance; if sigma_b_sq2 is not specified, 
 #' between cluster variances are assumed to be equal between groups. Accepts numeric
-#' If between cluster variances differ between treatment groups, the following must also be specified:
+#' If between cluster variances differ between treatment groups, the following must 
+#' also be specified:
 #' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
-#' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
-#' @param analysis Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'
+#' @param family Distribution from which responses are simulated. Accepts Poisson 
+#' ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
+#' @param analysis Family used for regression; currently only applicable for GLMM. 
+#' Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model 
+#' (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') 
+#' (required); default = 'glmm'
 #' @param alpha Significance level. Default = 0.05.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.
+#' @param quiet When set to FALSE, displays simulation progress and estimated 
+#' completion time. Default = FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
 #' @param seed Option to set the seed. Default is NA.
 #' @param nofit Option to skip model fitting and analysis and return the simulated data. 
 #' Defaults to \code{FALSE}. 
-#' @param optimizer Option to fit with a different optimizer (using the package \code{optimx}). Defaults to L-BFGS-B.
+#' @param optimizer Option to fit with a different optimizer (using the package 
+#' \code{optimx}). Defaults to L-BFGS-B.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -307,6 +321,10 @@ cps.count = function(nsim = NULL,
       return(nofitop)
     }
     
+    # Set warnings to OFF
+    # Note: Warnings will still be stored in 'warning.list'
+    options(warn = -1)
+    
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       if (i == 1) {
@@ -433,6 +451,10 @@ cps.count = function(nsim = NULL,
       stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
       pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
     }
+    
+    # Set warnings to ON
+    # Note: Warnings stored in 'warning.list'
+    options(warn = 0)
     
     # Update simulation progress information
     if (quiet == FALSE) {

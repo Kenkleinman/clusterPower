@@ -155,7 +155,7 @@
 #'                                    poor.fit.override = TRUE, 
 #'                                    cores = NULL,
 #'                                    optmethod = "nlminb")
-#' }
+#'
 #' multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
 #'                                   nclusters = 10, nsubjects = 25, 
 #'                                   means = c(22.0, 21.0, 22.5),
@@ -165,7 +165,7 @@
 #'                                   all.sim.data = FALSE, seed = 123,
 #'                                   poor.fit.override = TRUE, cores="all",
 #'                                   optmethod = "NLOPT_LN_NELDERMEAD")
-#' 
+#' }
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
 #'   and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
@@ -448,7 +448,7 @@ cps.ma.normal <- function(nsim = 1000,
     power.parms <- confint.calc(
       nsim = nsim,
       alpha = alpha,
-      p.val = as.vector(cps.model.temp2[, 2:length(cps.model.temp2)])
+      p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])
     )
     
     # Store simulation output in data frame
@@ -458,14 +458,14 @@ cps.ma.normal <- function(nsim = 1000,
     
     ## Output objects for GLMM
     # Create list containing all output (class 'crtpwr.ma') and return
-    
+
     if (all.sim.data == TRUE && return.all.models == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1,],
-          "beta" = power.parms[-1,]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
@@ -492,8 +492,8 @@ cps.ma.normal <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1,],
-          "beta" = power.parms[-1,]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
@@ -520,8 +520,8 @@ cps.ma.normal <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1,],
-          "beta" = power.parms[-1,]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
@@ -579,7 +579,7 @@ cps.ma.normal <- function(nsim = 1000,
     colnames(std.error) <- names.st.err
     colnames(Wald) <- names.wald
     colnames(Pr) <- names.pval
-    
+
     # Organize the LRT output
     LRT.holder <-
       matrix(
@@ -592,13 +592,13 @@ cps.ma.normal <- function(nsim = 1000,
       )
     
     # Proportion of times P(>F)
-    sig.LRT <-  ifelse(LRT.holder[, 6] < alpha, 1, 0)
+    sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
     LRT.holder.abbrev <- sum(sig.LRT)
     
     # Calculate and store power estimate & confidence intervals
     power.parms <- confint.calc(nsim = nsim,
                                 alpha = alpha,
-                                p.val = Pr)
+                                p.val = Pr[,2:narms])
     
     # Store GEE simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)
@@ -606,15 +606,15 @@ cps.ma.normal <- function(nsim = 1000,
       ma.model.est[, -grep('.*ntercept.*', names(ma.model.est))]
     
     ## Output objects for GEE
-    
+
     # Create list containing all output (class 'crtpwr.ma') and return
     if (all.sim.data == TRUE & return.all.models == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1,],
-          "beta" = power.parms[-1,]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
@@ -639,8 +639,8 @@ cps.ma.normal <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1,],
-          "beta" = power.parms[-1,]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
@@ -665,8 +665,8 @@ cps.ma.normal <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1,],
-          "beta" = power.parms[-1,]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,

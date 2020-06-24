@@ -46,6 +46,8 @@
 #'   error.
 #' @param nclusters The number of clusters per condition. It must be greater than 1.
 #' @param nsubjects The mean of the cluster sizes, or a vector of cluster sizes for one arm.
+#' When nsubjects is a vector, CV and nclusters are calculated from nsubjects and 
+#' user-entered CV and nclusters is ignored.
 #' @param sigma_sq Within-cluster (residual) variance, \mjseqn{\sigma^2}.
 #' @param sigma_b_sq Between-cluster variance \mjseqn{\sigma^2_b}.
 #' @param CV The coefficient of variation of the cluster sizes. When \code{CV} = 0,
@@ -68,46 +70,40 @@
 #' @examples 
 #' # Find the number of clusters per condition needed for a trial with alpha = .05, 
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
-#' # of 1 unit, ICC = 0.1, and a variance of five units:
-#' 
+#' # of 1 unit,  ICC = 0.1 and a variance of five units:
+#' \dontrun{
 #' cpa.normal(nsubjects = 10, d = 1, ICC = .1, vart = 5)
-#'  
+#'  }
 #' # The result, showing nclusters of greater than 15, suggests 16 clusters per 
 #' # condition should be used.
 #' 
 #' # Find the power achieved with 16 clusters, 10 subjects per cluster,
 #' # difference between condition of 1 unit, ICC = .1, and total variance
 #' # of 5 units:
-#' 
+#' \dontrun{
 #' cpa.normal(power = NA, nclusters = 16, nsubjects = 10, d = 1,
 #'            sigma_b_sq = .5, vart = 5)
-#' 
+#' }
 #' # The result shows the power is 0.801766.
 #' 
-#' XX KK: Reworded the paragraph below.
 #' # Find the power achieved when each trial arm has 5 clusters of
 #' # sizes 100, 50, 25, 100, and 100. When a vector of cluster sizes 
 #' # is provided (as in this example), the "ncluster" argument is ignored.
 #' 
+#' \dontrun{
 #' cpa.normal(alpha = .05, power = NA, nsubjects = c(100, 50, 25, 100, 100),
 #'            d = .2, ICC = .1, sigma_b_sq = .1)
-#' 
+#' }
 #' # The result shows the power is 0.13315.
 #'
 #' # Find the power achieved with 20 clusters per arm, where
 #' # the cluster sizes vary but have a mean size of 100 and coefficient of variation of .5:
-#' 
+#' \dontrun{
 #' cpa.normal(alpha = .05, power = NA, nclusters = 20, nsubjects = 100, CV = .5,
 #'            d = .2, ICC = .1, sigma_b_sq = .1)
-#' 
+#' }
 #' # The result shows the power is 0.4559881.
 #'
-#'
-#' XX KK: Removed the last example that breaks the function
-#' because Lexi changed the default for uniroot and it's all good now.
-#'
-#'  
-#' 
 #' @references Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation
 #'   Coefficient in Cluster Randomized Trials: A Review of Definitions. Int Stat Rev.
 #'   77: 378-394.
@@ -135,8 +131,15 @@ cpa.normal <- function(alpha = 0.05,
                        tol = .Machine$double.eps ^ 0.25) {
   method <- match.arg(method)
   
+  if (nclusters != length(nsubjects)) {
+    errorCondition("The length of nsubjects must equal nclusters.")
+  }
+  
   # if nsubjects is a vector,
   if (length(nsubjects) > 1) {
+    if (!is.na(CV) || !is.na(nclusters)) {
+    warningCondition("When nsubjects is a vector, user-entered CV and nclusters is ignored.")
+    }
     nvec <- nsubjects
     nsubjects <- mean(nvec)
     nsd <- stats::sd(nvec)
