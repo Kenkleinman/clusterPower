@@ -86,8 +86,10 @@
 #' }
 #' # The result shows the power is 0.801766.
 #' 
-#' # Find the power achieved with with cluster sizes given in the nsubjects vector.
-#' # Nclusters is calculated automatically from the length of the nsubjects vector.
+#' # Find the power achieved when each trial arm has 5 clusters of
+#' # sizes 100, 50, 25, 100, and 100. When a vector of cluster sizes 
+#' # is provided (as in this example), the "ncluster" argument is ignored.
+#' 
 #' \dontrun{
 #' cpa.normal(alpha = .05, power = NA, nsubjects = c(100, 50, 25, 100, 100),
 #'            d = .2, ICC = .1, sigma_b_sq = .1)
@@ -102,12 +104,6 @@
 #' }
 #' # The result shows the power is 0.4559881.
 #'
-#' # The code below generates an error because the uniroot function
-#' # cannot find a solution within its default settings.
-#' 
-#' \dontrun{
-#' cpa.normal(power=.8, nclusters=40, nsubjects=NA, d=.2, ICC=.1, sigma_b_sq=.1)
-#' }
 #' @references Eldridge SM, Ukoumunne OC, Carlin JB. (2009) The Intra-Cluster Correlation
 #'   Coefficient in Cluster Randomized Trials: A Review of Definitions. Int Stat Rev.
 #'   77: 378-394.
