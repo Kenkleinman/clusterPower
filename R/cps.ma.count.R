@@ -1,138 +1,143 @@
-#' Simulation-based power estimation for poisson outcome multi-arm 
+#' Simulation-based power estimation for poisson outcome multi-arm
 #' cluster-randomized trials.
-#' 
-#' This function uses iterative simulations to determine 
-#' approximate power for multi-arm cluster-randomized controlled trials with 
-#' count or poisson-distributed outcomes of interest. Users can modify a 
-#' variety of parameters to suit the simulations to their desired 
-#' experimental situation. This function validates the user's input and 
-#' passes the necessary arguments to an internal function, which performs 
-#' the simulations. This function returns the summary power values for 
+#'
+#' This function uses iterative simulations to determine
+#' approximate power for multi-arm cluster-randomized controlled trials with
+#' count or poisson-distributed outcomes of interest. Users can modify a
+#' variety of parameters to suit the simulations to their desired
+#' experimental situation. This function validates the user's input and
+#' passes the necessary arguments to an internal function, which performs
+#' the simulations. This function returns the summary power values for
 #' each treatment arm.
-#' 
-#' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, group probabilities, and the 
-#' between-cluster variance. Significance level, analytic method, progress 
-#' updates, poor/singular fit override, and whether or not to return the 
-#' simulated data may also be specified. The internal function can be called 
-#' directly by the user to return the fitted models rather than the power 
+#'
+#' Users must specify the desired number of simulations, number of subjects per
+#' cluster, number of clusters per treatment arm, group probabilities, and the
+#' between-cluster variance. Significance level, analytic method, progress
+#' updates, poor/singular fit override, and whether or not to return the
+#' simulated data may also be specified. The internal function can be called
+#' directly by the user to return the fitted models rather than the power
 #' summaries (see \code{?cps.ma.count.internal} for details).
-#' 
-#' Users can spread the simulated data 
-#' generation and model fitting tasks across multiple cores using the 
-#' \code{cores} argument. Users should expect that parallel computing may make 
-#' model fitting faster than using a single core for more complicated models. 
-#' For simpler models, users may prefer to use single thread computing 
-#' (\code{cores}=1), as the processes involved in allocating memory and 
-#' copying data across cores also may take some time. For time-savings, 
-#' this function stops execution early if estimated power < 0.5 or more 
-#' than 25\% of models produce a singular fit or non-convergence warning 
+#'
+#' Users can spread the simulated data
+#' generation and model fitting tasks across multiple cores using the
+#' \code{cores} argument. Users should expect that parallel computing may make
+#' model fitting faster than using a single core for more complicated models.
+#' For simpler models, users may prefer to use single thread computing
+#' (\code{cores}=1), as the processes involved in allocating memory and
+#' copying data across cores also may take some time. For time-savings,
+#' this function stops execution early if estimated power < 0.5 or more
+#' than 25\% of models produce a singular fit or non-convergence warning
 #' message, unless \code{poor.fit.override = TRUE}.
 #'
-#' Non-convergent models are not included in the calculation of exact confidence 
+#' Non-convergent models are not included in the calculation of exact confidence
 #' intervals.
 #' 
+#' @section Testing details:   
+#' This function has been verified, where possible, against reference values from PASS11, 
+#' \code{CRTsize::n4incidence}, \code{clusterPower::cps.count}, and 
+#' \code{clusterPower::cpa.count}.
+#'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per cluster (required); accepts an 
-#' integer if all are equal and \code{narms} and \code{nclusters} are provided. 
-#' Alternately, the user can supply a list with one entry per arm if the 
-#' cluster sizes are the same within the arm, or, if they are not the same 
-#' within the arms, the user can supply a list of vectors where each vector 
-#' represents an arm and each entry in the vector is the number of subjects 
+#' @param nsubjects Number of subjects per cluster (required); accepts an
+#' integer if all are equal and \code{narms} and \code{nclusters} are provided.
+#' Alternately, the user can supply a list with one entry per arm if the
+#' cluster sizes are the same within the arm, or, if they are not the same
+#' within the arms, the user can supply a list of vectors where each vector
+#' represents an arm and each entry in the vector is the number of subjects
 #' per cluster.
-#' @param narms Integer value representing the number of trial arms. 
-#' @param family A string, either 'poisson' or 'neg.bin', indicating the 
+#' @param narms Integer value representing the number of trial arms.
+#' @param family A string, either 'poisson' or 'neg.bin', indicating the
 #' distribution that should be used to simulate the data.
-#' @param nclusters An integer or vector of integers representing the number 
+#' @param nclusters An integer or vector of integers representing the number
 #' of clusters in each arm.
-#' @param counts Expected absolute treatment effect probabilities for each arm; 
+#' @param counts Expected absolute treatment effect probabilities for each arm;
 #' accepts a scalar or a vector of length \code{narms} (required).
-#' @param sigma_b_sq Between-cluster variance; accepts a vector of length 
+#' @param sigma_b_sq Between-cluster variance; accepts a vector of length
 #' \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
-#' @param all.sim.data Option to output list of all simulated datasets; 
+#' @param all.sim.data Option to output list of all simulated datasets;
 #' default = FALSE.
-#' @param method Analytical method, either Generalized Linear Mixed Effects 
-#' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 
+#' @param method Analytical method, either Generalized Linear Mixed Effects
+#' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm',
 #' 'gee') (required); default = 'glmm'.
 #' @param multi.p.method A string indicating the method to use for adjusting
-#' p-values for multiple comparisons. Choose one of "holm", "hochberg", 
-#' "hommel", "bonferroni", "BH", "BY", "fdr", "none". The default is 
+#' p-values for multiple comparisons. Choose one of "holm", "hochberg",
+#' "hommel", "bonferroni", "BH", "BY", "fdr", "none". The default is
 #' "bonferroni". See \code{?p.adjust} for additional details.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge; 
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge;
 #' default = FALSE.
-#' @param low.power.override Option to override \code{stop()} if the power 
+#' @param low.power.override Option to override \code{stop()} if the power
 #' is less than 0.5 after the first 50 simulations and every ten simulations
-#' thereafter. On function execution stop, the actual power is printed in the 
-#' stop message. Default = FALSE. When TRUE, this check is ignored and the 
-#' calculated power is returned regardless of value. 
-#' @param cores String ("all"), NA, or scalar value indicating the number of cores 
+#' thereafter. On function execution stop, the actual power is printed in the
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the
+#' calculated power is returned regardless of value.
+#' @param cores String ("all"), NA, or scalar value indicating the number of cores
 #' to be used for parallel computing. Default = NA (no parallel computing).
-#' @param tdist Logical value indicating whether simulated data should be 
-#' drawn from a t-distribution rather than the normal distribution. 
+#' @param tdist Logical value indicating whether simulated data should be
+#' drawn from a t-distribution rather than the normal distribution.
 #' Default = FALSE.
 #' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
 #' the overall model comparisons, and the convergence report vector. This is equivalent
 #' to the output of cps.ma.count.internal(). See ?cps.ma.count.internal() for details.
-#' @param nofit Option to skip model fitting and analysis and return the simulated data. 
-#' Defaults to \code{FALSE}. 
+#' @param nofit Option to skip model fitting and analysis and return the simulated data.
+#' Defaults to \code{FALSE}.
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
 #' @return A list with the following components:
 #' \describe{
-#'   \item{power}{Data frame with columns "power" (Estimated statistical power), 
-#'                "lower.95.ci" (Lower 95\% confidence interval bound), 
+#'   \item{power}{Data frame with columns "power" (Estimated statistical power),
+#'                "lower.95.ci" (Lower 95\% confidence interval bound),
 #'                "upper.95.ci" (Upper 95\% confidence interval bound).}
-#'   \item{model.estimates}{Data frame with columns corresponding 
-#'   to each arm with descriptive suffixes as follows: 
-#'                   ".Estimate" (Estimate of treatment effect for a given 
-#'                   simulation), 
-#'                   "Std.Err" (Standard error for treatment effect estimate), 
-#'                   ".zval" (for GLMM) | ".wald" (for GEE), and 
+#'   \item{model.estimates}{Data frame with columns corresponding
+#'   to each arm with descriptive suffixes as follows:
+#'                   ".Estimate" (Estimate of treatment effect for a given
+#'                   simulation),
+#'                   "Std.Err" (Standard error for treatment effect estimate),
+#'                   ".zval" (for GLMM) | ".wald" (for GEE), and
 #'                   ".pval" (the p-value estimate).}
-#'   \item{overall.power}{Table of F-test (when method="glmm") or chi^{2} 
+#'   \item{overall.power}{Table of F-test (when method="glmm") or chi^{2}
 #'   (when method="gee") significance test results.}
 #'   \item{overall.power.summary}{Summary overall power of treatment model
 #'   compared to the null model.}
-#'   \item{sim.data}{Produced when all.sim.data==TRUE. List of \code{nsim} 
-#'   data frames, each containing: 
-#'                   "y" (simulated response value), 
+#'   \item{sim.data}{Produced when all.sim.data==TRUE. List of \code{nsim}
+#'   data frames, each containing:
+#'                   "y" (simulated response value),
 #'                   "trt" (indicator for treatment group or arm), and
 #'                   "clust" (indicator for cluster).}
-#'   \item{model.fit.warning.percent}{Character string containing the percent 
-#'   of \code{nsim} in which the glmm fit was singular or failed to converge, 
+#'   \item{model.fit.warning.percent}{Character string containing the percent
+#'   of \code{nsim} in which the glmm fit was singular or failed to converge,
 #'   produced only when method = "glmm" & all.sim.data = FALSE.
 #'   }
-#'   \item{model.fit.warning.incidence}{Vector of length \code{nsim} denoting 
-#'   whether or not a simulation glmm fit triggered a "singular fit" or 
-#'   "non-convergence" error, produced only when method = "glmm" & 
+#'   \item{model.fit.warning.incidence}{Vector of length \code{nsim} denoting
+#'   whether or not a simulation glmm fit triggered a "singular fit" or
+#'   "non-convergence" error, produced only when method = "glmm" &
 #'   all.sim.data=TRUE.
 #'   }
 #'   }
-#' 
-#' @examples 
+#'
+#' @examples
 #' \dontrun{
 #' nsubjects.example <- list(c(200, 200, 200, 250), c(150, 200, 200, 210), c(170, 200, 210))
 #' counts.example <- c(30, 55, 98)
 #' sigma_b_sq.example <- c(0.1, 0.1, 0.2)
-#' 
-#' count.ma.rct.unbal <- cps.ma.count(nsim = 10, 
-#'                             nsubjects = nsubjects.example, 
+#'
+#' count.ma.rct.unbal <- cps.ma.count(nsim = 10,
+#'                             nsubjects = nsubjects.example,
 #'                             counts = counts.example,
-#'                             sigma_b_sq = sigma_b_sq.example, 
-#'                             alpha = 0.05, all.sim.data = FALSE, 
-#'                             seed = 123, cores="all", poor.fit.override=TRUE) 
-#'                             
+#'                             sigma_b_sq = sigma_b_sq.example,
+#'                             alpha = 0.05, all.sim.data = FALSE,
+#'                             seed = 123, cores="all", poor.fit.override=TRUE)
+#'
 #' count.ma.rct.bal <- cps.ma.count(nsim = 100, nsubjects = 100, narms=3,
 #'                             nclusters=4,
 #'                             counts = c(30, 35, 70),
 #'                             sigma_b_sq = 0.001, alpha = 0.05,
-#'                             quiet = FALSE, method = 'glmm', 
-#'                             all.sim.data = FALSE, 
+#'                             quiet = FALSE, method = 'glmm',
+#'                             all.sim.data = FALSE,
 #'                             multi.p.method="none",
 #'                             poor.fit.override = TRUE,
-#'                             seed = 123, cores="all")                             
+#'                             seed = 123, cores="all")
 #'}
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
@@ -244,6 +249,10 @@ cps.ma.count <- function(nsim = 1000,
   #                   poor.fit.override=poor.fit.override,
   #                   cores=cores)
   
+  # Set warnings to OFF
+  # Note: Warnings will still be stored in 'warning.list'
+  options(warn = -1)
+  
   # run the simulations
   count.ma.rct <- cps.ma.count.internal(
     nsim = nsim,
@@ -264,10 +273,41 @@ cps.ma.count <- function(nsim = 1000,
     opt = opt
   )
   
+  
+  # Set warnings to ON
+  # Note: Warnings will still be stored in 'warning.list'
+  options(warn = 0)
+  
   #option to return simulated data only
   if (nofit == TRUE || return.all.models == TRUE) {
     return(count.ma.rct)
   }
+  
+  # Create object containing summary statement
+  summary.message = paste0(
+    "Monte Carlo Power Estimation based on ",
+    nsim,
+    " Simulations: Parallel Design, Poisson Outcome, ",
+    narms,
+    " Arms."
+  )
+  
+  # Create method object
+  long.method = switch(method, glmm = 'Generalized Linear Mixed Model',
+                       gee = 'Generalized Estimating Equation')
+  
+  # Create object containing group-specific variance parameters
+  armnames <- vector(mode = "character", length = narms)
+  for (i in 1:narms) {
+    armnames[i] <- paste0("Arm.", i)
+  }
+  
+  var.parms = data.frame('sigma_b_sq' = sigma_b_sq,
+                         "counts" = counts)
+  rownames(var.parms) <- armnames
+  # Create object containing group-specific cluster sizes
+  names(str.nsubjects) <- armnames
+  cluster.sizes <- str.nsubjects
   
   models <- count.ma.rct[[1]]
   
@@ -279,10 +319,10 @@ cps.ma.count <- function(nsim = 1000,
     p.val = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i, ] <- models[[i]][[10]][, 1]
-      std.error[i, ] <- models[[i]][[10]][, 2]
-      z.val[i, ] <- models[[i]][[10]][, 3]
-      p.val[i, ] <-
+      Estimates[i,] <- models[[i]][[10]][, 1]
+      std.error[i,] <- models[[i]][[10]][, 2]
+      z.val[i,] <- models[[i]][[10]][, 3]
+      p.val[i,] <-
         p.adjust(models[[i]][[10]][, 4], method = multi.p.method)
     }
     
@@ -351,7 +391,7 @@ cps.ma.count <- function(nsim = 1000,
     power.parms <- confint.calc(
       nsim = nsim,
       alpha = alpha,
-      p.val = as.vector(cps.model.temp2[, 2:length(cps.model.temp2)])
+      p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])
     )
     
     # Store simulation output in data frame
@@ -381,43 +421,89 @@ cps.ma.count <- function(nsim = 1000,
     )
     
     ## Output objects for GLMM
-    
     # Create list containing all output (class 'crtpwr.ma') and return
-    if (all.sim.data == TRUE) {
-      complete.output <-  structure(
+    if (all.sim.data == TRUE && return.all.models == FALSE) {
+      complete.output = structure(
         list(
-          "power" <-  power.parms[-1, ],
-          "model.estimates" <-  ma.model.est,
-          "overall.power" <- LRT.holder,
-          "overall.power2" <-
-            try(prop_H0_rejection(alpha = alpha,
-                                  nsim = nsim,
-                                  LRT.holder.abbrev =
-                                    LRT.holder.abbrev))
-          ,
-          "sim.data" <-  count.ma.rct[[3]],
-          "failed.to.converge" <-
-            count.ma.rct[[4]]
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "overall.power" = LRT.holder,
+          "method" = long.method,
+          "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "counts" = counts,
+          "model.estimates" = ma.model.est,
+          "convergence" = count.ma.rct[[3]],
+          "sim.data" = count.ma.rct[[4]]
         ),
-        class = "crtpwr.ma"
-      )
-    } else {
-      complete.output <-  structure(
-        list(
-          "power" <-  power.parms[-1, ],
-          "overall.power" <-
-            try(prop_H0_rejection(alpha = alpha,
-                                  nsim = nsim,
-                                  LRT.holder.abbrev =
-                                    LRT.holder.abbrev))
-          ,
-          "proportion.failed.to.converge" <-
-            count.ma.rct[[3]]
-        ),
-        class = "crtpwr.ma"
+        class = 'crtpwr.ma'
       )
     }
-    return(complete.output)
+    
+    if (return.all.models == TRUE) {
+      complete.output = structure(
+        list(
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "overall.power" = LRT.holder,
+          "method" = long.method,
+          "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "counts" = counts,
+          "model.estimates" = ma.model.est,
+          "convergence" = count.ma.rct[[3]],
+          "sim.data" = count.ma.rct[[4]],
+          "all.models" <-  count.ma.rct
+        ),
+        class = 'crtpwr.ma'
+      )
+    }
+    if (return.all.models == FALSE && all.sim.data == FALSE) {
+      complete.output = structure(
+        list(
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "overall.power" = LRT.holder,
+          "method" = long.method,
+          "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "counts" = counts,
+          "model.estimates" = ma.model.est,
+          "convergence" = count.ma.rct[[3]]
+        ),
+        class = 'crtpwr.ma'
+      )
+    }
   } # end of GLMM options
   
   #Organize output for GEE method
@@ -429,10 +515,10 @@ cps.ma.count <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i, ] <- models[[i]]$coefficients[, 1]
-      std.error[i, ] <- models[[i]]$coefficients[, 2]
-      Wald[i, ] <- models[[i]]$coefficients[, 3]
-      Pr[i, ] <- models[[i]]$coefficients[, 4]
+      Estimates[i,] <- models[[i]]$coefficients[, 1]
+      std.error[i,] <- models[[i]]$coefficients[, 2]
+      Wald[i,] <- models[[i]]$coefficients[, 3]
+      Pr[i,] <- models[[i]]$coefficients[, 4]
     }
     
     # Organize the row/col names for the output
@@ -470,13 +556,11 @@ cps.ma.count <- function(nsim = 1000,
     # Proportion of times P(>F)
     sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
     LRT.holder.abbrev <- sum(sig.LRT) / nsim
-    
+
     # Calculate and store power estimate & confidence intervals
-    power.parms <- confint.calc(
-      nsim = nsim,
-      alpha = alpha,
-      p.val = p.val
-    )
+    power.parms <- confint.calc(nsim = nsim,
+                                alpha = alpha,
+                                p.val = Pr[,2:narms])
     
     
     # Store GEE simulation output in data frame
@@ -503,39 +587,85 @@ cps.ma.count <- function(nsim = 1000,
         'Sec'
       )
     )
-    
-    ## Output objects for GEE
+
     # Create list containing all output (class 'crtpwr.ma') and return
-    if (all.sim.data == TRUE) {
-      complete.output <- structure(
+    if (all.sim.data == TRUE & return.all.models == FALSE) {
+      complete.output = structure(
         list(
-          "power" <-  power.parms[-1, ],
-          "model.estimates" <-  ma.model.est,
-          "overall.power" <- LRT.holder,
-          "overall.power2" <-
-            try(prop_H0_rejection(alpha = alpha,
-                                  nsim = nsim,
-                                  LRT.holder.abbrev =
-                                    LRT.holder.abbrev),
-                "sim.data" <-
-                  count.ma.rct[[4]])
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "overall.power" = LRT.holder,
+          "method" = long.method,
+          "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "counts" = counts,
+          "model.estimates" = ma.model.est,
+          "sim.data" = count.ma.rct[[3]]
         ),
-        class = "ctrpwr"
+        class = 'crtpwr.ma'
       )
-    } else {
-      complete.output <- structure(
+    }
+    if (return.all.models == TRUE) {
+      complete.output = structure(
         list(
-          "power" <-  power.parms[-1, ],
-          "model.estimates" <-  ma.model.est,
-          "overall.power" <- LRT.holder,
-          "overall.power2" <-
-            try(prop_H0_rejection(alpha = alpha,
-                                  nsim = nsim,
-                                  LRT.holder.abbrev = LRT.holder.abbrev))
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "overall.power" = LRT.holder,
+          "method" = long.method,
+          "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "counts" = counts,
+          "model.estimates" = ma.model.est,
+          "all.models" <-  count.ma.rct
         ),
-        class = "crtpwr.ma"
+        class = 'crtpwr.ma'
       )
-    }# end of return options
-    return(complete.output)
-  }# end of GEE options
+    }
+    if (return.all.models == FALSE && all.sim.data == FALSE) {
+      complete.output = structure(
+        list(
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "overall.power" = LRT.holder,
+          "method" = long.method,
+          "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "counts" = counts,
+          "model.estimates" = ma.model.est
+        ),
+        class = 'crtpwr.ma'
+      )
+    }
+  }
+  return(complete.output)
 }# end of fxn

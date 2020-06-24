@@ -1,6 +1,6 @@
 #' BinCalcICC: calculate ICC values for data from CRTs with binary outcomes.
 #'
-#' @param data A dataframe of the sort generated  
+#' @param data A dataframe of the sort generated
 #' by \code{cps.binary()} or \code{cps.ma.binary()}; can be generate by
 #' using \code{all.sim.data = TRUE}.
 #' @param method The method to be used to compute ICC. A single or multiple
@@ -16,9 +16,9 @@
 #' number of points per axis for evaluating the adaptive Gauss-Hermite approximation
 #' to the log-likelihood. Used when the method lin is chosen. Default value is 1.
 #' @param sim.min	Optional, integer. The number of the first simulation for which ICC will be calculated.
-#' Default is NULL, which returns ICC for all simulations.
-#' @param sim.max	Optional, integer. The number of the last simulation for which ICC 
-#' will be calculated. Default is NULL, which returns ICC for all simulations.
+#' Default is 1.
+#' @param sim.max	Optional, integer. The number of the last simulation for which ICC
+#' will be calculated. Default is \code{nsim}.
 #' @param nsim Number of Monte Carlo replicates used in ICC computation method.
 #' \code{sim}. Default is 1000.
 #'
@@ -31,18 +31,18 @@
 #'   intervals}	}
 #' @examples
 #' \dontrun{
-#' bin.ma.rct.unbal <- cps.ma.binary(nsim = 61, 
-#'                             nsubjects = list(rep(200, times=15), 
-#'                             rep(150, times=15), 
-#'                             rep(170, times=15)), 
+#' bin.ma.rct.unbal <- cps.ma.binary(nsim = 3,
+#'                             nsubjects = list(rep(200, times=15),
+#'                             rep(150, times=15),
+#'                             rep(170, times=15)),
 #'                             narms = 3,
 #'                             nclusters = 15,
 #'                             probs = c(0.15, 0.23, 0.22),
-#'                             sigma_b_sq = c(0.1, 0.1, 0.1), 
-#'                             alpha = 0.05, all.sim.data = TRUE, 
-#'                             seed = 123, cores="all") 
-#' 
-#'   bin <- binCalcICC(data = bin.ma.rct.unbal, nsim = 1000, sim.min = 1, sim.max = 1)
+#'                             sigma_b_sq = c(0.1, 0.1, 0.1),
+#'                             alpha = 0.05, all.sim.data = TRUE,
+#'                             seed = 123, cores="all")
+#'
+#'   bin <- binCalcICC(data = bin.ma.rct.unbal, nsim = 1000)
 #' }
 #'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}) and Ken Kleinman (\email{ken.kleinman@@gmail.com})
@@ -71,8 +71,8 @@ binCalcICC <-
            alpha = 0.05,
            kappa = 0.45,
            nAGQ = 1,
-           sim.min = NULL,
-           sim.max = NULL,
+           sim.min = 1,
+           sim.max = (length(data$sim.data) - 2),
            nsim = 1000) {
     #First, here's Akhtar Hossain's and Hirshikesh Chakraborty's iccbin function definition
     iccbin <-
@@ -717,85 +717,52 @@ binCalcICC <-
         row.names(ci) <- NULL
         list(estimates = estimates, ci = ci)
       }
-
+    
     # apply iccbin to the simulated data
     o <- data$sim.data
     narms <- max(as.numeric(o[, 1]))
     holder <- list()
-    holder[] <- list()
-    
-    if (is.null(sim.min) || is.null(sim.max)) {
-      simnum <- length(o) - 2
-      for (k in 1:narms) {
-        o2 <- o[o[, 1] == k, ]
-        o2$clust <- as.factor(as.numeric(o2[, 2]))
-        for (j in (1:simnum)) {
-          o3 <- data.frame("trt" = o2[, 1],
-                           "clust" = o2[, 2],
-                           "y" = o2[, j + 2])
-          options(warn = -1)
-          if (simnum > 1 && j == 1 && k == 1) {
-            start.time = Sys.time()
-          }
-          holder[j][k] <- iccbin(
-            cid = clust,
-            y = y,
-            data = o3,
-            method = method,
-            ci.type = ci.type,
-            alpha = alpha,
-            kappa = kappa,
-            nAGQ = nAGQ,
-            M = nsim
-          )
-          if (simnum > 1 && j == 2 && k == 1) {
-            atime <- difftime(Sys.time(), start.time)
-            est <- round(as.numeric(atime) * (narms * simnum)/60, 2)
-            print(paste0("Estimated time to completion: ", est, "minutes."))
-          }
-          options(warn = 0)
-        }
-      }
-    } else {
-     # browser()
-      simnum <- sim.max - sim.min + 1
-      temp <- data.frame("trt" = o[, 1],
+    simnum <- sim.max - sim.min + 1
+    temp <- data.frame("trt" = o[, 1],
                        "clust" = o[, 2],
                        "y" = o[, (sim.min + 2):(sim.max + 2)])
-      for (j in (sim.min:sim.max)) {
-        holder[[j]] <- list()
+    for (j in (sim.min:sim.max)) {
+      holder[[j]] <- list()
       for (k in 1:narms) {
         holder[[j]][[k]] <- list()
         o2 <- temp[temp[, 1] == k, ]
         o2$clust <- as.factor(as.numeric(o2[, 2]))
-        y <- o2[, k + 2]
-          options(warn = -1)
-          if (simnum > 1 && j == 1 && k == 1) {
-            start.time = Sys.time()
-          }
-          holder[j][k] <- iccbin(
-            cid = clust,
-            y = y,
-            data = o2,
-            method = method,
-            ci.type = ci.type,
-            alpha = alpha,
-            kappa = kappa,
-            nAGQ = nAGQ,
-            M = nsim
-          )
-          if (simnum > 1 && j == 2 && k == 1) {
-            atime <- difftime(Sys.time(), start.time)
-            est <- round(as.numeric(atime) * (narms * simnum)/60, 2)
-            print(paste0("Estimated time to completion: ", est,  " minutes."))
-          }
-          options(warn = 0)
+        y <- o2[3]
+        options(warn = -1)
+        if (simnum > 1 && j == 1 && k == 1) {
+          start.time = Sys.time()
         }
+        holder[[j]][[k]] <- iccbin(
+          cid = clust,
+          y = y,
+          data = o2,
+          method = method,
+          ci.type = ci.type,
+          alpha = alpha,
+          kappa = kappa,
+          nAGQ = nAGQ,
+          M = nsim
+        )
+        if (simnum > 1 && j == 1 && k == 1) {
+          atime <- difftime(Sys.time(), start.time)
+          est <- round(as.numeric(atime) * (narms * simnum) / 60, 0)
+          print(paste0("Estimated time to completion: ", est,  " minutes."))
+        }
+        options(warn = 0)
       }
     }
     armname <- vector(mode = "character", length = narms)
     armname <- paste0("arm", 1:narms)
     simname <- paste0("simulation", 1:simnum)
-    #implement labels later
+    names(holder) <- simname
+    browser()
+    for (i in 1:simnum) {
+      names(holder[[i]]) <- armname
+    }
     return(holder)
   }

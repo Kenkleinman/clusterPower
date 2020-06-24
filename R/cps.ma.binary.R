@@ -33,6 +33,11 @@
 #' Non-convergent models are not included in the calculation of exact confidence 
 #' intervals.
 #' 
+#' @section Testing details:   
+#' This function has been verified, where possible, against reference values from the NIH's GRT 
+#' Sample Size Calculator, PASS11, \code{CRTsize::n4prop}, \code{clusterPower::cps.binary}, and 
+#' \code{clusterPower::cpa.binary}.
+#' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster (required); accepts an 
 #' integer if all are equal and \code{narms} and \code{nclusters} are provided. 
@@ -280,6 +285,34 @@ cps.ma.binary <- function(nsim = 1000,
   
   models <- binary.ma.rct[[1]]
   
+  # Create object containing summary statement
+  summary.message = paste0(
+    "Monte Carlo Power Estimation based on ",
+    nsim,
+    " Simulations: Parallel Design, Binary Outcome, ",
+    narms,
+    " Arms."
+  )
+  
+  # Create method object
+  long.method = switch(method, glmm = 'Generalized Linear Mixed Model',
+                       gee = 'Generalized Estimating Equation')
+  
+  # Create object containing group-specific variance parameters
+  armnames <- vector(mode = "character", length = narms)
+  for (i in 1:narms) {
+    armnames[i] <- paste0("Arm.", i)
+  }
+  
+  var.parms = data.frame('sigma_b_sq' = sigma_b_sq,
+                         "probs" = probs)
+  rownames(var.parms) <- armnames
+  
+  # Create object containing group-specific cluster sizes
+  names(str.nsubjects) <- armnames
+  cluster.sizes <- str.nsubjects
+  
+  
   #Organize output for GLMM
   if (method == "glmm") {
     Estimates = matrix(NA, nrow = nsim, ncol = narms)
@@ -349,7 +382,7 @@ cps.ma.binary <- function(nsim = 1000,
     power.parms <- confint.calc(
       nsim = nsim,
       alpha = alpha,
-      p.val = as.vector(cps.model.temp2[, 2:length(cps.model.temp2)])
+      p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])
     )
     
     # Store simulation output in data frame
@@ -379,34 +412,6 @@ cps.ma.binary <- function(nsim = 1000,
     )
     
     ## Output objects for GLMM
-  
-    # Create object containing summary statement
-    summary.message = paste0(
-      "Monte Carlo Power Estimation based on ",
-      nsim,
-      " Simulations: Parallel Design, Binary Outcome, ",
-      narms,
-      " Arms."
-    )
-    
-    # Create method object
-    long.method = switch(method, glmm = 'Generalized Linear Mixed Model',
-                         gee = 'Generalized Estimating Equation')
-    
-    # Create object containing group-specific variance parameters
-    armnames <- vector(mode = "character", length = narms)
-    for (i in 1:narms) {
-      armnames[i] <- paste0("Arm.", i)
-    }
-    
-    var.parms = data.frame('sigma_b_sq' = sigma_b_sq,
-                           "probs" = probs)
-    rownames(var.parms) <- armnames
-    
-    # Create object containing group-specific cluster sizes
-    names(str.nsubjects) <- armnames
-    cluster.sizes <- str.nsubjects
-      
     # Create list containing all output (class 'crtpwr.ma') and return
     
     
@@ -415,8 +420,8 @@ cps.ma.binary <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1,],
-          "beta" = power.parms[-1,]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
@@ -443,8 +448,8 @@ cps.ma.binary <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1,],
-          "beta" = power.parms[-1,]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
@@ -471,8 +476,8 @@ cps.ma.binary <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms[-1,],
-          "beta" = power.parms[-1,]['Beta'],
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
           "overall.power2" =
             prop_H0_rejection(
               alpha = alpha,
@@ -492,9 +497,6 @@ cps.ma.binary <- function(nsim = 1000,
         class = 'crtpwr.ma'
       )
     }
-    
-    return(complete.output)
-  
   } # end of GLMM options
   
   #Organize output for GEE method
@@ -546,7 +548,7 @@ cps.ma.binary <- function(nsim = 1000,
     
     # Proportion of times P(>F)
     sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
-    LRT.holder.abbrev <- sum(sig.LRT) / nsim
+    LRT.holder.abbrev <- sum(sig.LRT)
     
     # Calculate and store power estimate & confidence intervals
     sig.val <-  ifelse(Pr < alpha, 1, 0)
@@ -558,10 +560,11 @@ cps.ma.binary <- function(nsim = 1000,
           sum(x, na.rm = TRUE) / nsim
         }
       )
+
     power.parms <- confint.calc(
       nsim = nsim,
       alpha = alpha,
-      p.val = p.val
+      p.val = Pr[,2:narms]
     )
     
     # Store GEE simulation output in data frame
@@ -588,33 +591,85 @@ cps.ma.binary <- function(nsim = 1000,
         'Sec'
       )
     )
-    
-    ## Output objects for GEE
+
     # Create list containing all output (class 'crtpwr.ma') and return
-    if (all.sim.data == TRUE) {
-      complete.output <-  list(
-        "power" <-  power.parms[-1, ],
-        "model.estimates" <-  ma.model.est,
-        "overall.power" <- LRT.holder,
-        "overall.power2" <-
-          try(prop_H0_rejection(alpha = alpha,
-                                nsim = nsim,
-                                LRT.holder.abbrev = LRT.holder.abbrev),
-              "sim.data" <-  binary.ma.rct[[4]])
+    if (all.sim.data == TRUE & return.all.models == FALSE) {
+      complete.output = structure(
+        list(
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "overall.power" = LRT.holder,
+          "method" = long.method,
+          "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "probs" = probs,
+          "model.estimates" = ma.model.est,
+          "sim.data" = binary.ma.rct[[4]]
+        ),
+        class = 'crtpwr.ma'
       )
-    } else {
-      complete.output <-  list(
-        "power" <-  power.parms[-1, ],
-        "model.estimates" <-  ma.model.est,
-        "overall.power" <- LRT.holder,
-        "overall.power2" <-
-          try(prop_H0_rejection(alpha = alpha,
-                                nsim = nsim,
-                                LRT.holder.abbrev = LRT.holder.abbrev))
+    }
+    if (return.all.models == TRUE) {
+      complete.output = structure(
+        list(
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "overall.power" = LRT.holder,
+          "method" = long.method,
+          "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "probs" = probs,
+          "model.estimates" = ma.model.est,
+          "all.models" <-  binary.ma.rct
+        ),
+        class = 'crtpwr.ma'
       )
-    }# end of return options
-    # assign special class
-    class(complete.output) <- c("multiarm", "list")
-    return(complete.output)
+    }
+    if (return.all.models == FALSE && all.sim.data == FALSE) {
+      complete.output = structure(
+        list(
+          "overview" = summary.message,
+          "nsim" = nsim,
+          "power" =  power.parms,
+          "beta" = power.parms['Beta'],
+          "overall.power2" =
+            prop_H0_rejection(
+              alpha = alpha,
+              nsim = nsim,
+              LRT.holder.abbrev = LRT.holder.abbrev
+            ),
+          "overall.power" = LRT.holder,
+          "method" = long.method,
+          "alpha" = alpha,
+          "cluster.sizes" = cluster.sizes,
+          "n.clusters" = nclusters,
+          "variance.parms" = var.parms,
+          "probs" = probs,
+          "model.estimates" = ma.model.est
+        ),
+        class = 'crtpwr.ma'
+      )
+    }
   }# end of GEE options
+  return(complete.output)
 }# end of fxn
