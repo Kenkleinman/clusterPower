@@ -146,7 +146,6 @@
 #' # The resulting estimated power should be somewhere around 0.77.
 #' 
 #' 
-#' XX KK: added "gee" to the last sentence here.
 #' # Estimate power for a trial with 5 clusters in one arm, those clusters having 25 subjects 
 #' # each, 25 clusters in the other arm, those clusters having 5 subjects each, the first arm
 #' # having a sigma squared of 20 and sigma_b squared of 8.57143, and the second a sigma squared
@@ -160,7 +159,6 @@
 #' }
 #' 
 #' 
-#' XX KK: Added this example to show a more complex setup
 #' # Estimate power for a trial with 5 clusters in one arm, those clusters having
 #' # 4, 5, 6, 7, 7, and 7 subjects each, and 10 clusters in the other arm,
 #' # those clusters having 5 subjects each, with sigma_b_sq = .3 and and ICC of .3 in both arms.
@@ -168,13 +166,13 @@
 #' # 100 simulated data sets analyzed by the GLMM method.
 #' 
 #' \dontrun{
-#' normal.sim2 = cps.normal(nsim = 100, nclusters = c(6,10), nsubjects = c(4, 5, 6, 7, 7, 7, rep(5, times = 10)),
+#' normal.sim2 = cps.normal(nsim = 100, nclusters = c(6,10), 
+#'   nsubjects = c(4, 5, 6, 7, 7, 7, rep(5, times = 10)),
 #'   mu = 1, mu2 = 2, sigma_b_sq = .3, ICC = .3, method = "glmm")
 #' }
 #' 
 #' # The resulting estimated power (if you set seed = 1) should be about 0.76.
 #' 
-#' XX KK: Added this example to show a MORE more complex setup
 #' # Estimate power for a trial with 3 clusters in one arm, those clusters having 25, 35, and 45 subjects 
 #' # each, and 10 clusters in the other arm, those clusters having 5 subjects each, the first arm
 #' # having a sigma squared of 20 and sigma_b squared of 8.57143, and the second a sigma squared
@@ -183,7 +181,8 @@
 #' 
 #' \dontrun{
 #' 
-#' normal.sim2 = cps.normal(nsim = 100, nclusters = c(3,10), nsubjects = c(25, 35, 45, rep(5, times = 10)),
+#' normal.sim2 = cps.normal(nsim = 100, nclusters = c(3,10), 
+#'   nsubjects = c(25, 35, 45, rep(5, times = 10)),
 #'   mu = 1, mu2 = 4.75, sigma_sq = 20, sigma_b_sq = 8.8571429,
 #'   sigma_sq2 = 9, sigma_b_sq2 = 1, method = "glmm")
 #' }
