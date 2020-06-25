@@ -31,10 +31,10 @@
 #'
 #' Non-convergent models are not included in the calculation of exact confidence
 #' intervals.
-#' 
-#' @section Testing details:   
-#' This function has been verified, where possible, against reference values from PASS11, 
-#' \code{CRTsize::n4incidence}, \code{clusterPower::cps.count}, and 
+#'
+#' @section Testing details:
+#' This function has been verified, where possible, against reference values from PASS11,
+#' \code{CRTsize::n4incidence}, \code{clusterPower::cps.count}, and
 #' \code{clusterPower::cpa.count}.
 #'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
@@ -319,10 +319,10 @@ cps.ma.count <- function(nsim = 1000,
     p.val = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]][[10]][, 1]
-      std.error[i,] <- models[[i]][[10]][, 2]
-      z.val[i,] <- models[[i]][[10]][, 3]
-      p.val[i,] <-
+      Estimates[i, ] <- models[[i]][[10]][, 1]
+      std.error[i, ] <- models[[i]][[10]][, 2]
+      z.val[i, ] <- models[[i]][[10]][, 3]
+      p.val[i, ] <-
         p.adjust(models[[i]][[10]][, 4], method = multi.p.method)
     }
     
@@ -515,10 +515,10 @@ cps.ma.count <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]]$coefficients[, 1]
-      std.error[i,] <- models[[i]]$coefficients[, 2]
-      Wald[i,] <- models[[i]]$coefficients[, 3]
-      Pr[i,] <- models[[i]]$coefficients[, 4]
+      Estimates[i, ] <- models[[i]]$coefficients[, 1]
+      std.error[i, ] <- models[[i]]$coefficients[, 2]
+      Wald[i, ] <- models[[i]]$coefficients[, 3]
+      Pr[i, ] <- models[[i]]$coefficients[, 4]
     }
     
     # Organize the row/col names for the output
@@ -556,11 +556,11 @@ cps.ma.count <- function(nsim = 1000,
     # Proportion of times P(>F)
     sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
     LRT.holder.abbrev <- sum(sig.LRT) / nsim
-
+    
     # Calculate and store power estimate & confidence intervals
     power.parms <- confint.calc(nsim = nsim,
                                 alpha = alpha,
-                                p.val = Pr[,2:narms])
+                                p.val = Pr[, 2:narms])
     
     
     # Store GEE simulation output in data frame
@@ -587,7 +587,7 @@ cps.ma.count <- function(nsim = 1000,
         'Sec'
       )
     )
-
+    
     # Create list containing all output (class 'crtpwr.ma') and return
     if (all.sim.data == TRUE & return.all.models == FALSE) {
       complete.output = structure(
