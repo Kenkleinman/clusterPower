@@ -94,6 +94,13 @@
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
 #'                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
+#'                       
+#' count.sim.unbal = cps.count(nsim = 100, nsubjects = c(4, 5, 6, 7, 7, 7, rep(5, times = 10)), 
+#'                       nclusters = c(6,10),
+#'                       c1 = 20, c2 = 30, sigma_b_sq = 0.1,
+#'                       family = 'poisson', analysis = 'poisson',
+#'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
+#'                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
 #' }
 #'
 #' @export
@@ -184,7 +191,7 @@ cps.count = function(nsim = NULL,
   }
   if (length(nclusters) == 2 &&
       length(nsubjects) != 1 &&
-      length(nsubjects) != length(nclusters)) {
+      length(nsubjects) != sum(nclusters)) {
     stop(
       "A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS"
     )
