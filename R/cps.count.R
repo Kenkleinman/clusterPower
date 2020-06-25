@@ -94,10 +94,18 @@
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
 #'                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
-#'                       
+#' }                  
+#'      
+#' # Estimate power for a trial with 5 clusters in one arm, those clusters having
+#' # 4, 5, 6, 7, 7, and 7 subjects each, and 10 clusters in the other arm,
+#' # those clusters having 5 subjects each, with sigma_b_sq = 0.1 in both arms.
+#' # We have estimated arm counts of 20 and 30 in the first and second arms, 
+#' # respectively, and we use 100 simulated data sets analyzed by the GLMM method.                      
+#' 
+#' \dontrun{                                            
 #' count.sim.unbal = cps.count(nsim = 100, nsubjects = c(4, 5, 6, 7, 7, 7, rep(5, times = 10)), 
 #'                       nclusters = c(6,10),
-#'                       c1 = 20, c2 = 30, sigma_b_sq = 0.1,
+#'                       c1 = 20, c2 = 30, sigma_b_sq = c(0.1, 0.05),
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
 #'                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
@@ -198,6 +206,9 @@ cps.count = function(nsim = NULL,
   }
   
   # Validate sigma_b_sq, sigma_b_sq2, ALPHA
+  if (length(sigma_b_sq) > 1 || length(sigma_b_sq2) > 1) {
+    errorCondition("The lengths of sigma_b_sq and sigma_b_sq2 cannot be larger than 1.")
+  }
   if (irgtt == FALSE) {
     min0.warning = " must be a numeric value greater than 0"
     if (!is.numeric(sigma_b_sq) || sigma_b_sq <= 0) {
@@ -546,8 +557,8 @@ cps.count = function(nsim = NULL,
   
   # Create object containing group-specific cluster sizes
   cluster.sizes = list(
-    'Non.Treatment' = rep (nsubjects[1], length.out = nclusters[1]),
-    'Treatment' = rep(nsubjects[2], length.out = nclusters[2])
+    'Non.Treatment' = nsubjects[1:nclusters[1]],
+    'Treatment' = nsubjects[(1 + nclusters[1]):(nclusters[1] + nclusters[2])]
   )
   
   # Create object containing number of clusters
