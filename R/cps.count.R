@@ -88,12 +88,18 @@
 #'
 #'
 #' @examples
+#' 
+#' # Estimate power for a trial with 10 clusters in each arm with 20 subjects each, 
+#' # with sigma_b_sq = 0.1 in both arms. We have estimated arm counts of 20 and 30 
+#' # in the first and second arms, respectively, and we use 100 simulated data 
+#' # sets analyzed by the GEE method. 
+#' 
 #' \dontrun{
 #' count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 10,
 #'                       c1 = 20, c2 = 30, sigma_b_sq = 0.1,
 #'                       family = 'poisson', analysis = 'poisson',
-#'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
-#'                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
+#'                       method = 'gee', alpha = 0.05, quiet = FALSE,
+#'                       all.sim.data = FALSE, seed = 123)
 #' }                  
 #'      
 #' # Estimate power for a trial with 5 clusters in one arm, those clusters having
@@ -105,7 +111,8 @@
 #' \dontrun{                                            
 #' count.sim.unbal = cps.count(nsim = 100, nsubjects = c(4, 5, 6, 7, 7, 7, rep(5, times = 10)), 
 #'                       nclusters = c(6,10),
-#'                       c1 = 20, c2 = 30, sigma_b_sq = c(0.1, 0.05),
+#'                       c1 = 20, c2 = 30, sigma_b_sq = 0.1,
+#'                       sigma_b_sq2 = 0.05,
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
 #'                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
@@ -197,8 +204,7 @@ cps.count = function(nsim = NULL,
       length(nsubjects) == nclusters[1]) {
     nsubjects = rep(nsubjects, 2)
   }
-  if (length(nclusters) == 2 &&
-      length(nsubjects) != 1 &&
+  if (length(nsubjects) != length(nclusters) &&
       length(nsubjects) != sum(nclusters)) {
     stop(
       "A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS"
@@ -281,6 +287,13 @@ cps.count = function(nsim = NULL,
   clust = c(rep(1:nclusters[1], each = nsubjects[1]),
             rep((nclusters[1] + 1):(nclusters[1] + nclusters[2]),
                 each = nsubjects[2]))
+  
+  est.vector <- vector(mode = "numeric", length = nsim)
+  se.vector <- vector(mode = "numeric", length = nsim)
+  stat.vector <- vector(mode = "numeric", length = nsim)
+  pval.vector <- vector(mode = "numeric", length = nsim)
+  converge.vector <- vector(mode = "logical", length = nsim)
+  
   # Create simulation loop
   for (i in 1:nsim) {
     # Generate between-cluster effects for non-treatment and treatment
@@ -445,14 +458,14 @@ cps.count = function(nsim = NULL,
           )
         }
       }
-      glmm.values = summary(my.mod)$coefficient
-      est.vector = append(est.vector, glmm.values['trt1', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt1', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt1', 'z value'])
-      pval.vector = append(pval.vector, glmm.values['trt1', 'Pr(>|z|)'])
-      converge.vector = append(converge.vector, ifelse(any(
+      glmm.values <- summary(my.mod)$coefficient
+      est.vector[i] <- glmm.values['trt1', 'Estimate']
+      se.vector[i] <- glmm.values['trt1', 'Std. Error']
+      stat.vector[i] <- glmm.values['trt1', 'z value']
+      pval.vector[i] <- glmm.values['trt1', 'Pr(>|z|)']
+      converge.vector <- ifelse(any(
         grepl("singular", my.mod@optinfo$conv$lme4$messages)
-      ) == TRUE, FALSE, TRUE))
+      ) == TRUE, FALSE, TRUE)
     }
     # Fit GEE (geeglm)
     if (method == 'gee') {
@@ -464,13 +477,14 @@ cps.count = function(nsim = NULL,
         id = clust,
         corstr = "exchangeable"
       )
-      gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+      gee.values <- summary(my.mod)$coefficients
+      est.vector[i] <- gee.values['trt1', 'Estimate']
+      se.vector[i] <- gee.values['trt1', 'Std.err']
+      stat.vector[i] <- gee.values['trt1', 'Wald']
+      pval.vector[i] <- gee.values['trt1', 'Pr(>|W|)']
+      converge.vector[i] <- ifelse(my.mod$geese$error != 0, FALSE, TRUE)
     }
-    
+
     # Set warnings to ON
     # Note: Warnings stored in 'warning.list'
     options(warn = 0)
