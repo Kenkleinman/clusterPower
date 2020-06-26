@@ -8,9 +8,9 @@
 #' Runs the power simulation for count outcomes.
 #'
 #' Users must specify the desired number of simulations, number of subjects per
-#' cluster, number of clusters per treatment arm, between-cluster variance,
-#' two of the following: expected count in non-treatment group, expected count
-#' in treatment group, difference in counts between groups; significance level,
+#' cluster, number of clusters per arm, between-cluster variance,
+#' two of the following: expected count in arm 1, expected count
+#' in arm 2, difference in counts between groups; significance level,
 #' analytic method, and whether or not progress updates should be displayed
 #' while the function is running.
 #'
@@ -25,18 +25,18 @@
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts a single integer or a vector
 #' of 2 integers (if nsubjects differs between arms) (required).
-#' @param nclusters Number of clusters per treatment group; accepts a single integer
+#' @param nclusters Number of clusters per arm; accepts a single integer
 #' or a vector of 2 integers (if nsubjects differs between arms) (required).
 #' At least 2 of the following 3 arguments must be specified:
-#' @param c1 Expected outcome count in non-treatment group
-#' @param c2 Expected outcome count in treatment group
+#' @param c1 Expected outcome count in the first arm
+#' @param c2 Expected outcome count in the second arm
 #' @param c.diff Expected difference in outcome count between groups, defined as
 #' c.diff = c1 - c2
 #' @param sigma_b_sq Between-cluster variance; if sigma_b_sq2 is not specified,
-#' between cluster variances are assumed to be equal between groups. Accepts numeric
-#' If between cluster variances differ between treatment groups, the following must
+#' between cluster variances are assumed to be equal between arms. Accepts numeric
+#' If between cluster variances differ between arms, the following must
 #' also be specified:
-#' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
+#' @param sigma_b_sq2 Between-cluster variance for clusters in arm 1
 #' @param family Distribution from which responses are simulated. Accepts Poisson
 #' ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
 #' @param analysis Family used for regression; currently only applicable for GLMM.
@@ -69,7 +69,7 @@
 #'   \item Significance level
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters
-#'   \item Data frame reporting between-cluster variances for Treatment/Non-Treatment groups
+#'   \item Data frame reporting between-cluster variances for both arms
 #'   \item Vector containing expected counts and risk ratios based on user inputs
 #'   \item Data frame with columns:
 #'                   "Estimate" (Estimate of treatment effect for a given simulation),
@@ -79,7 +79,7 @@
 #'                   "sig.val" (Is p-value less than alpha?)
 #'   \item List of data frames, each containing:
 #'                   "y" (Simulated response value),
-#'                   "trt" (Indicator for treatment group),
+#'                   "trt" (Indicator for treatment arm),
 #'                   "clust" (Indicator for cluster)
 #' }
 #' @author Alexander R. Bogdan
@@ -115,7 +115,7 @@
 #'                       sigma_b_sq2 = 0.05,
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
-#'                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
+#'                       all.sim.data = TRUE, seed = 123, optimizer = "L-BFGS-B")
 #' }
 #'
 #' @export
@@ -187,7 +187,7 @@ cps.count = function(nsim = NULL,
       "NCLUSTERS can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)"
     )
   }
-  # Set cluster sizes for treatment arm (if not already specified)
+  # Set cluster sizes for arm (if not already specified)
   if (length(nclusters) == 1) {
     if (irgtt == TRUE) {
       nclusters[2] = nclusters[1]
@@ -198,13 +198,17 @@ cps.count = function(nsim = NULL,
   }
   # Set sample sizes for each cluster (if not already specified)
   if (length(nsubjects) == 1) {
-    nsubjects = c(nsubjects, nsubjects)
+    nsubjects[1:sum(nclusters)] = nsubjects
+  }
+  if (length(nsubjects) == 2) {
+    nsubjects = c(rep(nsubjects[1], nclusters[1]), rep(nsubjects[2], nclusters[2]))
   }
   if (nclusters[1] == nclusters[2] &&
       length(nsubjects) == nclusters[1]) {
     nsubjects = rep(nsubjects, 2)
   }
-  if (length(nsubjects) != length(nclusters) &&
+  if (length(nclusters) == 2 &&
+      length(nsubjects) != 1 &&
       length(nsubjects) != sum(nclusters)) {
     stop(
       "A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS"
@@ -279,14 +283,11 @@ cps.count = function(nsim = NULL,
     sigma_b_sq[2] = sigma_b_sq2
   }
   
-  # Create indicators for treatment group & cluster
-  trt = c(
-    rep(0, length.out = nsubjects[1] * nclusters[1]),
-    rep(1, length.out = nsubjects[2] * nclusters[2])
-  )
-  clust = c(rep(1:nclusters[1], each = nsubjects[1]),
-            rep((nclusters[1] + 1):(nclusters[1] + nclusters[2]),
-                each = nsubjects[2]))
+  # Create indicators for arm & cluster
+  trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])),
+          rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
+  clust = unlist(lapply(1:sum(nclusters), function(x)
+    rep(x, length.out = nsubjects[x])))
   
   est.vector <- vector(mode = "numeric", length = nsim)
   se.vector <- vector(mode = "numeric", length = nsim)
@@ -296,11 +297,11 @@ cps.count = function(nsim = NULL,
   
   # Create simulation loop
   for (i in 1:nsim) {
-    # Generate between-cluster effects for non-treatment and treatment
+    # Generate between-cluster effects for arm 1 and arm 2
     randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq[1]))
     randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq[2]))
     
-    # Create non-treatment y-value
+    # Create arm 1 y-value
     y0.intercept <- rep(randint.0, each = nsubjects[1])
     y0.linpred = y0.intercept + log(c1)
     y0.prob = exp(y0.linpred)
@@ -311,7 +312,7 @@ cps.count = function(nsim = NULL,
       y0 = stats::rnbinom(length(y0.prob), size = 1, mu = y0.prob)
     }
     
-    # Create treatment y-value
+    # Create arm 2 y-value
     y1.intercept <- rep(randint.1, each = nsubjects[2])
     y1.linpred = y1.intercept + log(c2) #+ log((c1 / (1 - c1)) / (c2 / (1 - c2)))
     y1.prob = exp(y1.linpred)
@@ -324,7 +325,7 @@ cps.count = function(nsim = NULL,
     
     # Create single response vector
     y = c(y0, y1)
-    
+    browser()
     # Create and store data for simulated dataset
     sim.dat = data.frame(y = as.integer(y),
                          trt = as.factor(trt),
@@ -564,27 +565,27 @@ cps.count = function(nsim = NULL,
   c1.c2.rr = round(exp(log(c1) - log(c2)), 3)
   c2.c1.rr = round(exp(log(c2) - log(c1)), 3)
   inputs = t(data.frame(
-    'Non.Treatment' = c("count" = c1, "risk.ratio" = c1.c2.rr),
-    'Treatment' = c("count" = c2, 'risk.ratio' = c2.c1.rr),
+    'Arm1' = c("count" = c1, "risk.ratio" = c1.c2.rr),
+    'Arm2' = c("count" = c2, 'risk.ratio' = c2.c1.rr),
     'Difference' = c("count" = c.diff, 'risk.ratio' = c2.c1.rr - c1.c2.rr)
   ))
-  
+
   # Create object containing group-specific cluster sizes
   cluster.sizes = list(
-    'Non.Treatment' = nsubjects[1:nclusters[1]],
-    'Treatment' = nsubjects[(1 + nclusters[1]):(nclusters[1] + nclusters[2])]
+    'Arm1' = nsubjects[1:nclusters[1]],
+    'Arm2' = nsubjects[(1 + nclusters[1]):(nclusters[1] + nclusters[2])]
   )
   
   # Create object containing number of clusters
   n.clusters = t(data.frame(
-    "Non.Treatment" = c("n.clust" = nclusters[1]),
-    "Treatment" = c("n.clust" = nclusters[2])
+    "Arm1" = c("n.clust" = nclusters[1]),
+    "Arm2" = c("n.clust" = nclusters[2])
   ))
   
   # Create object containing group-specific variance parameters
   var.parms = t(data.frame(
-    'Non.Treatment' = c('sigma_b_sq' = sigma_b_sq[1]),
-    'Treatment' = c('sigma_b_sq' = sigma_b_sq[2])
+    'Arm1' = c('sigma_b_sq' = sigma_b_sq[1]),
+    'Arm2' = c('sigma_b_sq' = sigma_b_sq[2])
   ))
   
   # Create object containing FAMILY & REGRESSION parameters
