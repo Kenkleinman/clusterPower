@@ -9,9 +9,9 @@
 #' Runs the power simulation for count outcomes.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, between-cluster variance, 
-#' two of the following: expected count in non-treatment group, expected count 
-#' in treatment group, difference in counts between groups; significance level, 
+#' cluster, number of clusters per arm, between-cluster variance, 
+#' two of the following: expected count in arm 1 (no clusters), expected count 
+#' in arm 2 (clustered arm), expected difference in counts between arms; significance level, 
 #' analytic method, and whether or not progress updates should be displayed 
 #' while the function is running.
 #' 
@@ -32,6 +32,8 @@
 #' @param alpha Significance level. Default = 0.05.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE.
+#' @param nofit Option to skip model fitting and analysis and return the simulated data.
+#' Defaults to \code{FALSE}.
 #' @param seed Option to set seed. Default is NA.
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Defaults to L-BFGS-B.
 #' 
@@ -58,7 +60,7 @@
 #'                   "sig.val" (Is p-value less than alpha?)
 #'   \item List of data frames, each containing: 
 #'                   "y" (Simulated response value), 
-#'                   "trt" (Indicator for treatment group), 
+#'                   "trt" (Indicator for arm), 
 #'                   "clust" (Indicator for cluster)
 #' }
 #' @author Alexander R. Bogdan 
@@ -71,8 +73,7 @@
 #' irgtt.count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(500, 10), nclusters = 500, 
 #'                              c1 = 85, c2 = 450, sigma_b_sq2 = 0.25, 
 #'                              family = 'poisson', analysis = 'poisson',
-#'                              alpha = 0.05, quiet = FALSE, all.sim.data = FALSE, 
-#'                              opt = 'auto')
+#'                              alpha = 0.05, quiet = FALSE, all.sim.data = FALSE)
 #' }
 #'
 #' @export
@@ -93,6 +94,7 @@ cps.irgtt.count <-
            alpha = 0.05,
            quiet = FALSE,
            all.sim.data = FALSE,
+           nofit = FALSE,
            seed = NA,
            opt = "L-BFGS-B") {
     if (sigma_b_sq == 0 & sigma_b_sq2 == 0) {
@@ -128,6 +130,7 @@ cps.irgtt.count <-
         alpha = alpha,
         quiet = quiet,
         all.sim.data = all.sim.data,
+        nofit = nofit,
         seed = seed,
         irgtt = TRUE,
         opt = opt

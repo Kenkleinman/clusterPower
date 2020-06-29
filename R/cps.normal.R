@@ -153,7 +153,6 @@
 #' # second groups, respectively, using 100 simulated data sets analyzed by the GEE method.
 #' 
 #' \dontrun{
-#' 
 #' normal.sim2 = cps.normal(nsim = 100, nclusters = c(5,25), nsubjects = c(25,5), mu = 1, 
 #'   mu2 = 4.75, sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1, method = "gee")
 #' }
@@ -167,7 +166,7 @@
 #' 
 #' \dontrun{
 #' normal.sim2 = cps.normal(nsim = 100, nclusters = c(6,10), 
-#'   nsubjects = c(4, 5, 6, 7, 7, 7, rep(5, times = 10)),
+#'   nsubjects = list(c(4, 5, 6, 7, 7, 7), rep(5, times = 10)),
 #'   mu = 1, mu2 = 2, sigma_b_sq = .3, ICC = .3, method = "glmm")
 #' }
 #' 
@@ -266,9 +265,13 @@ cps.normal = function(nsim = NULL,
   
   # Set cluster sizes for arm (if not already specified)
   if (length(nclusters) == 1) {
-    nclusters[2] = nclusters[1]
+    if (irgtt == TRUE) {
+      nclusters[2] = nclusters[1]
+      nclusters[1] = 1
+    } else {
+      nclusters[2] = nclusters[1]
+    }
   }
-  
   # Set sample sizes for each cluster (if not already specified)
   if (length(nsubjects) == 1) {
     nsubjects[1:sum(nclusters)] = nsubjects

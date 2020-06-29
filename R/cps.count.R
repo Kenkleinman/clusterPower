@@ -294,15 +294,19 @@ cps.count = function(nsim = NULL,
   stat.vector <- vector(mode = "numeric", length = nsim)
   pval.vector <- vector(mode = "numeric", length = nsim)
   converge.vector <- vector(mode = "logical", length = nsim)
-  
+
   # Create simulation loop
   for (i in 1:nsim) {
     # Generate between-cluster effects for arm 1 and arm 2
     randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq[1]))
     randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq[2]))
-    
+
     # Create arm 1 y-value
-    y0.intercept <- rep(randint.0, each = nsubjects[1])
+    y0.intercept <- list()
+    for (j in 1:length(nsubjects[1:nclusters[1]])) {
+      y0.intercept[[j]] <- rep(randint.0[j], each = nsubjects[j])
+    }
+    y0.intercept <- unlist(y0.intercept)
     y0.linpred = y0.intercept + log(c1)
     y0.prob = exp(y0.linpred)
     if (family == 'poisson') {
@@ -311,9 +315,13 @@ cps.count = function(nsim = NULL,
     if (family == 'neg.binom') {
       y0 = stats::rnbinom(length(y0.prob), size = 1, mu = y0.prob)
     }
-    
+
     # Create arm 2 y-value
-    y1.intercept <- rep(randint.1, each = nsubjects[2])
+    y1.intercept <- list()
+    for (j in 1:length(nsubjects[(nclusters[1] + 1):length(nsubjects)])) {
+      y1.intercept[[j]] <- rep(randint.1[j], each = nsubjects[nclusters[1] + j])
+    }
+    y1.intercept <- unlist(y1.intercept)
     y1.linpred = y1.intercept + log(c2) #+ log((c1 / (1 - c1)) / (c2 / (1 - c2)))
     y1.prob = exp(y1.linpred)
     if (family == 'poisson') {
@@ -325,13 +333,13 @@ cps.count = function(nsim = NULL,
     
     # Create single response vector
     y = c(y0, y1)
-    browser()
+
     # Create and store data for simulated dataset
     sim.dat = data.frame(y = as.integer(y),
                          trt = as.factor(trt),
                          clust = as.factor(clust))
     if (all.sim.data == TRUE) {
-      simulated.datasets = append(simulated.datasets, list(sim.dat))
+      simulated.datasets[[i]] = list(sim.dat)
     }
     
     # option to return simulated data only
@@ -360,35 +368,35 @@ cps.count = function(nsim = NULL,
     
     # Fit GLMM (lmer)
     if (method == 'glmm') {
+      require("lme4")
       if (i == 1) {
         require("optimx")
         if (isTRUE(optimizer == "auto")) {
           if (irgtt == FALSE) {
             if (analysis == 'poisson') {
-              my.mod = lme4::glmer(
+              my.mod = try(lme4::glmer(
                 y ~ as.factor(trt) + (1 | clust),
                 data = sim.dat,
                 family = stats::poisson(link = 'log')
-              )
+              ))
             }
             if (analysis == 'neg.binom') {
-              my.mod = lme4::glmer.nb(y ~ as.factor(trt) + (1 |
-                                                              clust), data = sim.dat)
+              my.mod = try(lme4::glmer.nb(y ~ as.factor(trt) + (1 |
+                                                              clust), data = sim.dat))
             }
           }
           if (irgtt == TRUE) {
             if (analysis == 'poisson') {
               my.mod <-
-                lme4::glmer(
+                try(lme4::glmer(
                   y ~ trt + (0 + as.factor(trt) | clust),
                   data = sim.dat,
-                  family = stats::poisson(link = 'log')
+                  family = stats::poisson(link = 'log'))
                 )
             }
             if (analysis == 'neg.binom') {
-              # this is not tested
-              my.mod = lme4::glmer.nb(y ~ trt + (0 + as.factor(trt) |
-                                                   clust), data = sim.dat)
+              my.mod = try(lme4::glmer.nb(y ~ trt + (0 + as.factor(trt) |
+                                                   clust), data = sim.dat))
             }
           }
           goodopt <- optimizerSearch(my.mod)
@@ -398,7 +406,7 @@ cps.count = function(nsim = NULL,
       }
       if (irgtt == FALSE) {
         if (analysis == 'poisson') {
-          my.mod = lme4::glmer(
+          my.mod = try(lme4::glmer(
             y ~ trt + (1 | clust),
             data = sim.dat,
             family = stats::poisson(link = 'log'),
@@ -411,9 +419,11 @@ cps.count = function(nsim = NULL,
               )
             )
           )
+          )
         }
+
         if (analysis == 'neg.binom') {
-          my.mod = lme4::glmer.nb(
+          my.mod = try(lme4::glmer.nb(
             y ~ trt + (1 | clust),
             data = sim.dat,
             control = lme4::glmerControl(
@@ -424,12 +434,13 @@ cps.count = function(nsim = NULL,
                 kkt = FALSE
               )
             )
+          )
           )
         }
       }
       if (irgtt == TRUE) {
         if (analysis == 'poisson') {
-          my.mod <- lme4::glmer(
+          my.mod <- try(lme4::glmer(
             y ~ trt + (0 + trt | clust),
             data = sim.dat,
             family = stats::poisson(link = 'log'),
@@ -442,10 +453,11 @@ cps.count = function(nsim = NULL,
               )
             )
           )
+          )
         }
         if (analysis == 'neg.binom') {
           # this is not tested
-          my.mod = lme4::glmer.nb(
+          my.mod = try(lme4::glmer.nb(
             y ~ trt + (0 + trt | clust),
             data = sim.dat,
             control = lme4::glmerControl(
@@ -456,6 +468,7 @@ cps.count = function(nsim = NULL,
                 kkt = FALSE
               )
             )
+          )
           )
         }
       }
@@ -464,9 +477,8 @@ cps.count = function(nsim = NULL,
       se.vector[i] <- glmm.values['trt1', 'Std. Error']
       stat.vector[i] <- glmm.values['trt1', 'z value']
       pval.vector[i] <- glmm.values['trt1', 'Pr(>|z|)']
-      converge.vector <- ifelse(any(
-        grepl("singular", my.mod@optinfo$conv$lme4$messages)
-      ) == TRUE, FALSE, TRUE)
+      converge.vector[i] <- ifelse(
+        is.null(my.mod@optinfo$conv$lme4$messages), TRUE, FALSE)
     }
     # Fit GEE (geeglm)
     if (method == 'gee') {
@@ -525,9 +537,9 @@ cps.count = function(nsim = NULL,
     summary.message = paste0(
       "Monte Carlo Power Estimation based on ",
       nsim,
-      " Simulations: Simple Design, Count Outcome\nData Simulated from ",
+      " Simulations: Simple Design, Count Outcome. Data Simulated from ",
       switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
-      " distribution\nAnalyzed using ",
+      " distribution. Analyzed using ",
       switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
       " regression"
     )
@@ -535,9 +547,9 @@ cps.count = function(nsim = NULL,
     summary.message = paste0(
       "Monte Carlo Power Estimation based on ",
       nsim,
-      " Simulations: IRGTT Design, Count Outcome\nData Simulated from ",
+      " Simulations: IRGTT Design, Count Outcome. Data Simulated from ",
       switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
-      " distribution\nAnalyzed using ",
+      " distribution. Analyzed using ",
       switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
       " regression"
     )
