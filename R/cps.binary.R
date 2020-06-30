@@ -10,7 +10,7 @@
 #' desired experimental situation.
 #'  
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, and two of the following three 
+#' cluster, number of clusters per arm, and two of the following three 
 #' parameters: expected probability of the outcome in one group, expected 
 #' probability of the outcome in the second group,
 #' and expected difference in probabilities between groups.
@@ -20,15 +20,15 @@
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
-#' @param nclusters Number of clusters per treatment group; accepts integer (required).
+#' @param nclusters Number of clusters per arm; accepts integer (required).
 #' @param p1 Expected probability of outcome in first group
 #' @param p2 Expected probability of outcome in second group
 #' @param sigma_b_sq Between-cluster variance; accepts numeric (required).
 #' 
 #' If sigma_b_sq2 is not specified, 
 #' between cluster variances are assumed to be equal for both groups. 
-#' If between cluster variances differ between treatment groups, sigma_b_sq2 must also be specified:
-#' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
+#' If between cluster variances differ between arms, sigma_b_sq2 must also be specified:
+#' @param sigma_b_sq2 Between-cluster variance for clusters in arm 2
 #' 
 #' 
 #' @param alpha Significance level; default = 0.05
@@ -217,9 +217,14 @@ cps.binary = function(nsim = NULL,
       "NCLUSTERS can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)"
     )
   }
-  # Set cluster sizes for treatment arm (if not already specified)
+  # Set cluster sizes for arm (if not already specified)
   if (length(nclusters) == 1) {
-    nclusters[2] = nclusters[1]
+    if (irgtt == TRUE) {
+      nclusters[2] = nclusters[1]
+      nclusters[1] = 1
+    } else {
+      nclusters[2] = nclusters[1]
+    }
   }
   # Set sample sizes for each cluster (if not already specified)
   if (length(nsubjects) == 1) {
@@ -291,7 +296,7 @@ cps.binary = function(nsim = NULL,
   icc1 = mean(sapply(1:2, function(x)
     sigma_b_sq[x] / (sigma_b_sq[x] + pi ^ 2 / 3)))
   
-  # Create indicators for treatment group & cluster
+  # Create indicators for arm & cluster
   trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])),
           rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
   clust = unlist(lapply(1:sum(nclusters), function(x)
@@ -303,11 +308,11 @@ cps.binary = function(nsim = NULL,
   
   ### Create simulation loop
   while (sum(converge.vector == TRUE) != nsim) {
-    # Generate between-cluster effects for non-treatment and treatment
+    # Generate between-cluster effects for arm 1 and arm 2
     randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq[1]))
     randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq[2]))
     
-    # Create non-treatment y-value
+    # Create arm 1 y-value
     y0.intercept = unlist(lapply(1:nclusters[1], function(x)
       rep(randint.0[x], length.out = nsubjects[x])))
     y0.linpred = y0.intercept + logit.p1
@@ -329,7 +334,7 @@ cps.binary = function(nsim = NULL,
         stats::rbinom(1, 1, x)))
     }
     
-    # Create treatment y-value
+    # Create arm 2 y-value
     y1.intercept = unlist(lapply(1:nclusters[2], function(x)
       rep(randint.1[x], length.out = nsubjects[nclusters[1] + x])))
     y1.linpred = y1.intercept + logit.p2
@@ -541,18 +546,18 @@ cps.binary = function(nsim = NULL,
   p1.p2.or = round(p1 / (1 - p1) / (p2 / (1 - p2)), 3)
   p2.p1.or = round(p2 / (1 - p2) / (p1 / (1 - p1)), 3)
   inputs = t(data.frame(
-    'Non.Treatment' = c("probability" = p1, "odds.ratio" = p1.p2.or),
-    'Treatment' = c("probability" = p2, 'odds.ratio' = p2.p1.or)
+    'Arm1' = c("probability" = p1, "odds.ratio" = p1.p2.or),
+    'Arm2' = c("probability" = p2, 'odds.ratio' = p2.p1.or)
   ))
   
   # Create object containing group-specific cluster sizes
-  cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]],
-                       'Treatment' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
+  cluster.sizes = list('Arm1' = nsubjects[1:nclusters[1]],
+                       'Arm2' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
   
   # Create object containing number of clusters
   n.clusters = t(data.frame(
-    "Non.Treatment" = c("n.clust" = nclusters[1]),
-    "Treatment" = c("n.clust" = nclusters[2])
+    "Arm1" = c("n.clust" = nclusters[1]),
+    "Arm2" = c("n.clust" = nclusters[2])
   ))
   
   if (irgtt == FALSE) {
@@ -570,8 +575,8 @@ cps.binary = function(nsim = NULL,
   
   # Create object containing group-specific variance parameters
   var.parms = t(data.frame(
-    'Non.Treatment' = c('sigma_b_sq' = sigma_b_sq[1]),
-    'Treatment' = c('sigma_b_sq' = sigma_b_sq[2])
+    'Arm1' = c('sigma_b_sq' = sigma_b_sq[1]),
+    'Arm2' = c('sigma_b_sq' = sigma_b_sq[2])
   ))
   
   # Check & governor for inclusion of simulated datasets

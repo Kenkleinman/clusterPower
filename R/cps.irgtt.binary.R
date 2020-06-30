@@ -9,9 +9,9 @@
 #' Runs the power simulation for binary outcomes.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, two of the following three terms: 
-#' expected probability of outcome in non-treatment group, expected probability of 
-#' outcome in treatment group, expected difference in probabilities between groups
+#' cluster, number of clusters per arm, two of the following three terms: 
+#' expected probability of outcome in arm 1, expected probability of 
+#' outcome in arm 2, expected difference in probabilities between groups
 #' ; significance level, analytic method, progress updates, 
 #' and simulated data set output may also be specified.
 #' 
@@ -21,16 +21,22 @@
 #' P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per cluster in the clustered (treatment) group; accepts integer (required). 
-#' @param nclusters Number of clusters per treatment group; accepts integer (required).
-#' @param p1 Expected probability of outcome in non-treatment group (required)
-#' @param p2 Expected probability of outcome in treatment group (required)
+#' @param nsubjects Number of subjects per cluster in the clustered (arm 2) 
+#' group; accepts integer (required). 
+#' @param nclusters Number of clusters per arm; accepts integer (required).
+#' @param p1 Expected probability of outcome in arm 1 (required)
+#' @param p2 Expected probability of outcome in arm 2 (required)
 #' @param sigma_b_sq Between-cluster variance; defaults to 0. Accepts numeric.
-#' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
+#' @param sigma_b_sq2 Between-cluster variance for clusters in arm 2.
 #' @param alpha Significance level; default = 0.05
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time, default is TRUE.
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) 
+#' or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); 
+#' default = 'glmm'.
+#' @param quiet When set to FALSE, displays simulation progress and estimated 
+#' completion time, default is TRUE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE
+#' @param nofit Option to skip model fitting and analysis and return the simulated data.
+#' Defaults to \code{FALSE}.
 #' @param seed Option to set seed. Default is NA.
 #'  
 #' @return A list with the following components
@@ -51,7 +57,7 @@
 #'   Wald statistic (for GEE)), "p.value", "converge" (Did simulated model converge?), 
 #'   "sig.val" (Is p-value less than alpha?)
 #'   \item List of data frames, each containing: "y" (Simulated response value), 
-#'   "trt" (Indicator for treatment group), "clust" (Indicator for cluster)
+#'   "trt" (Indicator for arm), "clust" (Indicator for cluster)
 #'   \item List of warning messages produced by non-convergent models; 
 #'   Includes model number for cross-referencing against \code{model.estimates}
 #' }
@@ -66,7 +72,7 @@
 #' @examples 
 #' \dontrun{
 #' irgtt.binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 30, nclusters = 10, p1 = 0.5,
-#'                         p2 = 0.2, sigma_b_sq = 0, sigma_b_sq2 = 1, alpha = 0.05, 
+#'                         p2 = 0.2, sigma_b_sq2 = 1, alpha = 0.05, 
 #'                         all.sim.data = FALSE)
 #' }
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
@@ -84,6 +90,7 @@ cps.irgtt.binary <-
            alpha = 0.05,
            quiet = TRUE,
            all.sim.data = FALSE,
+           nofit = FALSE,
            seed = NA) {
     
     if (length(nclusters) > 2) {
@@ -122,6 +129,7 @@ cps.irgtt.binary <-
         method = 'glmm',
         quiet = quiet,
         all.sim.data = all.sim.data,
+        nofit = nofit,
         seed = seed,
         irgtt = TRUE
       )

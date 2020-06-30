@@ -8,9 +8,9 @@
 #' Runs the power simulation for count outcomes.
 #'
 #' Users must specify the desired number of simulations, number of subjects per
-#' cluster, number of clusters per treatment arm, between-cluster variance,
-#' two of the following: expected count in non-treatment group, expected count
-#' in treatment group, difference in counts between groups; significance level,
+#' cluster, number of clusters per arm, between-cluster variance,
+#' two of the following: expected count in arm 1, expected count
+#' in arm 2, difference in counts between groups; significance level,
 #' analytic method, and whether or not progress updates should be displayed
 #' while the function is running.
 #'
@@ -25,18 +25,18 @@
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts a single integer or a vector
 #' of 2 integers (if nsubjects differs between arms) (required).
-#' @param nclusters Number of clusters per treatment group; accepts a single integer
+#' @param nclusters Number of clusters per arm; accepts a single integer
 #' or a vector of 2 integers (if nsubjects differs between arms) (required).
 #' At least 2 of the following 3 arguments must be specified:
-#' @param c1 Expected outcome count in non-treatment group
-#' @param c2 Expected outcome count in treatment group
+#' @param c1 Expected outcome count in the first arm
+#' @param c2 Expected outcome count in the second arm
 #' @param c.diff Expected difference in outcome count between groups, defined as
 #' c.diff = c1 - c2
 #' @param sigma_b_sq Between-cluster variance; if sigma_b_sq2 is not specified,
-#' between cluster variances are assumed to be equal between groups. Accepts numeric
-#' If between cluster variances differ between treatment groups, the following must
+#' between cluster variances are assumed to be equal between arms. Accepts numeric
+#' If between cluster variances differ between arms, the following must
 #' also be specified:
-#' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
+#' @param sigma_b_sq2 Between-cluster variance for clusters in arm 1
 #' @param family Distribution from which responses are simulated. Accepts Poisson
 #' ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
 #' @param analysis Family used for regression; currently only applicable for GLMM.
@@ -69,7 +69,7 @@
 #'   \item Significance level
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters
-#'   \item Data frame reporting between-cluster variances for Treatment/Non-Treatment groups
+#'   \item Data frame reporting between-cluster variances for both arms
 #'   \item Vector containing expected counts and risk ratios based on user inputs
 #'   \item Data frame with columns:
 #'                   "Estimate" (Estimate of treatment effect for a given simulation),
@@ -79,7 +79,7 @@
 #'                   "sig.val" (Is p-value less than alpha?)
 #'   \item List of data frames, each containing:
 #'                   "y" (Simulated response value),
-#'                   "trt" (Indicator for treatment group),
+#'                   "trt" (Indicator for treatment arm),
 #'                   "clust" (Indicator for cluster)
 #' }
 #' @author Alexander R. Bogdan
@@ -88,12 +88,18 @@
 #'
 #'
 #' @examples
+#' 
+#' # Estimate power for a trial with 10 clusters in each arm with 20 subjects each, 
+#' # with sigma_b_sq = 0.1 in both arms. We have estimated arm counts of 20 and 30 
+#' # in the first and second arms, respectively, and we use 100 simulated data 
+#' # sets analyzed by the GEE method. 
+#' 
 #' \dontrun{
 #' count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 10,
 #'                       c1 = 20, c2 = 30, sigma_b_sq = 0.1,
 #'                       family = 'poisson', analysis = 'poisson',
-#'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
-#'                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
+#'                       method = 'gee', alpha = 0.05, quiet = FALSE,
+#'                       all.sim.data = FALSE, seed = 123)
 #' }                  
 #'      
 #' # Estimate power for a trial with 5 clusters in one arm, those clusters having
@@ -105,10 +111,11 @@
 #' \dontrun{                                            
 #' count.sim.unbal = cps.count(nsim = 100, nsubjects = c(4, 5, 6, 7, 7, 7, rep(5, times = 10)), 
 #'                       nclusters = c(6,10),
-#'                       c1 = 20, c2 = 30, sigma_b_sq = c(0.1, 0.05),
+#'                       c1 = 20, c2 = 30, sigma_b_sq = 0.1,
+#'                       sigma_b_sq2 = 0.05,
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
-#'                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
+#'                       all.sim.data = TRUE, seed = 123, optimizer = "L-BFGS-B")
 #' }
 #'
 #' @export
@@ -180,7 +187,7 @@ cps.count = function(nsim = NULL,
       "NCLUSTERS can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)"
     )
   }
-  # Set cluster sizes for treatment arm (if not already specified)
+  # Set cluster sizes for arm (if not already specified)
   if (length(nclusters) == 1) {
     if (irgtt == TRUE) {
       nclusters[2] = nclusters[1]
@@ -191,7 +198,10 @@ cps.count = function(nsim = NULL,
   }
   # Set sample sizes for each cluster (if not already specified)
   if (length(nsubjects) == 1) {
-    nsubjects = c(nsubjects, nsubjects)
+    nsubjects[1:sum(nclusters)] = nsubjects
+  }
+  if (length(nsubjects) == 2) {
+    nsubjects = c(rep(nsubjects[1], nclusters[1]), rep(nsubjects[2], nclusters[2]))
   }
   if (nclusters[1] == nclusters[2] &&
       length(nsubjects) == nclusters[1]) {
@@ -273,22 +283,30 @@ cps.count = function(nsim = NULL,
     sigma_b_sq[2] = sigma_b_sq2
   }
   
-  # Create indicators for treatment group & cluster
-  trt = c(
-    rep(0, length.out = nsubjects[1] * nclusters[1]),
-    rep(1, length.out = nsubjects[2] * nclusters[2])
-  )
-  clust = c(rep(1:nclusters[1], each = nsubjects[1]),
-            rep((nclusters[1] + 1):(nclusters[1] + nclusters[2]),
-                each = nsubjects[2]))
+  # Create indicators for arm & cluster
+  trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])),
+          rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
+  clust = unlist(lapply(1:sum(nclusters), function(x)
+    rep(x, length.out = nsubjects[x])))
+  
+  est.vector <- vector(mode = "numeric", length = nsim)
+  se.vector <- vector(mode = "numeric", length = nsim)
+  stat.vector <- vector(mode = "numeric", length = nsim)
+  pval.vector <- vector(mode = "numeric", length = nsim)
+  converge.vector <- vector(mode = "logical", length = nsim)
+
   # Create simulation loop
   for (i in 1:nsim) {
-    # Generate between-cluster effects for non-treatment and treatment
+    # Generate between-cluster effects for arm 1 and arm 2
     randint.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq[1]))
     randint.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq[2]))
-    
-    # Create non-treatment y-value
-    y0.intercept <- rep(randint.0, each = nsubjects[1])
+
+    # Create arm 1 y-value
+    y0.intercept <- list()
+    for (j in 1:length(nsubjects[1:nclusters[1]])) {
+      y0.intercept[[j]] <- rep(randint.0[j], each = nsubjects[j])
+    }
+    y0.intercept <- unlist(y0.intercept)
     y0.linpred = y0.intercept + log(c1)
     y0.prob = exp(y0.linpred)
     if (family == 'poisson') {
@@ -297,9 +315,13 @@ cps.count = function(nsim = NULL,
     if (family == 'neg.binom') {
       y0 = stats::rnbinom(length(y0.prob), size = 1, mu = y0.prob)
     }
-    
-    # Create treatment y-value
-    y1.intercept <- rep(randint.1, each = nsubjects[2])
+
+    # Create arm 2 y-value
+    y1.intercept <- list()
+    for (j in 1:length(nsubjects[(nclusters[1] + 1):length(nsubjects)])) {
+      y1.intercept[[j]] <- rep(randint.1[j], each = nsubjects[nclusters[1] + j])
+    }
+    y1.intercept <- unlist(y1.intercept)
     y1.linpred = y1.intercept + log(c2) #+ log((c1 / (1 - c1)) / (c2 / (1 - c2)))
     y1.prob = exp(y1.linpred)
     if (family == 'poisson') {
@@ -311,13 +333,13 @@ cps.count = function(nsim = NULL,
     
     # Create single response vector
     y = c(y0, y1)
-    
+
     # Create and store data for simulated dataset
     sim.dat = data.frame(y = as.integer(y),
                          trt = as.factor(trt),
                          clust = as.factor(clust))
     if (all.sim.data == TRUE) {
-      simulated.datasets = append(simulated.datasets, list(sim.dat))
+      simulated.datasets[[i]] = list(sim.dat)
     }
     
     # option to return simulated data only
@@ -346,35 +368,35 @@ cps.count = function(nsim = NULL,
     
     # Fit GLMM (lmer)
     if (method == 'glmm') {
+      require("lme4")
       if (i == 1) {
         require("optimx")
         if (isTRUE(optimizer == "auto")) {
           if (irgtt == FALSE) {
             if (analysis == 'poisson') {
-              my.mod = lme4::glmer(
+              my.mod = try(lme4::glmer(
                 y ~ as.factor(trt) + (1 | clust),
                 data = sim.dat,
                 family = stats::poisson(link = 'log')
-              )
+              ))
             }
             if (analysis == 'neg.binom') {
-              my.mod = lme4::glmer.nb(y ~ as.factor(trt) + (1 |
-                                                              clust), data = sim.dat)
+              my.mod = try(lme4::glmer.nb(y ~ as.factor(trt) + (1 |
+                                                              clust), data = sim.dat))
             }
           }
           if (irgtt == TRUE) {
             if (analysis == 'poisson') {
               my.mod <-
-                lme4::glmer(
+                try(lme4::glmer(
                   y ~ trt + (0 + as.factor(trt) | clust),
                   data = sim.dat,
-                  family = stats::poisson(link = 'log')
+                  family = stats::poisson(link = 'log'))
                 )
             }
             if (analysis == 'neg.binom') {
-              # this is not tested
-              my.mod = lme4::glmer.nb(y ~ trt + (0 + as.factor(trt) |
-                                                   clust), data = sim.dat)
+              my.mod = try(lme4::glmer.nb(y ~ trt + (0 + as.factor(trt) |
+                                                   clust), data = sim.dat))
             }
           }
           goodopt <- optimizerSearch(my.mod)
@@ -384,7 +406,7 @@ cps.count = function(nsim = NULL,
       }
       if (irgtt == FALSE) {
         if (analysis == 'poisson') {
-          my.mod = lme4::glmer(
+          my.mod = try(lme4::glmer(
             y ~ trt + (1 | clust),
             data = sim.dat,
             family = stats::poisson(link = 'log'),
@@ -397,9 +419,11 @@ cps.count = function(nsim = NULL,
               )
             )
           )
+          )
         }
+
         if (analysis == 'neg.binom') {
-          my.mod = lme4::glmer.nb(
+          my.mod = try(lme4::glmer.nb(
             y ~ trt + (1 | clust),
             data = sim.dat,
             control = lme4::glmerControl(
@@ -410,12 +434,13 @@ cps.count = function(nsim = NULL,
                 kkt = FALSE
               )
             )
+          )
           )
         }
       }
       if (irgtt == TRUE) {
         if (analysis == 'poisson') {
-          my.mod <- lme4::glmer(
+          my.mod <- try(lme4::glmer(
             y ~ trt + (0 + trt | clust),
             data = sim.dat,
             family = stats::poisson(link = 'log'),
@@ -428,10 +453,11 @@ cps.count = function(nsim = NULL,
               )
             )
           )
+          )
         }
         if (analysis == 'neg.binom') {
           # this is not tested
-          my.mod = lme4::glmer.nb(
+          my.mod = try(lme4::glmer.nb(
             y ~ trt + (0 + trt | clust),
             data = sim.dat,
             control = lme4::glmerControl(
@@ -443,16 +469,16 @@ cps.count = function(nsim = NULL,
               )
             )
           )
+          )
         }
       }
-      glmm.values = summary(my.mod)$coefficient
-      est.vector = append(est.vector, glmm.values['trt1', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt1', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt1', 'z value'])
-      pval.vector = append(pval.vector, glmm.values['trt1', 'Pr(>|z|)'])
-      converge.vector = append(converge.vector, ifelse(any(
-        grepl("singular", my.mod@optinfo$conv$lme4$messages)
-      ) == TRUE, FALSE, TRUE))
+      glmm.values <- summary(my.mod)$coefficient
+      est.vector[i] <- glmm.values['trt1', 'Estimate']
+      se.vector[i] <- glmm.values['trt1', 'Std. Error']
+      stat.vector[i] <- glmm.values['trt1', 'z value']
+      pval.vector[i] <- glmm.values['trt1', 'Pr(>|z|)']
+      converge.vector[i] <- ifelse(
+        is.null(my.mod@optinfo$conv$lme4$messages), TRUE, FALSE)
     }
     # Fit GEE (geeglm)
     if (method == 'gee') {
@@ -464,13 +490,14 @@ cps.count = function(nsim = NULL,
         id = clust,
         corstr = "exchangeable"
       )
-      gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+      gee.values <- summary(my.mod)$coefficients
+      est.vector[i] <- gee.values['trt1', 'Estimate']
+      se.vector[i] <- gee.values['trt1', 'Std.err']
+      stat.vector[i] <- gee.values['trt1', 'Wald']
+      pval.vector[i] <- gee.values['trt1', 'Pr(>|W|)']
+      converge.vector[i] <- ifelse(my.mod$geese$error != 0, FALSE, TRUE)
     }
-    
+
     # Set warnings to ON
     # Note: Warnings stored in 'warning.list'
     options(warn = 0)
@@ -510,9 +537,9 @@ cps.count = function(nsim = NULL,
     summary.message = paste0(
       "Monte Carlo Power Estimation based on ",
       nsim,
-      " Simulations: Simple Design, Count Outcome\nData Simulated from ",
+      " Simulations: Simple Design, Count Outcome. Data Simulated from ",
       switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
-      " distribution\nAnalyzed using ",
+      " distribution. Analyzed using ",
       switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
       " regression"
     )
@@ -520,9 +547,9 @@ cps.count = function(nsim = NULL,
     summary.message = paste0(
       "Monte Carlo Power Estimation based on ",
       nsim,
-      " Simulations: IRGTT Design, Count Outcome\nData Simulated from ",
+      " Simulations: IRGTT Design, Count Outcome. Data Simulated from ",
       switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
-      " distribution\nAnalyzed using ",
+      " distribution. Analyzed using ",
       switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
       " regression"
     )
@@ -550,27 +577,27 @@ cps.count = function(nsim = NULL,
   c1.c2.rr = round(exp(log(c1) - log(c2)), 3)
   c2.c1.rr = round(exp(log(c2) - log(c1)), 3)
   inputs = t(data.frame(
-    'Non.Treatment' = c("count" = c1, "risk.ratio" = c1.c2.rr),
-    'Treatment' = c("count" = c2, 'risk.ratio' = c2.c1.rr),
+    'Arm1' = c("count" = c1, "risk.ratio" = c1.c2.rr),
+    'Arm2' = c("count" = c2, 'risk.ratio' = c2.c1.rr),
     'Difference' = c("count" = c.diff, 'risk.ratio' = c2.c1.rr - c1.c2.rr)
   ))
-  
+
   # Create object containing group-specific cluster sizes
   cluster.sizes = list(
-    'Non.Treatment' = nsubjects[1:nclusters[1]],
-    'Treatment' = nsubjects[(1 + nclusters[1]):(nclusters[1] + nclusters[2])]
+    'Arm1' = nsubjects[1:nclusters[1]],
+    'Arm2' = nsubjects[(1 + nclusters[1]):(nclusters[1] + nclusters[2])]
   )
   
   # Create object containing number of clusters
   n.clusters = t(data.frame(
-    "Non.Treatment" = c("n.clust" = nclusters[1]),
-    "Treatment" = c("n.clust" = nclusters[2])
+    "Arm1" = c("n.clust" = nclusters[1]),
+    "Arm2" = c("n.clust" = nclusters[2])
   ))
   
   # Create object containing group-specific variance parameters
   var.parms = t(data.frame(
-    'Non.Treatment' = c('sigma_b_sq' = sigma_b_sq[1]),
-    'Treatment' = c('sigma_b_sq' = sigma_b_sq[2])
+    'Arm1' = c('sigma_b_sq' = sigma_b_sq[1]),
+    'Arm2' = c('sigma_b_sq' = sigma_b_sq[2])
   ))
   
   # Create object containing FAMILY & REGRESSION parameters

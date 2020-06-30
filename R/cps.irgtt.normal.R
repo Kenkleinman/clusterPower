@@ -5,25 +5,25 @@
 #' approximate power for individually randomized group treatment trials with a 
 #' normally-distributed outcome of interest. Users can modify a variety of 
 #' parameters to suit the simulations to their desired experimental situation. 
-#' This function returns the summary power values for each treatment arm.
+#' This function returns the summary power values for each arm.
 #' 
 #' Runs the power simulation.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, expected means for the 
-#' non-treatment and treatment groups (respectively), two of the following: ICC, 
+#' cluster, number of clusters per arm, expected means for the 
+#' arm 1 and arm 2 (respectively), two of the following: ICC, 
 #' within-cluster variance, or between-cluster variance; significance level, 
 #' analytic method, progress updates, and simulated data set output may also be 
 #' specified.
 #' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per treatment group; accepts either a scalar (equal cluster sizes, both groups), 
+#' @param nsubjects Number of subjects per cluster in each arm; accepts either a scalar (equal cluster sizes, both groups), 
 #' a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
 #' (unequal cluster sizes within groups) (required).
 #' @param nclusters Number of clusters in the clustered group; accepts a scalar (required)
-#' @param mu Expected mean of the CONTROL arm; accepts numeric (required).
-#' @param mu2 Expected mean of the TREATMENT arm; accepts numeric (required).
+#' @param mu Expected mean of arm 1; accepts numeric (required).
+#' @param mu2 Expected mean of arm 2; accepts numeric (required).
 #' @param alpha Significance level; default = 0.05.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
@@ -34,11 +34,13 @@
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 - 1
 #' @param sigma_sq Within-cluster variance; accepts numeric
 #' @param sigma_b_sq Between-cluster variance; defaults to 0. Accepts numeric.
-#' If clusters differ between treatment groups, at least 1 of the following 
+#' If clusters differ between arms, at least 1 of the following 
 #' must be specified: ICC2, sigma_sq2.
-#' @param ICC2 Intra-cluster correlation coefficient for clusters in TREATMENT group
-#' @param sigma_sq2 Within-cluster variance for clusters in TREATMENT group
-#' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group.
+#' @param ICC2 Intra-cluster correlation coefficient for clusters in arm 2
+#' @param sigma_sq2 Within-cluster variance for clusters in arm 2
+#' @param sigma_b_sq2 Between-cluster variance for clusters in arm 2.
+#' @param nofit Option to skip model fitting and analysis and return the simulated data.
+#' Defaults to \code{FALSE}.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -67,8 +69,8 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = 12, 
-#'                        nclusters = 10, mu = 1.1, mu2 = 1.5,
+#' irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = c(100, 10), 
+#'                        nclusters = 8, mu = 1.1, mu2 = 1.5,
 #'                         sigma_sq = 0.1, sigma_sq2 = 0.2, 
 #'                         sigma_b_sq2 = 0.1, alpha = 0.05,
 #'                         quiet = FALSE, all.sim.data = FALSE)
@@ -95,6 +97,7 @@ cps.irgtt.normal <-
            method = 'glmm',
            quiet = FALSE,
            all.sim.data = FALSE,
+           nofit = FALSE,
            seed = NA,
            poor.fit.override = FALSE) {
     if (sigma_b_sq == 0 & sigma_b_sq2 == 0) {
@@ -128,6 +131,7 @@ cps.irgtt.normal <-
       method = "glmm",
       quiet = quiet,
       all.sim.data = all.sim.data,
+      nofit = nofit,
       seed = seed,
       irgtt = TRUE,
       poor.fit.override = poor.fit.override
