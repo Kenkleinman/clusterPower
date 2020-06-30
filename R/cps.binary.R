@@ -18,25 +18,37 @@
 #' progress updates, and simulated data set output.
 #' 
 #' 
-#' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per cluster; accepts integer (required). 
-#' @param nclusters Number of clusters per arm; accepts integer (required).
-#' @param p1 Expected probability of outcome in first group
-#' @param p2 Expected probability of outcome in second group
-#' @param sigma_b_sq Between-cluster variance; accepts numeric (required).
+#' @param nsim Number of datasets to simulate; accepts integer. Required.
 #' 
-#' If sigma_b_sq2 is not specified, 
-#' between cluster variances are assumed to be equal for both groups. 
-#' If between cluster variances differ between arms, sigma_b_sq2 must also be specified:
-#' @param sigma_b_sq2 Between-cluster variance for clusters in arm 2
+#' XX KK: Added vector info to 'nsubjects' description below.
+#' @param nsubjects Number of subjects per cluster; accepts either a scalar
+#' (implying equal cluster sizes for the two groups), a vector of length two
+#' (equal cluster sizes within arm), or a vector of length \code{sum(nclusters)} 
+#' (unequal cluster sizes within arm). Required.
+#' 
+#' XX KK: Added vector info to 'nclusters' description below.
+#' @param nclusters Number of clusters per treatment group; accepts a single integer
+#' (if there are the same number of clusters in each arm) or a vector of 2 integers
+#' (if nsubjects differs between arms). If a vector of cluster sizes >2 is provided in
+#' \code{nsubjects}, \code{sum(nclusters)} must match the \code{nsubjects} vector length.
+#' Required.
+#' 
+#' @param p1 Expected probability of outcome in first group.
+#' @param p2 Expected probability of outcome in second group.
+#' 
+#' XX KK: Changed formatting of sigma_b_sq and sigma_b_sq2 somewhat.
+#' @param sigma_b_sq Between-cluster variance; if sigma_b_sq2 is not specified,
+#' between-cluster variances are assumed to be equal in the two arms. Accepts numeric. Required.
+#' @param sigma_b_sq2 Between-cluster variance for clusters in second group. Only required if 
+#' between-cluster variances differ between treatment arms.
 #' 
 #' 
-#' @param alpha Significance level; default = 0.05
+#' @param alpha Significance level; default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) 
 #' or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion 
-#' time, default is TRUE.
-#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE
+#' time, default = TRUE.
+#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param seed Option to set the seed. Default is NA.
 #'  
 #' @return A list with the following components
