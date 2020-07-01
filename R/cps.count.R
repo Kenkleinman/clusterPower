@@ -115,9 +115,8 @@
 #'                       sigma_b_sq2 = 0.05,
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
-#'                       all.sim.data = TRUE, seed = 123, optimizer = "L-BFGS-B")
+#'                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
 #' }
-#'
 #' @export
 
 # Define function
@@ -335,9 +334,9 @@ cps.count = function(nsim = NULL,
     y = c(y0, y1)
 
     # Create and store data for simulated dataset
-    sim.dat = data.frame(y = as.integer(y),
-                         trt = as.factor(trt),
-                         clust = as.factor(clust))
+    sim.dat = data.frame(trt = as.factor(trt),
+                         clust = as.factor(clust),
+                         y = as.integer(y))
     if (all.sim.data == TRUE) {
       simulated.datasets[[i]] = list(sim.dat)
     }
@@ -456,7 +455,6 @@ cps.count = function(nsim = NULL,
           )
         }
         if (analysis == 'neg.binom') {
-          # this is not tested
           my.mod = try(lme4::glmer.nb(
             y ~ trt + (0 + trt | clust),
             data = sim.dat,
@@ -471,6 +469,9 @@ cps.count = function(nsim = NULL,
           )
           )
         }
+      }
+      if (class(my.mod) == "try-error") {
+        next
       }
       glmm.values <- summary(my.mod)$coefficient
       est.vector[i] <- glmm.values['trt1', 'Estimate']
