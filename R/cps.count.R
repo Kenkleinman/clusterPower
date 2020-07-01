@@ -470,6 +470,9 @@ cps.count = function(nsim = NULL,
           )
         }
       }
+      if (class(my.mod) == "try-error") {
+        next
+      }
       glmm.values <- summary(my.mod)$coefficient
       est.vector[i] <- glmm.values['trt1', 'Estimate']
       se.vector[i] <- glmm.values['trt1', 'Std. Error']
