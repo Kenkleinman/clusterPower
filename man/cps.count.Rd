@@ -2,7 +2,7 @@
 % Please edit documentation in R/cps.count.R
 \name{cps.count}
 \alias{cps.count}
-\title{Power simulations for cluster-randomized trials: Simple Designs, Count Outcome.}
+\title{Power simulations for cluster-randomized trials: Parallel Designs, Count Outcome.}
 \usage{
 cps.count(
   nsim = NULL,
@@ -21,106 +21,193 @@ cps.count(
   all.sim.data = FALSE,
   irgtt = FALSE,
   seed = NA,
+  nofit = FALSE,
   optimizer = "L-BFGS-B"
 )
 }
 \arguments{
-\item{nsim}{Number of datasets to simulate; accepts integer (required).}
+\item{nsim}{Number of datasets to simulate; accepts integer. Required.}
 
-\item{nsubjects}{Number of subjects per cluster; accepts a single integer or a vector of 2 integers (if nsubjects differs between arms) (required).}
+\item{nsubjects}{Number of subjects per cluster; accepts either a scalar (implying equal cluster sizes for the two groups), 
+a vector of length two (equal cluster sizes within arm), or a vector of length \code{sum(nclusters)} 
+(unequal cluster sizes within arm).  Required.}
 
-\item{nclusters}{Number of clusters per treatment group; accepts a single integer or a vector of 2 integers (if nsubjects differs between arms) (required).
+\item{nclusters}{Number of clusters per treatment group; accepts a single integer
+(if there are the same number of clusters in each arm) or a vector of 2 integers
+(if nsubjects differs between arms). If a vector of cluster sizes >2 is provided in
+\code{nsubjects}, \code{sum(nclusters)} must match the \code{nsubjects} vector length.
+Required.
+
 At least 2 of the following 3 arguments must be specified:}
 
-\item{c1}{Expected outcome count in non-treatment group}
+\item{c1}{The mean event rate per unit time in the first arm.}
 
-\item{c2}{Expected outcome count in treatment group}
+\item{c2}{The mean event rate per unit time in the second arm.}
 
-\item{c.diff}{Expected difference in outcome count between groups, defined as c.diff = c1 - c2}
+\item{c.diff}{Expected difference in mean event rates between groups, defined as
+\code{c.diff = c1 - c2}.}
 
-\item{sigma_b_sq}{Between-cluster variance; if sigma_b_sq2 is not specified, 
-between cluster variances are assumed to be equal between groups. Accepts numeric
-If between cluster variances differ between treatment groups, the following must also be specified:}
+\item{sigma_b_sq}{Between-cluster variance; if sigma_b_sq2 is not specified,
+between-cluster variances are assumed to be equal in the two arms. Accepts numeric. Required.}
 
-\item{sigma_b_sq2}{Between-cluster variance for clusters in TREATMENT group}
+\item{sigma_b_sq2}{Between-cluster variance for clusters in the second arm. Only required if 
+between-cluster variances differ between treatment arms.}
 
-\item{family}{Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'}
+\item{family}{Distribution from which responses are simulated. Accepts Poisson
+('poisson') or negative binomial ('neg.binom'); default = 'poisson'. Required.}
 
-\item{analysis}{Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'}
+\item{analysis}{Family used for data analysis regression; currently only applicable for GLMM.
+Accepts c('poisson', 'neg.binom'); default = 'poisson'. Required.}
 
-\item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'}
+\item{method}{Data analysis method, either generalized linear mixed effects model
+(GLMM) or generalized estimating equations (GEE). Accepts c('glmm', 'gee'); default = 'glmm'.
+Required.}
 
-\item{alpha}{Significance level. Default = 0.05.}
+\item{alpha}{The level of significance of the test, the probability of a
+Type I error. Default = 0.05.}
 
-\item{quiet}{When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.}
+\item{quiet}{When set to \code{FALSE}, displays simulation progress and estimated
+completion time. Default = \code{FALSE}.}
 
-\item{all.sim.data}{Option to output list of all simulated datasets. Default = FALSE}
+\item{all.sim.data}{Option to output list of all simulated datasets. Default = \code{FALSE}.}
 
-\item{optimizer}{Option to fit with a different optimizer (using the package \code{optimx}). Defaults to L-BFGS-B.}
+\item{seed}{Option to set the seed. Default is NA.}
+
+\item{nofit}{Option to skip model fitting and analysis and return the simulated data.
+Default = \code{FALSE}.}
+
+\item{optimizer}{Option to fit with a different optimizer from the package
+\code{optimx}. Defaults to L-BFGS-B. See optimx package documentation for all options.}
 }
 \value{
 A list with the following components
 \itemize{
-  \item Character string indicating total number of simulations, distribution of 
+  \item Character string indicating total number of simulations, distribution of
   simulated data, and regression family
   \item Number of simulations
-  \item Data frame with columns "Power" (Estimated statistical power), 
-               "lower.95.ci" (Lower 95% confidence interval bound), 
+  \item Data frame with columns "Power" (Estimated statistical power),
+               "lower.95.ci" (Lower 95% confidence interval bound),
                "upper.95.ci" (Upper 95% confidence interval bound).
-               Note that non-convergent models are returned for review, 
+               Note that non-convergent models are returned for review,
                but not included in this calculation.
   \item Analytic method used for power estimation
   \item Data frame containing families for distribution and analysis of simulated data
   \item Significance level
   \item Vector containing user-defined cluster sizes
   \item Vector containing user-defined number of clusters
-  \item Data frame reporting between-cluster variances for Treatment/Non-Treatment groups
-  \item Vector containing expected counts and risk ratios based on user inputs
-  \item Data frame with columns: 
-                  "Estimate" (Estimate of treatment effect for a given simulation), 
-                  "Std.err" (Standard error for treatment effect estimate), 
-                  "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
+  \item Data frame reporting \mjseqn{\sigma_b^2} for each group
+  \item Vector containing expected events per unit time and risk ratios based on user inputs
+  \item Data frame with columns:
+                  "Estimate" (Estimate of treatment effect for a given simulation),
+                  "Std.err" (Standard error for treatment effect estimate),
+                  "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)),
                   "p.value",
-                  "sig.val" (Is p-value less than alpha?)
-  \item List of data frames, each containing: 
-                  "y" (Simulated response value), 
-                  "trt" (Indicator for treatment group), 
+                  "converge" (Did model converge for that set of simulated data?)
+  \item List of data frames, each containing:
+                  "y" (Simulated response value),
+                  "trt" (Indicator for treatment arm),
                   "clust" (Indicator for cluster)
+  \item Logical vector reporting whether models converged.
 }
 }
 \description{
-This function utilizes iterative simulations to determine 
-approximate power for cluster-randomized controlled trials. Users 
+\loadmathjax
+
+ 
+This function uses Monte Carlo methods (simulations) to estimate 
+power for cluster-randomized trials. Users 
 can modify a variety of parameters to suit the simulations to their
 desired experimental situation.
-}
-\details{
-Runs the power simulation for count outcomes.
 
 Users must specify the desired number of simulations, number of subjects per 
-cluster, number of clusters per treatment arm, between-cluster variance, 
-two of the following: expected count in non-treatment group, expected count 
-in treatment group, difference in counts between groups; significance level, 
-analytic method, and whether or not progress updates should be displayed 
-while the function is running.
+cluster, number of clusters per treatment arm, between-cluster variance, and
+two of the following three parameters: mean event rate per unit time in one group,
+the mean event rate per unit time in the second group, and/or the
+mean difference in event rates between groups. Default values are provided
+for significance level, analytic method, progress updates, and simulated data set output.
+}
+\details{
+The data generating model is:
+\mjsdeqn{y_{ij} \sim Poisson(e^{c_1 + b_i}) }
+for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)}, 
+while for the second group, 
+ 
+\mjsdeqn{y_{ij} \sim Poisson(e^{c_2 + b_i}) }
+where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if 
+\mjseqn{\sigma_{b_2}^2} is not specified, then the second group uses
+\mjseqn{b_i \sim N(0,\sigma_b^2)}.
+
+All random terms are generated independent of one another.
+
 
 Non-convergent models are not included in the calculation of exact confidence 
 intervals.
 }
+\section{Testing details}{
+
+This function has been verified, where possible, against reference values from PASS11,
+\code{CRTsize::n4incidence}, \code{clusterPower::cps.count}, and
+\code{clusterPower::cpa.count}.
+}
+
 \examples{
+
+# Estimate power for a trial with 10 clusters in each arm with 20 subjects each, 
+# with sigma_b_sq = 0.1 in both arms. We expect mean event rates per unit time of
+# 20 and 30 in the first and second arms, respectively, and we use 100 simulated
+# data sets analyzed by the GEE method. 
+
 \dontrun{
-count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 10, 
-                      c1 = 20, c2 = 30, sigma_b_sq = 0.1, 
+count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 10,
+                      c1 = 20, c2 = 30, sigma_b_sq = 0.1,
                       family = 'poisson', analysis = 'poisson',
-                      method = 'glmm', alpha = 0.05, quiet = FALSE, 
+                      method = 'gee', alpha = 0.05, quiet = FALSE,
+                      all.sim.data = FALSE, seed = 123)
+}                  
+# The resulting estimated power (if you set seed = 123) should be about 0.8.
+
+
+
+# Estimate power for a trial with 10 clusters and 10 subjects per cluster in the
+# first arm, 20 clusters and 20 subjects per cluster in the second, and
+# sigma_b_sq = 0.1 in both arms. We expect mean event rates per unit time of
+# 20 and 30 in the first and second arms, respectively, and we use 100 simulated
+# data sets analyzed by the GLMM method. 
+
+\dontrun{
+count.sim = cps.count(nsim = 100, nsubjects = c(10,20), nclusters = c(10,20),
+                      c1 = 20, c2 = 30, sigma_b_sq = 0.1,
+                      family = 'poisson', analysis = 'poisson',
+                      method = 'glmm', alpha = 0.05, quiet = FALSE,
+                      all.sim.data = FALSE, seed = 123)
+}               
+# The resulting estimated power (if you set seed = 123) should be about 0.95.
+
+ 
+
+# Estimate power for a trial with 5 clusters in the first arm, those clusters having
+# 4, 5, 6, 7, and 7 subjects each, and 10 clusters in the second arm, those
+# clusters having 5 subjects each, with sigma_b_sq = 0.1 in the first arm and
+# sigma_b_sq2 = .05 in the second arm. We expect mean event rates per unit time
+# of 20 and 30 in the first and second arms, respectively, and we use 100 simulated
+# data sets analyzed by the GLMM method.                      
+
+\dontrun{                                            
+count.sim = cps.count(nsim = 100, nsubjects = c(4, 5, 6, 7, 7, rep(5, times = 10)), 
+                      nclusters = c(5,10),
+                      c1 = 20, c2 = 30,
+                      sigma_b_sq = 0.1, sigma_b_sq2 = 0.05,
+                      family = 'poisson', analysis = 'poisson',
+                      method = 'glmm', alpha = 0.05, quiet = FALSE,
                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
 }
+# The resulting estimated power (if you set seed = 123) should be about 0.75.
+
+
 
 }
 \author{
-Alexander R. Bogdan
-
-Alexandria C. Sakrejda (\email{acbro0@umass.edu}
-
-Ken Kleinman (\email{ken.kleinman@gmail.com})
+Alexander R. Bogdan, Alexandria C. Sakrejda 
+(\email{acbro0@umass.edu}), and Ken Kleinman 
+(\email{ken.kleinman@gmail.com})
 }
