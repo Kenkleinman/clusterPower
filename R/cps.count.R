@@ -388,7 +388,7 @@ cps.count = function(nsim = NULL,
             if (analysis == 'poisson') {
               my.mod <-
                 try(lme4::glmer(
-                  y ~ trt + (0 + as.factor(trt) | clust),
+                  y ~ trt + (0 + trt | clust),
                   data = sim.dat,
                   family = stats::poisson(link = 'log'))
                 )
@@ -454,9 +454,10 @@ cps.count = function(nsim = NULL,
           )
           )
         }
+
         if (analysis == 'neg.binom') {
           my.mod = try(lme4::glmer.nb(
-            y ~ trt + (0 + trt | clust),
+            y ~ trt + (0 + as.factor(trt) | clust),
             data = sim.dat,
             control = lme4::glmerControl(
               optimizer = "optimx",

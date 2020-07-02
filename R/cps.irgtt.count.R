@@ -69,9 +69,16 @@
 #'
 #' 
 #' @examples 
+#' 
+#' # Estimate power for a trial with no clusters in arm 1 (generally the 
+#' # "control" arm) and 10 clusters in arm 2, those clusters having
+#' # 50 subjects each, and a sigma_b_sq2 = 0.001. We have estimated arm 
+#' # counts of 85 and 450 in the first and second arms, respectively, 
+#' # and we use 5 simulated data sets analyzed by the GLMM method.  
+#' 
 #' \dontrun{
-#' irgtt.count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(500, 10), nclusters = 500, 
-#'                              c1 = 85, c2 = 450, sigma_b_sq2 = 0.25, 
+#' irgtt.count.sim <- cps.irgtt.count(nsim = 5, nsubjects = c(500, 50), nclusters = 10, 
+#'                              c1 = 85, c2 = 450, sigma_b_sq2 = 0.001, 
 #'                              family = 'poisson', analysis = 'poisson',
 #'                              alpha = 0.05, quiet = FALSE, all.sim.data = FALSE)
 #' }

@@ -517,7 +517,7 @@ cps.binary = function(nsim = NULL,
     summary.message = paste0(
       "Monte Carlo Power Estimation based on ",
       nsim,
-      " Simulations: IRGTT Design, Binary Outcome\nNote: ",
+      " Simulations: IRGTT Design, Binary Outcome. Note: ",
       sum(converge.vector == FALSE),
       " additional models were fitted to account for non-convergent simulations."
     )
