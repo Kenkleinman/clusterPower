@@ -70,7 +70,7 @@
 #' 
 #' @examples 
 #' 
-#' # Estimate power for a trial with no clusters in arm 1 (generally the 
+#' # Estimate power for a trial with no clusters in arm 1 (often the 
 #' # "control" arm) and 10 clusters in arm 2, those clusters having
 #' # 50 subjects each, and a sigma_b_sq2 = 0.001. We have estimated arm 
 #' # counts of 85 and 450 in the first and second arms, respectively, 

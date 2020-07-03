@@ -69,7 +69,7 @@
 #' 
 #' @examples 
 #' 
-#' #' # Estimate power for a trial with no clusters in arm 1 (generally the 
+#' # Estimate power for a trial with no clusters in arm 1 (often the 
 #' # "control" arm) and 8 clusters in arm 2, those clusters having
 #' # 10 subjects each, and a sigma_b_sq2 = 0.1. The arm have sigma_sq values of 
 #' # 0.01 and 0.02, respectively. Estimated means for each arm /code{mu} 

@@ -110,6 +110,7 @@ cps.sw.count = function(nsim = NULL,
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
+  fail.vector = NULL
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -379,10 +380,11 @@ cps.sw.count = function(nsim = NULL,
                                                           clust), data = sim.dat)
       }
       glmm.values = summary(my.mod)$coefficient
-      est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
-      pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
+      est.vector[i] = glmm.values['trt', 'Estimate']
+      se.vector[i] = glmm.values['trt', 'Std. Error']
+      stat.vector[i] = glmm.values['trt', 'z value']
+      pval.vector[i] = glmm.values['trt', 'Pr(>|z|)']
+      fail.vector[i] = ifelse(is.null(my.mod@optinfo$conv$lme4$messages), TRUE, FALSE)
     }
     
     # Fit GEE (geeglm)
@@ -396,10 +398,10 @@ cps.sw.count = function(nsim = NULL,
         corstr = "exchangeable"
       )
       gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+      est.vector[i] = gee.values['trt', 'Estimate']
+      se.vector[i] = gee.values['trt', 'Std.err']
+      stat.vector[i] = gee.values['trt', 'Wald']
+      pval.vector[i] = gee.values['trt', 'Pr(>|W|)']
     }
     
     # Update progress information
@@ -467,21 +469,16 @@ cps.sw.count = function(nsim = NULL,
     Estimate = as.vector(unlist(est.vector)),
     Std.err = as.vector(unlist(se.vector)),
     Test.statistic = as.vector(unlist(stat.vector)),
-    p.value = as.vector(unlist(pval.vector))
+    p.value = as.vector(unlist(pval.vector)),
+    converge = as.vector(fail.vector)
   )
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(
-    Power = round(pval.power, 3),
-    Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3),
-    Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3)
-  )
+  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  power.parms <- confint.calc(nsim = nsim,
+                              alpha = alpha,
+                              p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing treatment & time-specific differences
   values.vector = values.vector / nsim
@@ -545,7 +542,8 @@ cps.sw.count = function(nsim = NULL,
       "means" = group.means,
       "model.estimates" = cps.model.est,
       "sim.data" = simulated.datasets,
-      "crossover.matrix" = crossover.mat
+      "crossover.matrix" = crossover.mat,
+      "convergence" = fail.vector
     ),
     class = 'crtpwr'
   )
