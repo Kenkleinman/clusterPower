@@ -77,8 +77,8 @@
 #' # and we use 5 simulated data sets analyzed by the GLMM method.  
 #' 
 #' \dontrun{
-#' irgtt.count.sim <- cps.irgtt.count(nsim = 5, nsubjects = c(500, 50), nclusters = 10, 
-#'                              c1 = 85, c2 = 450, sigma_b_sq2 = 0.001, 
+#' irgtt.count.sim <- cps.irgtt.count(nsim = 10, nsubjects = c(5000, 1000), nclusters = 50, 
+#'                              c1 = 0, c2 = 450, sigma_b_sq2 = 0.5, 
 #'                              family = 'poisson', analysis = 'poisson',
 #'                              alpha = 0.05, quiet = FALSE, all.sim.data = FALSE)
 #' }
@@ -103,7 +103,7 @@ cps.irgtt.count <-
            all.sim.data = FALSE,
            nofit = FALSE,
            seed = NA,
-           opt = "L-BFGS-B") {
+           opt = "bobyqa") {
     if (sigma_b_sq == 0 & sigma_b_sq2 == 0) {
       warning(
         "sigma_b_sq in both arms is 0. This is equivalent to a t-test. Did you mean to

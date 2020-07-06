@@ -69,9 +69,9 @@
 #' }
 #' @examples 
 #' \dontrun{
-#' normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 150, nclusters = 6, 
-#'                                 difference = .48, sigma_sq = 1, alpha = 0.05, 
-#'                                 sigma_b_sq0 = .1, method = 'glmm', quiet = FALSE, 
+#' normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 55, nclusters = 6, 
+#'                                 difference = 0.38, sigma_sq = 0.1, alpha = 0.05, 
+#'                                 sigma_b_sq0 = 0.1, method = 'glmm', quiet = FALSE, 
 #'                                 all.sim.data = FALSE)
 #' }
 #' 
@@ -304,13 +304,13 @@ cps.did.normal = function(nsim = NULL,
                                                              clust), data = sim.dat)
       glmm.values = summary(my.mod)$coefficient
       p.val = 2 * stats::pt(-abs(glmm.values['trt:period', 't value']), df = sum(nclusters) - 2)
-      est.vector = append(est.vector, glmm.values['trt:period', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt:period', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt:period', 't value'])
-      pval.vector = append(pval.vector, p.val)
-      converge.vector[i] == ifelse(is.null(my.mod@optinfo$conv$lme4$messages),
-                                                           FALSE,
-                                                           TRUE)
+      est.vector[i] = glmm.values['trt:period', 'Estimate']
+      se.vector[i] = glmm.values['trt:period', 'Std. Error']
+      stat.vector[i] = glmm.values['trt:period', 't value']
+      pval.vector[i] = p.val
+      converge.vector[i] <- ifelse(is.null(my.mod@optinfo$conv$lme4$messages),
+                                                           TRUE,
+                                                           FALSE)
     }
     
     # Fit GEE (geeglm)
@@ -391,21 +391,15 @@ cps.did.normal = function(nsim = NULL,
     Estimate = as.vector(unlist(est.vector)),
     Std.err = as.vector(unlist(se.vector)),
     Test.statistic = as.vector(unlist(stat.vector)),
-    p.value = as.vector(unlist(pval.vector))
+    p.value = as.vector(unlist(pval.vector)),
+    converge = as.vector(converge.vector)
   )
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
-  
+
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(
-    Power = round(pval.power, 3),
-    Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3),
-    Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3)
-  )
+  pval.data = cps.model.est[cps.model.est$converge == TRUE, ]
+  power.parms <- confint.calc(alpha = alpha,
+                              p.val = pval.data[, 'p.value'])
   
   # Create object containing treatment & time-specific differences
   values.vector = values.vector / nsim
