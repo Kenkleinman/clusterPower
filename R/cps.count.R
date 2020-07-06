@@ -1,4 +1,4 @@
-#' Power simulations for cluster-randomized trials: Parallel Designs, Count Outcome.
+#' Power simulations for cluster-randomized trials: Parallel Designs, Count Outcome
 #'
 #' @description 
 #' \loadmathjax
@@ -14,7 +14,7 @@
 #' two of the following three parameters: mean event rate per unit time in one group,
 #' the mean event rate per unit time in the second group, and/or the
 #' mean difference in event rates between groups. Default values are provided
-#' for significance level, analytic method, progress updates, and simulated data set output.
+#' for significance level, analytic method, progress updates, and whether the simulated data sets are retained.
 #'
 #'
 #'
@@ -25,12 +25,12 @@
 #' 
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (implying equal cluster sizes for the two groups), 
 #' a vector of length two (equal cluster sizes within arm), or a vector of length \code{sum(nclusters)} 
-#' (unequal cluster sizes within arm).  Required.
+#' (unequal cluster sizes within arm).  If a vector of > 2 is provided in
+#' \code{nsubjects}, \code{sum(nclusters)} must match the \code{nsubjects} vector length.  Required.
 #' 
 #' @param nclusters Number of clusters per treatment group; accepts a single integer
 #' (if there are the same number of clusters in each arm) or a vector of 2 integers
-#' (if nsubjects differs between arms). If a vector of cluster sizes >2 is provided in
-#' \code{nsubjects}, \code{sum(nclusters)} must match the \code{nsubjects} vector length.
+#' (if there are not). 
 #' Required.
 #' 
 #' At least 2 of the following 3 arguments must be specified:
@@ -51,12 +51,12 @@
 #' @param family Distribution from which responses are simulated. Accepts Poisson
 #' ('poisson') or negative binomial ('neg.binom'); default = 'poisson'. Required.
 #' 
-#' @param analysis Family used for data analysis regression; currently only applicable for GLMM.
-#' Accepts c('poisson', 'neg.binom'); default = 'poisson'. Required.
-#' 
 #' @param method Data analysis method, either generalized linear mixed effects model
 #' (GLMM) or generalized estimating equations (GEE). Accepts c('glmm', 'gee'); default = 'glmm'.
 #' Required.
+#' 
+#' @param analysis Family used for data analysis; currently only applicable when \code{method = 'glmm'}.
+#' Accepts c('poisson', 'neg.binom'); default = 'poisson'. Required.
 #' 
 #' @param alpha The level of significance of the test, the probability of a
 #' Type I error. Default = 0.05.
@@ -64,11 +64,14 @@
 #' @param quiet When set to \code{FALSE}, displays simulation progress and estimated
 #' completion time. Default = \code{FALSE}.
 #' 
+#' 
+#' [XX JN-- Below: true?  Output?  Or retain for further data analysis?]
+#' 
 #' @param all.sim.data Option to output list of all simulated datasets. Default = \code{FALSE}.
 #' 
 #' @param seed Option to set the seed. Default is NA.
 #' 
-#' @param nofit Option to skip model fitting and analysis and return the simulated data.
+#' @param nofit Option to skip model fitting and analysis and only return the simulated data.
 #' Default = \code{FALSE}.
 #' 
 #' @param optimizer Option to fit with a different optimizer from the package
@@ -77,7 +80,7 @@
 #'
 #'
 #'
-#'
+#' # [XX JN- probably needs a conditional for what happens when nofit=T]
 #'
 #' @return A list with the following components
 #' \itemize{
@@ -110,6 +113,9 @@
 #' }
 #' 
 #' @details 
+#' 
+#' # [XX JN-- update below to reflect that this is true only when using family='poisson'.  Also
+#' # include forumale for family = "neg.binom"]
 #' 
 #' The data generating model is:
 #' \mjsdeqn{y_{ij} \sim Poisson(e^{c_1 + b_i}) }

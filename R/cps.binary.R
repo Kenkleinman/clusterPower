@@ -1,4 +1,4 @@
-#' Power simulations for cluster-randomized trials: Parallel Designs, Binary Outcome.
+#' Power simulations for cluster-randomized trials: Parallel Designs, Binary Outcome
 #'
 #' @description 
 #' \loadmathjax
@@ -15,7 +15,7 @@
 #' probability of the outcome in the second group,
 #' and expected difference in probabilities between groups.
 #' Default values are provided for significance level, analytic method, 
-#' progress updates, and simulated data set output.
+#' progress updates, and whether the simulated data sets are retained.
 #' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer. Required.
