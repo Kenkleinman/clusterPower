@@ -1,20 +1,37 @@
-#' Simulation-based power estimation for poisson outcome multi-arm
-#' cluster-randomized trials
+#' Simulation-based power estimation for cluster-randomized trials: Parallel Designs, Count Outcome with multiple arms
 #'
-#' This function uses iterative simulations to determine
-#' approximate power for multi-arm cluster-randomized controlled trials with
-#' count or poisson-distributed outcomes of interest. Users can modify a
-#' variety of parameters to suit the simulations to their desired
-#' experimental situation. This function validates the user's input and
-#' passes the necessary arguments to an internal function, which performs
-#' the simulations. This function returns the summary power values for
-#' each treatment arm.
+#'
+#'
+#' @description 
+#' \loadmathjax
+#' 
+#'  
+#' This function uses Monte Carlo methods (simulations) to estimate 
+#' power for cluster-randomized trials for integer-valued outcomes with two or more
+#' trial conditions. Users 
+#' can modify a variety of parameters to suit the simulations to their
+#' desired experimental situation.
+#' 
+#' Users must specify the desired number of simulations, number of subjects per 
+#' cluster, number of clusters per treatment arm, between-cluster variance, and
+#' two of the following three parameters: mean event rate per unit time in one group,
+#' the mean event rate per unit time in the second group, and/or the
+#' mean difference in event rates between groups. Default values are provided
+#' for significance level, analytic method, progress updates, and whether the simulated data sets are retained.
+#'
+#' Note that if all units have the same observation time, you can use the
+#' mean count instead of the "mean event per unit time" in the preceding paragraph.
+#'
+#'
 #'
 #' Users must specify the desired number of simulations, number of subjects per
 #' cluster, number of clusters per treatment arm, group probabilities, and the
-#' between-cluster variance. Significance level, analytic method, progress
-#' updates, poor/singular fit override, and whether or not to return the
-#' simulated data may also be specified. The internal function can be called
+#' between-cluster variance. Significance level, analytic method, whether progress
+#' updates are displayed, poor/singular fit override, and whether or not to return the
+#' simulated data may also be specified. 
+#' 
+#' This user-friendly function calls an internal function; the internal function 
+#' can be called
 #' directly by the user to return the fitted models rather than the power
 #' summaries (see \code{?cps.ma.count.internal} for details).
 #'
