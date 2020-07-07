@@ -335,9 +335,7 @@ cps.sw.normal = function(nsim = NULL,
       se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
       stat.vector = append(stat.vector, glmm.values['trt', 't value'])
       pval.vector = append(pval.vector, p.val)
-      fail.vector = append(fail.vector, ifelse(any(
-        grepl("singular", my.mod@optinfo$conv$lme4$messages)
-      ) == TRUE, 1, 0))
+      fail.vector[i] = ifelse(is.null(my.mod@optinfo$conv$lme4$messages), TRUE, FALSE)
     }
     
     # Fit GEE (geeglm)
@@ -418,21 +416,15 @@ cps.sw.normal = function(nsim = NULL,
     Estimate = as.vector(unlist(est.vector)),
     Std.err = as.vector(unlist(se.vector)),
     Test.statistic = as.vector(unlist(stat.vector)),
-    p.value = as.vector(unlist(pval.vector))
+    p.value = as.vector(unlist(pval.vector)),
+    converge = as.vector(fail.vector)
   )
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(
-    Power = round(pval.power, 3),
-    Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3),
-    Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3)
-  )
+  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  power.parms <- confint.calc(alpha = alpha,
+                              p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing treatment & time-specific differences
   values.vector = values.vector / nsim
@@ -482,7 +474,7 @@ cps.sw.normal = function(nsim = NULL,
       "model.estimates" = cps.model.est,
       "sim.data" = simulated.datasets,
       "crossover.matrix" = crossover.mat,
-      "convergence.error" = fail.vector
+      "convergence" = fail.vector
     ),
     class = 'crtpwr'
   )

@@ -74,9 +74,9 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 50, nclusters = 30, 
+#' binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 15, nclusters = 10, 
 #'                               p.ntrt = 0.1, p.trt = 0.2, steps = 5, 
-#'                               sigma_b_sq = 30, alpha = 0.05, method = 'glmm', 
+#'                               sigma_b_sq = 0.03, alpha = 0.05, method = 'glmm', 
 #'                               quiet = FALSE, all.sim.data = FALSE)
 #' }
 #'
@@ -107,6 +107,7 @@ cps.sw.binary = function(nsim = NULL,
   stat.vector = NULL
   pval.vector = NULL
   lmer.icc.vector = NULL
+  fail.vector = NULL
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -345,10 +346,11 @@ cps.sw.binary = function(nsim = NULL,
         )
       )
       glmm.values = summary(my.mod)$coefficient
-      est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
-      pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
+      est.vector[i] = glmm.values['trt', 'Estimate']
+      se.vector[i] = glmm.values['trt', 'Std. Error']
+      stat.vector[i] = glmm.values['trt', 'z value']
+      pval.vector[i] = glmm.values['trt', 'Pr(>|z|)']
+      fail.vector[i] = ifelse(is.null(my.mod@optinfo$conv$lme4$messages), TRUE, FALSE)
     }
     
     # Fit GEE (geeglm)
@@ -430,21 +432,15 @@ cps.sw.binary = function(nsim = NULL,
     Estimate = as.vector(unlist(est.vector)),
     Std.err = as.vector(unlist(se.vector)),
     Test.statistic = as.vector(unlist(stat.vector)),
-    p.value = as.vector(unlist(pval.vector))
+    p.value = as.vector(unlist(pval.vector)),
+    converge = as.vector(fail.vector)
   )
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(
-    Power = round(pval.power, 3),
-    Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3),
-    Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3)
-  )
+  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  power.parms <- confint.calc(alpha = alpha,
+                              p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing treatment & time-specific differences
   values.vector = values.vector / nsim
@@ -503,7 +499,8 @@ cps.sw.binary = function(nsim = NULL,
       "icc" = ICC,
       "model.estimates" = cps.model.est,
       "sim.data" = simulated.datasets,
-      "crossover.matrix" = crossover.mat
+      "crossover.matrix" = crossover.mat,
+      "convergence" = fail.vector
     ),
     class = 'crtpwr'
   )

@@ -80,8 +80,8 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' did.binary.sim = cps.did.binary(nsim = 100, nsubjects = 50, nclusters = 6, 
-#'                                 p1 = 0.4, p2 = 0.2, sigma_b_sq0 = 10, alpha = 0.05,
+#' did.binary.sim = cps.did.binary(nsim = 100, nsubjects = 50, nclusters = 20, 
+#'                                 p1 = 0.1, p2 = 0.9, sigma_b_sq0 = 30, alpha = 0.05,
 #'                                 method = 'glmm', all.sim.data = FALSE)
 #' }
 #'
@@ -374,10 +374,6 @@ cps.did.binary = function(nsim = NULL,
     lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
     lmer.icc.vector =  append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
     
-    ## Note to KK, JM: what sigma_b_sq is Alex using here?  the one based on the baseline?
-    ## The one based on the TX period?  Or the one based on the model that assumes no
-    ## additional variance in the tx period?  KK's money is on option 3
-    
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       my.mod = lme4::glmer(
@@ -479,18 +475,9 @@ cps.did.binary = function(nsim = NULL,
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
-  # pval.data = subset(cps.model.est, converge == TRUE)
   pval.data = cps.model.est[cps.model.est$converge == TRUE, ]
-  pval.power = sum(pval.data[, 'sig.val']) / nrow(pval.data)
-  power.parms = data.frame(
-    power = round(pval.power, 3),
-    lower.95.ci = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3),
-    upper.95.ci = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3)
-  )
+  power.parms <- confint.calc(alpha = alpha,
+                              p.val = pval.data[, 'p.value'])
   
   # Create object containing inputs
   p1.p2.or = round(p1 / (1 - p1) / (p2 / (1 - p2)), 3)

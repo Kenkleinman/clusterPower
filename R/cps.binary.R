@@ -529,7 +529,7 @@ cps.binary = function(nsim = NULL,
     summary.message = paste0(
       "Monte Carlo Power Estimation based on ",
       nsim,
-      " Simulations: IRGTT Design, Binary Outcome\nNote: ",
+      " Simulations: IRGTT Design, Binary Outcome. Note: ",
       sum(converge.vector == FALSE),
       " additional models were fitted to account for non-convergent simulations."
     )
@@ -550,8 +550,7 @@ cps.binary = function(nsim = NULL,
   
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
-  power.parms <- confint.calc(nsim = nsim,
-                              alpha = alpha,
+  power.parms <- confint.calc(alpha = alpha,
                               p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs
