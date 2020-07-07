@@ -1,4 +1,4 @@
-#' Power simulations for cluster-randomized trials: Parallel Designs, Binary Outcome.
+#' Power simulations for cluster-randomized trials: Parallel Designs, Binary Outcome
 #'
 #' @description 
 #' \loadmathjax
@@ -15,40 +15,52 @@
 #' probability of the outcome in the second group,
 #' and expected difference in probabilities between groups.
 #' Default values are provided for significance level, analytic method, 
-#' progress updates, and simulated data set output.
+#' progress updates, and whether the simulated data sets are retained.
 #' 
 #' 
-#' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per cluster; accepts integer (required). 
-#' @param nclusters Number of clusters per arm; accepts integer (required).
-#' @param p1 Expected probability of outcome in first group
-#' @param p2 Expected probability of outcome in second group
-#' @param sigma_b_sq Between-cluster variance; accepts numeric (required).
+#' @param nsim Number of datasets to simulate; accepts integer. Required.
 #' 
-#' If sigma_b_sq2 is not specified, 
-#' between cluster variances are assumed to be equal for both groups. 
-#' If between cluster variances differ between arms, sigma_b_sq2 must also be specified:
-#' @param sigma_b_sq2 Between-cluster variance for clusters in arm 2
+#' XX KK: Added vector info to 'nsubjects' description below.
+#' @param nsubjects Number of subjects per cluster; accepts either a scalar
+#' (implying equal cluster sizes for the two groups), a vector of length two
+#' (equal cluster sizes within arm), or a vector of length \code{sum(nclusters)} 
+#' (unequal cluster sizes within arm). Required.
+#' 
+#' XX KK: Added vector info to 'nclusters' description below.
+#' @param nclusters Number of clusters per treatment group; accepts a single integer
+#' (if there are the same number of clusters in each arm) or a vector of 2 integers
+#' (if nsubjects differs between arms). If a vector of cluster sizes >2 is provided in
+#' \code{nsubjects}, \code{sum(nclusters)} must match the \code{nsubjects} vector length.
+#' Required.
+#' 
+#' @param p1 Expected probability of outcome in first group.
+#' @param p2 Expected probability of outcome in second group.
+#' 
+#' XX KK: Changed formatting of sigma_b_sq and sigma_b_sq2 somewhat.
+#' @param sigma_b_sq Between-cluster variance; if sigma_b_sq2 is not specified,
+#' between-cluster variances are assumed to be equal in the two arms. Accepts numeric. Required.
+#' @param sigma_b_sq2 Between-cluster variance for clusters in second group. Only required if 
+#' between-cluster variances differ between treatment arms.
 #' 
 #' 
-#' @param alpha Significance level; default = 0.05
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) 
-#' or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' @param alpha Significance level; default = 0.05.
+#' @param method Data analysis method, either generalized linear mixed effects model (GLMM) 
+#' or generalized estimating equations (GEE). Accepts c('glmm', 'gee'); default = 'glmm'. Required.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion 
-#' time, default is TRUE.
-#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE
+#' time, default = TRUE.
+#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param seed Option to set the seed. Default is NA.
 #'  
-#' @return A list with the following components
+#' @return A list with the following components:
 #' \itemize{
 #'   \item Character string indicating total number of simulations, simulation type, 
 #'   and number of convergent models
 #'   \item Number of simulations
-#'   \item Data frame with columns "Power" (Estimated statistical power), 
-#'   "lower.95.ci" (Lower 95% confidence interval bound), 
-#'   "upper.95.ci" (Upper 95% confidence interval bound),
-#'   "Alpha" (Probability of committing a type I error or rejecting a true null),
-#'   "Beta" (Probability of committing a type II error or failing to reject a false null).
+#'   \item Data frame with columns "Power" (estimated statistical power), 
+#'   "lower.95.ci" (lower 95% confidence interval bound), 
+#'   "upper.95.ci" (upper 95% confidence interval bound),
+#'   "Alpha" (probability of committing a Type I error or rejecting a true null),
+#'   "Beta" (probability of committing a Type II error or failing to reject a false null).
 #'   Note that non-convergent models are returned for review, 
 #'   but not included in this calculation.
 #'   \item Analytic method used for power estimation
@@ -73,7 +85,7 @@
 #' 
 #' @details 
 #' 
-#' The data generating model is:
+#' The data generating model for observation \mjseqn{j} in cluster \mjseqn{i} is:
 #' \mjsdeqn{y_{ij} \sim Bernoulli(\frac{e^{p_1 + b_i}}{1 + e^{p_1 + b_i} }) }
 #' for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)} 
 #' , while for the second group, 
@@ -83,7 +95,7 @@
 #' \mjseqn{\sigma_{b_2}^2} is not used, then the second group uses
 #' \mjseqn{b_i \sim N(0,\sigma_b^2)}.
 #' 
-#' All random terms are generated indepent of one another.
+#' All random terms are generated independent of one another.
 #' 
 #' 
 #' Non-convergent models are not included in the calculation of exact confidence 
@@ -92,11 +104,11 @@
 #' 
 #' @seealso 
 #' 
-#' An intracluster correlation coefficient (ICC) is neither a natural parameter of the
-#' data generating model nor a function of its parameters.  Several methods for
-#' calculation have been suggested. (Wu, Crespi, and Wong, 2012).  We provide
-#' several versions of ICCs for comparison.  These can be accessed in the 
-#' \code{bincalcICC()} function.
+#' An intracluster correlation coefficient (ICC) for binary outcome data is
+#' neither a natural parameter of the data generating model nor a function
+#' of its parameters.  Several methods for calculation have been suggested
+#' (Wu, Crespi, and Wong, 2012).  We provide several versions of ICCs for
+#' comparison.  These can be accessed in the \code{bincalcICC()} function.
 #' 
 #' 
 #' 

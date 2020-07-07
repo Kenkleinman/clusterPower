@@ -1,58 +1,86 @@
-#' Power simulations for cluster-randomized trials: Simple Designs, Count Outcome.
+#' Power simulations for cluster-randomized trials: Parallel Designs, Count Outcome
 #'
-#' This function utilizes iterative simulations to determine 
-#' approximate power for cluster-randomized controlled trials. Users 
+#' @description 
+#' \loadmathjax
+#' 
+#'  
+#' This function uses Monte Carlo methods (simulations) to estimate 
+#' power for cluster-randomized trials. Users 
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
 #' 
-#' Runs the power simulation for count outcomes.
+#' Users must specify the desired number of simulations, number of subjects per 
+#' cluster, number of clusters per treatment arm, between-cluster variance, and
+#' two of the following three parameters: mean event rate per unit time in one group,
+#' the mean event rate per unit time in the second group, and/or the
+#' mean difference in event rates between groups. Default values are provided
+#' for significance level, analytic method, progress updates, and whether the simulated data sets are retained.
 #'
-#' Users must specify the desired number of simulations, number of subjects per
-#' cluster, number of clusters per arm, between-cluster variance,
-#' two of the following: expected count in arm 1, expected count
-#' in arm 2, difference in counts between groups; significance level,
-#' analytic method, and whether or not progress updates should be displayed
-#' while the function is running.
 #'
-#' Non-convergent models are not included in the calculation of exact confidence
-#' intervals.
 #'
-#' @section Testing details:
-#' This function has been verified, where possible, against reference values from PASS11,
-#' \code{CRTsize::n4incidence}, \code{clusterPower::cps.count}, and
-#' \code{clusterPower::cpa.count}.
 #'
-#' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per cluster; accepts a single integer or a vector
-#' of 2 integers (if nsubjects differs between arms) (required).
-#' @param nclusters Number of clusters per arm; accepts a single integer
-#' or a vector of 2 integers (if nsubjects differs between arms) (required).
+#'
+#'
+#' @param nsim Number of datasets to simulate; accepts integer. Required.
+#' 
+#' @param nsubjects Number of subjects per cluster; accepts either a scalar (implying equal cluster sizes for the two groups), 
+#' a vector of length two (equal cluster sizes within arm), or a vector of length \code{sum(nclusters)} 
+#' (unequal cluster sizes within arm).  If a vector of > 2 is provided in
+#' \code{nsubjects}, \code{sum(nclusters)} must match the \code{nsubjects} vector length.  Required.
+#' 
+#' @param nclusters Number of clusters per treatment group; accepts a single integer
+#' (if there are the same number of clusters in each arm) or a vector of 2 integers
+#' (if there are not). 
+#' Required.
+#' 
 #' At least 2 of the following 3 arguments must be specified:
-#' @param c1 Expected outcome count in the first arm
-#' @param c2 Expected outcome count in the second arm
-#' @param c.diff Expected difference in outcome count between groups, defined as
-#' c.diff = c1 - c2
+#' 
+#' @param c1 The mean event rate per unit time in the first arm.
+#' 
+#' @param c2 The mean event rate per unit time in the second arm.
+#' 
+#' @param c.diff Expected difference in mean event rates between groups, defined as
+#' \code{c.diff = c1 - c2}.
+#' 
 #' @param sigma_b_sq Between-cluster variance; if sigma_b_sq2 is not specified,
-#' between cluster variances are assumed to be equal between arms. Accepts numeric
-#' If between cluster variances differ between arms, the following must
-#' also be specified:
-#' @param sigma_b_sq2 Between-cluster variance for clusters in arm 1
+#' between-cluster variances are assumed to be equal in the two arms. Accepts numeric. Required.
+#' 
+#' @param sigma_b_sq2 Between-cluster variance for clusters in the second arm. Only required if 
+#' between-cluster variances differ between treatment arms.
+#' 
 #' @param family Distribution from which responses are simulated. Accepts Poisson
-#' ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
-#' @param analysis Family used for regression; currently only applicable for GLMM.
-#' Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model
-#' (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee')
-#' (required); default = 'glmm'
-#' @param alpha Significance level. Default = 0.05.
-#' @param quiet When set to FALSE, displays simulation progress and estimated
-#' completion time. Default = FALSE.
-#' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
+#' ('poisson') or negative binomial ('neg.binom'); default = 'poisson'. Required.
+#' 
+#' @param method Data analysis method, either generalized linear mixed effects model
+#' (GLMM) or generalized estimating equations (GEE). Accepts c('glmm', 'gee'); default = 'glmm'.
+#' Required.
+#' 
+#' @param analysis Family used for data analysis; currently only applicable when \code{method = 'glmm'}.
+#' Accepts c('poisson', 'neg.binom'); default = 'poisson'. Required.
+#' 
+#' @param alpha The level of significance of the test, the probability of a
+#' Type I error. Default = 0.05.
+#' 
+#' @param quiet When set to \code{FALSE}, displays simulation progress and estimated
+#' completion time. Default = \code{FALSE}.
+#' 
+#' 
+#' [XX JN-- Below: true?  Output?  Or retain for further data analysis?]
+#' 
+#' @param all.sim.data Option to output list of all simulated datasets. Default = \code{FALSE}.
+#' 
 #' @param seed Option to set the seed. Default is NA.
-#' @param nofit Option to skip model fitting and analysis and return the simulated data.
-#' Defaults to \code{FALSE}.
-#' @param optimizer Option to fit with a different optimizer (using the package
-#' \code{optimx}). Defaults to L-BFGS-B.
+#' 
+#' @param nofit Option to skip model fitting and analysis and only return the simulated data.
+#' Default = \code{FALSE}.
+#' 
+#' @param optimizer Option to fit with a different optimizer from the package
+#' \code{optimx}. Defaults to L-BFGS-B. See optimx package documentation for all options.
+#' 
+#'
+#'
+#'
+#' # [XX JN- probably needs a conditional for what happens when nofit=T]
 #'
 #' @return A list with the following components
 #' \itemize{
@@ -69,30 +97,60 @@
 #'   \item Significance level
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters
-#'   \item Data frame reporting between-cluster variances for both arms
-#'   \item Vector containing expected counts and risk ratios based on user inputs
+#'   \item Data frame reporting \mjseqn{\sigma_b^2} for each group
+#'   \item Vector containing expected events per unit time and risk ratios based on user inputs
 #'   \item Data frame with columns:
 #'                   "Estimate" (Estimate of treatment effect for a given simulation),
 #'                   "Std.err" (Standard error for treatment effect estimate),
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)),
 #'                   "p.value",
-#'                   "sig.val" (Is p-value less than alpha?)
+#'                   "converge" (Did model converge for that set of simulated data?)
 #'   \item List of data frames, each containing:
 #'                   "y" (Simulated response value),
 #'                   "trt" (Indicator for treatment arm),
 #'                   "clust" (Indicator for cluster)
+#'   \item Logical vector reporting whether models converged.
 #' }
-#' @author Alexander R. Bogdan
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}
-#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' 
+#' @details 
+#' 
+#' # [XX JN-- update below to reflect that this is true only when using family='poisson'.  Also
+#' # include forumale for family = "neg.binom"]
+#' 
+#' The data generating model is:
+#' \mjsdeqn{y_{ij} \sim Poisson(e^{c_1 + b_i}) }
+#' for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)}, 
+#' while for the second group, 
+#'  
+#' \mjsdeqn{y_{ij} \sim Poisson(e^{c_2 + b_i}) }
+#' where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if 
+#' \mjseqn{\sigma_{b_2}^2} is not specified, then the second group uses
+#' \mjseqn{b_i \sim N(0,\sigma_b^2)}.
+#' 
+#' All random terms are generated independent of one another.
+#' 
+#' 
+#' Non-convergent models are not included in the calculation of exact confidence 
+#' intervals.
+#' 
+#' 
+#' 
+#' @section Testing details:
+#' This function has been verified, where possible, against reference values from PASS11,
+#' \code{CRTsize::n4incidence}, \code{clusterPower::cps.count}, and
+#' \code{clusterPower::cpa.count}.
+#' 
+#' @author Alexander R. Bogdan, Alexandria C. Sakrejda 
+#' (\email{acbro0@@umass.edu}), and Ken Kleinman 
+#' (\email{ken.kleinman@@gmail.com})
 #'
 #'
 #' @examples
 #' 
 #' # Estimate power for a trial with 10 clusters in each arm with 20 subjects each, 
-#' # with sigma_b_sq = 0.1 in both arms. We have estimated arm counts of 20 and 30 
-#' # in the first and second arms, respectively, and we use 100 simulated data 
-#' # sets analyzed by the GEE method. 
+#' # with sigma_b_sq = 0.1 in both arms. We expect mean event rates per unit time of
+#' # 20 and 30 in the first and second arms, respectively, and we use 100 simulated
+#' # data sets analyzed by the GEE method. 
 #' 
 #' \dontrun{
 #' count.sim = cps.count(nsim = 100, nsubjects = 20, nclusters = 10,
@@ -101,22 +159,47 @@
 #'                       method = 'gee', alpha = 0.05, quiet = FALSE,
 #'                       all.sim.data = FALSE, seed = 123)
 #' }                  
-#'      
-#' # Estimate power for a trial with 5 clusters in one arm, those clusters having
-#' # 4, 5, 6, 7, 7, and 7 subjects each, and 10 clusters in the other arm,
-#' # those clusters having 5 subjects each, with sigma_b_sq = 0.1 in both arms.
-#' # We have estimated arm counts of 20 and 30 in the first and second arms, 
-#' # respectively, and we use 100 simulated data sets analyzed by the GLMM method.                      
+#' # The resulting estimated power (if you set seed = 123) should be about 0.8.
+#'
+#'
+#'
+#' # Estimate power for a trial with 10 clusters and 10 subjects per cluster in the
+#' # first arm, 20 clusters and 20 subjects per cluster in the second, and
+#' # sigma_b_sq = 0.1 in both arms. We expect mean event rates per unit time of
+#' # 20 and 30 in the first and second arms, respectively, and we use 100 simulated
+#' # data sets analyzed by the GLMM method. 
+#' 
+#' \dontrun{
+#' count.sim = cps.count(nsim = 100, nsubjects = c(10,20), nclusters = c(10,20),
+#'                       c1 = 20, c2 = 30, sigma_b_sq = 0.1,
+#'                       family = 'poisson', analysis = 'poisson',
+#'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
+#'                       all.sim.data = FALSE, seed = 123)
+#' }               
+#' # The resulting estimated power (if you set seed = 123) should be about 0.95.
+#'
+#'  
+#' 
+#' # Estimate power for a trial with 5 clusters in the first arm, those clusters having
+#' # 4, 5, 6, 7, and 7 subjects each, and 10 clusters in the second arm, those
+#' # clusters having 5 subjects each, with sigma_b_sq = 0.1 in the first arm and
+#' # sigma_b_sq2 = .05 in the second arm. We expect mean event rates per unit time
+#' # of 20 and 30 in the first and second arms, respectively, and we use 100 simulated
+#' # data sets analyzed by the GLMM method.                      
 #' 
 #' \dontrun{                                            
-#' count.sim.unbal = cps.count(nsim = 100, nsubjects = c(4, 5, 6, 7, 7, 7, rep(5, times = 10)), 
-#'                       nclusters = c(6,10),
-#'                       c1 = 20, c2 = 30, sigma_b_sq = 0.1,
-#'                       sigma_b_sq2 = 0.05,
+#' count.sim = cps.count(nsim = 100, nsubjects = c(4, 5, 6, 7, 7, rep(5, times = 10)), 
+#'                       nclusters = c(5,10),
+#'                       c1 = 20, c2 = 30,
+#'                       sigma_b_sq = 0.1, sigma_b_sq2 = 0.05,
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
 #'                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
 #' }
+#' # The resulting estimated power (if you set seed = 123) should be about 0.75.
+#'
+#'
+#'
 #' @export
 
 # Define function

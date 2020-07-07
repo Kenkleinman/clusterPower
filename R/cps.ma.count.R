@@ -1,5 +1,5 @@
 #' Simulation-based power estimation for poisson outcome multi-arm
-#' cluster-randomized trials.
+#' cluster-randomized trials
 #'
 #' This function uses iterative simulations to determine
 #' approximate power for multi-arm cluster-randomized controlled trials with
