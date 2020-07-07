@@ -41,6 +41,9 @@
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'L-BFGS-B'.
+#' @param nofit Option to skip model fitting and analysis and only return the simulated data.
+#' Default = \code{FALSE}.
+#' @param seed Option to set the seed. Default is NA.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -73,11 +76,18 @@
 #' }
 #' 
 #' @examples 
+#' 
+#' # Estimate power for a trial with 12 clusters in arm 1 (often the standard-of-care or 'control' 
+#' # arm) at the initiation of the study. Those clusters have 50 subjects each, with sigma_b_sq = 1. 
+#' # We have estimated arm outcome proportions of 0.1 and 0.35 in the first and second arms, 
+#' # respectively, and 100 simulated data sets analyzed by the GLMM method. Using seed = 123, 
+#' # the resulting power should be 0.86.
+#' 
 #' \dontrun{
-#' binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 15, nclusters = 10, 
-#'                               p.ntrt = 0.1, p.trt = 0.2, steps = 5, 
-#'                               sigma_b_sq = 0.03, alpha = 0.05, method = 'glmm', 
-#'                               quiet = FALSE, all.sim.data = FALSE)
+#' binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 12, nclusters = 12, 
+#'                               p.ntrt = 0.1, p.trt = 0.35, steps = 3, 
+#'                               sigma_b_sq = 2, alpha = 0.05, method = 'glmm', 
+#'                               quiet = FALSE, all.sim.data = FALSE, seed = 123)
 #' }
 #'
 #' @author Alexander R. Bogdan 
@@ -100,7 +110,12 @@ cps.sw.binary = function(nsim = NULL,
                          method = 'glmm',
                          quiet = FALSE,
                          all.sim.data = FALSE,
-                         opt = 'L-BFGS-B') {
+                         opt = 'L-BFGS-B',
+                         nofit = FALSE,
+                         seed = NA) {
+  if (!is.na(seed)) {
+    set.seed(seed = seed)
+  }
   # Create vectors to collect iteration-specific values
   est.vector = NULL
   se.vector = NULL
@@ -314,6 +329,28 @@ cps.sw.binary = function(nsim = NULL,
                             sim.dat[, 'y'])
     }
     
+    # option to return simulated data only
+    if (nofit == TRUE) {
+      if (!exists("nofitop")) {
+        nofitop <- data.frame(period = sim.dat['period'],
+                              cluster = sim.dat['clust'],
+                              time.point = sim.dat['time.point'],
+                              arm = sim.dat['trt'],
+                              y1 = sim.dat["y"])
+      } else {
+        nofitop[, length(nofitop) + 1] <- sim.dat["y"]
+      }
+      if (length(nofitop) == (nsim + 4)) {
+        temp1 <- seq(1:nsim)
+        temp2 <- paste0("y", temp1)
+        colnames(nofitop) <- c('period', 'cluster', 'time.point', 'arm', temp2)
+      }
+      if (length(nofitop) != (nsim + 4)) {
+        next()
+      }
+      return(nofitop)
+    }
+    
     # Calculate LMER.ICC (lmer: sigma_b_sq / (sigma_b_sq + sigma))
     lmer.mod = lme4::lmer(y ~ trt + time.point + (1 |
                                                     clust), data = sim.dat)
@@ -364,10 +401,10 @@ cps.sw.binary = function(nsim = NULL,
         corstr = "exchangeable"
       )
       gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+      est.vector[i] = gee.values['trt', 'Estimate']
+      se.vector[i] = gee.values['trt', 'Std.err']
+      stat.vector[i] = gee.values['trt', 'Wald']
+      pval.vector[i] = gee.values['trt', 'Pr(>|W|)']
     }
     
     # Update progress information

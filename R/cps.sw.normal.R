@@ -7,7 +7,7 @@
 #' 
 #' Runs power simulations for stepped wedge cluster-randomized controlled trials 
 #' with continuous outcome. The stepped wedge trial design is a type of cross-over
-#' design in which clusters change treatments in waves. Initially all the 
+#' design in which clusters change arms in waves. Initially all the 
 #' clusters recieve the same standard treatment, and at the end of the trial all
 #' of the clusters will be recieving the treatment of interest. More than one 
 #' cluster can change treatments in a wave, but the order in which clusters 
@@ -15,34 +15,37 @@
 #' in each cluster during each wave.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, expected absolute difference 
-#' between treatment arms, within-cluster variance, between-cluster variance, 
-#' significance level, analytic method, progress updates, and simulated data 
-#' set output may also be specified.
+#' cluster, number of clusters per treatment arm, expected means for each arm, 
+#' within-cluster variance, between-cluster variance, significance level, 
+#' analytic method, progress updates, and simulated data set output may also be 
+#' specified.
 #' 
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
 #' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
-#' @param difference Expected absolute difference in treatment effect between treatment and non-treatment groups;
-#'  accepts numeric (required).
-#' @param steps Number of crossover steps; a baseline step (all clusters in non-treatment group) is assumed. 
+#' @param mu Mean in the first arm; accepts numeric, default 0.  Required.
+#' @param mu2 Mean in the second arm; accepts numeric.  Required.
+#' @param steps Number of crossover steps; a baseline step (all clusters in arm 1) is assumed. 
 #' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 
 #' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
 #' of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the cumulative 
 #' number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).
 #' @param sigma_sq Within-cluster variance; accepts non-negative numeric scalar (indicating equal within-cluster variances for both 
-#' treatment groups) or a vector of length 2 specifying within-cluster variances for the non-treatment and treatment groups, 
+#' arms) or a vector of length 2 specifying within-cluster variances for both arms, 
 #' respectively (required).
 #' @param sigma_b_sq Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
-#' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
+#' between-cluster variances for both arms) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances (required).
 #' @param alpha Significance level. Default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param nofit Option to skip model fitting and analysis and only return the simulated data.
+#' Default = \code{FALSE}.
+#' @param seed Option to set the seed. Default is NA.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -56,9 +59,10 @@
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters
 #'   \item Data frame reporting ICC, within & between cluster variances for 
-#'   Treatment/Non-Treatment groups at each time point
+#'   both arms at each time point
+#'   \item Vector containing estimated means entered by the user
 #'   \item Vector containing expected difference between groups based on user inputs
-#'   \item Data frame containing mean response values for each treatment group at each time point
+#'   \item Data frame containing mean response values for each arm at each time point
 #'   \item Matrix showing cluster crossover at each time point
 #'   \item Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
@@ -68,18 +72,25 @@
 #'                   "sig.val" (Is p-value less than alpha?)
 #'   \item List of data frames, each containing: 
 #'                   "y" (Simulated response value), 
-#'                   "trt" (Indicator for treatment group),
+#'                   "trt" (Indicator for arm),
 #'                   "time.point" (Indicator for step; "t1" = time point 0) 
 #'                   "clust" (Indicator for cluster), 
 #'                   "period" (Indicator for at which step a cluster crosses over)
 #' }
 #' 
 #' @examples 
+#' 
+#' # Estimate power for a trial with 30 clusters in arm 1 (often the standard-of-care or 'control' 
+#' # arm) at the initiation of the study. Those clusters have 50 subjects each, with sigma_b_sq = 30
+#' # and sigma_sq = 100. We have estimated arm means of 0 and 1.75 in the first and second arms, 
+#' # respectively, and 100 simulated data sets analyzed by the GLMM method. Using seed = 123, 
+#' # the resulting power should be 0.83.
+#' 
 #' \dontrun{
-#' normal.sw.rct = cps.sw.normal(nsim = 100, nsubjects = 50, nclusters = 30, 
-#'                               difference = 1.75, steps = 5, sigma_sq = 100, sigma_b_sq = 30, 
+#' normal.sw.rct = cps.sw.normal(nsim = 100, nsubjects = 8, nclusters = 15, mu = 1.5,
+#'                               mu2 = 3.1, steps = 5, sigma_sq = 10, sigma_b_sq = 3, 
 #'                               alpha = 0.05, method = 'glmm', quiet = FALSE, 
-#'                               all.sim.data = FALSE)
+#'                               all.sim.data = FALSE, seed = 123)
 #' }
 #'
 #' @author Alexander R. Bogdan 
@@ -94,14 +105,21 @@
 cps.sw.normal = function(nsim = NULL,
                          nsubjects = NULL,
                          nclusters = NULL,
-                         difference = NULL,
+                         mu = 0,
+                         mu2 = NULL,
                          steps = NULL,
                          sigma_sq = NULL,
                          sigma_b_sq = NULL,
                          alpha = 0.05,
                          method = 'glmm',
                          quiet = FALSE,
-                         all.sim.data = FALSE) {
+                         all.sim.data = FALSE,
+                         nofit = FALSE,
+                         seed = NA) {
+  if (!is.na(seed)) {
+    set.seed(seed = seed)
+  }
+  
   # Create vectors to collect iteration-specific values
   est.vector = NULL
   se.vector = NULL
@@ -124,12 +142,12 @@ cps.sw.normal = function(nsim = NULL,
   is.wholenumber = function(x, tol = .Machine$double.eps ^ 0.5)
     abs(x - round(x)) < tol
   
-  # Validate NSIM, NSUBJECTS, NCLUSTERS, DIFFERENCE
-  sim.data.arg.list = list(nsim, nclusters, nsubjects, difference)
+  # Validate NSIM, NSUBJECTS, NCLUSTERS, mu, mu2
+  sim.data.arg.list = list(nsim, nclusters, nsubjects, mu, mu2)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if (sum(sim.data.args) > 0) {
     stop(
-      "NSIM, NCLUSTERS, NSUBJECTS & DIFFERENCE must all be specified. Please review your input values."
+      "nsim, nclusters, nsubjects, mu, and mu2 must all be specified. Please review your input values."
     )
   }
   min1.warning = " must be an integer greater than or equal to 1"
@@ -193,25 +211,25 @@ cps.sw.normal = function(nsim = NULL,
   # Create vector to store group means at each time point
   values.vector = cbind(c(rep(0, length(step.index) * 2)))
   
-  # Validate DIFFERENCE, ALPHA
+  # Validate mu, ALPHA
   min0.warning = " must be a numeric value greater than 0"
-  if (!is.numeric(difference) || difference < 0) {
-    stop("DIFFERENCE", min0.warning)
+  if (!is.numeric(mu2) || !is.numeric(mu)) {
+    stop("mu2", min0.warning)
   }
   if (!is.numeric(alpha) || alpha < 0 || alpha > 1) {
     stop("ALPHA must be a numeric value between 0 - 1")
   }
   
   # Validate sigma_sq, SIGMA_B0, SIGMA_B1
-  sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both treatment and non-treatment groups)
-  or a vector of length 2, specifying unique between-cluster variances for the treatment and non-treatment groups."
+  sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both arms)
+  or a vector of length 2, specifying unique between-cluster variances for both arms."
   if (!is.numeric(sigma_sq) || any(sigma_sq < 0)) {
     stop("All values supplied to sigma_sq must be numeric values > 0")
   }
   if (!length(sigma_sq) %in% c(1, 2)) {
     stop(
-      "sigma_sq must be a scalar (equal within-cluster variance for both treatment and non-treatment groups)
-         or a vector of length 2, specifying unique within-cluster variances for the treatment and non-treament groups."
+      "sigma_sq must be a scalar (equal within-cluster variance for both arms)
+         or a vector of length 2, specifying unique within-cluster variances for both arms."
     )
   }
   if (!is.numeric(sigma_b_sq) || any(sigma_b_sq < 0)) {
@@ -281,21 +299,21 @@ cps.sw.normal = function(nsim = NULL,
     
     # Add subject specific effects & cluster effects
     for (j in 1:nclusters) {
-      # Assign non-treatment subject & cluster effects
+      # Assign arm1 subject & cluster effects
       sim.dat['y'] = ifelse(
         sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0,
         stats::rnorm(sum(sim.dat[, 'clust'] == j &
-                           sim.dat[, 'trt'] == 0), 0, sqrt(sigma_sq[1])) +
+                           sim.dat[, 'trt'] == 0), mu, sqrt(sigma_sq[1])) +
           ntrt.cluster.effects[j],
         sim.dat[, 'y']
       )
-      # Assign treatment subject & cluster effects
+      # Assign arm2 subject & cluster effects
       sim.dat['y'] = ifelse(
         sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1,
         stats::rnorm(
           sum(sim.dat[, 'clust'] == j &
                 sim.dat[, 'trt'] == 1),
-          difference,
+          mu2,
           sqrt(sigma_sq[2])
         ) +
           trt.cluster.effects[j],
@@ -317,9 +335,31 @@ cps.sw.normal = function(nsim = NULL,
     }
   }
   
+  # option to return simulated data only
+  if (nofit == TRUE) {
+    if (!exists("nofitop")) {
+      nofitop <- data.frame(period = sim.dat['period'],
+                            cluster = sim.dat['clust'],
+                            time.point = sim.dat['time.point'],
+                            arm = sim.dat['trt'],
+                            y1 = sim.dat["y"])
+    } else {
+      nofitop[, length(nofitop) + 1] <- sim.dat["y"]
+    }
+    if (length(nofitop) == (nsim + 4)) {
+      temp1 <- seq(1:nsim)
+      temp2 <- paste0("y", temp1)
+      colnames(nofitop) <- c('period', 'cluster', 'time.point', 'arm', temp2)
+    }
+    if (length(nofitop) != (nsim + 4)) {
+      next()
+    }
+    return(nofitop)
+  }
+  
   ###################################################################
   ### DEV NOTE: Hussey & Hughes (2007) does not specify degrees of freedom for significance testing
-  ###           GLMM DF = NCLUSTERS[Total # of clusters] - length(STEP.INDEX)[# of steps] - 2[# of treatment groups]
+  ###           GLMM DF = NCLUSTERS[Total # of clusters] - length(STEP.INDEX)[# of steps] - 2[# of arms]
   ###################################################################
   models <- list()
   
@@ -432,7 +472,7 @@ cps.sw.normal = function(nsim = NULL,
     Time.point = c(0, rep(1:(
       length(step.index) - 1
     ), each = 2), length(step.index)),
-    Treatment = c(0, rep(c(0, 1), length.out = (
+    Arm = c(0, rep(c(0, 1), length.out = (
       length(step.index) - 1
     ) * 2), 1),
     Mean = round(values.vector, 3)
@@ -443,14 +483,14 @@ cps.sw.normal = function(nsim = NULL,
   
   # Create object containing number of clusters
   n.clusters = t(data.frame(
-    "Non.Treatment" = c("n.clust" = nclusters[1]),
-    "Treatment" = c("n.clust" = nclusters[2])
+    "Arm.1" = c("n.clust" = nclusters[1]),
+    "Arm.2" = c("n.clust" = nclusters[2])
   ))
   
   # Create object containing variance parameters for each group at each time point
   var.parms = t(data.frame(
-    'Non.Treatment' = c('sigma_sq' = sigma_sq[1], 'sigma_b_sq' = sigma_b_sq[1]),
-    'Treatment' = c('sigma_sq' = sigma_sq[2], 'sigma_b_sq' = sigma_b_sq[2])
+    'Arm.1' = c('sigma_sq' = sigma_sq[1], 'sigma_b_sq' = sigma_b_sq[1]),
+    'Arm.2' = c('sigma_sq' = sigma_sq[2], 'sigma_b_sq' = sigma_b_sq[2])
   ))
   
   # Create crossover matrix output object
@@ -469,8 +509,8 @@ cps.sw.normal = function(nsim = NULL,
       "cluster.sizes" = cluster.sizes,
       "n.clusters" = n.clusters,
       "variance.parms" = var.parms,
-      "inputs" = difference,
-      "means" = group.means,
+      "means" = c(mu, mu2),
+      "obs.means" = group.means,
       "model.estimates" = cps.model.est,
       "sim.data" = simulated.datasets,
       "crossover.matrix" = crossover.mat,

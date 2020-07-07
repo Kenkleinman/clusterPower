@@ -43,6 +43,9 @@
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'L-BFGS-B'.
+#' @param nofit Option to skip model fitting and analysis and only return the simulated data.
+#' Default = \code{FALSE}.
+#' @param seed Option to set the seed. Default is NA.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -75,11 +78,19 @@
 #' }
 #' 
 #' @examples 
+#' 
+#' # Estimate power for a trial with 9 clusters in arm 1 (often the standard-of-care or 'control' 
+#' # arm) at the initiation of the study. Those clusters have 13 subjects each, with sigma_b_sq = 1. 
+#' # We have estimated arm counts of 3 and 4 in the first and second arms, 
+#' # respectively, and 100 simulated data sets analyzed by the GLMM method. Using seed = 123, 
+#' # the resulting power should be 0.86.
+#' 
 #' \dontrun{
-#' count.sw.rct = cps.sw.count(nsim = 100, nsubjects = 50, nclusters = 30, 
-#'                               c.ntrt = 3, c.trt = 5, steps = 5, sigma_b_sq = 20, 
+#' count.sw.rct = cps.sw.count(nsim = 100, nsubjects = 13, nclusters = 9, 
+#'                               c.ntrt = 3, c.trt = 4, steps = 3, sigma_b_sq = 1, 
 #'                               alpha = 0.05, family = 'poisson', analysis = 'poisson', 
-#'                               method = 'glmm', quiet = FALSE, all.sim.data = FALSE)
+#'                               method = 'glmm', quiet = FALSE, all.sim.data = FALSE,
+#'                               seed = 123)
 #' }
 #'
 #' @author Alexander R. Bogdan 
@@ -104,7 +115,12 @@ cps.sw.count = function(nsim = NULL,
                         method = 'glmm',
                         quiet = FALSE,
                         all.sim.data = FALSE,
-                        opt = 'L-BFGS-B') {
+                        opt = 'L-BFGS-B',
+                        nofit = FALSE,
+                        seed = NA) {
+  if (!is.na(seed)) {
+    set.seed(seed = seed)
+  }
   # Create vectors to collect iteration-specific values
   est.vector = NULL
   se.vector = NULL
@@ -205,7 +221,8 @@ cps.sw.count = function(nsim = NULL,
   # Validate sigma_b_sq
   sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both treatment and non-treatment groups)
   or a vector of length 2, specifying unique between-cluster variances for the treatment and non-treatment groups."
-  if (!is.numeric(sigma_b_sq) || any(sigma_b_sq < 0)) {
+  sigma_b_sq <- as.integer(sigma_b_sq)
+  if (!is.integer(sigma_b_sq) || any(sigma_b_sq < 0)) {
     stop("All values supplied to sigma_b_sq must be numeric values >= 0")
   }
   if (!length(sigma_b_sq) %in% c(1, 2)) {
@@ -352,10 +369,27 @@ cps.sw.count = function(nsim = NULL,
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
     
-    #########################################################################
-    ### DEV NOTE: Majority of models do not converge (huge test statistics).
-    ###           Consider using glmerControl().
-    #########################################################################
+    # option to return simulated data only
+    if (nofit == TRUE) {
+      if (!exists("nofitop")) {
+        nofitop <- data.frame(period = sim.dat['period'],
+                              cluster = sim.dat['clust'],
+                              time.point = sim.dat['time.point'],
+                              arm = sim.dat['trt'],
+                              y1 = sim.dat["y"])
+      } else {
+        nofitop[, length(nofitop) + 1] <- sim.dat["y"]
+      }
+      if (length(nofitop) == (nsim + 4)) {
+        temp1 <- seq(1:nsim)
+        temp2 <- paste0("y", temp1)
+        colnames(nofitop) <- c('period', 'cluster', 'time.point', 'arm', temp2)
+      }
+      if (length(nofitop) != (nsim + 4)) {
+        next()
+      }
+      return(nofitop)
+    }
     
     # Fit GLMM (lmer)
     if (method == 'glmm') {
