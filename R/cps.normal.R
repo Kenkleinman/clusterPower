@@ -32,7 +32,7 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (implying equal cluster sizes for the two groups), 
 #' a vector of length two (equal cluster sizes within arm), or a vector of length \code{sum(nclusters)} 
 #' (unequal cluster sizes within arm).  Required.
-#' @param mu Mean in the first arm; accepts numeric, default 0.  Required..
+#' @param mu Mean in the first arm; accepts numeric, default 0.  Required.
 #' @param mu2 Mean in the second arm; accepts numeric.  Required.
 #' 
 #' At least 2 of the following must be specified:
