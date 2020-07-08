@@ -73,6 +73,13 @@
 #'                   'period' (Indicator for time point)
 #' }
 #' @examples 
+#' 
+#' # Estimate power for a trial with 7 clusters in both arms, those clusters having
+#' # 9 subjects each, with sigma_b_sq0 = 0.1 in the first arm and 0.5 in the second arm. 
+#' # We have estimated arm counts of 5 and 3 in the first and second arms, respectively, 
+#' # and we use 100 simulated data sets analyzed by the GLMM method. The resulting 
+#' # estimated power (if you set seed = 123) should be about 0.84.
+#' 
 #' \dontrun{
 #' did.count.sim = cps.did.count(nsim = 100, nsubjects = 9, nclusters = 7, c1 = 5, 
 #'                               c2 = 3, sigma_b_sq0 = c(0.1, 0.5), sigma_b_sq1 = c(0.5, 0.8), 

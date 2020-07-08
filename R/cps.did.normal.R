@@ -20,7 +20,8 @@
 #' (unequal cluster sizes within groups) (required).
 #' @param nclusters Number of clusters per group; accepts integer scalar or vector of length 2 for unequal number 
 #' of clusters per arm (required)
-#' @param difference Expected absolute difference in treatment effect between time points; accepts numeric (required).
+#' @param mu Expected mean of arm 1; accepts numeric (required).
+#' @param mu2 Expected mean of arm 2; accepts numeric (required).
 #' @param sigma_sq Within-cluster variance; accepts numeric scalar (indicating equal within-cluster variances for both 
 #' arms at both time points) or vector of length 4 specifying within-cluster variance for each arm at each time point.
 #' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
@@ -70,6 +71,13 @@
 #'                   "period" (Indicator for time point)
 #' }
 #' @examples 
+#' 
+#' # Estimate power for a trial with 6 clusters in both arms, those clusters having
+#' # 55 subjects each, with sigma_sq = 0.1. We have estimated arm means of 1 and 1.38
+#' # in the first and second arms, respectively, and we use 100 simulated data sets 
+#' # analyzed by the GLMM method. The resulting estimated power (if you set seed = 123) 
+#' # should be about 0.76.
+#' 
 #' \dontrun{
 #' normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 55, nclusters = 6, 
 #'                                 difference = 0.38, sigma_sq = 0.1, alpha = 0.05, 
@@ -87,7 +95,8 @@
 cps.did.normal = function(nsim = NULL,
                           nsubjects = NULL,
                           nclusters = NULL,
-                          difference = NULL,
+                          mu = 0,
+                          mu2 = NULL,
                           sigma_sq = NULL,
                           sigma_b_sq0 = NULL,
                           sigma_b_sq1 = 0,
@@ -125,12 +134,12 @@ cps.did.normal = function(nsim = NULL,
   is.wholenumber = function(x, tol = .Machine$double.eps ^ 0.5)
     abs(x - round(x)) < tol
   
-  # Validate NSIM, NSUBJECTS, NCLUSTERS, DIFFERENCE
-  sim.data.arg.list = list(nsim, nclusters, nsubjects, difference)
+  # Validate NSIM, NSUBJECTS, NCLUSTERS, mu and mu2
+  sim.data.arg.list = list(nsim, nclusters, nsubjects, mu, mu2)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if (sum(sim.data.args) > 0) {
     stop(
-      "NSIM, NCLUSTERS, NSUBJECTS & DIFFERENCE must all be specified. Please review your input values."
+      "nsim, nclusters, nsubjects, mu, and mu2 must all be specified. Please review your input values."
     )
   }
   min1.warning = " must be an integer greater than or equal to 1"
@@ -170,10 +179,10 @@ cps.did.normal = function(nsim = NULL,
     )
   }
   
-  # Validate DIFFERENCE, ALPHA
-  min0.warning = " must be a numeric value greater than 0"
-  if (!is.numeric(difference) || difference < 0) {
-    stop("DIFFERENCE", min0.warning)
+  # Validate mu and mu2, ALPHA
+  min0.warning = "must be numeric values"
+  if (!is.numeric(mu) || !is.numeric(mu2)) {
+    stop("mu & mu2", min0.warning)
   }
   if (!is.numeric(alpha) || alpha < 0 || alpha > 1) {
     stop("ALPHA must be a numeric value between 0 - 1")
@@ -277,7 +286,7 @@ cps.did.normal = function(nsim = NULL,
       rep(randint.ntrt.1[x], length.out = nsubjects[x])))
     y1.ntrt.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x)
       stats::rnorm(
-        x, mean = 0, sd = sqrt(sigma_sq[3])
+        x, mean = mu, sd = sqrt(sigma_sq[3])
       )))
     y1.ntrt.post = y1.ntrt.bclust + y1.ntrt.wclust + stats::rnorm(nsubjects[1:nclusters[1]])
     
@@ -286,7 +295,7 @@ cps.did.normal = function(nsim = NULL,
       rep(randint.trt.1[x], length.out = nsubjects[nclusters[1] + x])))
     y1.trt.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])],
                                   function(x)
-                                    stats::rnorm(x, mean = difference, sd = sqrt(sigma_sq[4]))))
+                                    stats::rnorm(x, mean = mu2, sd = sqrt(sigma_sq[4]))))
     y1.trt.post = y1.trt.bclust + y1.trt.wclust + stats::rnorm(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
     
     # Create single response vector
@@ -472,7 +481,7 @@ cps.did.normal = function(nsim = NULL,
       "cluster.sizes" = cluster.sizes,
       "n.clusters" = n.clusters,
       "variance.parms" = var.parms,
-      "inputs" = difference,
+      "means" = c(mu, mu2),
       "model.estimates" = cps.model.est,
       "sim.data" = simulated.datasets,
       "differences" = differences,
