@@ -15,7 +15,7 @@
 #' in each cluster during each wave.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, expected means for each arm, 
+#' cluster, number of clusters per arm, expected means for each arm, 
 #' within-cluster variance, between-cluster variance, significance level, 
 #' analytic method, progress updates, and simulated data set output may also be 
 #' specified.
