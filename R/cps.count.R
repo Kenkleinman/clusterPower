@@ -65,14 +65,13 @@
 #' completion time. Default = \code{FALSE}.
 #' 
 #' 
-#' [XX JN-- Below: true?  Output?  Or retain for further data analysis?]
-#' 
-#' @param all.sim.data Option to output list of all simulated datasets. Default = \code{FALSE}.
+#' @param all.sim.data Option to include a list of all simulated datasets in the output object.
+#' Default = \code{FALSE}.
 #' 
 #' @param seed Option to set the seed. Default is NA.
 #' 
-#' @param nofit Option to skip model fitting and analysis and only return the simulated data.
-#' Default = \code{FALSE}.
+#' @param nofit Option to skip model fitting and analysis and instead return a dataframe with
+#' the simulated datasets. Default = \code{FALSE}.
 #' 
 #' @param optimizer Option to fit with a different optimizer from the package
 #' \code{optimx}. Defaults to L-BFGS-B. See optimx package documentation for all options.
@@ -80,9 +79,8 @@
 #'
 #'
 #'
-#' # [XX JN- probably needs a conditional for what happens when nofit=T]
 #'
-#' @return A list with the following components
+#' @return If \code{nofit = F}, a list with the following components
 #' \itemize{
 #'   \item Character string indicating total number of simulations, distribution of
 #'   simulated data, and regression family
@@ -105,29 +103,49 @@
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)),
 #'                   "p.value",
 #'                   "converge" (Did model converge for that set of simulated data?)
-#'   \item List of data frames, each containing:
+#'   \item If \code{all.sim.data = T}, a list of data frames, each containing:
 #'                   "y" (Simulated response value),
 #'                   "trt" (Indicator for treatment arm),
 #'                   "clust" (Indicator for cluster)
 #'   \item Logical vector reporting whether models converged.
 #' }
 #' 
+#' If \code{nofit = T}, a data frame of the simulated data sets, containing:
+#' 
+#' \itemize{
+#'   \item "arm" (Indicator for treatment arm)
+#'   \item "cluster" (Indicator for cluster)
+#'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+#'   }
+#'   
 #' @details 
 #' 
-#' # [XX JN-- update below to reflect that this is true only when using family='poisson'.  Also
-#' # include forumale for family = "neg.binom"]
 #' 
-#' The data generating model is:
-#' \mjsdeqn{y_{ij} \sim Poisson(e^{c_1 + b_i}) }
+#' If \code{family = 'poisson'}, the data generating model is:
+#' \mjsdeqn{y_{ij} \sim \text{Poisson}(e^{c_1 + b_i}) }
 #' for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)}, 
 #' while for the second group, 
 #'  
-#' \mjsdeqn{y_{ij} \sim Poisson(e^{c_2 + b_i}) }
+#' \mjsdeqn{y_{ij} \sim \text{Poisson}(e^{c_2 + b_i}) }
 #' where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if 
 #' \mjseqn{\sigma_{b_2}^2} is not specified, then the second group uses
 #' \mjseqn{b_i \sim N(0,\sigma_b^2)}.
 #' 
-#' All random terms are generated independent of one another.
+#' If \code{family = 'neg.bin'}, the data generating model, using the
+#' alternative parameterization of the negative binomial distribution
+#' detailed in \code{stats::rnbinom}, is:
+#' 
+#' \mjsdeqn{y_{ij} \sim \text{NB}(\mu = e^{c_1 + b_i}, \text{size} = 1) }
+#' 
+#' for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)}, 
+#' while for the second group, 
+#'  
+#' \mjsdeqn{y_{ij} \sim \text{NB}(\mu = e^{c_2 + b_i}, \text{size} = 1) }
+#' where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if 
+#' \mjseqn{\sigma_{b_2}^2} is not specified, then the second group uses
+#' \mjseqn{b_i \sim N(0,\sigma_b^2)}.
+#' 
+#' 
 #' 
 #' 
 #' Non-convergent models are not included in the calculation of exact confidence 
