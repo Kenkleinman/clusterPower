@@ -20,13 +20,11 @@
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer. Required.
 #' 
-#' XX KK: Added vector info to 'nsubjects' description below.
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar
 #' (implying equal cluster sizes for the two groups), a vector of length two
 #' (equal cluster sizes within arm), or a vector of length \code{sum(nclusters)} 
 #' (unequal cluster sizes within arm). Required.
 #' 
-#' XX KK: Added vector info to 'nclusters' description below.
 #' @param nclusters Number of clusters per treatment group; accepts a single integer
 #' (if there are the same number of clusters in each arm) or a vector of 2 integers
 #' (if nsubjects differs between arms). If a vector of cluster sizes >2 is provided in
@@ -36,7 +34,6 @@
 #' @param p1 Expected probability of outcome in first group.
 #' @param p2 Expected probability of outcome in second group.
 #' 
-#' XX KK: Changed formatting of sigma_b_sq and sigma_b_sq2 somewhat.
 #' @param sigma_b_sq Between-cluster variance; if sigma_b_sq2 is not specified,
 #' between-cluster variances are assumed to be equal in the two arms. Accepts numeric. Required.
 #' @param sigma_b_sq2 Between-cluster variance for clusters in second group. Only required if 
@@ -52,6 +49,9 @@
 #' Default = \code{FALSE}.
 #' @param nofit Option to skip model fitting and analysis and instead return a dataframe with
 #' the simulated datasets. Default = \code{FALSE}.
+#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param nofit Option to skip model fitting and analysis and only return the simulated data.
+#' Default = \code{FALSE}.
 #' @param seed Option to set the seed. Default is NA.
 #'  
 #' @return If \code{nofit = F}, a list with the following components:
@@ -184,9 +184,11 @@ cps.binary = function(nsim = NULL,
                       seed = NA,
                       nofit = FALSE,
                       irgtt = FALSE) {
+  
   if (!is.na(seed)) {
     set.seed(seed = seed)
   }
+  
   # Create objects to collect iteration-specific values
   est.vector = NULL
   se.vector = NULL
@@ -541,7 +543,7 @@ cps.binary = function(nsim = NULL,
     summary.message = paste0(
       "Monte Carlo Power Estimation based on ",
       nsim,
-      " Simulations: IRGTT Design, Binary Outcome\nNote: ",
+      " Simulations: IRGTT Design, Binary Outcome. Note: ",
       sum(converge.vector == FALSE),
       " additional models were fitted to account for non-convergent simulations."
     )
@@ -562,8 +564,7 @@ cps.binary = function(nsim = NULL,
   
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
-  power.parms <- confint.calc(nsim = nsim,
-                              alpha = alpha,
+  power.parms <- confint.calc(alpha = alpha,
                               p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs
