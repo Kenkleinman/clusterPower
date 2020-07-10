@@ -90,8 +90,8 @@
 #' (if you set seed = 123) should be about 0.18.
 #' 
 #' \dontrun{
-#' did.binary.sim = cps.did.binary(nsim = 100, nsubjects = 50, nclusters = 50, 
-#'                                 p1 = 0.1, p2 = 0.9, sigma_b_sq0 = 10, alpha = 0.05,
+#' did.binary.sim = cps.did.binary(nsim = 10, nsubjects = 50, nclusters = 50, 
+#'                                 p1 = 0.2, p2 = 0.9, sigma_b_sq0 = 1, alpha = 0.05,
 #'                                 method = 'glmm', all.sim.data = FALSE, seed = 123)
 #' }
 #'
@@ -332,7 +332,7 @@ cps.did.binary = function(nsim = NULL,
     y0.ntrt.prob = expit(y0.ntrt.linpred)
     y0.ntrt = unlist(lapply(y0.ntrt.prob, function(x)
       stats::rbinom(1, 1, x)))
-    
+
     # Create arm 2 y-value
     y0.trt.intercept = unlist(lapply(1:nclusters[1], function(x)
       rep(randint.trt.0[x], length.out = nsubjects[nclusters[1] + x])))
@@ -364,13 +364,13 @@ cps.did.binary = function(nsim = NULL,
     
     # Create single response vector
     y = c(y0.ntrt, y0.trt, y1.ntrt, y1.trt)
-    
+
     # Create and store data frame for simulated dataset
     sim.dat = data.frame(
       y = y,
-      trt = trt,
-      period = period,
-      clust = clust
+      trt = as.factor(trt),
+      period = as.factor(period),
+      clust = as.factor(clust)
     )
     if (all.sim.data == TRUE) {
       simulated.datasets = append(simulated.datasets, list(sim.dat))
@@ -396,7 +396,7 @@ cps.did.binary = function(nsim = NULL,
       }
       return(nofitop)
     }
-    
+
     # Calculate mean values for given simulation
     iter.values = cbind(stats::aggregate(y ~ trt + period, data = sim.dat, mean)[, 3])
     values.vector = values.vector + iter.values
@@ -428,10 +428,10 @@ cps.did.binary = function(nsim = NULL,
         warning.list[model.id] = list(model.converge@optinfo$conv$lme4$messages)
       }
       glmm.values = summary(my.mod)$coefficient
-      est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
-      pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
+      est.vector = append(est.vector, glmm.values['trt2:period1', 'Estimate'])
+      se.vector = append(se.vector, glmm.values['trt2:period1', 'Std. Error'])
+      stat.vector = append(stat.vector, glmm.values['trt2:period1', 'z value'])
+      pval.vector = append(pval.vector, glmm.values['trt2:period1', 'Pr(>|z|)'])
     }
     # Fit GEE (geeglm)
     if (method == 'gee') {
@@ -444,11 +444,11 @@ cps.did.binary = function(nsim = NULL,
         corstr = "exchangeable"
       )
       gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
-      converge.vector = append(converge.vector, TRUE)
+      est.vector[i] = gee.values['trt2:period1', 'Estimate']
+      se.vector[i] = gee.values['trt2:period1', 'Std.err']
+      stat.vector[i] = gee.values['trt2:period1', 'Wald']
+      pval.vector[i] = gee.values['trt2:period1', 'Pr(>|W|)']
+      converge.vector[i] <- ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     # Update progress information
     if (quiet == FALSE) {
@@ -493,7 +493,7 @@ cps.did.binary = function(nsim = NULL,
   summary.message = paste0(
     "Monte Carlo Power Estimation based on ",
     nsim,
-    " Simulations: Difference in Difference Design, Binary Outcome\nNote: ",
+    " Simulations: Difference in Difference Design, Binary Outcome. Note: ",
     sum(converge.vector == FALSE),
     " additional models were fitted to account for non-convergent simulations."
   )

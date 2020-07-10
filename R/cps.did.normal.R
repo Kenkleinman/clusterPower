@@ -72,15 +72,15 @@
 #' }
 #' @examples 
 #' 
-#' # Estimate power for a trial with 6 clusters in both arms, those clusters having
-#' # 55 subjects each, with sigma_sq = 0.1. We have estimated arm means of 1 and 1.38
-#' # in the first and second arms, respectively, and we use 100 simulated data sets 
-#' # analyzed by the GLMM method. The resulting estimated power (if you set seed = 123) 
-#' # should be about 0.76.
+#' # Estimate power for a trial with 10 clusters in arm 1 and 6 clusters in arm 2, 
+#' # those clusters having 55 subjects each, with sigma_sq = 0.1. We have estimated 
+#' # arm means of 1 and 1.38 in the first and second arms, respectively, and we use 
+#' # 100 simulated data sets analyzed by the GLMM method. The resulting estimated 
+#' # power (if you set seed = 123) should be 0.8.
 #' 
 #' \dontrun{
-#' normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 55, nclusters = 6, 
-#'                                 difference = 0.38, sigma_sq = 0.1, alpha = 0.05, 
+#' normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 55, nclusters = c(10, 6), mu = 1,
+#'                                 mu2 = 1.38, sigma_sq = 0.1, alpha = 0.05, 
 #'                                 sigma_b_sq0 = 0.1, method = 'glmm', quiet = FALSE, 
 #'                                 all.sim.data = FALSE, seed = 123)
 #' }
@@ -362,10 +362,11 @@ cps.did.normal = function(nsim = NULL,
         corstr = "exchangeable"
       )
       gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt:period', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt:period', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt:period', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt:period', 'Pr(>|W|)'])
+      est.vector[i] = gee.values['trt:period', 'Estimate']
+      se.vector[i] = gee.values['trt:period', 'Std.err']
+      stat.vector[i] = gee.values['trt:period', 'Wald']
+      pval.vector[i] = gee.values['trt:period', 'Pr(>|W|)']
+      converge.vector[i] <- ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     
     # Update progress information
