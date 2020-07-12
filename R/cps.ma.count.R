@@ -1,89 +1,108 @@
-#' Simulation-based power estimation for poisson outcome multi-arm
-#' cluster-randomized trials
+#' Power simulations for cluster-randomized trials: Multiple arms, count outcome.
 #'
-#' This function uses iterative simulations to determine
-#' approximate power for multi-arm cluster-randomized controlled trials with
-#' count or poisson-distributed outcomes of interest. Users can modify a
-#' variety of parameters to suit the simulations to their desired
-#' experimental situation. This function validates the user's input and
-#' passes the necessary arguments to an internal function, which performs
-#' the simulations. This function returns the summary power values for
-#' each treatment arm.
+#' @description 
+#' \loadmathjax
+#' 
+#' 
+#' 
+#' This function uses Monte Carlo methods (simulations) to estimate 
+#' power for multiple arm cluster-randomized trials with count outcomes.
+#' Users can modify a variety of parameters to suit the simulations to
+#' their desired experimental situation.
+#' 
+#' 
+#' Users must specify the desired number of simulations, number of subjects in each
+#' cluster, number of clusters in each treatment arm, event rates in each arm, and the
+#' between-cluster variance in each arm. Default values are provided for
+#' significance level, analytic method, progress updates, poor/singular fit override,
+#' and whether or not to return the simulated data.
+#' 
 #'
-#' Users must specify the desired number of simulations, number of subjects per
-#' cluster, number of clusters per treatment arm, group probabilities, and the
-#' between-cluster variance. Significance level, analytic method, progress
-#' updates, poor/singular fit override, and whether or not to return the
-#' simulated data may also be specified. The internal function can be called
-#' directly by the user to return the fitted models rather than the power
-#' summaries (see \code{?cps.ma.count.internal} for details).
 #'
-#' Users can spread the simulated data
-#' generation and model fitting tasks across multiple cores using the
-#' \code{cores} argument. Users should expect that parallel computing may make
-#' model fitting faster than using a single core for more complicated models.
-#' For simpler models, users may prefer to use single thread computing
-#' (\code{cores}=1), as the processes involved in allocating memory and
-#' copying data across cores also may take some time. For time-savings,
-#' this function stops execution early if estimated power < 0.5 or more
-#' than 25\% of models produce a singular fit or non-convergence warning
-#' message, unless \code{poor.fit.override = TRUE}.
 #'
-#' Non-convergent models are not included in the calculation of exact confidence
-#' intervals.
 #'
-#' @section Testing details:
-#' This function has been verified, where possible, against reference values from PASS11,
-#' \code{CRTsize::n4incidence}, \code{clusterPower::cps.count}, and
-#' \code{clusterPower::cpa.count}.
-#'
-#' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per cluster (required); accepts an
-#' integer if all are equal and \code{narms} and \code{nclusters} are provided.
-#' Alternately, the user can supply a list with one entry per arm if the
-#' cluster sizes are the same within the arm, or, if they are not the same
-#' within the arms, the user can supply a list of vectors where each vector
-#' represents an arm and each entry in the vector is the number of subjects
-#' per cluster.
-#' @param narms Integer value representing the number of trial arms.
-#' @param family A string, either 'poisson' or 'neg.bin', indicating the
-#' distribution that should be used to simulate the data.
-#' @param nclusters An integer or vector of integers representing the number
-#' of clusters in each arm.
-#' @param counts Expected absolute treatment effect probabilities for each arm;
-#' accepts a scalar or a vector of length \code{narms} (required).
-#' @param sigma_b_sq Between-cluster variance; accepts a vector of length
-#' \code{narms} (required).
-#' @param alpha Significance level; default = 0.05.
-#' @param all.sim.data Option to output list of all simulated datasets;
-#' default = FALSE.
-#' @param method Analytical method, either Generalized Linear Mixed Effects
-#' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm',
-#' 'gee') (required); default = 'glmm'.
+#' @param nsim Number of datasets to simulate; accepts integer. Required.
+#' 
+#' @param nsubjects Number of subjects per cluster; accepts an
+#' integer (implying equal cluster sizes in all arms) if \code{narms}
+#' and \code{nclusters} are provided. Alternately, a list with one integer per arm (if the
+#' cluster sizes are the same within the arm), or a list of vectors where each vector represents an arm
+#' and each entry in the vector is the number of subjects per cluster (if the cluster sizes are not the same
+#' within the arms). Required.
+#' 
+#' @param narms Number of trial arms; accepts integer. Required.
+#' 
+#' @param nclusters Number of clusters per treatment group; accepts a single integer
+#' (if there are the same number of clusters in each arm) or a vector of integers
+#' representing the number of clusters in each arm (if nsubjects differs between arms). 
+#' If a list of vectors of cluster sizes is provided in \code{nsubjects}, then
+#' the vector of cluster counts must match the length of the \code{nsubjects} vectors.
+#' Required.
+#' 
+#' @param counts Mean event rates per unit time for each arm; accepts a scalar
+#' (if all arms have the same event rate) or
+#' a vector of length \code{narms}. Required.
+#' 
+#' @param family Distribution from which responses are simulated. Accepts Poisson
+#' (\code{'poisson'}) or negative binomial (\code{'neg.binom'}); default = 'poisson'. Required.
+#' 
+#' XX KK: Is there an option for which distribution family to choose when fitting the MODEL? there is in other functions...
+#' 
+#' @param sigma_b_sq Between-cluster variance for each arm; accepts a scalar
+#' (if all arms have the same between-cluster variance) or a vector of length
+#' \code{narms}. Required.
+#' 
+#' @param alpha The level of significance of the test, the probability of a
+#' Type I error. Default = 0.05.
+#' 
+#' @param quiet When set to \code{FALSE}, displays simulation progress and estimated
+#' completion time. Default = \code{FALSE}.
+#' 
+#' @param method Data analysis method, either generalized linear mixed effects model
+#' (GLMM) or generalized estimating equations (GEE). Accepts \code{c('glmm', 'gee')};
+#' default = \code{'glmm'}. Required.
+#' 
 #' @param multi.p.method A string indicating the method to use for adjusting
 #' p-values for multiple comparisons. Choose one of "holm", "hochberg",
 #' "hommel", "bonferroni", "BH", "BY", "fdr", "none". The default is
 #' "bonferroni". See \code{?p.adjust} for additional details.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
-#' @param seed Option to set.seed. Default is NULL.
+#' 
+#' @param all.sim.data Option to include a list of all simulated datasets in the output object.
+#' Default = \code{FALSE}.
+#' 
+#' @param seed Option to set the seed. Default is NULL.
+#' 
+#' @param cores Number of cores to be used for parallel computing. Accepts a
+#' string ("all"), NA (no parallel computing), or scalar value indicating
+#' the number of CPUs to use. Default = NA.
+#' 
+#' @param tdist Logical value indicating whether cluster-level random effects
+#' should be drawn from a \mjseqn{t} distribution rather than a normal distribution.
+#' Default = \code{FALSE}.
+#' 
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge;
-#' default = FALSE.
+#' default = \code{FALSE}.
+#' 
 #' @param low.power.override Option to override \code{stop()} if the power
 #' is less than 0.5 after the first 50 simulations and every ten simulations
-#' thereafter. On function execution stop, the actual power is printed in the
-#' stop message. Default = FALSE. When TRUE, this check is ignored and the
+#' thereafter. On \code{stop}, the power calculated from the completed simulations is printed in the
+#' stop message. Default = \code{FALSE}. When \code{TRUE}, this check is ignored and the
 #' calculated power is returned regardless of value.
-#' @param cores String ("all"), NA, or scalar value indicating the number of cores
-#' to be used for parallel computing. Default = NA (no parallel computing).
-#' @param tdist Logical value indicating whether simulated data should be
-#' drawn from a t-distribution rather than the normal distribution.
-#' Default = FALSE.
+#' 
 #' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
 #' the overall model comparisons, and the convergence report vector. This is equivalent
 #' to the output of cps.ma.count.internal(). See ?cps.ma.count.internal() for details.
+#' 
 #' @param nofit Option to skip model fitting and analysis and return the simulated data.
 #' Defaults to \code{FALSE}.
-#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
+#' 
+#' @param opt Optimizer for model fitting, from the package \code{optimx} or \code{nloptwrap}.
+#' Default is 'NLOPT_LN_BOBYQA'. XX KK JN Note: This needs to be discussed more with Lexi in
+#' conjuction with other optimization/singularity/convergence problems.
+#' 
+#' 
+#' 
+#' 
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{Data frame with columns "power" (Estimated statistical power),
@@ -116,6 +135,40 @@
 #'   }
 #'   }
 #'
+#'
+#' @details 
+#' 
+#' If \code{family = 'poisson'}, the data generating model is:
+#' \mjsdeqn{y_{ijk} \sim \text{Poisson}(e^{c_k + b_{jk}}) }
+#' for observation \mjseqn{i}, in cluster \mjseqn{j}, in treatment arm \mjseqn{k}, where \mjseqn{b_{jk}\sim N(0,\sigma^2_{b_{k}})}.
+#' 
+#' If \code{family = 'neg.bin'}, the data generating model, using the
+#' alternative parameterization of the negative binomial distribution
+#' detailed in \code{stats::rnbinom}, is:
+#' 
+#' \mjsdeqn{y_{ijk} \sim \text{NB}(\mu = e^{c_k + b_{jk}}, \text{size} = 1) }
+#' 
+#' for observation \mjseqn{i}, in cluster \mjseqn{j}, in treatment arm \mjseqn{k}, where \mjseqn{b_{jk}\sim N(0,\sigma^2_{b_{k}})}.
+#' 
+#' 
+#' Non-convergent models are not included in the calculation of exact confidence
+#' intervals.
+#' 
+#' For complicated models, we recommend using parallel processing with the \code{cores="all"} argument.
+#' For simpler models, users may prefer to use single thread computing
+#' (\code{cores}=1), as the processes involved in allocating memory and
+#' copying data across cores also may take some time.
+#' 
+#' By default, this function stops execution early if estimated power < 0.5 or if more
+#' than 25\% of models produce a singular fit or non-convergence warning. In some cases, users 
+#' may want to ignore singularity warnings (see \code{?isSingular}) by setting \code{poor.fit.override = TRUE}.
+#' 
+#' 
+#' 
+#' @author Alexander R. Bogdan, Alexandria C. Sakrejda 
+#' (\email{acbro0@@umass.edu}), and Ken Kleinman 
+#' (\email{ken.kleinman@@gmail.com})
+#'
 #' @examples
 #' \dontrun{
 #' nsubjects.example <- list(c(200, 200, 200, 250), c(150, 200, 200, 210), c(170, 200, 210))
@@ -139,7 +192,6 @@
 #'                             poor.fit.override = TRUE,
 #'                             seed = 123, cores="all")
 #'}
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
 
 cps.ma.count <- function(nsim = 1000,
