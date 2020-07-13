@@ -387,8 +387,8 @@ cps.normal = function(nsim = NULL,
   }
   
   # Create indicators for arm & cluster
-  trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])),
-          rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
+  trt = c(rep(1, length.out = sum(nsubjects[1:nclusters[1]])),
+          rep(2, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
   clust = unlist(lapply(1:sum(nclusters), function(x)
     rep(x, length.out = nsubjects[x])))
   
@@ -441,7 +441,7 @@ cps.normal = function(nsim = NULL,
       if (i == nsim) {
         temp1 <- seq(1:nsim)
         temp2 <- paste0("y", temp1)
-        colnames(nofitop) <- c("trt", "clust", temp2)
+        colnames(nofitop) <- c("arm", "clust", temp2)
         return(nofitop)
       }
     }

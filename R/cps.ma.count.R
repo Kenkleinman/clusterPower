@@ -441,7 +441,6 @@ cps.ma.count <- function(nsim = 1000,
     
     # Calculate and store power estimate & confidence intervals
     power.parms <- confint.calc(
-      nsim = nsim,
       alpha = alpha,
       p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])
     )

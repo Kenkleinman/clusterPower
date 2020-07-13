@@ -446,7 +446,6 @@ cps.ma.normal <- function(nsim = 1000,
     
     # Calculate and store power estimate & confidence intervals
     power.parms <- confint.calc(
-      nsim = nsim,
       alpha = alpha,
       p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])
     )
@@ -596,8 +595,7 @@ cps.ma.normal <- function(nsim = 1000,
     LRT.holder.abbrev <- sum(sig.LRT)
     
     # Calculate and store power estimate & confidence intervals
-    power.parms <- confint.calc(nsim = nsim,
-                                alpha = alpha,
+    power.parms <- confint.calc(alpha = alpha,
                                 p.val = Pr[, 2:narms])
     
     # Store GEE simulation output in data frame

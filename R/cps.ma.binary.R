@@ -360,10 +360,12 @@ cps.ma.binary <- function(nsim = 1000,
           dimnames = list(seq(1:nsim),
                           colnames(binary.ma.rct[[2]][[1]]))
         )
-      
       # Proportion of times P(>F)
       sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
       LRT.holder.abbrev <- sum(sig.LRT)
+    } else {
+      LRT.holder <- list()
+      LRT.holder.abbrev <- list()
     }
     
     cps.model.temp <- data.frame(unlist(binary.ma.rct[[3]]), p.val)
@@ -380,7 +382,6 @@ cps.ma.binary <- function(nsim = 1000,
     
     # Calculate and store power estimate & confidence intervals
     power.parms <- confint.calc(
-      nsim = nsim,
       alpha = alpha,
       p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])
     )
@@ -561,8 +562,7 @@ cps.ma.binary <- function(nsim = 1000,
         }
       )
     
-    power.parms <- confint.calc(nsim = nsim,
-                                alpha = alpha,
+    power.parms <- confint.calc(alpha = alpha,
                                 p.val = Pr[, 2:narms])
     
     # Store GEE simulation output in data frame

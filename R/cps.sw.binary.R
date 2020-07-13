@@ -15,8 +15,8 @@
 #' in each cluster during each wave.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, expected absolute difference 
-#' between treatment arms, within-cluster variance, between-cluster variance, 
+#' cluster, number of clusters per arm, expected absolute difference 
+#' between arms, within-cluster variance, between-cluster variance, 
 #' significance level, analytic method, progress updates, and simulated data 
 #' set output may also be specified.
 #' 
@@ -25,15 +25,15 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
 #' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
-#' @param p.ntrt Expected probability of outcome in non-treatment group. Accepts scalar between 0 - 1 (required).
-#' @param p.trt Expected probability of outcome in treatment group. Accepts scalar between 0 - 1 (required).
-#' @param steps Number of crossover steps; a baseline step (all clusters in non-treatment group) is assumed. 
+#' @param p.ntrt Expected probability of outcome in arm 1. Accepts scalar between 0 - 1 (required).
+#' @param p.trt Expected probability of outcome in arm 2. Accepts scalar between 0 - 1 (required).
+#' @param steps Number of crossover steps; a baseline step (all clusters in arm 1) is assumed. 
 #' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 
 #' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
 #' of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the cumulative 
 #' number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).
 #' @param sigma_b_sq Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
-#' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
+#' between-cluster variances for both arms) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances (required).
 #' @param alpha Significance level. Default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
@@ -53,10 +53,9 @@
 #'   \item Significance level
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters
-#'   \item Data frame reporting ICC, within & between cluster variances for Treatment/Non-Treatment
-#'    groups at each time point
+#'   \item Data frame reporting ICC, within & between cluster variances for both arms at each time point
 #'   \item Vector containing expected difference between groups based on user inputs
-#'   \item Data frame containing mean response values for each treatment group at each time point
+#'   \item Data frame containing mean response values for each arm at each time point
 #'   \item Matrix showing cluster crossover at each time point
 #'   \item Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
@@ -66,18 +65,25 @@
 #'                   "sig.val" (Is p-value less than alpha?)
 #'   \item List of data frames, each containing: 
 #'                   "y" (Simulated response value), 
-#'                   "trt" (Indicator for treatment group),
+#'                   "trt" (Indicator for arm),
 #'                   "time.point" (Indicator for step; "t1" = time point 0) 
 #'                   "clust" (Indicator for cluster), 
 #'                   "period" (Indicator for at which step a cluster crosses over)
 #' }
 #' 
 #' @examples 
+#' 
+#' # Estimate power for a trial with 12 clusters in arm 1 (often the standard-of-care or 'control' 
+#' # arm) at the initiation of the study. Those clusters have 50 subjects each, with sigma_b_sq = 1. 
+#' # We have estimated arm outcome proportions of 0.1 and 0.35 in the first and second arms, 
+#' # respectively, and 100 simulated data sets analyzed by the GLMM method. Using seed = 123, 
+#' # the resulting power should be 0.887.
+#' 
 #' \dontrun{
 #' binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 50, nclusters = 30, 
 #'                               p.ntrt = 0.1, p.trt = 0.2, steps = 5, 
 #'                               sigma_b_sq = 30, alpha = 0.05, method = 'glmm', 
-#'                               quiet = FALSE, all.sim.data = FALSE)
+#'                               quiet = FALSE, all.sim.data = FALSE, seed = 123)
 #' }
 #'
 #' @author Alexander R. Bogdan 
@@ -206,8 +212,8 @@ cps.sw.binary = function(nsim = NULL,
   values.vector = cbind(c(rep(0, length(step.index) * 2)))
   
   # Validate sigma_b_sq
-  sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both treatment and non-treatment groups)
-  or a vector of length 2, specifying unique between-cluster variances for the treatment and non-treatment groups."
+  sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both arms)
+  or a vector of length 2, specifying unique between-cluster variances for both arms."
   if (!is.numeric(sigma_b_sq) || any(sigma_b_sq < 0)) {
     stop("All values supplied to sigma_b_sq must be numeric values >= 0")
   }
@@ -284,7 +290,7 @@ cps.sw.binary = function(nsim = NULL,
     
     # Add subject specific effects & cluster effects
     for (j in 1:nclusters) {
-      # Assign non-treatment subject & cluster effects
+      # Assign arm 1 subject & cluster effects
       sim.dat['y'] = ifelse(sim.dat[, 'clust'] == j &
                               sim.dat[, 'trt'] == 0,
                             stats::rbinom(
@@ -298,7 +304,7 @@ cps.sw.binary = function(nsim = NULL,
                               )
                             ),
                             sim.dat[, 'y'])
-      # Assign treatment subject & cluster effects
+      # Assign arm 2 subject & cluster effects
       sim.dat['y'] = ifelse(sim.dat[, 'clust'] == j &
                               sim.dat[, 'trt'] == 1,
                             stats::rbinom(
@@ -452,22 +458,22 @@ cps.sw.binary = function(nsim = NULL,
     Time.point = c(0, rep(1:(
       length(step.index) - 1
     ), each = 2), length(step.index)),
-    Treatment = c(0, rep(c(0, 1), length.out = (
+    Arm = c(0, rep(c(0, 1), length.out = (
       length(step.index) - 1
     ) * 2), 1),
     Values = round(values.vector, 3)
   )
   
-  # Create object containing expected treatment and non-treatment probabilities
-  group.probs = data.frame("Outcome.Probabilities" = c("Non.Treatment" = p.ntrt, "Treatment" = p.trt))
+  # Create object containing expected arm 1 and arm 2 probabilities
+  group.probs = data.frame("Outcome.Probabilities" = c("Arm.1" = p.ntrt, "Arm.2" = p.trt))
   
   # Create object containing cluster sizes
   cluster.sizes = nsubjects
   
   # Create object containing number of clusters
   n.clusters = t(data.frame(
-    "Non.Treatment" = c("n.clust" = nclusters[1]),
-    "Treatment" = c("n.clust" = nclusters[2])
+    "Arm.1" = c("n.clust" = nclusters[1]),
+    "Arm.2" = c("n.clust" = nclusters[2])
   ))
   
   # Create object containing estimated ICC values
@@ -478,8 +484,8 @@ cps.sw.binary = function(nsim = NULL,
   
   # Create object containing variance parameters for each group at each time point
   var.parms = t(data.frame(
-    'Non.Treatment' = c('sigma_b_sq' = sigma_b_sq[1]),
-    'Treatment' = c('sigma_b_sq' = sigma_b_sq[2])
+    'Arm.1' = c('sigma_b_sq' = sigma_b_sq[1]),
+    'Arm.2' = c('sigma_b_sq' = sigma_b_sq[2])
   ))
   
   # Create crossover matrix output object

@@ -323,8 +323,8 @@ cps.binary = function(nsim = NULL,
     sigma_b_sq[x] / (sigma_b_sq[x] + pi ^ 2 / 3)))
   
   # Create indicators for arm & cluster
-  trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])),
-          rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
+  trt = c(rep(1, length.out = sum(nsubjects[1:nclusters[1]])),
+          rep(2, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
   clust = unlist(lapply(1:sum(nclusters), function(x)
     rep(x, length.out = nsubjects[x])))
   
