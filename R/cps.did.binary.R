@@ -83,15 +83,15 @@
 #' 
 #' @examples 
 #' 
-#' # Estimate power for a trial with 20 clusters in both arms, those clusters having
-#' # 20 subjects each, with sigma_b_sq0 = 30. We have estimated arm proportions of 0.1
-#' # and 0.9 in the first and second arms, respectively, and we use
+#' # Estimate power for a trial with 10 clusters in both arms, those clusters having
+#' # 20 subjects each, with sigma_b_sq0 = 1. We have estimated arm proportions of 0.2
+#' # and 0.3 in the first and second arms, respectively, and we use
 #' # 100 simulated data sets analyzed by the GLMM method. The resulting estimated power 
-#' (if you set seed = 123) should be about 0.18.
+#' # (if you set seed = 123) should be about 0.78.
 #' 
 #' \dontrun{
-#' did.binary.sim = cps.did.binary(nsim = 10, nsubjects = 50, nclusters = 10, 
-#'                                 p1 = 0.2, p2 = 0.3, sigma_b_sq0 = 1, alpha = 0.05,
+#' did.binary.sim = cps.did.binary(nsim = 100, nsubjects = 20, nclusters = 10, 
+#'                                 p1 = 0.2, p2 = 0.45, sigma_b_sq0 = 1, alpha = 0.05,
 #'                                 method = 'glmm', all.sim.data = FALSE, seed = 123)
 #' }
 #'
