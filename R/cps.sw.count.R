@@ -43,9 +43,6 @@
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'L-BFGS-B'.
-#' @param nofit Option to skip model fitting and analysis and only return the simulated data.
-#' Default = \code{FALSE}.
-#' @param seed Option to set the seed. Default is NA.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -78,19 +75,11 @@
 #' }
 #' 
 #' @examples 
-#' 
-#' # Estimate power for a trial with 9 clusters in arm 1 (often the standard-of-care or 'control' 
-#' # arm) at the initiation of the study. Those clusters have 13 subjects each, with sigma_b_sq = 1. 
-#' # We have estimated arm counts of 3 and 4 in the first and second arms, 
-#' # respectively, and 100 simulated data sets analyzed by the GLMM method. Using seed = 123, 
-#' # the resulting power should be 0.86.
-#' 
 #' \dontrun{
-#' count.sw.rct = cps.sw.count(nsim = 100, nsubjects = 13, nclusters = 9, 
-#'                               c.ntrt = 3, c.trt = 4, steps = 3, sigma_b_sq = 1, 
+#' count.sw.rct = cps.sw.count(nsim = 100, nsubjects = 50, nclusters = 30, 
+#'                               c.ntrt = 3, c.trt = 5, steps = 5, sigma_b_sq = 20, 
 #'                               alpha = 0.05, family = 'poisson', analysis = 'poisson', 
-#'                               method = 'glmm', quiet = FALSE, all.sim.data = FALSE,
-#'                               seed = 123)
+#'                               method = 'glmm', quiet = FALSE, all.sim.data = FALSE)
 #' }
 #'
 #' @author Alexander R. Bogdan 
@@ -115,18 +104,12 @@ cps.sw.count = function(nsim = NULL,
                         method = 'glmm',
                         quiet = FALSE,
                         all.sim.data = FALSE,
-                        opt = 'L-BFGS-B',
-                        nofit = FALSE,
-                        seed = NA) {
-  if (!is.na(seed)) {
-    set.seed(seed = seed)
-  }
+                        opt = 'L-BFGS-B') {
   # Create vectors to collect iteration-specific values
   est.vector = NULL
   se.vector = NULL
   stat.vector = NULL
   pval.vector = NULL
-  fail.vector = NULL
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -219,10 +202,12 @@ cps.sw.count = function(nsim = NULL,
   values.vector = cbind(c(rep(0, length(step.index) * 2)))
   
   # Validate sigma_b_sq
+
   sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both arms)
   or a vector of length 2, specifying unique between-cluster variances for both arms."
   sigma_b_sq <- as.integer(sigma_b_sq)
   if (!is.integer(sigma_b_sq) || any(sigma_b_sq < 0)) {
+
     stop("All values supplied to sigma_b_sq must be numeric values >= 0")
   }
   if (!length(sigma_b_sq) %in% c(1, 2)) {
@@ -369,27 +354,10 @@ cps.sw.count = function(nsim = NULL,
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
     
-    # option to return simulated data only
-    if (nofit == TRUE) {
-      if (!exists("nofitop")) {
-        nofitop <- data.frame(period = sim.dat['period'],
-                              cluster = sim.dat['clust'],
-                              time.point = sim.dat['time.point'],
-                              arm = sim.dat['trt'],
-                              y1 = sim.dat["y"])
-      } else {
-        nofitop[, length(nofitop) + 1] <- sim.dat["y"]
-      }
-      if (length(nofitop) == (nsim + 4)) {
-        temp1 <- seq(1:nsim)
-        temp2 <- paste0("y", temp1)
-        colnames(nofitop) <- c('period', 'cluster', 'time.point', 'arm', temp2)
-      }
-      if (length(nofitop) != (nsim + 4)) {
-        next()
-      }
-      return(nofitop)
-    }
+    #########################################################################
+    ### DEV NOTE: Majority of models do not converge (huge test statistics).
+    ###           Consider using glmerControl().
+    #########################################################################
     
     # Fit GLMM (lmer)
     if (method == 'glmm') {
@@ -414,11 +382,10 @@ cps.sw.count = function(nsim = NULL,
                                                           clust), data = sim.dat)
       }
       glmm.values = summary(my.mod)$coefficient
-      est.vector[i] = glmm.values['trt', 'Estimate']
-      se.vector[i] = glmm.values['trt', 'Std. Error']
-      stat.vector[i] = glmm.values['trt', 'z value']
-      pval.vector[i] = glmm.values['trt', 'Pr(>|z|)']
-      fail.vector[i] = ifelse(is.null(my.mod@optinfo$conv$lme4$messages), TRUE, FALSE)
+      est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
+      se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
+      stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
+      pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
     }
     
     # Fit GEE (geeglm)
@@ -432,10 +399,10 @@ cps.sw.count = function(nsim = NULL,
         corstr = "exchangeable"
       )
       gee.values = summary(my.mod)$coefficients
-      est.vector[i] = gee.values['trt', 'Estimate']
-      se.vector[i] = gee.values['trt', 'Std.err']
-      stat.vector[i] = gee.values['trt', 'Wald']
-      pval.vector[i] = gee.values['trt', 'Pr(>|W|)']
+      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
+      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
+      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
+      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
     }
     
     # Update progress information
@@ -503,15 +470,21 @@ cps.sw.count = function(nsim = NULL,
     Estimate = as.vector(unlist(est.vector)),
     Std.err = as.vector(unlist(se.vector)),
     Test.statistic = as.vector(unlist(stat.vector)),
-    p.value = as.vector(unlist(pval.vector)),
-    converge = as.vector(fail.vector)
+    p.value = as.vector(unlist(pval.vector))
   )
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
-  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
-  power.parms <- confint.calc(alpha = alpha,
-                              p.val = cps.model.temp[, 'p.value'])
+  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
+  power.parms = data.frame(
+    Power = round(pval.power, 3),
+    Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((
+      pval.power * (1 - pval.power)
+    ) / nsim), 3),
+    Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((
+      pval.power * (1 - pval.power)
+    ) / nsim), 3)
+  )
   
   # Create object containing treatment & time-specific differences
   values.vector = values.vector / nsim
@@ -575,8 +548,7 @@ cps.sw.count = function(nsim = NULL,
       "means" = group.means,
       "model.estimates" = cps.model.est,
       "sim.data" = simulated.datasets,
-      "crossover.matrix" = crossover.mat,
-      "convergence" = fail.vector
+      "crossover.matrix" = crossover.mat
     ),
     class = 'crtpwr'
   )

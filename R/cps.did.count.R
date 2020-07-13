@@ -82,9 +82,9 @@
 #' 
 #' \dontrun{
 #' did.count.sim = cps.did.count(nsim = 100, nsubjects = 9, nclusters = 7, c1 = 5, 
-#'                               c2 = 3, sigma_b_sq0 = c(0.1, 0.5), sigma_b_sq1 = c(0.5, 0.8), 
+#'                               c2 = 3, sigma_b_sq0 = c(1, 0.5), sigma_b_sq1 = c(0.5, 0.8), 
 #'                               family = 'poisson', analysis = 'poisson', method = 'glmm', 
-#'                               alpha = 0.05, quiet = FALSE, all.sim.data = FALSE)
+#'                               alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
 #' }
 #'
 #' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and Advanced Multilevel Modelling. London, 1999: Sage.
@@ -125,7 +125,6 @@ cps.did.count = function(nsim = NULL,
   values.vector = cbind(c(0, 0, 0, 0))
   simulated.datasets = list()
   start.time = Sys.time()
-  converge.vector <- NULL
   
   # Create progress bar
   prog.bar =  progress::progress_bar$new(
@@ -379,12 +378,10 @@ cps.did.count = function(nsim = NULL,
                                                                    clust), data = sim.dat)
       }
       glmm.values = summary(my.mod)$coefficient
-      est.vector[i] = glmm.values['trt:period', 'Estimate']
-      se.vector[i] = glmm.values['trt:period', 'Std. Error']
-      stat.vector[i] = glmm.values['trt:period', 'z value']
-      pval.vector[i] = glmm.values['trt:period', 'Pr(>|z|)']
-      converge.vector[i] <- ifelse(
-        is.null(my.mod@optinfo$conv$lme4$messages), TRUE, FALSE)
+      est.vector = append(est.vector, glmm.values['trt:period', 'Estimate'])
+      se.vector = append(se.vector, glmm.values['trt:period', 'Std. Error'])
+      stat.vector = append(stat.vector, glmm.values['trt:period', 'z value'])
+      pval.vector = append(pval.vector, glmm.values['trt:period', 'Pr(>|z|)'])
     }
     # Fit GEE (geeglm)
     if (method == 'gee') {
@@ -452,15 +449,21 @@ cps.did.count = function(nsim = NULL,
     Estimate = as.vector(unlist(est.vector)),
     Std.err = as.vector(unlist(se.vector)),
     Test.statistic = as.vector(unlist(stat.vector)),
-    p.value = as.vector(unlist(pval.vector)),
-    converge = as.vector(unlist(converge.vector))
+    p.value = as.vector(unlist(pval.vector))
   )
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
-  pval.data = cps.model.est[cps.model.est$converge == TRUE, ]
-  power.parms <- confint.calc(alpha = alpha,
-                              p.val = pval.data[, 'p.value'])
+  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
+  power.parms = data.frame(
+    power = round(pval.power, 3),
+    lower.95.ci = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((
+      pval.power * (1 - pval.power)
+    ) / nsim), 3),
+    upper.95.ci = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((
+      pval.power * (1 - pval.power)
+    ) / nsim), 3)
+  )
   
   # Create object containing inputs
   c1.c2.rr = round(exp(log(c1) - log(c2)), 3)
