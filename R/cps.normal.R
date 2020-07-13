@@ -434,7 +434,7 @@ cps.normal = function(nsim = NULL,
       if (i == nsim) {
         temp1 <- seq(1:nsim)
         temp2 <- paste0("y", temp1)
-        colnames(nofitop) <- c("trt", "clust", temp2)
+        colnames(nofitop) <- c("arm", "clust", temp2)
         return(nofitop)
       }
     }

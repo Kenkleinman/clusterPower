@@ -90,8 +90,8 @@
 #' (if you set seed = 123) should be about 0.18.
 #' 
 #' \dontrun{
-#' did.binary.sim = cps.did.binary(nsim = 10, nsubjects = 50, nclusters = 50, 
-#'                                 p1 = 0.2, p2 = 0.9, sigma_b_sq0 = 1, alpha = 0.05,
+#' did.binary.sim = cps.did.binary(nsim = 10, nsubjects = 50, nclusters = 10, 
+#'                                 p1 = 0.2, p2 = 0.3, sigma_b_sq0 = 1, alpha = 0.05,
 #'                                 method = 'glmm', all.sim.data = FALSE, seed = 123)
 #' }
 #'
