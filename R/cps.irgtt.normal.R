@@ -68,17 +68,10 @@
 #'                   }
 #' 
 #' @examples 
-#' 
-#' # Estimate power for a trial with no clusters in arm 1 (often the 
-#' # "control" arm) and 8 clusters in arm 2, those clusters having
-#' # 10 subjects each, and a sigma_b_sq2 = 0.1. The arm have sigma_sq values of 
-#' # 0.01 and 0.02, respectively. Estimated means for each arm /code{mu} 
-#' # are 1.1 and 1.5 and we generate 100 simulated data sets. 
-#' 
 #' \dontrun{
 #' irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = c(100, 10), 
 #'                        nclusters = 8, mu = 1.1, mu2 = 1.5,
-#'                         sigma_sq = 0.01, sigma_sq2 = 0.02, 
+#'                         sigma_sq = 0.1, sigma_sq2 = 0.2, 
 #'                         sigma_b_sq2 = 0.1, alpha = 0.05,
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }

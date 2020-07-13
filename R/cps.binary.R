@@ -45,12 +45,16 @@
 #' or generalized estimating equations (GEE). Accepts c('glmm', 'gee'); default = 'glmm'. Required.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion 
 #' time, default = TRUE.
+#' @param all.sim.data Option to include a list of all simulated datasets in the output object.
+#' Default = \code{FALSE}.
+#' @param nofit Option to skip model fitting and analysis and instead return a dataframe with
+#' the simulated datasets. Default = \code{FALSE}.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param nofit Option to skip model fitting and analysis and only return the simulated data.
 #' Default = \code{FALSE}.
 #' @param seed Option to set the seed. Default is NA.
 #'  
-#' @return A list with the following components:
+#' @return If \code{nofit = F}, a list with the following components:
 #' \itemize{
 #'   \item Character string indicating total number of simulations, simulation type, 
 #'   and number of convergent models
@@ -82,14 +86,23 @@
 #'   \item Logical vector reporting whether models converged.
 #' }
 #' 
+#' If \code{nofit = T}, a data frame of the simulated data sets, containing:
+#' 
+#' \itemize{
+#'   \item "arm" (Indicator for treatment arm)
+#'   \item "cluster" (Indicator for cluster)
+#'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+#'   }
+#'   
+#' 
 #' @details 
 #' 
 #' The data generating model for observation \mjseqn{j} in cluster \mjseqn{i} is:
-#' \mjsdeqn{y_{ij} \sim Bernoulli(\frac{e^{p_1 + b_i}}{1 + e^{p_1 + b_i} }) }
+#' \mjsdeqn{y_{ij} \sim \text{Bernoulli}(\frac{e^{p_1 + b_i}}{1 + e^{p_1 + b_i} }) }
 #' for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)} 
 #' , while for the second group, 
 #'  
-#' \mjsdeqn{y_{ij} \sim Bernoulli(\frac{e^{p_2 + b_i}}{1 + e^{p_2 + b_i} }) }
+#' \mjsdeqn{y_{ij} \sim \text{Bernoulli}(\frac{e^{p_2 + b_i}}{1 + e^{p_2 + b_i} }) }
 #' where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if 
 #' \mjseqn{\sigma_{b_2}^2} is not used, then the second group uses
 #' \mjseqn{b_i \sim N(0,\sigma_b^2)}.

@@ -70,16 +70,8 @@
 #' doi: 10.1111/j.1751-5823.2009.00092.x
 #' 
 #' @examples 
-#' 
-#' # Estimate power for a trial with no clusters in arm 1 (often the 
-#' # "control" arm) and 10 clusters in arm 2, those clusters having
-#' # 35 subjects each, and a sigma_b_sq2 = 1. We have estimated arm 
-#' # proportions of 0.4 and 0.2 in the first and second arms, respectively, 
-#' # and we use 100 simulated data sets. 
-#' 
 #' \dontrun{
-#' irgtt.binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = c(250, 35), 
-#'                         nclusters = 10, p1 = 0.4,
+#' irgtt.binary.sim <- cps.irgtt.binary(nsim = 100, nsubjects = 30, nclusters = 10, p1 = 0.5,
 #'                         p2 = 0.2, sigma_b_sq2 = 1, alpha = 0.05, 
 #'                         all.sim.data = FALSE)
 #' }
