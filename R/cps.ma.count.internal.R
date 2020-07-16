@@ -69,10 +69,6 @@
 #' @examples 
 #' \dontrun{
 #' 
-#' nsubjects.example <- list(c(200,200,200,250), c(150, 200, 200, 210), c(170, 200, 210))
-#' counts.example <- c(100, 550, 900)
-#' sigma_b_sq.example <- c(.2, .1, .1)
-#' 
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' counts.example <- c(75, 120, 100)
 #' sigma_b_sq.example <- c(0.2, 0.1, 0.1)
@@ -450,6 +446,7 @@ cps.ma.count.internal <-
             )
         }
       }
+
       for (i in 1:nsim) {
         converged[i] <-
           ifelse(is.null(my.mod[[i]]@optinfo$conv$lme4$messages),
@@ -480,7 +477,7 @@ cps.ma.count.internal <-
         prog.bar$update(4 / 5)
         Sys.sleep(1 / 100)
       }
-      
+      gc()
       # get the model summaries
       if (!is.na(cores) & quiet == FALSE) {
         message("\r Retrieving model summaries")
@@ -637,5 +634,6 @@ cps.ma.count.internal <-
         "optimizer algorithm" = goodopt
       )
     }
+
     return(complete.output.internal)
   } #end of function
