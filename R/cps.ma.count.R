@@ -165,9 +165,7 @@
 #'
 #'
 #'
-#' @author Alexander R. Bogdan, Alexandria C. Sakrejda
-#' (\email{acbro0@@umass.edu}), and Ken Kleinman
-#' (\email{ken.kleinman@@gmail.com})
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @examples
 #' \dontrun{
