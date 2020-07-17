@@ -671,8 +671,7 @@ cps.count = function(nsim = NULL,
   
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
-  power.parms <- confint.calc(nsim = nsim,
-                              alpha = alpha,
+  power.parms <- confint.calc(alpha = alpha,
                               p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs

@@ -182,7 +182,7 @@
 #'                             alpha = 0.05, all.sim.data = FALSE,
 #'                             seed = 123, cores="all", poor.fit.override=TRUE)
 #'
-#' count.ma.rct.bal <- cps.ma.count(nsim = 3, nsubjects = 100, narms=3,
+#' count.ma.rct.bal <- cps.ma.count(nsim = 10, nsubjects = 100, narms=3,
 #'                             nclusters=4,
 #'                             counts = c(30, 35, 70),
 #'                             sigma_b_sq = 0.001, alpha = 0.05,
