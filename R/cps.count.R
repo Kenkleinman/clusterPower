@@ -575,10 +575,10 @@ cps.count = function(nsim = NULL,
         next
       }
       glmm.values <- summary(my.mod)$coefficient
-      est.vector[i] <- glmm.values['trt1', 'Estimate']
-      se.vector[i] <- glmm.values['trt1', 'Std. Error']
-      stat.vector[i] <- glmm.values['trt1', 'z value']
-      pval.vector[i] <- glmm.values['trt1', 'Pr(>|z|)']
+      est.vector[i] <- glmm.values['trt2', 'Estimate']
+      se.vector[i] <- glmm.values['trt2', 'Std. Error']
+      stat.vector[i] <- glmm.values['trt2', 'z value']
+      pval.vector[i] <- glmm.values['trt2', 'Pr(>|z|)']
       converge.vector[i] <- ifelse(
         is.null(my.mod@optinfo$conv$lme4$messages), TRUE, FALSE)
     }
@@ -593,10 +593,10 @@ cps.count = function(nsim = NULL,
         corstr = "exchangeable"
       )
       gee.values <- summary(my.mod)$coefficients
-      est.vector[i] <- gee.values['trt1', 'Estimate']
-      se.vector[i] <- gee.values['trt1', 'Std.err']
-      stat.vector[i] <- gee.values['trt1', 'Wald']
-      pval.vector[i] <- gee.values['trt1', 'Pr(>|W|)']
+      est.vector[i] <- gee.values['trt2', 'Estimate']
+      se.vector[i] <- gee.values['trt2', 'Std.err']
+      stat.vector[i] <- gee.values['trt2', 'Wald']
+      pval.vector[i] <- gee.values['trt2', 'Pr(>|W|)']
       converge.vector[i] <- ifelse(my.mod$geese$error != 0, FALSE, TRUE)
     }
 
@@ -671,6 +671,7 @@ cps.count = function(nsim = NULL,
   
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+
   power.parms <- confint.calc(alpha = alpha,
                               p.val = cps.model.temp[, 'p.value'])
   
