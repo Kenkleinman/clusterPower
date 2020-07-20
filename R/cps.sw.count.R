@@ -15,8 +15,8 @@
 #' in each cluster during each wave.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, expected absolute difference 
-#' between treatment arms, between-cluster variance; significance level, 
+#' cluster, number of clusters per arm, expected absolute difference 
+#' between arms, between-cluster variance; significance level, 
 #' distributional family for data generation, analytic method, progress updates, 
 #' and simulated data set output may also be specified.
 #' 
@@ -25,15 +25,15 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
 #' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
-#' @param c.ntrt Expected outcome count in non-treatment group. Accepts scalar (required).
-#' @param c.trt Expected outcome count in treatment group. Accepts scalar (required).
-#' @param steps Number of crossover steps; a baseline step (all clusters in non-treatment group) is assumed. 
+#' @param c.ntrt Expected outcome count in arm 1. Accepts scalar (required).
+#' @param c.trt Expected outcome count in arm 2. Accepts scalar (required).
+#' @param steps Number of crossover steps; a baseline step (all clusters in arm 1) is assumed. 
 #' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 
 #' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
 #' of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the cumulative 
 #' number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).
 #' @param sigma_b_sq Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
-#' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
+#' between-cluster variances for both arms) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances (required).
 #' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
 #' @param analysis Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
@@ -55,10 +55,10 @@
 #'   \item Significance level
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters
-#'   \item Data frame reporting ICC, within & between cluster variances for Treatment/Non-Treatment 
-#'   groups at each time point
+#'   \item Data frame reporting ICC, within & between cluster variances for both arms
+#'   at each time point
 #'   \item Vector containing expected difference between groups based on user inputs
-#'   \item Data frame containing mean response values for each treatment group at each time point
+#'   \item Data frame containing mean response values for each arm at each time point
 #'   \item Matrix showing cluster crossover at each time point
 #'   \item Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 
@@ -68,7 +68,7 @@
 #'                   "sig.val" (Is p-value less than alpha?)
 #'   \item List of data frames, each containing: 
 #'                   "y" (Simulated response value), 
-#'                   "trt" (Indicator for treatment group),
+#'                   "trt" (Indicator for arm),
 #'                   "time.point" (Indicator for step; "t1" = time point 0) 
 #'                   "clust" (Indicator for cluster), 
 #'                   "period" (Indicator for at which step a cluster crosses over)
@@ -202,9 +202,12 @@ cps.sw.count = function(nsim = NULL,
   values.vector = cbind(c(rep(0, length(step.index) * 2)))
   
   # Validate sigma_b_sq
-  sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both treatment and non-treatment groups)
-  or a vector of length 2, specifying unique between-cluster variances for the treatment and non-treatment groups."
-  if (!is.numeric(sigma_b_sq) || any(sigma_b_sq < 0)) {
+
+  sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both arms)
+  or a vector of length 2, specifying unique between-cluster variances for both arms."
+  sigma_b_sq <- as.integer(sigma_b_sq)
+  if (!is.integer(sigma_b_sq) || any(sigma_b_sq < 0)) {
+
     stop("All values supplied to sigma_b_sq must be numeric values >= 0")
   }
   if (!length(sigma_b_sq) %in% c(1, 2)) {
@@ -291,7 +294,7 @@ cps.sw.count = function(nsim = NULL,
     
     for (j in 1:nclusters) {
       if (family == 'poisson') {
-        # Assign non-treatment subject & cluster effects
+        # Assign arm 1 subject & cluster effects
         sim.dat['y'] = ifelse(sim.dat[, 'clust'] == j &
                                 sim.dat[, 'trt'] == 0,
                               stats::rpois(
@@ -302,7 +305,7 @@ cps.sw.count = function(nsim = NULL,
                                       )))
                               ),
                               sim.dat[, 'y'])
-        # Assign treatment subject & cluster effects
+        # Assign arm 2 subject & cluster effects
         sim.dat['y'] = ifelse(sim.dat[, 'clust'] == j &
                                 sim.dat[, 'trt'] == 1,
                               stats::rpois(
@@ -315,7 +318,7 @@ cps.sw.count = function(nsim = NULL,
                               sim.dat[, 'y'])
       }
       if (family == 'neg.binom') {
-        # Assign non-treatment subject & cluster effects
+        # Assign arm 1 subject & cluster effects
         sim.dat['y'] = ifelse(sim.dat[, 'clust'] == j &
                                 sim.dat[, 'trt'] == 0,
                               stats::rnbinom(
@@ -327,7 +330,7 @@ cps.sw.count = function(nsim = NULL,
                                            )))
                               ),
                               sim.dat[, 'y'])
-        # Assign treatment subject & cluster effects
+        # Assign arm 2 subject & cluster effects
         sim.dat['y'] = ifelse(sim.dat[, 'clust'] == j &
                                 sim.dat[, 'trt'] == 1,
                               stats::rnbinom(
@@ -495,22 +498,22 @@ cps.sw.count = function(nsim = NULL,
     Mean = round(values.vector, 3)
   )
   
-  # Create object containing expected treatment and non-treatment probabilities
-  exp.counts = data.frame("Expected.Counts" = c("Non.Treatment" = c.ntrt, "Treatment" = c.trt))
+  # Create object containing expected arm 1 and arm 2 probabilities
+  exp.counts = data.frame("Expected.Counts" = c("Arm.1" = c.ntrt, "Arm.2" = c.trt))
   
   # Create object containing cluster sizes
   cluster.sizes = nsubjects
   
   # Create object containing number of clusters
   n.clusters = t(data.frame(
-    "Non.Treatment" = c("n.clust" = nclusters[1]),
-    "Treatment" = c("n.clust" = nclusters[2])
+    "Arm.1" = c("n.clust" = nclusters[1]),
+    "Arm.2" = c("n.clust" = nclusters[2])
   ))
   
   # Create object containing variance parameters for each group at each time point
   var.parms = t(data.frame(
-    'Non.Treatment' = c('sigma_b_sq' = sigma_b_sq[1]),
-    'Treatment' = c('sigma_b_sq' = sigma_b_sq[2])
+    'Arm.1' = c('sigma_b_sq' = sigma_b_sq[1]),
+    'Arm.2' = c('sigma_b_sq' = sigma_b_sq[2])
   ))
   
   # Create object containing FAMILY & REGRESSION parameters

@@ -18,24 +18,31 @@
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
-#' @param nclusters Number of clusters in the treatment group; accepts integer (required). 
-#' Treatment group cluster size defaults to 1.
+#' @param nclusters Number of clusters in the arm; accepts integer (required). 
+#' Arm 1 cluster size defaults to 1.
+#' 
 #' At least 2 of the following 3 arguments must be specified:
-#' @param c1 Expected outcome count in non-treatment group
-#' @param c2 Expected outcome count in treatment group
-#' @param c.diff Expected difference in outcome count between groups, defined as c.diff = c1 - c2
+#' @param c1 Expected outcome count in arm 1
+#' @param c2 Expected outcome count in arm 2
+#' @param c.diff Expected difference in outcome count between groups, defined as 
+#' c.diff = c1 - c2
 #' @param sigma_b_sq Between-cluster variance; defaults to 0. Accepts numeric.
-#' If between cluster variances differ between treatment groups, the following must also be specified:
-#' @param sigma_b_sq2 Between-cluster variance for clusters in TREATMENT group
-#' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
-#' @param analysis Family used for regression; currently only applicable for GLMM. Accepts 'poisson' or 'neg.binom' (required); default = 'poisson'
+#' If between cluster variances differ between arms, the following must 
+#' also be specified:
+#' @param sigma_b_sq2 Between-cluster variance for clusters in arm 2
+#' @param family Distribution from which responses are simulated. Accepts Poisson 
+#' ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
+#' @param analysis Family used for regression; currently only applicable for GLMM. 
+#' Accepts 'poisson' or 'neg.binom' (required); default = 'poisson'
 #' @param alpha Significance level. Default = 0.05.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.
+#' @param quiet When set to FALSE, displays simulation progress and estimated 
+#' completion time. Default = FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE.
 #' @param nofit Option to skip model fitting and analysis and return the simulated data.
 #' Defaults to \code{FALSE}.
 #' @param seed Option to set seed. Default is NA.
-#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Defaults to L-BFGS-B.
+#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). 
+#' Defaults to L-BFGS-B.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -50,7 +57,7 @@
 #'   \item Significance level
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters
-#'   \item Data frame reporting between-cluster variances for Treatment/Non-Treatment groups
+#'   \item Data frame reporting between-cluster variances for both arms
 #'   \item Vector containing expected counts and risk ratios based on user inputs
 #'   \item Data frame with columns: 
 #'                   "Estimate" (Estimate of treatment effect for a given simulation), 

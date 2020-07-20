@@ -16,7 +16,7 @@
 #' }
 #' 
 #' @export confint.calc
-confint.calc <- function(nsim = nsim, alpha = alpha,
+confint.calc <- function(alpha = alpha,
                          p.val = p.val) {
   sig.val <-  ifelse(p.val < alpha, 1, 0)
   if (isTRUE(is.data.frame(sig.val)) || isTRUE(is.matrix(sig.val))) {
@@ -26,8 +26,9 @@ confint.calc <- function(nsim = nsim, alpha = alpha,
     pval.power <- sum(sig.val)
   }
   power.parms <- list()
+
   for (q in 1:length(unlist(pval.power))) {
-    power.parms[[q]] <- binom.test(p = 0.05, n = nsim, x = pval.power[q], 
+    power.parms[[q]] <- binom.test(p = 0.05, n = length(unlist(pval.power)), x = pval.power[q], 
                                    alternative = "two.sided")
   }
   Power <- vector(length = length(pval.power))

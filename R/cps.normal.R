@@ -54,15 +54,17 @@
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM, default) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee').
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
-#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param all.sim.data Option to include a list of all simulated datasets in the output object.
+#' Default = \code{FALSE}.
 #' @param seed Option to set the seed. Default, NA, selects a seed based on the system clock.
 #' @param irgtt Logical. Is the experimental design an individually randomized 
 #' group treatment trial? For details, see ?cps.irgtt.normal.
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
 #' of fits fail to converge.
-#' @param nofit Option to return only the simulated data, no analysis. Defaults: FALSE.
+#' @param nofit Option to skip model fitting and analysis and instead return a dataframe with
+#' the simulated datasets. Default = \code{FALSE}.
 #' 
-#' @return If \code{nofit = FALSE}, a list with the following components:
+#' @return If \code{nofit = F}, a list with the following components:
 #' \itemize{
 #'   \item Character string indicating total number of simulations and simulation type
 #'   \item Number of simulations
@@ -91,8 +93,13 @@
 #'                   "clust" (Indicator for cluster)
 #'                   }
 #' 
-#' If \code{nofit = TRUE}, a dataframe with \code{nsim} + 2 columns 
-#' and a row for each simulated subject.
+#' If \code{nofit = T}, a data frame of the simulated data sets, containing:
+#' 
+#' \itemize{
+#'   \item "trt" (Indicator for treatment arm)
+#'   \item "clust" (Indicator for cluster)
+#'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+#'   }
 #' 
 #' @details 
 #'
@@ -380,8 +387,8 @@ cps.normal = function(nsim = NULL,
   }
   
   # Create indicators for arm & cluster
-  trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])),
-          rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
+  trt = c(rep(1, length.out = sum(nsubjects[1:nclusters[1]])),
+          rep(2, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
   clust = unlist(lapply(1:sum(nclusters), function(x)
     rep(x, length.out = nsubjects[x])))
   
@@ -434,7 +441,7 @@ cps.normal = function(nsim = NULL,
       if (i == nsim) {
         temp1 <- seq(1:nsim)
         temp2 <- paste0("y", temp1)
-        colnames(nofitop) <- c("trt", "clust", temp2)
+        colnames(nofitop) <- c("arm", "clust", temp2)
         return(nofitop)
       }
     }
@@ -725,8 +732,7 @@ cps.normal = function(nsim = NULL,
   
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
-  power.parms <- confint.calc(nsim = nsim,
-                              alpha = alpha,
+  power.parms <- confint.calc(alpha = alpha,
                               p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing group-specific cluster sizes

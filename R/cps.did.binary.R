@@ -8,10 +8,10 @@
 #' Runs the power simulation for difference in difference RCTs with binary outcomes.
 #' 
 #' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per treatment arm, pre-treatment between-cluster variance, 
+#' cluster, number of clusters per arm, pre-treatment between-cluster variance, 
 #' and two of the following three terms: 
-#' expected probability of outcome in non-treatment group, expected probability of 
-#' outcome in treatment group, expected difference in probabilities between groups
+#' expected probability of outcome in arm 1, expected probability of 
+#' outcome in arm 2, expected difference in probabilities between groups
 #' ; post-treatment between-cluster variance, significance level, analytic method, progress updates, 
 #' and simulated data set output may also be specified.
 #' 
@@ -22,26 +22,29 @@
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
-#' @param nclusters Number of clusters per treatment group; accepts integer (required).
+#' @param nclusters Number of clusters per arm; accepts integer (required).
 #' At least 2 of the following 3 arguments must be specified when using expected probabilities:
-#' @param p1 Expected probability of outcome in non-treatment group
-#' @param p2 Expected probability of outcome in treatment group
+#' @param p1 Expected probability of outcome in arm 1
+#' @param p2 Expected probability of outcome in arm 2
 #' @param p.diff Expected difference in probability of outcome between groups, defined as p.diff = p1 - p2
 #' At least 2 of the following 3 arguments must be specified when using expected odds ratios:
-#' @param or1 Expected odds ratio for outcome in non-treatment group
-#' @param or2 Expected odds ratio for outcome in treatment group
+#' @param or1 Expected odds ratio for outcome in arm 1
+#' @param or2 Expected odds ratio for outcome in arm 2
 #' @param or.diff Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2
 #' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
-#' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
+#' between-cluster variances for both arms) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances
 #' @param sigma_b_sq1 Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
-#' between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
+#' between-cluster variances for both arms) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances. For data simulation, sigma_b_sq1 is added to sigma_b_sq0, such that if sigma_b_sq0 = 5 
 #' and sigma_b_sq1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.
 #' @param alpha Significance level. Default = 0.05
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation start time and completion time. Default is TRUE.
 #' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
+#' @param nofit Option to skip model fitting and analysis and only return the simulated data.
+#' Default = \code{FALSE}.
+#' @param seed Option to set the seed. Default is NA.
 #'  
 #' @return A list with the following components
 #' \itemize{
@@ -59,7 +62,7 @@
 #'   \item Vector containing expected difference in probabilities based on user inputs
 #'   \item Data frame with columns: 
 #'                   "Period" (Pre/Post-treatment indicator), 
-#'                   "Treatment" (Treatment group indicator), 
+#'                   "Arm" (Arm indicator), 
 #'                   "Value" (Mean response value)
 #'   \item Data frame containing three estimates of ICC
 #'   \item Data frame with columns: 
@@ -71,7 +74,7 @@
 #'                   "sig.val" (Is p-value less than alpha?)
 #'   \item List of data frames, each containing: 
 #'                   "y" (Simulated response value), 
-#'                   "trt" (Indicator for treatment group), 
+#'                   "trt" (Indicator for arm), 
 #'                   "clust" (Indicator for cluster), 
 #'                   "period" (Indicator for time point)
 #'   \item List of warning messages produced by non-convergent models. 
@@ -79,10 +82,17 @@
 #' }
 #' 
 #' @examples 
+#' 
+#' # Estimate power for a trial with 10 clusters in both arms, those clusters having
+#' # 20 subjects each, with sigma_b_sq0 = 1. We have estimated arm proportions of 0.2
+#' # and 0.3 in the first and second arms, respectively, and we use
+#' # 100 simulated data sets analyzed by the GLMM method. The resulting estimated power 
+#' # (if you set seed = 123) should be about 0.78.
+#' 
 #' \dontrun{
-#' did.binary.sim = cps.did.binary(nsim = 100, nsubjects = 50, nclusters = 6, 
-#'                                 p1 = 0.4, p2 = 0.2, sigma_b_sq0 = 10, alpha = 0.05,
-#'                                 method = 'glmm', all.sim.data = FALSE)
+#' did.binary.sim = cps.did.binary(nsim = 100, nsubjects = 20, nclusters = 10, 
+#'                                 p1 = 0.2, p2 = 0.45, sigma_b_sq0 = 1, alpha = 0.05,
+#'                                 method = 'glmm', all.sim.data = FALSE, seed = 123)
 #' }
 #'
 #' @author Alexander R. Bogdan 
@@ -111,7 +121,14 @@ cps.did.binary = function(nsim = NULL,
                           alpha = 0.05,
                           method = 'glmm',
                           quiet = TRUE,
-                          all.sim.data = FALSE) {
+                          all.sim.data = FALSE,
+                          seed = NA,
+                          nofit = FALSE) {
+  
+  if (!is.na(seed)) {
+    set.seed(seed = seed)
+  }
+  
   # Create objects to collect iteration-specific values
   est.vector = NULL
   se.vector = NULL
@@ -164,7 +181,7 @@ cps.did.binary = function(nsim = NULL,
       "NCLUSTERS can only be a vector of length 1 (equal # of clusters per group) or 2 (unequal # of clusters per group)"
     )
   }
-  # Set cluster sizes for treatment arm (if not already specified)
+  # Set cluster sizes for arm 1 arm (if not already specified)
   if (length(nclusters) == 1) {
     nclusters[2] = nclusters[1]
   }
@@ -236,8 +253,8 @@ cps.did.binary = function(nsim = NULL,
   }
   
   # Validate sigma_b_sq0 & sigma_b_sq1
-  sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both treatment groups) or a vector of length 2,
-         specifying between-cluster variances for each treatment group"
+  sigma_b_sq.warning = " must be a scalar (equal between-cluster variance for both arms) or a vector of length 2,
+         specifying between-cluster variances for each arm"
   if (!is.numeric(sigma_b_sq0) || any(sigma_b_sq0 < 0)) {
     stop("All values supplied to sigma_b_sq0 must be numeric values > 0")
   }
@@ -288,8 +305,8 @@ cps.did.binary = function(nsim = NULL,
   
   # Create indicators for PERIOD, TRT & CLUSTER
   period = rep(0:1, each = sum(nsubjects))
-  trt = c(rep(0, length.out = sum(nsubjects[1:nclusters[1]])),
-          rep(1, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
+  trt = c(rep(1, length.out = sum(nsubjects[1:nclusters[1]])),
+          rep(2, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
   clust = unlist(lapply(1:sum(nclusters), function(x)
     rep(x, length.out = nsubjects[x])))
   
@@ -304,19 +321,19 @@ cps.did.binary = function(nsim = NULL,
   ### Create simulation loop
   while (sum(converge.vector == TRUE) != nsim) {
     ## TIME == 0
-    # Generate between-cluster effects for non-treatment and treatment
+    # Generate between-cluster effects for arm 1 and arm 2
     randint.ntrt.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq0[1]))
     randint.trt.0 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq0[2]))
     
-    # Create non-treatment y-value
+    # Create arm 1 y-value
     y0.ntrt.intercept = unlist(lapply(1:nclusters[1], function(x)
       rep(randint.ntrt.0[x], length.out = nsubjects[x])))
     y0.ntrt.linpred = y0.ntrt.intercept + logit.p1
     y0.ntrt.prob = expit(y0.ntrt.linpred)
     y0.ntrt = unlist(lapply(y0.ntrt.prob, function(x)
       stats::rbinom(1, 1, x)))
-    
-    # Create treatment y-value
+
+    # Create arm 2 y-value
     y0.trt.intercept = unlist(lapply(1:nclusters[1], function(x)
       rep(randint.trt.0[x], length.out = nsubjects[nclusters[1] + x])))
     y0.trt.linpred = y0.trt.intercept + logit.p1
@@ -325,11 +342,11 @@ cps.did.binary = function(nsim = NULL,
       stats::rbinom(1, 1, x)))
     
     ## TIME == 1
-    # Generate between-cluster effects for non-treatment and treatment
+    # Generate between-cluster effects for arm 1 and arm 2
     randint.ntrt.1 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq1[1]))
     randint.trt.1 = stats::rnorm(nclusters[2], mean = 0, sd = sqrt(sigma_b_sq1[2]))
     
-    # Create non-treatment y-value
+    # Create arm 1 y-value
     y1.ntrt.intercept = unlist(lapply(1:nclusters[1], function(x)
       rep(randint.ntrt.1[x], length.out = nsubjects[x])))
     y1.ntrt.linpred = y1.ntrt.intercept + logit.p1
@@ -337,7 +354,7 @@ cps.did.binary = function(nsim = NULL,
     y1.ntrt = unlist(lapply(y1.ntrt.prob, function(x)
       stats::rbinom(1, 1, x)))
     
-    # Create treatment y-value
+    # Create arm 2 y-value
     y1.trt.intercept = unlist(lapply(1:nclusters[1], function(x)
       rep(randint.trt.1[x], length.out = nsubjects[nclusters[1] + x])))
     y1.trt.linpred = y1.trt.intercept + logit.p2
@@ -347,18 +364,39 @@ cps.did.binary = function(nsim = NULL,
     
     # Create single response vector
     y = c(y0.ntrt, y0.trt, y1.ntrt, y1.trt)
-    
+
     # Create and store data frame for simulated dataset
     sim.dat = data.frame(
       y = y,
-      trt = trt,
-      period = period,
-      clust = clust
+      trt = as.factor(trt),
+      period = as.factor(period),
+      clust = as.factor(clust)
     )
     if (all.sim.data == TRUE) {
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
     
+    # option to return simulated data only
+    if (nofit == TRUE) {
+      if (!exists("nofitop")) {
+        nofitop <- data.frame(period = sim.dat['period'],
+                              cluster = sim.dat['clust'],
+                              arm = sim.dat['trt'],
+                              y1 = sim.dat["y"])
+      } else {
+        nofitop[, length(nofitop) + 1] <- sim.dat["y"]
+      }
+      if (length(nofitop) == (nsim + 3)) {
+        temp1 <- seq(1:nsim)
+        temp2 <- paste0("y", temp1)
+        colnames(nofitop) <- c('period', 'cluster', 'arm', temp2)
+      }
+      if (length(nofitop) != (nsim + 3)) {
+        next()
+      }
+      return(nofitop)
+    }
+
     # Calculate mean values for given simulation
     iter.values = cbind(stats::aggregate(y ~ trt + period, data = sim.dat, mean)[, 3])
     values.vector = values.vector + iter.values
@@ -394,10 +432,10 @@ cps.did.binary = function(nsim = NULL,
         warning.list[model.id] = list(model.converge@optinfo$conv$lme4$messages)
       }
       glmm.values = summary(my.mod)$coefficient
-      est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
-      pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
+      est.vector = append(est.vector, glmm.values['trt2:period1', 'Estimate'])
+      se.vector = append(se.vector, glmm.values['trt2:period1', 'Std. Error'])
+      stat.vector = append(stat.vector, glmm.values['trt2:period1', 'z value'])
+      pval.vector = append(pval.vector, glmm.values['trt2:period1', 'Pr(>|z|)'])
     }
     # Fit GEE (geeglm)
     if (method == 'gee') {
@@ -410,11 +448,11 @@ cps.did.binary = function(nsim = NULL,
         corstr = "exchangeable"
       )
       gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
-      converge.vector = append(converge.vector, TRUE)
+      est.vector[i] = gee.values['trt2:period1', 'Estimate']
+      se.vector[i] = gee.values['trt2:period1', 'Std.err']
+      stat.vector[i] = gee.values['trt2:period1', 'Wald']
+      pval.vector[i] = gee.values['trt2:period1', 'Pr(>|W|)']
+      converge.vector[i] <- ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     # Update progress information
     if (quiet == FALSE) {
@@ -459,7 +497,7 @@ cps.did.binary = function(nsim = NULL,
   summary.message = paste0(
     "Monte Carlo Power Estimation based on ",
     nsim,
-    " Simulations: Difference in Difference Design, Binary Outcome\nNote: ",
+    " Simulations: Difference in Difference Design, Binary Outcome. Note: ",
     sum(converge.vector == FALSE),
     " additional models were fitted to account for non-convergent simulations."
   )
@@ -496,30 +534,30 @@ cps.did.binary = function(nsim = NULL,
   p1.p2.or = round(p1 / (1 - p1) / (p2 / (1 - p2)), 3)
   p2.p1.or = round(p2 / (1 - p2) / (p1 / (1 - p1)), 3)
   inputs = t(data.frame(
-    'Non.Treatment' = c("probability" = p1, "odds.ratio" = p1.p2.or),
-    'Treatment' = c("probability" = p2, 'odds.ratio' = p2.p1.or),
+    'Arm.1' = c("probability" = p1, "odds.ratio" = p1.p2.or),
+    'Arm.2' = c("probability" = p2, 'odds.ratio' = p2.p1.or),
     'Difference' = c(
       "probability" = p.diff,
       'odds.ratio' = p2.p1.or - p1.p2.or
     )
   ))
   
-  # Create object containing treatment & time-specific differences
+  # Create object containing arm & time-specific differences
   values.vector = values.vector / nsim
   differences = data.frame(
     Period = c(0, 0, 1, 1),
-    Treatment = c(0, 1, 0, 1),
+    Arm.2 = c(0, 1, 0, 1),
     Values = round(values.vector, 3)
   )
   
   # Create object containing group-specific cluster sizes
-  cluster.sizes = list('Non.Treatment' = nsubjects[1:nclusters[1]],
-                       'Treatment' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
+  cluster.sizes = list('Arm.1' = nsubjects[1:nclusters[1]],
+                       'Arm.2' = nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
   
   # Create object containing number of clusters
   n.clusters = t(data.frame(
-    "Non.Treatment" = c("n.clust" = nclusters[1]),
-    "Treatment" = c("n.clust" = nclusters[2])
+    "Arm.1" = c("n.clust" = nclusters[1]),
+    "Arm.2" = c("n.clust" = nclusters[2])
   ))
   
   # Create object containing estimated ICC values
@@ -536,12 +574,12 @@ cps.did.binary = function(nsim = NULL,
   # Create object containing group-specific variance parameters
   var.parms = list(
     "Time.Point.0" = data.frame(
-      'Non.Treatment' = c("sigma_b_sq" = sigma_b_sq0[1]),
-      'Treatment' = c("sigma_b_sq" = sigma_b_sq0[2])
+      'Arm.1' = c("sigma_b_sq" = sigma_b_sq0[1]),
+      'Arm.2' = c("sigma_b_sq" = sigma_b_sq0[2])
     ),
     "Time.Point.1" = data.frame(
-      'Non.Treatment' = c("sigma_b_sq" = sigma_b_sq1[1]),
-      'Treatment' = c("sigma_b_sq" = sigma_b_sq1[2])
+      'Arm.1' = c("sigma_b_sq" = sigma_b_sq1[1]),
+      'Arm.2' = c("sigma_b_sq" = sigma_b_sq1[2])
     )
   )
   
