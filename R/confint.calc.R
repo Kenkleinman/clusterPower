@@ -28,7 +28,7 @@ confint.calc <- function(alpha = alpha,
   power.parms <- list()
 browser()
   for (q in 1:length(unlist(pval.power))) {
-    power.parms[[q]] <- binom.test(p = 0.05, n = length(unlist(pval.power)), x = pval.power[q], 
+    power.parms[[q]] <- binom.test(p = 0.05, n = length(unlist(p.val)), x = pval.power[q], 
                                    alternative = "two.sided")
   }
   Power <- vector(length = length(pval.power))
