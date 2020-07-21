@@ -1,11 +1,11 @@
-#' Power simulations for cluster-randomized trials: Parallel Designs, Count Outcome
+#' Simulation-based power estimation for cluster-randomized trials: Parallel Designs, Count Outcome
 #'
 #' @description 
 #' \loadmathjax
 #' 
 #'  
 #' This function uses Monte Carlo methods (simulations) to estimate 
-#' power for cluster-randomized trials. Users 
+#' power for cluster-randomized trials with integer-valued outcomes. Users 
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
 #' 
@@ -14,10 +14,11 @@
 #' two of the following three parameters: mean event rate per unit time in one group,
 #' the mean event rate per unit time in the second group, and/or the
 #' mean difference in event rates between groups. Default values are provided
-#' for significance level, analytic method, progress updates, and whether the simulated data sets are retained.
+#' for significance level, analytic method, whether progress updates are displayed, 
+#' and whether the simulated data sets are retained.
 #'
-#'
-#'
+#' Note that if all units have the same observation time, you can use the
+#' mean count instead of the "mean event per unit time" in the preceding paragraph.
 #'
 #'
 #'

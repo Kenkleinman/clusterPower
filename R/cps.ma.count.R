@@ -1,21 +1,50 @@
-#' Power simulations for cluster-randomized trials: Multiple arms, count outcome.
+#' Simulation-based power estimation for cluster-randomized trials: Parallel Designs, Count Outcome with multiple arms
 #'
-#' @description
+#'
+#'
+#' @description 
 #' \loadmathjax
+#' 
+#'  
+#' This function uses Monte Carlo methods (simulations) to estimate 
+#' power for cluster-randomized trials for integer-valued outcomes with two or more
+#' trial conditions. Users 
+#' can modify a variety of parameters to suit the simulations to their
+#' desired experimental situation.
+#' 
+#' Users must specify the desired number of simulations, number of subjects per 
+#' cluster, number of clusters per treatment arm, between-cluster variance, and
+#' two of the following three parameters: mean event rate per unit time in one group,
+#' the mean event rate per unit time in the second group, and/or the
+#' mean difference in event rates between groups. Default values are provided
+#' for significance level, analytic method, progress updates, and whether the simulated data sets are retained.
+#'
+#' Note that if all units have the same observation time, you can use the
+#' mean count instead of the "mean event per unit time" in the preceding paragraph.
 #'
 #'
 #'
-#' This function uses Monte Carlo methods (simulations) to estimate
-#' power for multiple arm cluster-randomized trials with count outcomes.
-#' Users can modify a variety of parameters to suit the simulations to
-#' their desired experimental situation.
+#' Users must specify the desired number of simulations, number of subjects per
+#' cluster, number of clusters per treatment arm, group probabilities, and the
+#' between-cluster variance. Significance level, analytic method, whether progress
+#' updates are displayed, poor/singular fit override, and whether or not to return the
+#' simulated data may also be specified. 
+#' 
+#' This user-friendly function calls an internal function; the internal function 
+#' can be called
+#' directly by the user to return the fitted models rather than the power
+#' summaries (see \code{?cps.ma.count.internal} for details).
 #'
-#'
-#' Users must specify the desired number of simulations, number of subjects in each
-#' cluster, number of clusters in each treatment arm, event rates in each arm, and the
-#' between-cluster variance in each arm. Default values are provided for
-#' significance level, analytic method, progress updates, poor/singular fit override,
-#' and whether or not to return the simulated data.
+#' Users can spread the simulated data
+#' generation and model fitting tasks across multiple cores using the
+#' \code{cores} argument. Users should expect that parallel computing may make
+#' model fitting faster than using a single core for more complicated models.
+#' For simpler models, users may prefer to use single thread computing
+#' (\code{cores}=1), as the processes involved in allocating memory and
+#' copying data across cores also may take some time. For time-savings,
+#' this function stops execution early if estimated power < 0.5 or more
+#' than 25\% of models produce a singular fit or non-convergence warning
+#' message, unless \code{poor.fit.override = TRUE}.
 #'
 #'
 #'
@@ -165,9 +194,7 @@
 #'
 #'
 #'
-#' @author Alexander R. Bogdan, Alexandria C. Sakrejda
-#' (\email{acbro0@@umass.edu}), and Ken Kleinman
-#' (\email{ken.kleinman@@gmail.com})
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @examples
 #' 
