@@ -119,11 +119,11 @@ cps.sw.count = function(nsim = NULL,
   }
   
   # Create vectors to collect iteration-specific values
-  est.vector = vector(NA, length = nsim)
-  se.vector = vector(NA, length = nsim)
-  stat.vector = vector(NA, length = nsim)
-  pval.vector = vector(NA, length = nsim)
-  converge = vector(NA, length = nsim)
+  est.vector = vector("numeric", length = nsim)
+  se.vector = vector("numeric", length = nsim)
+  stat.vector = vector("numeric", length = nsim)
+  pval.vector = vector("numeric", length = nsim)
+  converge = vector("logical", length = nsim)
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -471,9 +471,9 @@ cps.sw.count = function(nsim = NULL,
   summary.message = paste0(
     "Monte Carlo Power Estimation based on ",
     nsim,
-    " Simulations: Stepped Wedge Design, Count Outcome\nData Simulated from ",
+    " Simulations: Stepped Wedge Design, Count Outcome. Data Simulated from ",
     switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
-    " distribution\nAnalyzed using ",
+    " distribution. Analyzed using ",
     switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
     " regression"
   )
@@ -535,7 +535,7 @@ cps.sw.count = function(nsim = NULL,
       analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'
     ), ' distribution')
   )
-  colnames(dist.parms) = "Data Simuation & Analysis Parameters"
+  colnames(dist.parms) = "Data Simulation & Analysis Parameters"
   
   # Create crossover matrix output object
   crossover.mat = apply(as.matrix(c(0, step.index)), 1,

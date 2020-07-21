@@ -72,17 +72,16 @@
 #' }
 #' @examples 
 #' 
-#' # Estimate power for a trial with 10 clusters in arm 1 and 6 clusters in arm 2, 
-#' # those clusters having 55 subjects each, with sigma_sq = 0.1. We have estimated 
-#' # arm means of 1 and 1.38 in the first and second arms, respectively, and we use 
+#' # Estimate power for a trial with 6 clusters in arm 1 and 6 clusters in arm 2, 
+#' # those clusters having 120 subjects each, with sigma_sq = 1. Estimated 
+#' # arm means are 1 and 0.48 in the first and second arms, respectively, and we use 
 #' # 100 simulated data sets analyzed by the GLMM method. The resulting estimated 
-#' # power (if you set seed = 123) should be 0.8.
+#' # power (for seed = 123) should be 0.81.
 #' 
 #' \dontrun{
-#' normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 150, nclusters = 6, 
-#'                                 difference = .48, sigma_sq = 1, alpha = 0.05, 
-#'                                 sigma_b_sq0 = .1, method = 'glmm', quiet = FALSE, 
-#'                                 all.sim.data = FALSE, seed = 123)
+#' normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 120, nclusters = 6, 
+#'                                 mu = 1, mu2 = 0.48, sigma_sq = 1, alpha = 0.05, 
+#'                                 sigma_b_sq0 = 0.1, method = 'glmm', seed = 123)
 #' }
 #' 
 #' @author Alexander R. Bogdan 
@@ -112,11 +111,11 @@ cps.did.normal = function(nsim = NULL,
   }
   
   # Create vectors to collect iteration-specific values
-  est.vector = NULL
-  se.vector = NULL
-  stat.vector = NULL
-  pval.vector = NULL
-  converge.vector = vector(mode = "logical", length = nsim)
+  est.vector = vector("numeric", length = nsim)
+  se.vector = vector("numeric", length = nsim)
+  stat.vector = vector("numeric", length = nsim)
+  pval.vector = vector("numeric", length = nsim)
+  converge = vector(mode = "logical", length = nsim)
   values.vector = cbind(c(0, 0, 0, 0))
   simulated.datasets = list()
   
@@ -343,13 +342,11 @@ cps.did.normal = function(nsim = NULL,
                                                              clust), data = sim.dat)
       glmm.values = summary(my.mod)$coefficient
       p.val = 2 * stats::pt(-abs(glmm.values['trt:period', 't value']), df = sum(nclusters) - 2)
-      est.vector = append(est.vector, glmm.values['trt:period', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt:period', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt:period', 't value'])
-      pval.vector = append(pval.vector, p.val)
-      converge.vector[i] == ifelse(is.null(my.mod@optinfo$conv$lme4$messages),
-                                                           FALSE,
-                                                           TRUE)
+      est.vector[i] = glmm.values['trt:period', 'Estimate']
+      se.vector[i] = glmm.values['trt:period', 'Std. Error']
+      stat.vector[i] = glmm.values['trt:period', 't value']
+      pval.vector[i] = p.val
+      converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
     
     # Fit GEE (geeglm)
@@ -366,7 +363,7 @@ cps.did.normal = function(nsim = NULL,
       se.vector[i] = gee.values['trt:period', 'Std.err']
       stat.vector[i] = gee.values['trt:period', 'Wald']
       pval.vector[i] = gee.values['trt:period', 'Pr(>|W|)']
-      converge.vector[i] <- ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
+      converge[i] <- ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     
     # Update progress information
@@ -431,21 +428,15 @@ cps.did.normal = function(nsim = NULL,
     Estimate = as.vector(unlist(est.vector)),
     Std.err = as.vector(unlist(se.vector)),
     Test.statistic = as.vector(unlist(stat.vector)),
-    p.value = as.vector(unlist(pval.vector))
+    p.value = as.vector(unlist(pval.vector)),
+    converge = converge
   )
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(
-    Power = round(pval.power, 3),
-    Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3),
-    Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3)
-  )
+  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  power.parms <- confintCalc(alpha = alpha,
+                             p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing arm & time-specific differences
   values.vector = values.vector / nsim
@@ -492,7 +483,7 @@ cps.did.normal = function(nsim = NULL,
       "model.estimates" = cps.model.est,
       "sim.data" = simulated.datasets,
       "differences" = differences,
-      "convergence" = converge.vector
+      "convergence" = converge
     ),
     class = 'crtpwr'
   )

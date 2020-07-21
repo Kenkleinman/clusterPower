@@ -115,12 +115,12 @@ cps.sw.binary = function(nsim = NULL,
   }
   
   # Create vectors to collect iteration-specific values
-  est.vector = vector(NA, length = nsim)
-  se.vector = vector(NA, length = nsim)
-  stat.vector = vector(NA, length = nsim)
-  pval.vector = vector(NA, length = nsim)
-  lmer.icc.vector = vector(NA, length = nsim)
-  converge = vector(NA, length = nsim)
+  est.vector = vector("numeric", length = nsim)
+  se.vector = vector("numeric", length = nsim)
+  stat.vector = vector("numeric", length = nsim)
+  pval.vector = vector("numeric", length = nsim)
+  lmer.icc.vector = vector("numeric", length = nsim)
+  converge = vector("logical", length = nsim)
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar

@@ -78,13 +78,13 @@
 #' # 9 subjects each, with sigma_b_sq0 = 0.1 in the first arm and 0.5 in the second arm. 
 #' # We have estimated arm counts of 5 and 3 in the first and second arms, respectively, 
 #' # and we use 100 simulated data sets analyzed by the GLMM method. The resulting 
-#' # estimated power (if you set seed = 123) should be about 0.84.
+#' # estimated power (if you set seed = 123) should be 0.86.
 #' 
 #' \dontrun{
 #' did.count.sim = cps.did.count(nsim = 100, nsubjects = 9, nclusters = 7, c1 = 5, 
 #'                               c2 = 3, sigma_b_sq0 = c(1, 0.5), sigma_b_sq1 = c(0.5, 0.8), 
-#'                               family = 'poisson', analysis = 'poisson', method = 'glmm', 
-#'                               alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
+#'                               family = 'poisson', analysis = 'poisson', method = 'glmm',
+#'                               seed = 123)
 #' }
 #'
 #' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and Advanced Multilevel Modelling. London, 1999: Sage.
@@ -110,7 +110,7 @@ cps.did.count = function(nsim = NULL,
                          alpha = 0.05,
                          quiet = FALSE,
                          all.sim.data = FALSE,
-                         seed = NA,
+                         seed = NULL,
                          nofit = FALSE) {
   
   if (!is.na(seed)) {
@@ -118,10 +118,11 @@ cps.did.count = function(nsim = NULL,
   }
   
   # Create vectors to collect iteration-specific values
-  est.vector = NULL
-  se.vector = NULL
-  stat.vector = NULL
-  pval.vector = NULL
+  est.vector = vector("numeric", length = nsim)
+  se.vector = vector("numeric", length = nsim)
+  stat.vector = vector("numeric", length = nsim)
+  pval.vector = vector("numeric", length = nsim)
+  converge = vector("logical", length = nsim)
   values.vector = cbind(c(0, 0, 0, 0))
   simulated.datasets = list()
   start.time = Sys.time()
@@ -378,10 +379,11 @@ cps.did.count = function(nsim = NULL,
                                                                    clust), data = sim.dat)
       }
       glmm.values = summary(my.mod)$coefficient
-      est.vector = append(est.vector, glmm.values['trt:period', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt:period', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt:period', 'z value'])
-      pval.vector = append(pval.vector, glmm.values['trt:period', 'Pr(>|z|)'])
+      est.vector[i] = glmm.values['trt:period', 'Estimate']
+      se.vector[i] = glmm.values['trt:period', 'Std. Error']
+      stat.vector[i] = glmm.values['trt:period', 'z value']
+      pval.vector[i] = glmm.values['trt:period', 'Pr(>|z|)']
+      converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
     # Fit GEE (geeglm)
     if (method == 'gee') {
@@ -394,10 +396,11 @@ cps.did.count = function(nsim = NULL,
         corstr = "exchangeable"
       )
       gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt:period', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt:period', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt:period', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt:period', 'Pr(>|W|)'])
+      est.vector[i] = gee.values['trt:period', 'Estimate']
+      se.vector[i] = gee.values['trt:period', 'Std.err']
+      stat.vector[i] = gee.values['trt:period', 'Wald']
+      pval.vector[i] = gee.values['trt:period', 'Pr(>|W|)']
+      converge[i] <- ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     # Update progress information
     if (quiet == FALSE) {
@@ -449,21 +452,15 @@ cps.did.count = function(nsim = NULL,
     Estimate = as.vector(unlist(est.vector)),
     Std.err = as.vector(unlist(se.vector)),
     Test.statistic = as.vector(unlist(stat.vector)),
-    p.value = as.vector(unlist(pval.vector))
+    p.value = as.vector(unlist(pval.vector)),
+    converge = converge
   )
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(
-    power = round(pval.power, 3),
-    lower.95.ci = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3),
-    upper.95.ci = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3)
-  )
+  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  power.parms <- confintCalc(alpha = alpha,
+                             p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs
   c1.c2.rr = round(exp(log(c1) - log(c2)), 3)
