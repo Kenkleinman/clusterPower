@@ -25,8 +25,8 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
 #' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
-#' @param difference Expected absolute difference in treatment effect between treatment and non-treatment groups;
-#'  accepts numeric (required).
+#' @param mu Mean in the first arm; accepts numeric, default 0.  Required..
+#' @param mu2 Mean in the second arm; accepts numeric.  Required.
 #' @param steps Number of crossover steps; a baseline step (all clusters in non-treatment group) is assumed. 
 #' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 
 #' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
@@ -43,6 +43,7 @@
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param seed Option to set.seed. Default is NULL.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -57,7 +58,7 @@
 #'   \item Vector containing user-defined number of clusters
 #'   \item Data frame reporting ICC, within & between cluster variances for 
 #'   Treatment/Non-Treatment groups at each time point
-#'   \item Vector containing expected difference between groups based on user inputs
+#'   \item Vector containing expected means for each arm based on user inputs
 #'   \item Data frame containing mean response values for each treatment group at each time point
 #'   \item Matrix showing cluster crossover at each time point
 #'   \item Data frame with columns: 
@@ -75,11 +76,19 @@
 #' }
 #' 
 #' @examples 
+#' 
+#' # Estimate power for a trial with 3 steps and 9 clusters in arm 1 (often the 
+#' # standard-of-care or 'control' arm) at the initiation of the study. Those 
+#' # clusters have 14 subjects each, with sigma_b = 1 and sigma_b_sq = 1. We 
+#' # have estimated arm outcome means of 1 and 2.1 in the first and second arms, 
+#' # respectively, and 100 simulated data sets analyzed by the GLMM method. Using seed = 123, 
+#' # the resulting power should be 0.82.
+#' 
 #' \dontrun{
-#' normal.sw.rct = cps.sw.normal(nsim = 100, nsubjects = 50, nclusters = 30, 
-#'                               difference = 1.75, steps = 5, sigma_sq = 100, sigma_b_sq = 30, 
-#'                               alpha = 0.05, method = 'glmm', quiet = FALSE, 
-#'                               all.sim.data = FALSE)
+#' normal.sw.rct = cps.sw.normal(nsim = 100, nsubjects = 14, nclusters = 9, 
+#'                               mu = 1, mu2 = 2.1, steps = 3, sigma_sq = 1, 
+#'                               sigma_b_sq = 1, alpha = 0.05, method = 'glmm', 
+#'                               seed = 123)
 #' }
 #'
 #' @author Alexander R. Bogdan 
@@ -94,20 +103,26 @@
 cps.sw.normal = function(nsim = NULL,
                          nsubjects = NULL,
                          nclusters = NULL,
-                         difference = NULL,
+                         mu = 0,
+                         mu2 = NULL,
                          steps = NULL,
                          sigma_sq = NULL,
                          sigma_b_sq = NULL,
                          alpha = 0.05,
                          method = 'glmm',
                          quiet = FALSE,
-                         all.sim.data = FALSE) {
+                         all.sim.data = FALSE, 
+                         seed = NULL) {
+  if (!is.na(seed)) {
+    set.seed(seed = seed)
+  }
+  
   # Create vectors to collect iteration-specific values
-  est.vector = NULL
-  se.vector = NULL
-  stat.vector = NULL
-  pval.vector = NULL
-  fail.vector = NULL
+  est.vector = vector("numeric", length = nsim)
+  se.vector = vector("numeric", length = nsim)
+  stat.vector = vector("numeric", length = nsim)
+  pval.vector = vector("numeric", length = nsim)
+  converge = vector("logical", length = nsim)
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -124,12 +139,12 @@ cps.sw.normal = function(nsim = NULL,
   is.wholenumber = function(x, tol = .Machine$double.eps ^ 0.5)
     abs(x - round(x)) < tol
   
-  # Validate NSIM, NSUBJECTS, NCLUSTERS, DIFFERENCE
-  sim.data.arg.list = list(nsim, nclusters, nsubjects, difference)
+  # Validate NSIM, NSUBJECTS, NCLUSTERS, mu, mu2
+  sim.data.arg.list = list(nsim, nclusters, nsubjects, mu, mu2)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if (sum(sim.data.args) > 0) {
     stop(
-      "NSIM, NCLUSTERS, NSUBJECTS & DIFFERENCE must all be specified. Please review your input values."
+      "nsim, nclusters, nsubjects, mu, and mu2 must all be specified. Please review your input values."
     )
   }
   min1.warning = " must be an integer greater than or equal to 1"
@@ -193,11 +208,8 @@ cps.sw.normal = function(nsim = NULL,
   # Create vector to store group means at each time point
   values.vector = cbind(c(rep(0, length(step.index) * 2)))
   
-  # Validate DIFFERENCE, ALPHA
+  # Validate ALPHA
   min0.warning = " must be a numeric value greater than 0"
-  if (!is.numeric(difference) || difference < 0) {
-    stop("DIFFERENCE", min0.warning)
-  }
   if (!is.numeric(alpha) || alpha < 0 || alpha > 1) {
     stop("ALPHA must be a numeric value between 0 - 1")
   }
@@ -285,7 +297,7 @@ cps.sw.normal = function(nsim = NULL,
       sim.dat['y'] = ifelse(
         sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0,
         stats::rnorm(sum(sim.dat[, 'clust'] == j &
-                           sim.dat[, 'trt'] == 0), 0, sqrt(sigma_sq[1])) +
+                           sim.dat[, 'trt'] == 0), mu, sqrt(sigma_sq[1])) +
           ntrt.cluster.effects[j],
         sim.dat[, 'y']
       )
@@ -295,7 +307,7 @@ cps.sw.normal = function(nsim = NULL,
         stats::rnorm(
           sum(sim.dat[, 'clust'] == j &
                 sim.dat[, 'trt'] == 1),
-          difference,
+          mu2,
           sqrt(sigma_sq[2])
         ) +
           trt.cluster.effects[j],
@@ -331,13 +343,11 @@ cps.sw.normal = function(nsim = NULL,
       models[[i]] = my.mod
       glmm.values <- summary(my.mod)$coefficients
       p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = nclusters - length(step.index) - 2)
-      est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-      pval.vector = append(pval.vector, p.val)
-      fail.vector = append(fail.vector, ifelse(any(
-        grepl("singular", my.mod@optinfo$conv$lme4$messages)
-      ) == TRUE, 1, 0))
+      est.vector[i] = glmm.values['trt', 'Estimate']
+      se.vector[i] = glmm.values['trt', 'Std. Error']
+      stat.vector[i] = glmm.values['trt', 't value']
+      pval.vector[i] = p.val
+      converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
     
     # Fit GEE (geeglm)
@@ -350,10 +360,11 @@ cps.sw.normal = function(nsim = NULL,
         corstr = "exchangeable"
       )
       gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+      est.vector[i] = gee.values['trt', 'Estimate']
+      se.vector[i] = gee.values['trt', 'Std.err']
+      stat.vector[i] = gee.values['trt', 'Wald']
+      pval.vector[i] = gee.values['trt', 'Pr(>|W|)']
+      converge[i] = ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     
     # Update progress information
@@ -418,21 +429,15 @@ cps.sw.normal = function(nsim = NULL,
     Estimate = as.vector(unlist(est.vector)),
     Std.err = as.vector(unlist(se.vector)),
     Test.statistic = as.vector(unlist(stat.vector)),
-    p.value = as.vector(unlist(pval.vector))
+    p.value = as.vector(unlist(pval.vector)),
+    converge = as.vector(converge)
   )
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
-  
+
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(
-    Power = round(pval.power, 3),
-    Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3),
-    Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3)
-  )
+  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  power.parms <- confintCalc(alpha = alpha,
+                             p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing treatment & time-specific differences
   values.vector = values.vector / nsim
@@ -477,12 +482,12 @@ cps.sw.normal = function(nsim = NULL,
       "cluster.sizes" = cluster.sizes,
       "n.clusters" = n.clusters,
       "variance.parms" = var.parms,
-      "inputs" = difference,
+      "inputs" = c(mu, mu2),
       "means" = group.means,
       "model.estimates" = cps.model.est,
       "sim.data" = simulated.datasets,
       "crossover.matrix" = crossover.mat,
-      "convergence.error" = fail.vector
+      "convergence" = converge
     ),
     class = 'crtpwr'
   )

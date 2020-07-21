@@ -197,27 +197,40 @@
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @examples
+#' 
+#' # For a 3-arm trial with 3, 3, and 4 clusters in each arm, respectively, 
+#' # specify the number of subjects in each cluster with 3 vectors in a list, 
+#' # each vector representing a study arm. For each cluster in no particular
+#' # order, denote the number of subjects. In this example, the first arm 
+#' # contains 100, 100, and 50 subjects in each of 3 clusters. The second
+#' # arm contains 50, 100, and 110 subjects in each of 3 clusters, while 
+#' # the third arm contains 70, 100, 50, and 50 subjects in each of 4 
+#' # clusters. The expected outcomes for each arm are 10, 55, and 65, and 
+#' # the sigma_b_sq values are 0.1, 0.1, and 0.2, respectively. Assuming 
+#' # seed = 123, the overall power for this trial should be 
+#' 
 #' \dontrun{
-#' nsubjects.example <- list(c(200, 200, 200, 250), c(150, 200, 200, 210), c(170, 200, 210))
-#' counts.example <- c(30, 55, 98)
+#' nsubjects.example <- list(c(100, 100, 50), c(50, 100, 110), c(70, 100, 50, 50))
+#' counts.example <- c(10, 55, 65)
 #' sigma_b_sq.example <- c(0.1, 0.1, 0.2)
 #'
-#' count.ma.rct.unbal <- cps.ma.count(nsim = 10,
+#' count.ma.rct.unbal <- cps.ma.count(nsim = 100,
 #'                             nsubjects = nsubjects.example,
 #'                             counts = counts.example,
 #'                             sigma_b_sq = sigma_b_sq.example,
-#'                             alpha = 0.05, all.sim.data = FALSE,
-#'                             seed = 123, cores="all", poor.fit.override=TRUE)
+#'                             alpha = 0.05, seed = 123)
+#'}
 #'
-#' count.ma.rct.bal <- cps.ma.count(nsim = 10, nsubjects = 100, narms=3,
-#'                             nclusters=4,
-#'                             counts = c(30, 35, 70),
-#'                             sigma_b_sq = 0.001, alpha = 0.05,
-#'                             quiet = FALSE, method = 'glmm',
-#'                             all.sim.data = FALSE,
-#'                             multi.p.method="none",
-#'                             poor.fit.override = TRUE,
-#'                             seed = 123, cores="all")
+#' # For a different trial with 4 arms, each arm has 4 clusters which 
+#' # each contain 100 subjects. Expected counts for each arm are 30 
+#' # for the first arm, 35 for the second, 70 for the third, and 35
+#' # for the fourth. For all arms, the expected sigma_b_sq = 0.001. 
+#' # Assuming seed = 123, the overall power for this trial should be 
+#'
+#' \dontrun{
+#' count.ma.rct.bal <- cps.ma.count(nsim = 10, nsubjects = 100, narms = 4,
+#'                             nclusters = 4, counts = c(30, 35, 70, 35),
+#'                             sigma_b_sq = 0.001, seed = 123)
 #'}
 #' @export
 
@@ -466,7 +479,7 @@ cps.ma.count <- function(nsim = 1000,
     }
 
     # Calculate and store power estimate & confidence intervals
-    power.parms <- confint.calc(alpha = alpha,
+    power.parms <- confintCalc(alpha = alpha,
                                 p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)]))
     
     # Store simulation output in data frame

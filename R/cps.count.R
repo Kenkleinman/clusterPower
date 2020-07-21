@@ -52,6 +52,12 @@
 #' @param family Distribution from which responses are simulated. Accepts Poisson
 #' ('poisson') or negative binomial ('neg.binom'); default = 'poisson'. Required.
 #' 
+#' @param negBinomSize Only used when generating simulated data from the 
+#' negative binomial (family = 'neg.binom'), this is the target for number of 
+#' successful trials, or the dispersion parameter (the shape parameter of the gamma 
+#' mixing distribution). Must be strictly positive but need not be integer. 
+#' Defaults to 1.
+#' 
 #' @param method Data analysis method, either generalized linear mixed effects model
 #' (GLMM) or generalized estimating equations (GEE). Accepts c('glmm', 'gee'); default = 'glmm'.
 #' Required.
@@ -231,6 +237,7 @@ cps.count = function(nsim = NULL,
                      sigma_b_sq = NULL,
                      sigma_b_sq2 = NULL,
                      family = 'poisson',
+                     negBinomSize = 1,
                      analysis = 'poisson',
                      method = 'glmm',
                      alpha = 0.05,
@@ -367,6 +374,11 @@ cps.count = function(nsim = NULL,
       "QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)"
     )
   }
+  if (family == 'neg.binom' && negBinomSize < 0) {
+    stop(
+      "negBinomSize must be positive"
+    )
+  }
   
   # Calculate inputs & variance parameters
   if (is.null(c1)) {
@@ -414,7 +426,7 @@ cps.count = function(nsim = NULL,
       y0 = stats::rpois(length(y0.prob), y0.prob)
     }
     if (family == 'neg.binom') {
-      y0 = stats::rnbinom(length(y0.prob), size = 1, mu = y0.prob)
+      y0 = stats::rnbinom(length(y0.prob), size = negBinomSize, mu = y0.prob)
     }
 
     # Create arm 2 y-value
@@ -576,10 +588,10 @@ cps.count = function(nsim = NULL,
         next
       }
       glmm.values <- summary(my.mod)$coefficient
-      est.vector[i] <- glmm.values['trt1', 'Estimate']
-      se.vector[i] <- glmm.values['trt1', 'Std. Error']
-      stat.vector[i] <- glmm.values['trt1', 'z value']
-      pval.vector[i] <- glmm.values['trt1', 'Pr(>|z|)']
+      est.vector[i] <- glmm.values['trt2', 'Estimate']
+      se.vector[i] <- glmm.values['trt2', 'Std. Error']
+      stat.vector[i] <- glmm.values['trt2', 'z value']
+      pval.vector[i] <- glmm.values['trt2', 'Pr(>|z|)']
       converge.vector[i] <- ifelse(
         is.null(my.mod@optinfo$conv$lme4$messages), TRUE, FALSE)
     }
@@ -594,10 +606,10 @@ cps.count = function(nsim = NULL,
         corstr = "exchangeable"
       )
       gee.values <- summary(my.mod)$coefficients
-      est.vector[i] <- gee.values['trt1', 'Estimate']
-      se.vector[i] <- gee.values['trt1', 'Std.err']
-      stat.vector[i] <- gee.values['trt1', 'Wald']
-      pval.vector[i] <- gee.values['trt1', 'Pr(>|W|)']
+      est.vector[i] <- gee.values['trt2', 'Estimate']
+      se.vector[i] <- gee.values['trt2', 'Std.err']
+      stat.vector[i] <- gee.values['trt2', 'Wald']
+      pval.vector[i] <- gee.values['trt2', 'Pr(>|W|)']
       converge.vector[i] <- ifelse(my.mod$geese$error != 0, FALSE, TRUE)
     }
 
@@ -672,7 +684,8 @@ cps.count = function(nsim = NULL,
   
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
-  power.parms <- confint.calc(alpha = alpha,
+
+  power.parms <- confintCalc(alpha = alpha,
                               p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs

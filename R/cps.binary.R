@@ -145,8 +145,8 @@
 #' 
 #' # Estimate power for a trial with 10 clusters in each arm, 20 subjects in 
 #' # each cluster, with a probability of 0.8 in the first arm and 0.5 in the 
-#' # second arm, with a sigma_b_sq in the first arm of 1 and in the second arm
-#' # of 1.2
+#' # second arm, with a sigma_b_sq = 1 in the first arm sigma_b_sq = 1.2 in 
+#' # the second arm.
 #' 
 #' \dontrun{
 #' binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.8,
@@ -156,7 +156,7 @@
 #'
 #' # Estimate power for a trial just as above, except that in the first arm,
 #' # the clusters have 10 subjects in 9 of the 10 clusters and 100 in the tenth
-#' # cluster, while in the second arm, all clusters have 20 subjects.
+#' # cluster, while in the second arm all clusters have 20 subjects.
 #' 
 #' \dontrun{
 #' binary.sim2 = cps.binary(nsim = 100, nsubjects = c(c(rep(10,9),100),rep(20,10)), nclusters = 10, p1 = 0.8,
@@ -564,7 +564,8 @@ cps.binary = function(nsim = NULL,
   
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
-  power.parms <- confint.calc(alpha = alpha,
+  browser()
+  power.parms <- confintCalc(alpha = alpha,
                               p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs

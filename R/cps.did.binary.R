@@ -130,17 +130,15 @@ cps.did.binary = function(nsim = NULL,
   }
   
   # Create objects to collect iteration-specific values
-  est.vector = NULL
-  se.vector = NULL
-  stat.vector = NULL
-  pval.vector = NULL
-  converge.ind = NULL
-  converge.vector = NULL
-  icc2.vector = NULL
+  est.vector = vector("numeric", length = nsim)
+  se.vector = vector("numeric", length = nsim)
+  stat.vector = vector("numeric", length = nsim)
+  pval.vector = vector("numeric", length = nsim)
+  converge = vector("logical", length = nsim)
+  icc2.vector = vector("numeric", length = nsim)
   lmer.icc.vector = NULL
   values.vector = cbind(c(0, 0, 0, 0))
   simulated.datasets = list()
-  warning.list = list()
   start.time = Sys.time()
   
   # Create progress bar
@@ -315,11 +313,10 @@ cps.did.binary = function(nsim = NULL,
   logit.p2 = log(p2 / (1 - p2))
   
   # Set warnings to OFF
-  # Note: All warnings are still stored in WARNING.LIST output object
   options(warn = -1)
   
   ### Create simulation loop
-  while (sum(converge.vector == TRUE) != nsim) {
+  for (i in 1:nsim) {
     ## TIME == 0
     # Generate between-cluster effects for arm 1 and arm 2
     randint.ntrt.0 = stats::rnorm(nclusters[1], mean = 0, sd = sqrt(sigma_b_sq0[1]))
@@ -412,10 +409,6 @@ cps.did.binary = function(nsim = NULL,
     lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
     lmer.icc.vector =  append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
     
-    ## Note to KK, JM: what sigma_b_sq is Alex using here?  the one based on the baseline?
-    ## The one based on the TX period?  Or the one based on the model that assumes no
-    ## additional variance in the tx period?  KK's money is on option 3
-    
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       my.mod = lme4::glmer(
@@ -424,18 +417,12 @@ cps.did.binary = function(nsim = NULL,
         data = sim.dat,
         family = stats::binomial(link = 'logit')
       )
-      model.converge = try(my.mod)
-      converge.ind = is.null(model.converge@optinfo$conv$lme4$messages)
-      converge.vector = append(converge.vector, converge.ind)
-      if (converge.ind == FALSE) {
-        model.id = paste0("Model ", length(converge.vector))
-        warning.list[model.id] = list(model.converge@optinfo$conv$lme4$messages)
-      }
       glmm.values = summary(my.mod)$coefficient
-      est.vector = append(est.vector, glmm.values['trt2:period1', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt2:period1', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt2:period1', 'z value'])
-      pval.vector = append(pval.vector, glmm.values['trt2:period1', 'Pr(>|z|)'])
+      est.vector[i] = glmm.values['trt2:period1', 'Estimate']
+      se.vector[i] = glmm.values['trt2:period1', 'Std. Error']
+      stat.vector[i] = glmm.values['trt2:period1', 'z value']
+      pval.vector[i] = glmm.values['trt2:period1', 'Pr(>|z|)']
+      converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
     # Fit GEE (geeglm)
     if (method == 'gee') {
@@ -452,7 +439,7 @@ cps.did.binary = function(nsim = NULL,
       se.vector[i] = gee.values['trt2:period1', 'Std.err']
       stat.vector[i] = gee.values['trt2:period1', 'Wald']
       pval.vector[i] = gee.values['trt2:period1', 'Pr(>|W|)']
-      converge.vector[i] <- ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
+      converge[i] <- ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     # Update progress information
     if (quiet == FALSE) {
@@ -475,21 +462,13 @@ cps.did.binary = function(nsim = NULL,
         )
       }
       # Print simulation complete message
-      if (sum(converge.vector == TRUE) == nsim) {
+      if (sum(converge == TRUE) == nsim) {
         message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
       }
     }
     # Iterate progress bar
-    prog.bar$update(sum(converge.vector == TRUE) / nsim)
+    prog.bar$update(sum(converge == TRUE) / nsim)
     Sys.sleep(1 / 100)
-    
-    # Governor to prevent infinite non-convergence loop
-    converge.ratio = sum(converge.vector == FALSE) / sum(converge.vector == TRUE)
-    if (converge.ratio > 4.0 && converge.ratio != Inf) {
-      stop(
-        "WARNING! The number of non-convergent models exceeds the number of convergent models by a factor of 4. Consider modifying sigma_b_sq0 and/or sigma_b_sq1"
-      )
-    }
   }
   
   ## Output objects
@@ -497,9 +476,7 @@ cps.did.binary = function(nsim = NULL,
   summary.message = paste0(
     "Monte Carlo Power Estimation based on ",
     nsim,
-    " Simulations: Difference in Difference Design, Binary Outcome. Note: ",
-    sum(converge.vector == FALSE),
-    " additional models were fitted to account for non-convergent simulations."
+    " Simulations: Difference in Difference Design, Binary Outcome."
   )
   
   # Create method object
@@ -512,23 +489,15 @@ cps.did.binary = function(nsim = NULL,
     Std.err = as.vector(unlist(se.vector)),
     Test.statistic = as.vector(unlist(stat.vector)),
     p.value = as.vector(unlist(pval.vector)),
-    converge = as.vector(unlist(converge.vector))
+    converge = as.vector(unlist(converge))
   )
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
   # pval.data = subset(cps.model.est, converge == TRUE)
-  pval.data = cps.model.est[cps.model.est$converge == TRUE, ]
-  pval.power = sum(pval.data[, 'sig.val']) / nrow(pval.data)
-  power.parms = data.frame(
-    power = round(pval.power, 3),
-    lower.95.ci = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3),
-    upper.95.ci = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3)
-  )
+  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  power.parms <- confintCalc(alpha = alpha,
+                             p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs
   p1.p2.or = round(p1 / (1 - p1) / (p2 / (1 - p2)), 3)
@@ -585,7 +554,7 @@ cps.did.binary = function(nsim = NULL,
   
   # Check & governor for inclusion of simulated datasets
   if (all.sim.data == FALSE &&
-      (sum(converge.vector == FALSE) < sum(converge.vector == TRUE) * 0.05)) {
+      (sum(converge == FALSE) < sum(converge == TRUE) * 0.05)) {
     simulated.datasets = NULL
   }
   
@@ -605,8 +574,7 @@ cps.did.binary = function(nsim = NULL,
       "ICC" = ICC,
       "icc.list" = icc.list,
       "model.estimates" = cps.model.est,
-      "sim.data" = simulated.datasets,
-      "warning.list" = warning.list
+      "sim.data" = simulated.datasets
     ),
     class = 'crtpwr'
   )

@@ -43,6 +43,7 @@
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'L-BFGS-B'.
+#' @param seed Option to set.seed. Default is NULL.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -75,11 +76,18 @@
 #' }
 #' 
 #' @examples 
+#' 
+#' # Estimate power for a trial with 3 steps and 12 clusters in arm 1 (often the standard-of-care or 'control' 
+#' # arm) at the initiation of the study. Those clusters have 15 subjects each, with sigma_b_sq = 1. 
+#' # We have estimated arm outcome counts of 4 and 5 in the first and second arms, 
+#' # respectively, and 100 simulated data sets analyzed by the GLMM method. Using seed = 123, 
+#' # the resulting power should be 0.85.
+#' 
 #' \dontrun{
-#' count.sw.rct = cps.sw.count(nsim = 100, nsubjects = 50, nclusters = 30, 
-#'                               c.ntrt = 3, c.trt = 5, steps = 5, sigma_b_sq = 20, 
+#' count.sw.rct = cps.sw.count(nsim = 100, nsubjects = 15, nclusters = 12, 
+#'                               c.ntrt = 4, c.trt = 5, steps = 3, sigma_b_sq = 1, 
 #'                               alpha = 0.05, family = 'poisson', analysis = 'poisson', 
-#'                               method = 'glmm', quiet = FALSE, all.sim.data = FALSE)
+#'                               method = 'glmm', seed = 123)
 #' }
 #'
 #' @author Alexander R. Bogdan 
@@ -104,12 +112,18 @@ cps.sw.count = function(nsim = NULL,
                         method = 'glmm',
                         quiet = FALSE,
                         all.sim.data = FALSE,
-                        opt = 'L-BFGS-B') {
+                        opt = 'L-BFGS-B', 
+                        seed = NULL) {
+  if (!is.na(seed)) {
+    set.seed(seed = seed)
+  }
+  
   # Create vectors to collect iteration-specific values
-  est.vector = NULL
-  se.vector = NULL
-  stat.vector = NULL
-  pval.vector = NULL
+  est.vector = vector("numeric", length = nsim)
+  se.vector = vector("numeric", length = nsim)
+  stat.vector = vector("numeric", length = nsim)
+  pval.vector = vector("numeric", length = nsim)
+  converge = vector("logical", length = nsim)
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -382,10 +396,11 @@ cps.sw.count = function(nsim = NULL,
                                                           clust), data = sim.dat)
       }
       glmm.values = summary(my.mod)$coefficient
-      est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
-      pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
+      est.vector[i] = glmm.values['trt', 'Estimate']
+      se.vector[i] = glmm.values['trt', 'Std. Error']
+      stat.vector[i] = glmm.values['trt', 'z value']
+      pval.vector[i] = glmm.values['trt', 'Pr(>|z|)']
+      converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
     
     # Fit GEE (geeglm)
@@ -399,10 +414,11 @@ cps.sw.count = function(nsim = NULL,
         corstr = "exchangeable"
       )
       gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+      est.vector[i] = gee.values['trt', 'Estimate']
+      se.vector[i] = gee.values['trt', 'Std.err']
+      stat.vector[i] = gee.values['trt', 'Wald']
+      pval.vector[i] = gee.values['trt', 'Pr(>|W|)']
+      converge[i] = ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     
     # Update progress information
@@ -455,9 +471,9 @@ cps.sw.count = function(nsim = NULL,
   summary.message = paste0(
     "Monte Carlo Power Estimation based on ",
     nsim,
-    " Simulations: Stepped Wedge Design, Count Outcome\nData Simulated from ",
+    " Simulations: Stepped Wedge Design, Count Outcome. Data Simulated from ",
     switch(family, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
-    " distribution\nAnalyzed using ",
+    " distribution. Analyzed using ",
     switch(analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'),
     " regression"
   )
@@ -470,21 +486,15 @@ cps.sw.count = function(nsim = NULL,
     Estimate = as.vector(unlist(est.vector)),
     Std.err = as.vector(unlist(se.vector)),
     Test.statistic = as.vector(unlist(stat.vector)),
-    p.value = as.vector(unlist(pval.vector))
+    p.value = as.vector(unlist(pval.vector)),
+    converge = as.vector(converge)
   )
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(
-    Power = round(pval.power, 3),
-    Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3),
-    Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3)
-  )
+  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  power.parms <- confintCalc(alpha = alpha,
+                             p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing treatment & time-specific differences
   values.vector = values.vector / nsim
@@ -525,7 +535,7 @@ cps.sw.count = function(nsim = NULL,
       analysis, poisson = 'Poisson', neg.binom = 'Negative Binomial'
     ), ' distribution')
   )
-  colnames(dist.parms) = "Data Simuation & Analysis Parameters"
+  colnames(dist.parms) = "Data Simulation & Analysis Parameters"
   
   # Create crossover matrix output object
   crossover.mat = apply(as.matrix(c(0, step.index)), 1,
