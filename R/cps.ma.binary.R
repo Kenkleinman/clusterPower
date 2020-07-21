@@ -381,7 +381,7 @@ cps.ma.binary <- function(nsim = 1000,
     }
     
     # Calculate and store power estimate & confidence intervals
-    power.parms <- confint.calc(
+    power.parms <- confintCalc(
       alpha = alpha,
       p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])
     )
@@ -562,7 +562,7 @@ cps.ma.binary <- function(nsim = 1000,
         }
       )
     
-    power.parms <- confint.calc(alpha = alpha,
+    power.parms <- confintCalc(alpha = alpha,
                                 p.val = Pr[, 2:narms])
     
     # Store GEE simulation output in data frame

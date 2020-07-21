@@ -565,7 +565,7 @@ cps.binary = function(nsim = NULL,
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
   browser()
-  power.parms <- confint.calc(alpha = alpha,
+  power.parms <- confintCalc(alpha = alpha,
                               p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs

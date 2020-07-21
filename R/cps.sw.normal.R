@@ -43,6 +43,7 @@
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param seed Option to set.seed. Default is NULL.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -79,7 +80,7 @@
 #' normal.sw.rct = cps.sw.normal(nsim = 100, nsubjects = 50, nclusters = 30, 
 #'                               difference = 1.75, steps = 5, sigma_sq = 100, sigma_b_sq = 30, 
 #'                               alpha = 0.05, method = 'glmm', quiet = FALSE, 
-#'                               all.sim.data = FALSE)
+#'                               all.sim.data = FALSE, seed = 123)
 #' }
 #'
 #' @author Alexander R. Bogdan 
@@ -101,13 +102,18 @@ cps.sw.normal = function(nsim = NULL,
                          alpha = 0.05,
                          method = 'glmm',
                          quiet = FALSE,
-                         all.sim.data = FALSE) {
+                         all.sim.data = FALSE, 
+                         seed = NULL) {
+  if (!is.na(seed)) {
+    set.seed(seed = seed)
+  }
+  
   # Create vectors to collect iteration-specific values
-  est.vector = NULL
-  se.vector = NULL
-  stat.vector = NULL
-  pval.vector = NULL
-  fail.vector = NULL
+  est.vector = vector(NA, length = nsim)
+  se.vector = vector(NA, length = nsim)
+  stat.vector = vector(NA, length = nsim)
+  pval.vector = vector(NA, length = nsim)
+  fail.vector = vector(NA, length = nsim)
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -331,13 +337,13 @@ cps.sw.normal = function(nsim = NULL,
       models[[i]] = my.mod
       glmm.values <- summary(my.mod)$coefficients
       p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = nclusters - length(step.index) - 2)
-      est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-      pval.vector = append(pval.vector, p.val)
-      fail.vector = append(fail.vector, ifelse(any(
+      est.vector[i] = glmm.values['trt', 'Estimate']
+      se.vector[i] = glmm.values['trt', 'Std. Error']
+      stat.vector[i] = glmm.values['trt', 't value']
+      pval.vector[i] = p.val
+      fail.vector[i] = ifelse(any(
         grepl("singular", my.mod@optinfo$conv$lme4$messages)
-      ) == TRUE, 1, 0))
+      ) == TRUE, 1, 0)
     }
     
     # Fit GEE (geeglm)
@@ -350,10 +356,11 @@ cps.sw.normal = function(nsim = NULL,
         corstr = "exchangeable"
       )
       gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+      est.vector[i] = gee.values['trt', 'Estimate']
+      se.vector[i] = gee.values['trt', 'Std.err']
+      stat.vector[i] = gee.values['trt', 'Wald']
+      pval.vector[i] = gee.values['trt', 'Pr(>|W|)']
+      fail.vector[i] = ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     
     # Update progress information

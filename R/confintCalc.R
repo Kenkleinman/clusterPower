@@ -15,8 +15,8 @@
 #'   \item{power.parms}{Exact confidence intervals produced using \code{binom.test()}}
 #' }
 #' 
-#' @export confint.calc
-confint.calc <- function(alpha = alpha,
+#' @export confintCalc
+confintCalc <- function(alpha = alpha,
                          p.val = p.val) {
   sig.val <-  ifelse(p.val < alpha, 1, 0)
   if (isTRUE(is.data.frame(sig.val)) || isTRUE(is.matrix(sig.val))) {

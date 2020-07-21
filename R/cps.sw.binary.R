@@ -41,6 +41,7 @@
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'L-BFGS-B'.
+#' @param seed Option to set.seed. Default is NULL.
 #' 
 #' @return A list with the following components
 #' \itemize{
@@ -73,16 +74,16 @@
 #' 
 #' @examples 
 #' 
-#' # Estimate power for a trial with 12 clusters in arm 1 (often the standard-of-care or 'control' 
+#' # Estimate power for a trial with 3 steps and 12 clusters in arm 1 (often the standard-of-care or 'control' 
 #' # arm) at the initiation of the study. Those clusters have 50 subjects each, with sigma_b_sq = 1. 
-#' # We have estimated arm outcome proportions of 0.1 and 0.35 in the first and second arms, 
+#' # We have estimated arm outcome proportions of 0.1 and 0.2 in the first and second arms, 
 #' # respectively, and 100 simulated data sets analyzed by the GLMM method. Using seed = 123, 
-#' # the resulting power should be 0.887.
+#' # the resulting power should be 0.8.
 #' 
 #' \dontrun{
-#' binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 50, nclusters = 30, 
-#'                               p.ntrt = 0.1, p.trt = 0.2, steps = 5, 
-#'                               sigma_b_sq = 30, alpha = 0.05, method = 'glmm', 
+#' binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 50, nclusters = 12, 
+#'                               p.ntrt = 0.1, p.trt = 0.2, steps = 3, 
+#'                               sigma_b_sq = 1, alpha = 0.05, method = 'glmm', 
 #'                               quiet = FALSE, all.sim.data = FALSE, seed = 123)
 #' }
 #'
@@ -106,13 +107,20 @@ cps.sw.binary = function(nsim = NULL,
                          method = 'glmm',
                          quiet = FALSE,
                          all.sim.data = FALSE,
-                         opt = 'L-BFGS-B') {
+                         opt = 'L-BFGS-B',
+                         seed = NULL) {
+  
+  if (!is.na(seed)) {
+    set.seed(seed = seed)
+  }
+  
   # Create vectors to collect iteration-specific values
-  est.vector = NULL
-  se.vector = NULL
-  stat.vector = NULL
-  pval.vector = NULL
-  lmer.icc.vector = NULL
+  est.vector = vector(NA, length = nsim)
+  se.vector = vector(NA, length = nsim)
+  stat.vector = vector(NA, length = nsim)
+  pval.vector = vector(NA, length = nsim)
+  lmer.icc.vector = vector(NA, length = nsim)
+  converge = vector(NA, length = nsim)
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -351,10 +359,11 @@ cps.sw.binary = function(nsim = NULL,
         )
       )
       glmm.values = summary(my.mod)$coefficient
-      est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-      se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-      stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
-      pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
+      est.vector[i] = glmm.values['trt', 'Estimate']
+      se.vector[i] = glmm.values['trt', 'Std. Error']
+      stat.vector[i] = glmm.values['trt', 'z value']
+      pval.vector[i] = glmm.values['trt', 'Pr(>|z|)']
+      converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
     
     # Fit GEE (geeglm)
@@ -368,10 +377,11 @@ cps.sw.binary = function(nsim = NULL,
         corstr = "exchangeable"
       )
       gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+      est.vector[i] = gee.values['trt', 'Estimate']
+      se.vector[i] = gee.values['trt', 'Std.err']
+      stat.vector[i] = gee.values['trt', 'Wald']
+      pval.vector[i] = gee.values['trt', 'Pr(>|W|)']
+      converge[i] = ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     
     # Update progress information
@@ -436,21 +446,15 @@ cps.sw.binary = function(nsim = NULL,
     Estimate = as.vector(unlist(est.vector)),
     Std.err = as.vector(unlist(se.vector)),
     Test.statistic = as.vector(unlist(stat.vector)),
-    p.value = as.vector(unlist(pval.vector))
+    p.value = as.vector(unlist(pval.vector)),
+    converge = as.vector(converge)
   )
   cps.model.est[, 'sig.val'] = ifelse(cps.model.est[, 'p.value'] < alpha, 1, 0)
   
   # Calculate and store power estimate & confidence intervals
-  pval.power = sum(cps.model.est[, 'sig.val']) / nrow(cps.model.est)
-  power.parms = data.frame(
-    Power = round(pval.power, 3),
-    Lower.95.CI = round(pval.power - abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3),
-    Upper.95.CI = round(pval.power + abs(stats::qnorm(alpha / 2)) * sqrt((
-      pval.power * (1 - pval.power)
-    ) / nsim), 3)
-  )
+  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  power.parms <- confintCalc(alpha = alpha,
+                             p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing treatment & time-specific differences
   values.vector = values.vector / nsim
