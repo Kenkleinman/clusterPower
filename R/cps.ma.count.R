@@ -75,8 +75,15 @@
 #' @param family Distribution from which responses are simulated. Accepts Poisson
 #' (\code{'poisson'}) or negative binomial (\code{'neg.binom'}); default = 'poisson'. Required.
 #'
-#' XX KK: Is there an option for which distribution family to choose when fitting the MODEL? there is in other functions...
-#'
+#' @param analysis Family used for data analysis; currently only applicable when \code{method = 'glmm'}.
+#' Accepts c('poisson', 'neg.binom'); default = 'poisson'. Required.
+#' 
+#' @param negBinomSize Only used when generating simulated data from the 
+#' negative binomial (family = 'neg.binom'), this is the target for number of 
+#' successful trials, or the dispersion parameter (the shape parameter of the gamma 
+#' mixing distribution). Must be positive and defaults to 1. Required when 
+#' family = 'neg.binom'.
+#' 
 #' @param sigma_b_sq Between-cluster variance for each arm; accepts a scalar
 #' (if all arms have the same between-cluster variance) or a vector of length
 #' \code{narms}. Required.
@@ -194,25 +201,27 @@
 #'
 #'
 #'
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
+#' @author Alexander R. Bogdan
+#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @examples
 #' 
-#' # For a 3-arm trial with 3, 3, and 4 clusters in each arm, respectively, 
+#' # For a 3-arm trial with 4, 4, and 5 clusters in each arm, respectively, 
 #' # specify the number of subjects in each cluster with 3 vectors in a list, 
-#' # each vector representing a study arm. For each cluster in no particular
+#' # each vector representing a study arm. For each cluster, in no particular
 #' # order, denote the number of subjects. In this example, the first arm 
-#' # contains 100, 100, and 50 subjects in each of 3 clusters. The second
-#' # arm contains 50, 100, and 110 subjects in each of 3 clusters, while 
-#' # the third arm contains 70, 100, 50, and 50 subjects in each of 4 
+#' # contains 150, 200, 50, and 100 subjects in each of the 4 clusters. The second
+#' # arm contains 50, 150, 210, and 100 subjects in each of 4 clusters, while 
+#' # the third arm contains 70, 200, 150, 50, and 100 subjects in each of 5 
 #' # clusters. The expected outcomes for each arm are 10, 55, and 65, and 
-#' # the sigma_b_sq values are 0.1, 0.1, and 0.2, respectively. Assuming 
-#' # seed = 123, the overall power for this trial should be 
+#' # the sigma_b_sq values are 1, 1, and 2, respectively. Assuming 
+#' # seed = 123, the overall power for this trial should be 0.81.
 #' 
 #' \dontrun{
-#' nsubjects.example <- list(c(100, 100, 50), c(50, 100, 110), c(70, 100, 50, 50))
+#' nsubjects.example <- list(c(150, 200, 50, 100), c(50, 150, 210, 100), c(70, 200, 150, 50, 100))
 #' counts.example <- c(10, 55, 65)
-#' sigma_b_sq.example <- c(0.1, 0.1, 0.2)
+#' sigma_b_sq.example <- c(1, 1, 2)
 #'
 #' count.ma.rct.unbal <- cps.ma.count(nsim = 100,
 #'                             nsubjects = nsubjects.example,
@@ -223,14 +232,16 @@
 #'
 #' # For a different trial with 4 arms, each arm has 4 clusters which 
 #' # each contain 100 subjects. Expected counts for each arm are 30 
-#' # for the first arm, 35 for the second, 70 for the third, and 35
-#' # for the fourth. For all arms, the expected sigma_b_sq = 0.001. 
-#' # Assuming seed = 123, the overall power for this trial should be 
+#' # for the first arm, 35 for the second, 70 for the third, and 40
+#' # for the fourth. Similarly, sigma_b_sq for each arm are 1 
+#' # for the first arm, 1.2 for the second, 1 for the third, and 0.9
+#' # for the fourth. Assuming seed = 123, the overall power for this 
+#' # trial should be 0.84
 #'
 #' \dontrun{
 #' count.ma.rct.bal <- cps.ma.count(nsim = 10, nsubjects = 100, narms = 4,
-#'                             nclusters = 4, counts = c(30, 35, 70, 35),
-#'                             sigma_b_sq = 0.001, seed = 123)
+#'                             nclusters = 25, counts = c(30, 35, 70, 40),
+#'                             sigma_b_sq = c(1, 1.2, 1, 0.9), seed = 123)
 #'}
 #' @export
 
@@ -240,6 +251,8 @@ cps.ma.count <- function(nsim = 1000,
                          nclusters = NULL,
                          counts = NULL,
                          family = "poisson",
+                         analysis = "poisson",
+                         negBinomSize = 1,
                          sigma_b_sq = NULL,
                          alpha = 0.05,
                          quiet = FALSE,
@@ -361,6 +374,8 @@ cps.ma.count <- function(nsim = 1000,
     tdist = tdist,
     cores = cores,
     family = family,
+    analysis = analysis,
+    negBinomSize = negBinomSize,
     nofit = nofit,
     opt = opt
   )

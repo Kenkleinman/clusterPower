@@ -17,41 +17,64 @@
 #' specified.
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
+#' 
 #' @param family A string consisting of either 'poisson' or 'neg.binom'.
+#' 
 #' @param str.nsubjects Number of subjects per treatment group; accepts a list 
 #' with one entry per arm. Each entry is a vector containing the number of 
 #' subjects per cluster (required).
+#' 
 #' @param counts Expected outcome for each arm; accepts a vector 
 #' of length \code{narms} (required).
+#' 
 #' @param sigma_b_sq Between-cluster variance; accepts a vector of length 
 #' \code{narms} (required).
+#' 
 #' @param alpha Significance level; default = 0.05.
+#' 
 #' @param method Analytical method, either Generalized Linear Mixed Effects 
 #' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 
 #' 'gee') (required); default = 'glmm'.
+#' 
+#' @param analysis Family used for data analysis; currently only applicable when \code{method = 'glmm'}.
+#' Accepts c('poisson', 'neg.binom'); default = 'poisson'. Required.
+#' 
+#' @param negBinomSize Only used when generating simulated data from the 
+#' negative binomial (family = 'neg.binom'), this is the target for number of 
+#' successful trials, or the dispersion parameter (the shape parameter of the gamma 
+#' mixing distribution). Must be positive and defaults to 1. Required when 
+#' family = 'neg.binom'.
+#' 
 #' @param quiet When set to FALSE, displays simulation progress and estimated 
 #' completion time; default is FALSE.
+#' 
 #' @param all.sim.data Option to output list of all simulated datasets; 
 #' default = FALSE.
+#' 
 #' @param seed Option to set.seed. Default is NULL.
+#' 
 #' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
 #' of fits fail to converge.
+#' 
 #' @param low.power.override Option to override \code{stop()} if the power 
 #' is less than 0.5 after the first 50 simulations and every ten simulations
 #' thereafter. On function execution stop, the actual power is printed in the 
 #' stop message. Default = FALSE. When TRUE, this check is ignored and the 
 #' calculated power is returned regardless of value. 
+#' 
 #' @param tdist Logical; use t-distribution instead of normal distribution for 
 #' simulation values, default = FALSE.
+#' 
 #' @param cores A string ("all") NA, or numeric value indicating the number of 
-#' cores to be used for parallel computing. 
-#' When this option is set to NA, no parallel computing is used.
+#' cores to be used for parallel computing. When this option is set to NA, no 
+#' parallel computing is used.
+#' 
 #' @param nofit Option to skip model fitting and analysis and return the 
-#' simulated data. 
-#' Defaults to \code{FALSE}. 
+#' simulated data. Defaults to \code{FALSE}. 
+#' 
 #' @param opt Option to fit with a different optimizer algorithm. Setting this 
-#' to "auto" tests an example fit using 
-#' the \code{nloptr} package and selects the first algorithm that converges.
+#' to "auto" tests an example fit using the \code{nloptr} package and selects 
+#' the first algorithm that converges.
 #' 
 #' @return A list with the following components:
 #' \itemize{
@@ -91,6 +114,8 @@ cps.ma.count.internal <-
            str.nsubjects = NULL,
            counts = NULL,
            family = "poisson",
+           analysis = "poisson",
+           negBinomSize = 1,
            sigma_b_sq = NULL,
            alpha = 0.05,
            quiet = FALSE,
@@ -205,7 +230,7 @@ cps.ma.count.internal <-
       }
       if (family. == 'neg.binom') {
         y <-
-          stats::rnbinom(length(y.intercept), size = 1, mu = y.intercept)
+          stats::rnbinom(length(y.intercept), size = negBinomSize, mu = y.intercept)
       }
       return(y)
     }
@@ -301,7 +326,7 @@ cps.ma.count.internal <-
         message("Fitting models")
       }
       
-      if (family == 'poisson') {
+      if (analysis == 'poisson') {
         if (opt == "auto") {
           message("testing optimizer algorithms:")
           algoptions <- c(
@@ -360,7 +385,7 @@ cps.ma.count.internal <-
         }
       }
       
-      if (family == 'neg.binom') {
+      if (analysis == 'neg.binom') {
         if (opt == "auto") {
           mod <- lme4::glmer.nb(
             sim.dat[, 1] ~ as.factor(trt) + (1 | clust),
@@ -454,7 +479,7 @@ cps.ma.count.internal <-
                  FALSE)
       }
       if (poor.fit.override == FALSE) {
-        if (sum(unlist(converged), na.rm = TRUE) > (nsim * .25)) {
+        if (sum(isFALSE(converged), na.rm = TRUE) > (nsim * .25)) {
           stop("more than 25% of simulations are singular fit: check model specifications")
         }
       }

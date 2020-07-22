@@ -21,21 +21,41 @@
 #' At least 2 of the following 3 arguments must be specified:
 #' @param c1 Expected outcome count in arm 1 group
 #' @param c2 Expected outcome count in arm 2 group
-#' @param c.diff Expected difference in outcome count between groups, defined as c.diff = c1 - c2
-#' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
-#' between-cluster variances for both arm) or a vector of length 2 specifying treatment-specific 
+#' @param c.diff Expected difference in outcome count between groups, defined as 
+#' c.diff = c1 - c2
+#' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; 
+#' accepts numeric scalar (indicating equal 
+#' between-cluster variances for both arm) or a vector of length 2 specifying 
+#' treatment-specific 
 #' between-cluster variances
-#' @param sigma_b_sq1 Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
-#' between-cluster variances for both arm) or a vector of length 2 specifying treatment-specific 
-#' between-cluster variances. For data simulation, sigma_b_sq1 is added to sigma_b_sq0, such that if sigma_b_sq0 = 5 
-#' and sigma_b_sq1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.
-#' @param alpha Significance level for power estimation, accepts value between 0 - 1; default = 0.05
-#' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
-#' @param analysis Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.
-#' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
-#' @param nofit Option to skip model fitting and analysis and only return the simulated data.
+#' @param sigma_b_sq1 Post-treatment (time == 1) between-cluster variance; 
+#' accepts numeric scalar (indicating equal 
+#' between-cluster variances for both arm) or a vector of length 2 specifying 
+#' treatment-specific 
+#' between-cluster variances. For data simulation, sigma_b_sq1 is added to 
+#' sigma_b_sq0, such that if sigma_b_sq0 = 5 
+#' and sigma_b_sq1 = 2, the between-cluster variance at time == 1 equals 7. 
+#' Default = 0.
+#' @param alpha Significance level for power estimation, accepts value between 
+#' 0 - 1; default = 0.05
+#' @param family Distribution from which responses are simulated. Accepts Poisson 
+#' ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
+#' @param analysis Family used for regression; currently only applicable for GLMM. 
+#' Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
+#' @param negBinomSize Only used when generating simulated data from the 
+#' negative binomial (family = 'neg.binom'), this is the target for number of 
+#' successful trials, or the dispersion parameter (the shape parameter of the gamma 
+#' mixing distribution). Must be strictly positive but need not be integer. 
+#' Defaults to 1.
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model 
+#' (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') 
+#' (required); default = 'glmm'
+#' @param quiet When set to FALSE, displays simulation progress and estimated 
+#' completion time. Default = FALSE.
+#' @param all.sim.data Option to output list of all simulated datasets. 
+#' Default = FALSE
+#' @param nofit Option to skip model fitting and analysis and only return the 
+#' simulated data.
 #' Default = \code{FALSE}.
 #' @param seed Option to set the seed. Default is NA.
 #' 
@@ -106,6 +126,7 @@ cps.did.count = function(nsim = NULL,
                          sigma_b_sq1 = 0,
                          family = 'poisson',
                          analysis = 'poisson',
+                         negBinomSize = 1,
                          method = 'glmm',
                          alpha = 0.05,
                          quiet = FALSE,
@@ -280,7 +301,7 @@ cps.did.count = function(nsim = NULL,
       y0.ntrt = stats::rpois(length(y0.ntrt.prob), y0.ntrt.prob)
     }
     if (family == 'neg.binom') {
-      y0.ntrt = stats::rnbinom(length(y0.ntrt.prob), size = 1, mu = y0.ntrt.prob)
+      y0.ntrt = stats::rnbinom(length(y0.ntrt.prob), size = negBinomSize, mu = y0.ntrt.prob)
     }
     
     # Create arm 2 y-value

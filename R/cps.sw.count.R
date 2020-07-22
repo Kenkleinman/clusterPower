@@ -37,6 +37,11 @@
 #' between-cluster variances (required).
 #' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
 #' @param analysis Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
+#' @param negBinomSize Only used when generating simulated data from the 
+#' negative binomial (family = 'neg.binom'), this is the target for number of 
+#' successful trials, or the dispersion parameter (the shape parameter of the gamma 
+#' mixing distribution). Must be strictly positive but need not be integer. 
+#' Defaults to 1.
 #' @param alpha Significance level. Default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
@@ -109,6 +114,7 @@ cps.sw.count = function(nsim = NULL,
                         alpha = 0.05,
                         family = 'poisson',
                         analysis = 'poisson',
+                        negBinomSize = 1,
                         method = 'glmm',
                         quiet = FALSE,
                         all.sim.data = FALSE,
@@ -337,7 +343,7 @@ cps.sw.count = function(nsim = NULL,
                                 sim.dat[, 'trt'] == 0,
                               stats::rnbinom(
                                 sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0),
-                                size = 1,
+                                size = negBinomSize,
                                 mu = exp(trt.linpred[j] +
                                            stats::rnorm(sum(
                                              sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0
@@ -349,7 +355,7 @@ cps.sw.count = function(nsim = NULL,
                                 sim.dat[, 'trt'] == 1,
                               stats::rnbinom(
                                 sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1),
-                                size = 1,
+                                size = negBinomSize,
                                 mu = exp(trt.linpred[j] +
                                            stats::rnorm(sum(
                                              sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1
