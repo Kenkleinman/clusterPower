@@ -17,8 +17,6 @@
 #' expected absolute difference between treatment
 #' arms, ICC, and time effect.
 #'
-#' Fortran for this package was kindly provided by Dr. Zhou and others.
-#'
 #' @param nsubjects Number of subjects per cluster; accepts a scalar. Equal cluster sizes
 #' are assumed (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
@@ -38,6 +36,14 @@
 #' @return The estimated power.
 #'
 #' @examples
+#' 
+#' # Estimate power for a trial with 3 steps and 20 clusters in arm 1 (often the standard-of-care or 'control' 
+#' # arm) at the initiation of the study. Those clusters have 90 subjects each, with anticipated change
+#' # from the beginning to the end of the study of -0.05. 
+#' # We have estimated arm outcome proportions of 0.1 and 0.2 in the first and second arms, 
+#' # respectively, and 100 simulated data sets analyzed by the GLMM method. Using seed = 123, 
+#' # the resulting power should be 0.8.
+#' 
 #' \dontrun{
 #' sw.bin <- cpa.sw.binary(nclusters = 20,
 #'   steps = 3,
@@ -58,6 +64,8 @@
 #' outcomes. Biostatistics. 2020 Jan 1;21(1):102-121. doi: 10.1093/biostatistics/kxy031
 #' @references Hussey, MA AND Hughes, JP. (2007). Design and analysis of stepped wedge 
 #' cluster randomized trials. Contemporary Clinical Trials 28, 182–191.
+#' @note Much of the FORTRAN code for this package was kindly provided by Dr. Zhou.
+#' 
 #' @export
 cpa.sw.binary <- function(nclusters = NA,
                           steps = NA,
