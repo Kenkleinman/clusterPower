@@ -113,6 +113,7 @@
 
 # Define function
 
+
 cps.did.binary = function(nsim = NULL,
                           nsubjects = NULL,
                           nclusters = NULL,
@@ -130,7 +131,6 @@ cps.did.binary = function(nsim = NULL,
                           all.sim.data = FALSE,
                           seed = NA,
                           nofit = FALSE) {
-  
   if (!is.na(seed)) {
     set.seed(seed = seed)
   }
@@ -201,7 +201,8 @@ cps.did.binary = function(nsim = NULL,
     nsubjects = rep(nsubjects, 2)
   }
   if (length(nclusters) == 2 &&
-      length(nsubjects) != 1 && length(nsubjects) != sum(nclusters)) {
+      length(nsubjects) != 1 &&
+      length(nsubjects) != sum(nclusters)) {
     stop(
       "A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS"
     )
@@ -335,7 +336,7 @@ cps.did.binary = function(nsim = NULL,
     y0.ntrt.prob = expit(y0.ntrt.linpred)
     y0.ntrt = unlist(lapply(y0.ntrt.prob, function(x)
       stats::rbinom(1, 1, x)))
-
+    
     # Create arm 2 y-value
     y0.trt.intercept = unlist(lapply(1:nclusters[1], function(x)
       rep(randint.trt.0[x], length.out = nsubjects[nclusters[1] + x])))
@@ -367,7 +368,7 @@ cps.did.binary = function(nsim = NULL,
     
     # Create single response vector
     y = c(y0.ntrt, y0.trt, y1.ntrt, y1.trt)
-
+    
     # Create and store data frame for simulated dataset
     sim.dat = data.frame(
       y = y,
@@ -382,10 +383,12 @@ cps.did.binary = function(nsim = NULL,
     # option to return simulated data only
     if (nofit == TRUE) {
       if (!exists("nofitop")) {
-        nofitop <- data.frame(period = sim.dat['period'],
-                              cluster = sim.dat['clust'],
-                              arm = sim.dat['trt'],
-                              y1 = sim.dat["y"])
+        nofitop <- data.frame(
+          period = sim.dat['period'],
+          cluster = sim.dat['clust'],
+          arm = sim.dat['trt'],
+          y1 = sim.dat["y"]
+        )
       } else {
         nofitop[, length(nofitop) + 1] <- sim.dat["y"]
       }
@@ -399,7 +402,7 @@ cps.did.binary = function(nsim = NULL,
       }
       return(nofitop)
     }
-
+    
     # Calculate mean values for given simulation
     iter.values = cbind(stats::aggregate(y ~ trt + period, data = sim.dat, mean)[, 3])
     values.vector = values.vector + iter.values

@@ -114,6 +114,10 @@
 #'                               family = 'poisson', analysis = 'poisson', method = 'glmm',
 #'                               seed = 123)
 #' }
+#' 
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}
+#' @author Alexander R. Bogdan 
+#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and Advanced Multilevel Modelling. London, 1999: Sage.
 #' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation Coefficient in Cluster Randomized Trials: 
@@ -123,6 +127,7 @@
 #' @export
 
 # Define function
+
 
 cps.did.count = function(nsim = NULL,
                          nsubjects = NULL,
@@ -141,7 +146,6 @@ cps.did.count = function(nsim = NULL,
                          all.sim.data = FALSE,
                          seed = NULL,
                          nofit = FALSE) {
-  
   if (!is.na(seed)) {
     set.seed(seed = seed)
   }
@@ -203,7 +207,8 @@ cps.did.count = function(nsim = NULL,
     nsubjects = rep(nsubjects, 2)
   }
   if (length(nclusters) == 2 &&
-      length(nsubjects) != 1 && length(nsubjects) != sum(nclusters)) {
+      length(nsubjects) != 1 &&
+      length(nsubjects) != sum(nclusters)) {
     stop(
       "A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS"
     )
@@ -370,10 +375,12 @@ cps.did.count = function(nsim = NULL,
     # option to return simulated data only
     if (nofit == TRUE) {
       if (!exists("nofitop")) {
-        nofitop <- data.frame(period = sim.dat['period'],
-                              cluster = sim.dat['clust'],
-                              arm = sim.dat['trt'],
-                              y1 = sim.dat["y"])
+        nofitop <- data.frame(
+          period = sim.dat['period'],
+          cluster = sim.dat['clust'],
+          arm = sim.dat['trt'],
+          y1 = sim.dat["y"]
+        )
       } else {
         nofitop[, length(nofitop) + 1] <- sim.dat["y"]
       }

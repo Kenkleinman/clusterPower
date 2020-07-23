@@ -19,41 +19,49 @@
 #'
 #' @param nsubjects Number of subjects per cluster; accepts a scalar. Equal cluster sizes
 #' are assumed (required).
+#' 
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
+#' 
 #' @param steps Number of crossover steps; Accepts positive scalar indicating the total
 #' number of steps (required).
+#' 
 #' @param d Total change over the study period (assume that time effects are linear
 #' across time steps); accepts numeric (required).
+#' 
 #' @param ICC Intracluster correlation coefficient as defined by Hussey and Hughes (2007) 
 #' for participants at first time step; accepts numeric (required). 
-#' @param beta Estimated treatment effect; accepts numeric (required).
-#' @param mu Estimated baseline effect; accepts numeric (required).
+#' 
+#' @param beta Estimated treatment (arm 2) effect; accepts numeric (required).
+#' 
+#' @param mu Estimated baseline (arm 1) effect; accepts numeric (required).
+#' 
 #' @param tol Machine tolerance. Accepts numeric. Default is 1e-5.
+#' 
 #' @param GQ Number of quadriture points used in Gaussian Legendre integration; accepts
 #' a scalar. Default is 100.
+#' 
 #' @param quiet Suppresses the progress bar; logical. Default is FALSE.
 #'
 #' @return The estimated power.
 #'
 #' @examples
 #' 
-#' # Estimate power for a trial with 3 steps and 20 clusters in arm 1 (often the standard-of-care or 'control' 
-#' # arm) at the initiation of the study. Those clusters have 90 subjects each, with anticipated change
-#' # from the beginning to the end of the study of -0.05. 
-#' # We have estimated arm outcome proportions of 0.1 and 0.2 in the first and second arms, 
-#' # respectively, and 100 simulated data sets analyzed by the GLMM method. Using seed = 123, 
-#' # the resulting power should be 0.8.
+#' # Estimate power for a trial with 3 steps and 20 clusters in arm 1 (often the 
+#' # standard-of-care or 'control' arm) at the initiation of the study. Those 
+#' # clusters have 90 subjects each, with anticipated change of -0.75 from the 
+#' # beginning to the end of the study. We estimated arm outcome proportions of 
+#' # 0.2 and 0.4 in the first (usually baseline) and second (usually treatment) 
+#' # arms, respectively, and intracluster correlation coefficient (ICC) of 0.01. 
+#' # The resulting power should be 0.8170374.
 #' 
 #' \dontrun{
-#' sw.bin <- cpa.sw.binary(nclusters = 20,
-#'   steps = 3,
-#'   nsubjects = 90,
-#'   d = -0.05,
+#' sw.bin <- cpa.sw.binary(nclusters = 50,
+#'   steps = 2,
+#'   nsubjects = 100,
+#'   d = -0.75,
 #'   ICC = 0.01,
-#'   beta = -0.05,
-#'   mu = 0.18,
-#'   tol = 1e-5,
-#'   GQ = 100)
+#'   beta = 0.4,
+#'   mu = 0.2)
 #' }
 #'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
@@ -67,6 +75,7 @@
 #' @note Much of the FORTRAN code for this package was kindly provided by Dr. Zhou.
 #' 
 #' @export
+
 cpa.sw.binary <- function(nclusters = NA,
                           steps = NA,
                           nsubjects = NA,
@@ -77,7 +86,6 @@ cpa.sw.binary <- function(nclusters = NA,
                           tol = 1e-5,
                           GQ = 100,
                           quiet = FALSE) {
-  
   ###### Define some FORTRAN-calling functions  ########
   
   syminverse <- function(invVar = invVar,
@@ -262,7 +270,7 @@ cpa.sw.binary <- function(nclusters = NA,
     errorCondition("Provide a logical for quiet.")
   }
   
-#### cpa.sw.binary R code ##################
+  #### cpa.sw.binary R code ##################
   
   #  Update progress information
   if (quiet == FALSE) {
@@ -368,7 +376,7 @@ cpa.sw.binary <- function(nclusters = NA,
       h <- h
       while (finish < 1) {
         h <- h + 1
-        XX <- interventionX[i, ]
+        XX <- interventionX[i,]
         z1 <- nsubjects - z0
         
         Dholder <- der_likelihood_time(

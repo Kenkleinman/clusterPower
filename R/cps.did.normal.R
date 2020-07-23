@@ -99,6 +99,7 @@
 #' @export
 
 
+
 cps.did.normal = function(nsim = NULL,
                           nsubjects = NULL,
                           nclusters = NULL,
@@ -113,7 +114,6 @@ cps.did.normal = function(nsim = NULL,
                           all.sim.data = FALSE,
                           seed = NA,
                           nofit = FALSE) {
-  
   if (!is.na(seed)) {
     set.seed(seed = seed)
   }
@@ -180,7 +180,8 @@ cps.did.normal = function(nsim = NULL,
     nsubjects = rep(nsubjects, 2)
   }
   if (length(nclusters) == 2 &&
-      length(nsubjects) != 1 && length(nsubjects) != sum(nclusters)) {
+      length(nsubjects) != 1 &&
+      length(nsubjects) != sum(nclusters)) {
     stop(
       "A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS"
     )
@@ -302,7 +303,9 @@ cps.did.normal = function(nsim = NULL,
       rep(randint.trt.1[x], length.out = nsubjects[nclusters[1] + x])))
     y1.trt.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])],
                                   function(x)
-                                    stats::rnorm(x, mean = mu2, sd = sqrt(sigma_sq[4]))))
+                                    stats::rnorm(
+                                      x, mean = mu2, sd = sqrt(sigma_sq[4])
+                                    )))
     y1.trt.post = y1.trt.bclust + y1.trt.wclust + stats::rnorm(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
     
     # Create single response vector
@@ -318,14 +321,16 @@ cps.did.normal = function(nsim = NULL,
     if (all.sim.data == TRUE) {
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
-
+    
     # option to return simulated data only
     if (nofit == TRUE) {
       if (!exists("nofitop")) {
-        nofitop <- data.frame(period = sim.dat['period'],
-                              cluster = sim.dat['clust'],
-                              arm = sim.dat['trt'],
-                              y1 = sim.dat["y"])
+        nofitop <- data.frame(
+          period = sim.dat['period'],
+          cluster = sim.dat['clust'],
+          arm = sim.dat['trt'],
+          y1 = sim.dat["y"]
+        )
       } else {
         nofitop[, length(nofitop) + 1] <- sim.dat["y"]
       }
