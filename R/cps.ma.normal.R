@@ -110,7 +110,7 @@
 #'   Overall power of model compared to H0. Omits non-convergent models.
 #'   }
 #'   \item{simulated.data}{
-#'   List of \code{nsim} data frames, each containing:
+#'   If \code{all.sim.data = TRUE}, a list of \code{nsim} data frames, each containing:
 #'                   "y" (Simulated response value),
 #'                   "trt" (Indicator for arm),
 #'                   "clust" (Indicator for cluster).
@@ -126,6 +126,12 @@
 #'   or "non-convergence" error, produced only when
 #'   method = "glmm" & all.sim.data=TRUE.
 #'   }
+#'   }
+#' If \code{nofit = T}, a data frame of the simulated data sets, containing:
+#' \itemize{
+#'   \item "arm" (Indicator for treatment arm)
+#'   \item "cluster" (Indicator for cluster)
+#'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
 #'   }
 #'
 #' @examples

@@ -35,8 +35,10 @@
 #' @param sigma_b_sq Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
 #' between-cluster variances for both arms) or a vector of length 2 specifying treatment-specific 
 #' between-cluster variances (required).
-#' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
-#' @param analysis Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'
+#' @param family Distribution from which responses are simulated. Accepts Poisson ('poisson') or 
+#' negative binomial ('neg.binom') (required); default = 'poisson'
+#' @param analysis Family used for regression; currently only applicable for GLMM. Accepts 
+#' c('poisson', 'neg.binom') (required); default = 'poisson'
 #' @param negBinomSize Only used when generating simulated data from the 
 #' negative binomial (family = 'neg.binom'), this is the target for number of 
 #' successful trials, or the dispersion parameter (the shape parameter of the gamma 
@@ -72,13 +74,20 @@
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value", 
 #'                   "sig.val" (Is p-value less than alpha?)
-#'   \item List of data frames, each containing: 
+#'   \item If \code{all.sim.data = TRUE}, a list of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for arm),
 #'                   "time.point" (Indicator for step; "t1" = time point 0) 
 #'                   "clust" (Indicator for cluster), 
 #'                   "period" (Indicator for at which step a cluster crosses over)
 #' }
+#' If \code{nofit = T}, a data frame of the simulated data sets, containing:
+#' 
+#' \itemize{
+#'   \item "arm" (Indicator for treatment arm)
+#'   \item "cluster" (Indicator for cluster)
+#'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+#'   }
 #' 
 #' @examples 
 #' 

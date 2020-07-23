@@ -39,7 +39,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' holder <- cpa.sw.binary(nclusters = 20,
+#' sw.bin <- cpa.sw.binary(nclusters = 20,
 #'   steps = 3,
 #'   nsubjects = 90,
 #'   d = -0.05,

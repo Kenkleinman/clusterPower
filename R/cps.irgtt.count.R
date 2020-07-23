@@ -34,6 +34,11 @@
 #' ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'
 #' @param analysis Family used for regression; currently only applicable for GLMM. 
 #' Accepts 'poisson' or 'neg.binom' (required); default = 'poisson'
+#' @param negBinomSize Only used when generating simulated data from the 
+#' negative binomial (family = 'neg.binom'), this is the target for number of 
+#' successful trials, or the dispersion parameter (the shape parameter of the gamma 
+#' mixing distribution). Must be strictly positive but need not be integer. 
+#' Defaults to 1.
 #' @param alpha Significance level. Default = 0.05.
 #' @param quiet When set to FALSE, displays simulation progress and estimated 
 #' completion time. Default = FALSE.
@@ -65,13 +70,20 @@
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value",
 #'                   "sig.val" (Is p-value less than alpha?)
-#'   \item List of data frames, each containing: 
+#'   \item If \code{all.sim.data = TRUE}, a list of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for arm), 
 #'                   "clust" (Indicator for cluster)
 #' }
-#' @author Alexander R. Bogdan 
+#' If \code{nofit = T}, a data frame of the simulated data sets, containing:
+#' \itemize{
+#'   \item "arm" (Indicator for treatment arm)
+#'   \item "cluster" (Indicator for cluster)
+#'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+#'   }
+#'   
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}
+#' @author Alexander R. Bogdan 
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' 
@@ -98,6 +110,7 @@ cps.irgtt.count <-
            sigma_b_sq2 = 0,
            family = 'poisson',
            analysis = 'poisson',
+           negBinomSize = 1,
            alpha = 0.05,
            quiet = FALSE,
            all.sim.data = FALSE,
@@ -133,6 +146,7 @@ cps.irgtt.count <-
         sigma_b_sq2 = sigma_b_sq2,
         family = family,
         analysis = analysis,
+        negBinomSize = negBinomSize,
         method = 'glmm',
         alpha = alpha,
         quiet = quiet,

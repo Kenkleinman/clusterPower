@@ -56,11 +56,17 @@
 #'   "Std.err" (Standard error for treatment effect estimate), "Test.statistic" (z-value (for GLMM) or 
 #'   Wald statistic (for GEE)), "p.value", "converge" (Did simulated model converge?), 
 #'   "sig.val" (Is p-value less than alpha?)
-#'   \item List of data frames, each containing: "y" (Simulated response value), 
+#'   \item If \code{all.sim.data = TRUE}, a list of data frames, each containing: "y" (Simulated response value), 
 #'   "trt" (Indicator for arm), "clust" (Indicator for cluster)
 #'   \item List of warning messages produced by non-convergent models; 
 #'   Includes model number for cross-referencing against \code{model.estimates}
 #' }
+#' If \code{nofit = T}, a data frame of the simulated data sets, containing:
+#' \itemize{
+#'   \item "arm" (Indicator for treatment arm)
+#'   \item "cluster" (Indicator for cluster)
+#'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+#'   }
 #' 
 #' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and 
 #' Advanced Multilevel Modelling. London, 1999: Sage.
@@ -75,8 +81,10 @@
 #'                         p2 = 0.2, sigma_b_sq2 = 1, alpha = 0.05, 
 #'                         all.sim.data = FALSE)
 #' }
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
-#'   and Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
+#' @author Alexander R. Bogdan
+#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' 
 #' @export
 
 cps.irgtt.binary <-

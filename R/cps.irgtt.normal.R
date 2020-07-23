@@ -61,11 +61,17 @@
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value", 
 #'                   "sig.val" (Is p-value less than alpha?)
-#'   \item List of data frames, each containing: 
+#'   \item If \code{all.sim.data = TRUE}, a list of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for treatment group), 
 #'                   "clust" (Indicator for cluster)
 #'                   }
+#' If \code{nofit = T}, a data frame of the simulated data sets, containing:
+#' \itemize{
+#'   \item "arm" (Indicator for treatment arm)
+#'   \item "cluster" (Indicator for cluster)
+#'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+#'   }
 #' 
 #' @examples 
 #' \dontrun{
@@ -75,8 +81,10 @@
 #'                         sigma_b_sq2 = 0.1, alpha = 0.05,
 #'                         quiet = FALSE, all.sim.data = FALSE)
 #' }
-#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, 
-#'   and Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
+#' @author Alexander R. Bogdan
+#' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' 
 #' @export
 
 

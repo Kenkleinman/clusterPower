@@ -64,12 +64,20 @@
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value", 
 #'                   "sig.val" (Is p-value less than alpha?)
-#'   \item List of data frames, each containing: 
+#'   \item If \code{all.sim.data = TRUE}, a list of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for arm), 
 #'                   "clust" (Indicator for cluster), 
 #'                   "period" (Indicator for time point)
 #' }
+#' If \code{nofit = T}, a data frame of the simulated data sets, containing:
+#' 
+#' \itemize{
+#'   \item "arm" (Indicator for treatment arm)
+#'   \item "cluster" (Indicator for cluster)
+#'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+#'   }
+#' 
 #' @examples 
 #' 
 #' # Estimate power for a trial with 6 clusters in arm 1 and 6 clusters in arm 2, 

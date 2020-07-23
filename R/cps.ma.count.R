@@ -170,6 +170,12 @@
 #'   all.sim.data=TRUE.
 #'   }
 #'   }
+#'   If \code{nofit = T}, a data frame of the simulated data sets, containing:
+#' \itemize{
+#'   \item "arm" (Indicator for treatment arm)
+#'   \item "cluster" (Indicator for cluster)
+#'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+#'   }
 #'
 #'
 #' @details

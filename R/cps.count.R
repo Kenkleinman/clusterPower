@@ -110,7 +110,7 @@
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)),
 #'                   "p.value",
 #'                   "converge" (Did model converge for that set of simulated data?)
-#'   \item If \code{all.sim.data = T}, a list of data frames, each containing:
+#'   \item If \code{all.sim.data = TRUE}, a list of data frames, each containing:
 #'                   "y" (Simulated response value),
 #'                   "trt" (Indicator for treatment arm),
 #'                   "clust" (Indicator for cluster)
