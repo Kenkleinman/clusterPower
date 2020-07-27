@@ -21,29 +21,47 @@
 #' P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
+#' 
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
+#' 
 #' @param nclusters Number of clusters per arm; accepts integer (required).
 #' At least 2 of the following 3 arguments must be specified when using expected probabilities:
+#'
 #' @param p1 Expected probability of outcome in arm 1
+#' 
 #' @param p2 Expected probability of outcome in arm 2
+#' 
 #' @param p.diff Expected difference in probability of outcome between groups, defined as p.diff = p1 - p2
 #' At least 2 of the following 3 arguments must be specified when using expected odds ratios:
+#' 
 #' @param or1 Expected odds ratio for outcome in arm 1
+#' 
 #' @param or2 Expected odds ratio for outcome in arm 2
+#' 
 #' @param or.diff Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2
-#' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
-#' between-cluster variances for both arms) or a vector of length 2 specifying treatment-specific 
-#' between-cluster variances
-#' @param sigma_b_sq1 Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
-#' between-cluster variances for both arms) or a vector of length 2 specifying treatment-specific 
-#' between-cluster variances. For data simulation, sigma_b_sq1 is added to sigma_b_sq0, such that if sigma_b_sq0 = 5 
-#' and sigma_b_sq1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.
+#' 
+#' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar 
+#' (indicating equal between-cluster variances for both arms) or a vector of length 2 specifying 
+#' treatment-specific between-cluster variances
+#' 
+#' @param sigma_b_sq1 Post-treatment (time == 1) between-cluster variance; accepts numeric scalar 
+#' (indicating equal between-cluster variances for both arms) or a vector of length 2 specifying 
+#' treatment-specific between-cluster variances. For data simulation, sigma_b_sq1 is added to 
+#' sigma_b_sq0, such that if sigma_b_sq0 = 5 and sigma_b_sq1 = 2, the between-cluster variance at 
+#' time == 1 equals 7. Default = 0.
+#' 
 #' @param alpha Significance level. Default = 0.05
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' 
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
+#' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' 
 #' @param quiet When set to FALSE, displays simulation start time and completion time. Default is TRUE.
+#' 
 #' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
+#' 
 #' @param nofit Option to skip model fitting and analysis and only return the simulated data.
 #' Default = \code{FALSE}.
+#' 
 #' @param seed Option to set the seed. Default is NA.
 #'  
 #' @return A list with the following components
@@ -102,12 +120,17 @@
 #' }
 #'
 #' @author Alexander R. Bogdan 
+#' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}
+#' 
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
-#' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and Advanced Multilevel Modelling. London, 1999: Sage.
-#' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation Coefficient in Cluster Randomized Trials: 
-#' A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. doi: 10.1111/j.1751-5823.2009.00092.x
+#' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and 
+#' Advanced Multilevel Modelling. London, 1999: Sage.
+#' 
+#' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation 
+#' Coefficient in Cluster Randomized Trials: A Review of Definitions. International 
+#' Statistical Review (2009), 77, 3, 378-394. doi: 10.1111/j.1751-5823.2009.00092.x
 #' 
 #' @export
 

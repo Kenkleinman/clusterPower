@@ -100,8 +100,6 @@
 #' @export
 
 
-
-
 cps.sw.binary = function(nsim = NULL,
                          nsubjects = NULL,
                          nclusters = NULL,
@@ -115,7 +113,6 @@ cps.sw.binary = function(nsim = NULL,
                          all.sim.data = FALSE,
                          opt = 'L-BFGS-B',
                          seed = NULL) {
-  
   if (!is.na(seed)) {
     set.seed(seed = seed)
   }
