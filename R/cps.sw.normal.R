@@ -45,6 +45,7 @@
 #' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
 #' @param seed Option to set.seed. Default is NULL.
 #' 
+#' 
 #' @return A list with the following components
 #' \itemize{
 #'   \item Character string indicating total number of simulations and simulation type

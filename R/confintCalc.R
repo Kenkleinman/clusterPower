@@ -6,7 +6,6 @@
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu} and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
-#' @param nsim A scalar; the number of simulations chosen by the user.
 #' @param alpha A numeric; the user-selected alpha cutoff.
 #' @param p.val A vector of p-values.
 #' 

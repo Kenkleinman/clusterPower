@@ -102,7 +102,6 @@ cps.irgtt.normal <-
            sigma_sq2 = sigma_sq,
            sigma_b_sq2 = 0,
            alpha = 0.05,
-           method = 'glmm',
            quiet = FALSE,
            all.sim.data = FALSE,
            nofit = FALSE,
