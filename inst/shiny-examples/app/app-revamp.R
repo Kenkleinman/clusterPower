@@ -1,0 +1,199 @@
+#
+# This is a Shiny web application. You can run the application by clicking
+# the 'Run App' button above.
+#
+# Find out more about building applications with Shiny here:
+#
+#    http://shiny.rstudio.com/
+#
+
+
+
+ui <- fluidPage(
+  HTML(
+    "<h3>Estimate Power for a Randomized Controlled Trial with clusterPower</h3>
+        <p>To use the calculator, select the trial type, outcome distribution, and calculation method.<p>
+        <p>Then enter values for the quantities that appear below. When complete, select the ESTIMATE POWER button.</p>
+        <p>You may specify more than one input quantity by separating numbers with commas.<p>"
+  ),
+  HTML(
+    "This Beta has minimal documentation; please contact ken.kleinman@gmail.com with any feedback."
+  ),
+  column(12, bookmarkButton("Save App State")),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput(
+        "type",
+        "CRT Type",
+        choices = c(
+          "Parallel",
+          "Multi-Arm",
+          "Difference-in-Difference",
+          "Stepped Wedge",
+          "Individually-Randomized Group"
+        )
+      ),
+      selectInput(
+        "dist",
+        "Outcome Distribution",
+        choices = c("Normal", "Binary", "Count")
+      ),
+      selectInput("meth", "Method",
+                  choices = c("Analytic", "Simulation")),
+      numericInput("nclusters", "Number of Clusters", value = 10),
+      numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+      numericInput("alpha", "alpha", value = 0.05),
+      conditionalPanel(
+        "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Analytic'",
+        clusterPower::argMatch("cpa.normal")
+      ),
+      conditionalPanel(
+        "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.normal")
+      ),
+      conditionalPanel(
+        "input.type == 'Parallel' & input.dist == 'Binary' & input.meth == 'Analytic'",
+        clusterPower::argMatch("cpa.binary")
+      ),
+      conditionalPanel(
+        "input.type == 'Parallel' & input.dist == 'Binary' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.binary")
+      ),
+      conditionalPanel(
+        "input.type == 'Parallel' & input.dist == 'Count' & input.meth == 'Analytic'",
+        clusterPower::argMatch("cpa.count")
+      ),
+      conditionalPanel(
+        "input.type == 'Parallel' & input.dist == 'Count' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.count")
+      ),
+      conditionalPanel(
+        "input.type == 'Multi-Arm' & input.dist == 'Normal' & input.meth == 'Analytic'",
+        clusterPower::argMatch("cpa.ma.normal")
+      ),
+      conditionalPanel(
+        "input.type == 'Multi-Arm' & input.dist == 'Normal' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.ma.normal")
+      ),
+      conditionalPanel(
+        "input.type == 'Multi-Arm' & input.dist == 'Binary' & input.meth == 'Analytic'",
+        print("No method exists. Use the simulation option instead.")
+      ),
+      conditionalPanel(
+        "input.type == 'Multi-Arm' & input.dist == 'Binary' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.ma.binary")
+      ),
+      conditionalPanel(
+        "input.type == 'Multi-Arm' & input.dist == 'Count' & input.meth == 'Analytic'",
+        print("No method exists. Use the simulation option instead.")
+      ),
+      conditionalPanel(
+        "input.type == 'Multi-Arm' & input.dist == 'Count' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.ma.count")
+      ),
+      conditionalPanel(
+        "input.type == 'Difference-in-Difference' & input.dist == 'Normal' & input.meth == 'Analytic'",
+        clusterPower::argMatch("cpa.did.normal")
+      ),
+      conditionalPanel(
+        "input.type == 'Difference-in-Difference' & input.dist == 'Normal' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.did.normal")
+      ),
+      conditionalPanel(
+        "input.type == 'Difference-in-Difference' & input.dist == 'Binary' & input.meth == 'Analytic'",
+        clusterPower::argMatch("cpa.did.binary")
+      ),
+      conditionalPanel(
+        "input.type == 'Difference-in-Difference' & input.dist == 'Binary' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.did.binary")
+      ),
+      conditionalPanel(
+        "input.type == 'Difference-in-Difference' & input.dist == 'Count' & input.meth == 'Analytic'",
+        print("No method exists. Use the simulation option instead.")
+      ),
+      conditionalPanel(
+        "input.type == 'Difference-in-Difference' & input.dist == 'Count' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.did.count")
+      ),
+      conditionalPanel(
+        "input.type == 'Stepped Wedge' & input.dist == 'Normal' & input.meth == 'Analytic'",
+        clusterPower::argMatch("cpa.sw.normal")
+      ),
+      conditionalPanel(
+        "input.type == 'Stepped Wedge' & input.dist == 'Normal' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.sw.normal")
+      ),
+      conditionalPanel(
+        "input.type == 'Stepped Wedge' & input.dist == 'Binary' & input.meth == 'Analytic'",
+        clusterPower::argMatch("cpa.sw.binary")
+      ),
+      conditionalPanel(
+        "input.type == 'Stepped Wedge' & input.dist == 'Binary' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.sw.binary")
+      ),
+      conditionalPanel(
+        "input.type == 'Stepped Wedge' & input.dist == 'Count' & input.meth == 'Analytic'",
+        clusterPower::argMatch("cpa.sw.count")
+      ),
+      conditionalPanel(
+        "input.type == 'Stepped Wedge' & input.dist == 'Count' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.sw.count")
+      ),
+      conditionalPanel(
+        "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Analytic'",
+        clusterPower::argMatch("cpa.irgtt.normal")
+      ),
+      conditionalPanel(
+        "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.irgtt.normal")
+      ),
+      conditionalPanel(
+        "input.type == 'Individually-Randomized Group' & input.dist == 'Binary' & input.meth == 'Analytic'",
+        clusterPower::argMatch("cpa.irgtt.binary")
+      ),
+      conditionalPanel(
+        "input.type == 'Individually-Randomized Group' & input.dist == 'Binary' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.irgtt.binary")
+      ),
+      conditionalPanel(
+        "input.type == 'Individually-Randomized Group' & input.dist == 'Count' & input.meth == 'Analytic'",
+        print("No method exists. Use the simulation option instead.")
+      ),
+      conditionalPanel(
+        "input.type == 'Individually-Randomized Group' & input.dist == 'Count' & input.meth == 'Simulation'",
+        clusterPower::argMatch("cps.irgtt.count")
+      ),
+      actionButton(
+        "CRTpower",
+        "Estimate CRT Power",
+        icon = icon("arrow-circle-right"),
+        width = '100%',
+        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+      )
+      
+    ),
+    mainPanel(plotOutput("hist"))
+  )
+)
+
+server <- function(input, output, session) {
+  observeEvent(input$primecolor, {
+    updateTabsetPanel(session, "primary", selected = input$primecolor)
+  })
+  
+  sample <- reactive({
+    switch(
+      input$primecolor,
+      red = rnorm(input$n, input$mean, input$sd),
+      blue = runif(input$n, input$min, input$max),
+      orange = rexp(input$n, input$rate)
+    )
+  })
+  output$hist <- renderPlot(hist(sample()), res = 96)
+}
+
+
+
+# Run the application
+shinyApp(ui = ui, server = server)
+
