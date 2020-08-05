@@ -112,7 +112,7 @@
 #' string ("all"), NA (no parallel computing), or scalar value indicating
 #' the number of CPUs to use. Default = NA.
 #'
-#' @param tdist Logical value indicating whether cluster-level random effects
+#' @param tdist.re Logical value indicating whether cluster-level random effects
 #' should be drawn from a \mjseqn{t} distribution rather than a normal distribution.
 #' Default = \code{FALSE}.
 #'
@@ -267,7 +267,7 @@ cps.ma.count <- function(nsim = 1000,
                          all.sim.data = FALSE,
                          seed = NA,
                          cores = NA,
-                         tdist = FALSE,
+                         tdist.re = FALSE,
                          poor.fit.override = FALSE,
                          low.power.override = FALSE,
                          return.all.models = FALSE,
@@ -377,7 +377,7 @@ cps.ma.count <- function(nsim = 1000,
     seed = seed,
     poor.fit.override = poor.fit.override,
     low.power.override = low.power.override,
-    tdist = tdist,
+    tdist = tdist.re,
     cores = cores,
     family = family,
     analysis = analysis,

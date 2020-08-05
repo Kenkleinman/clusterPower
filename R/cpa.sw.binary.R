@@ -33,7 +33,7 @@
 #' 
 #' @param beta Estimated treatment (arm 2) effect; accepts numeric (required).
 #' 
-#' @param mu Estimated baseline (arm 1) effect; accepts numeric (required).
+#' @param mu0 Estimated baseline (arm 1) effect; accepts numeric (required).
 #' 
 #' @param tol Machine tolerance. Accepts numeric. Default is 1e-5.
 #' 
@@ -61,7 +61,7 @@
 #'   d = -0.75,
 #'   ICC = 0.01,
 #'   beta = 0.4,
-#'   mu = 0.2)
+#'   mu0 = 0.2)
 #' }
 #'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
@@ -82,7 +82,7 @@ cpa.sw.binary <- function(nclusters = NA,
                           d = NA,
                           ICC = NA,
                           beta = NA,
-                          mu = NA,
+                          mu0 = NA,
                           tol = 1e-5,
                           GQ = 100,
                           quiet = FALSE) {
@@ -114,7 +114,7 @@ cpa.sw.binary <- function(nclusters = NA,
       return(o)
     }
   
-  der_likelihood_time <- function(mu = mu,
+  der_likelihood_time <- function(mu = mu0,
                                   beta = beta,
                                   gammaobj = gammaobj,
                                   tau2 = tau2,
@@ -181,7 +181,7 @@ cpa.sw.binary <- function(nclusters = NA,
   }
   
   computeparameter <- function(JJ = steps,
-                               mu = mu,
+                               mu = mu0,
                                beta = beta,
                                p0 = p0,
                                p11 = p11,
@@ -203,7 +203,7 @@ cpa.sw.binary <- function(nclusters = NA,
   }
   
   LinearPower_notime_subroutine <-
-    function(mu = mu,
+    function(mu = mu0,
              beta = beta,
              tau2 = tau2,
              II = II,
@@ -263,8 +263,8 @@ cpa.sw.binary <- function(nclusters = NA,
     errorCondition(message = "GQ must be a positive scalar.")
   }
   if (is.na(d) ||
-      is.na(ICC) || is.na(beta) || is.na(mu) || is.na(tol)) {
-    errorCondition("User must provide a value for d, ICC, beta, mu, and tol. See documentation for details.")
+      is.na(ICC) || is.na(beta) || is.na(mu0) || is.na(tol)) {
+    errorCondition("User must provide a value for d, ICC, beta, mu0, and tol. See documentation for details.")
   }
   if (!is.logical(quiet)) {
     errorCondition("Provide a logical for quiet.")
@@ -277,7 +277,7 @@ cpa.sw.binary <- function(nclusters = NA,
     message(paste0('Begin calculations :: Start Time: ', Sys.time()))
   }
   
-  p0 <- rep(mu, times = steps)
+  p0 <- rep(mu0, times = steps)
   p11 <-  p0[1] + beta
   p0stepchange <- d / (steps - 1)
   for (i in 2:steps) {
@@ -285,7 +285,7 @@ cpa.sw.binary <- function(nclusters = NA,
   }
   parholder <- computeparameter(
     JJ = steps,
-    mu = mu,
+    mu = mu0,
     beta = beta,
     p0 = p0,
     p11 = p11,
@@ -295,7 +295,7 @@ cpa.sw.binary <- function(nclusters = NA,
   gammaobj <- parholder$gamma
   
   # mincomp and maxcomp are steps+2 vectors of 0 and 1's,
-  # representing the weights of gammaobj(1),...,gammaobj(steps), mu, beta.
+  # representing the weights of gammaobj(1),...,gammaobj(steps), mu0, beta.
   comp <- rep(0, times = (steps + 2))
   maxcomp <- comp
   mincomp <- comp
@@ -305,7 +305,7 @@ cpa.sw.binary <- function(nclusters = NA,
     b <- -100
     
     for (i in 1:steps) {
-      temp = mu + gammaobj[i]
+      temp = mu0 + gammaobj[i]
       if (temp < a) {
         a = temp
         mincomp <- comp
@@ -318,7 +318,7 @@ cpa.sw.binary <- function(nclusters = NA,
         maxcomp[steps + 1] = 1
         maxcomp[i] = 1
       }
-      temp = mu + beta + gammaobj[i]
+      temp = mu0 + beta + gammaobj[i]
       if (temp < a) {
         a = temp
         mincomp <- comp
@@ -380,7 +380,7 @@ cpa.sw.binary <- function(nclusters = NA,
         z1 <- nsubjects - z0
         
         Dholder <- der_likelihood_time(
-          mu = mu,
+          mu = mu0,
           beta = beta,
           gammaobj = gammaobj,
           tau2 = tau2,
@@ -450,11 +450,11 @@ cpa.sw.binary <- function(nclusters = NA,
     
   } else {
     if (beta > 0) {
-      a = -mu
-      b = 1 - mu - beta
+      a = -mu0
+      b = 1 - mu0 - beta
     } else {
-      a = -mu - beta
-      b = 1 - mu
+      a = -mu0 - beta
+      b = 1 - mu0
     }
     quadholder <- legendre_handle(order = GQ,
                                   a = a,
@@ -464,7 +464,7 @@ cpa.sw.binary <- function(nclusters = NA,
     
     Linpower <-
       LinearPower_notime_subroutine(
-        mu = mu,
+        mu = mu0,
         beta = beta,
         tau2 = tau2,
         II = nclusters,

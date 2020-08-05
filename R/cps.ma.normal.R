@@ -60,7 +60,7 @@
 #' @param multi.p.method A string indicating the method to use for adjusting
 #' p-values for multiple comparisons. Choose one of "holm", "hochberg",
 #' "hommel", "bonferroni", "BH", "BY", "fdr", or "none" to leave p-values
-#' unadjusted. The default isc"bonferroni". See \code{?p.adjust} for additional
+#' unadjusted. The default is "bonferroni". See \code{?p.adjust} for additional
 #' details.
 #' @param quiet When set to FALSE, displays simulation progress and estimated
 #' completion time; default is FALSE.

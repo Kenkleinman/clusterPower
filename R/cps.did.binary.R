@@ -25,19 +25,15 @@
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
 #' 
 #' @param nclusters Number of clusters per arm; accepts integer (required).
+#' 
 #' At least 2 of the following 3 arguments must be specified when using expected probabilities:
-#'
 #' @param p1 Expected probability of outcome in arm 1
-#' 
 #' @param p2 Expected probability of outcome in arm 2
-#' 
 #' @param p.diff Expected difference in probability of outcome between groups, defined as p.diff = p1 - p2
+#' 
 #' At least 2 of the following 3 arguments must be specified when using expected odds ratios:
-#' 
 #' @param or1 Expected odds ratio for outcome in arm 1
-#' 
 #' @param or2 Expected odds ratio for outcome in arm 2
-#' 
 #' @param or.diff Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2
 #' 
 #' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar 
