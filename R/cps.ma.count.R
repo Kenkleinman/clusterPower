@@ -68,7 +68,7 @@
 #' the vector of cluster counts must match the length of the \code{nsubjects} vectors.
 #' Required.
 #'
-#' @param counts Mean event rates per unit time for each arm; accepts a scalar
+#' @param counts Mean event per unit time for each arm; accepts a scalar
 #' (if all arms have the same event rate) or
 #' a vector of length \code{narms}. Required.
 #'
