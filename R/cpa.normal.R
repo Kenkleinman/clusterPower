@@ -43,7 +43,7 @@
 #' @param alpha The level of significance of the test, the probability of a
 #'   Type I error.
 #' @param power The power of the test, 1 minus the probability of a Type II
-#'   error.
+#'   error. Defaults to NA.
 #' @param nclusters The number of clusters per condition. It must be greater than 1.
 #' @param nsubjects The mean of the cluster sizes, or a vector of cluster sizes for one arm.
 #' When nsubjects is a vector, CV and nclusters are calculated from nsubjects and 
@@ -118,7 +118,7 @@
 
 
 cpa.normal <- function(alpha = 0.05,
-                       power = 0.80,
+                       power = NA,
                        nclusters = NA,
                        nsubjects = NA,
                        sigma_sq = NA,
@@ -131,6 +131,9 @@ cpa.normal <- function(alpha = 0.05,
                        tol = .Machine$double.eps ^ 0.25) {
   method <- match.arg(method)
   
+  if (length(nsubjects == 1)) {
+    nsubjects <- rep(nsubjects, times = nclusters)
+  }
   if (nclusters != length(nsubjects)) {
     errorCondition("The length of nsubjects must equal nclusters.")
   }

@@ -15,14 +15,14 @@ updateArgs <- function(fxnName) {
     c("nsubjects",
       "nclusters",
       "alpha",
-      dplyr::intersect(c(fxnArgs(), "power"), names(formals(fxnName))))
-  holder <- as.vector(NA, mode = "character")
+      dplyr::intersect(c(clusterPower::argMatch(justNames = TRUE)), names(formals(fxnName))))
+  holder <- list()
   arghelper <- function(argname) {
     x <- paste0(argname, "=input$", argname)
     return(x)
   }
   for (i in 1:length(argNames)) {
-    holder[i] <- arghelper(argNames[i])
+    holder[[i]] <- arghelper(argNames[i])
   }
-  return(cat(holder, sep = ", "))
+  return(holder)
 }
