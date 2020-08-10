@@ -22,6 +22,13 @@ ui <- fluidPage(
   column(12, bookmarkButton("Save App State")),
   sidebarLayout(
     sidebarPanel(
+      actionButton(
+        "button",
+        "Estimate CRT Power",
+        icon = icon("arrow-circle-right"),
+        width = '100%',
+        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+      ),
       selectInput(
         "type",
         "CRT Type",
@@ -164,7 +171,7 @@ ui <- fluidPage(
         clusterPower::argMatch("cps.irgtt.count")
       ),
       actionButton(
-        "CRTpower",
+        "button",
         "Estimate CRT Power",
         icon = icon("arrow-circle-right"),
         width = '100%',
@@ -172,28 +179,171 @@ ui <- fluidPage(
       )
       
     ),
-    mainPanel(verbatimTextOutput("CRTpower"))
+    mainPanel(verbatimTextOutput("CRTpower", placeholder = TRUE))
   )
 )
 
 server <- function(input, output, session) {
-  observeEvent(input$CRTpower, {
-    updateNumericInput(session, inputId = "alpha2meanD", value = "0.05")
+  answer <- eventReactive(input$button, {
+    #make some helpful fxns to extract arg names
+    updateArgs <- function(fxnName) {
+      argNames <-
+        c(
+          "nsubjects",
+          "nclusters",
+          "alpha",
+          dplyr::intersect(
+            clusterPower::argMatch(justNames = TRUE),
+            names(formals(fxnName))
+          )
+        )
+      holder <- list()
+      arghelper <- function(argname) {
+        x <- paste0("input$", argname)
+        x <- eval(parse(text = x))
+        return(x)
+      }
+      for (i in 1:length(argNames)) {
+        holder[[i]] <- arghelper(argNames[i])
+      }
+      names(holder) <- argNames
+      return(holder)
+    }
+    
+    printresult <- function(fxnName) {
+      x <- rlang::exec(fxnName, !!!updateArgs(fxnName))
+      return(x)
+    }
+    
+    if (input$type == 'Parallel' &&
+        input$dist == 'Normal' && input$meth == 'Analytic') {
+      print(printresult("cpa.normal"))
+    }
+    if (input$type == 'Parallel' &&
+        input$dist == 'Normal' && input$meth == 'Simulation') {
+      print(printresult("cps.normal"))
+    }
+    if (input$type == 'Parallel' &
+        input$dist == 'Binary' & input$meth == 'Analytic') {
+      print(printresult("cpa.binary"))
+    }
+    if (input$type == 'Parallel' &
+        input$dist == 'Binary' & input$meth == 'Simulation') {
+      print(printresult("cps.binary"))
+    }
+    if (input$type == 'Parallel' &
+        input$dist == 'Count' & input$meth == 'Analytic') {
+      print(printresult("cpa.count"))
+    }
+    if (input$type == 'Parallel' &
+        input$dist == 'Count' & input$meth == 'Simulation') {
+      print(printresult("cps.count"))
+    }
+    if (input$type == 'Multi-Arm' &
+        input$dist == 'Normal' & input$meth == 'Analytic') {
+      print(printresult("cpa.ma.normal"))
+    }
+    if (input$type == 'Multi-Arm' &
+        input$dist == 'Normal' & input$meth == 'Simulation') {
+      print(printresult("cps.ma.normal"))
+    }
+    if (input$type == 'Multi-Arm' &
+        input$dist == 'Binary' & input$meth == 'Analytic') {
+      print("No method exists. Use the simulation option instead.")
+    }
+    if (input$type == 'Multi-Arm' &
+        input$dist == 'Binary' & input$meth == 'Simulation') {
+      print(printresult("cps.ma.binary"))
+    }
+    if (input$type == 'Multi-Arm' &
+        input$dist == 'Count' & input$meth == 'Analytic') {
+      print("No method exists. Use the simulation option instead.")
+    }
+    if (input$type == 'Multi-Arm' &
+        input$dist == 'Count' & input$meth == 'Simulation') {
+      print(printresult("cps.ma.count"))
+    }
+    if (input$type == 'Difference-in-Difference' &
+        input$dist == 'Normal' & input$meth == 'Analytic') {
+      print(printresult("cpa.did.normal"))
+    }
+    if (input$type == 'Difference-in-Difference' &
+        input$dist == 'Normal' & input$meth == 'Simulation') {
+      print(printresult("cps.did.normal"))
+    }
+    if (input$type == 'Difference-in-Difference' &
+        input$dist == 'Binary' & input$meth == 'Analytic') {
+      print(printresult("cpa.did.binary"))
+    }
+    if (input$type == 'Difference-in-Difference' &
+        input$dist == 'Binary' & input$meth == 'Simulation') {
+      print(printresult("cps.did.binary"))
+    }
+    if (input$type == 'Difference-in-Difference' &
+        input$dist == 'Count' & input$meth == 'Analytic') {
+      print("No method exists. Use the simulation option instead.")
+    }
+    if (input$type == 'Difference-in-Difference' &
+        input$dist == 'Count' & input$meth == 'Simulation') {
+      print(printresult("cps.did.count"))
+    }
+    if (input$type == 'Stepped Wedge' &
+        input$dist == 'Normal' & input$meth == 'Analytic') {
+      print(printresult("cpa.sw.normal"))
+    }
+    if (input$type == 'Stepped Wedge' &
+        input$dist == 'Normal' & input$meth == 'Simulation') {
+      print(printresult("cps.sw.normal"))
+    }
+    if (input$type == 'Stepped Wedge' &
+        input$dist == 'Binary' & input$meth == 'Analytic') {
+      print(printresult("cpa.sw.binary"))
+    }
+    if (input$type == 'Stepped Wedge' &
+        input$dist == 'Binary' & input$meth == 'Simulation') {
+      print(printresult("cps.sw.binary"))
+    }
+    if (input$type == 'Stepped Wedge' &
+        input$dist == 'Count' & input$meth == 'Analytic') {
+      print(printresult("cpa.sw.count"))
+    }
+    if (input$type == 'Stepped Wedge' &
+        input$dist == 'Count' & input$meth == 'Simulation') {
+      print(printresult("cps.sw.count"))
+    }
+    if (input$type == 'Individually-Randomized Group' &
+        input$dist == 'Normal' & input$meth == 'Analytic') {
+      print(printresult("cpa.irgtt.normal"))
+    }
+    if (input$type == 'Individually-Randomized Group' &
+        input$dist == 'Normal' & input$meth == 'Simulation') {
+      print(printresult("cps.irgtt.normal"))
+    }
+    if (input$type == 'Individually-Randomized Group' &
+        input$dist == 'Binary' & input$meth == 'Analytic') {
+      print(printresult("cpa.irgtt.binary"))
+    }
+    if (input$type == 'Individually-Randomized Group' &
+        input$dist == 'Binary' & input$meth == 'Simulation') {
+      print(printresult("cps.irgtt.binary"))
+    }
+    if (input$type == 'Individually-Randomized Group' &
+        input$dist == 'Count' & input$meth == 'Analytic') {
+      print("No method exists. Use the simulation option instead.")
+    }
+    if (input$type == 'Individually-Randomized Group' &
+        input$dist == 'Count' & input$meth == 'Simulation') {
+      print(printresult("cps.irgtt.count"))
+    }
+  })
+  output$CRTpower <- renderPrint({
+    answer()
   })
   
-#  sample <- reactive({
-#    switch(
-##      input$primecolor,
-#      red = rnorm(input$n, input$mean, input$sd),
-#      blue = runif(input$n, input$min, input$max),
-#      orange = rexp(input$n, input$rate)
-#    )
-#  })
-#  output$hist <- renderPlot(hist(sample()), res = 96)
+  # output$hist <- renderPlot(hist(sample()), res = 96)
 }
 
 
 
 # Run the application
 shinyApp(ui = ui, server = server)
-

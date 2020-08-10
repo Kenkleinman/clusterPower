@@ -130,7 +130,7 @@ cpa.normal <- function(alpha = 0.05,
                        method = c("taylor", "weighted"),
                        tol = .Machine$double.eps ^ 0.25) {
   method <- match.arg(method)
-  
+
   if (length(nsubjects == 1)) {
     nsubjects <- rep(nsubjects, times = nclusters)
   }
