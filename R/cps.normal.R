@@ -63,6 +63,8 @@
 #' of fits fail to converge.
 #' @param nofit Option to skip model fitting and analysis and instead return a dataframe with
 #' the simulated datasets. Default = \code{FALSE}.
+#' @param timelimit.override Logical. When FALSE (default), stops execution if the estimated completion time
+#' is more than 2 minutes.
 #' 
 #' @return If \code{nofit = F}, a list with the following components:
 #' \itemize{
@@ -206,23 +208,24 @@
 #' 
 #' 
 #' @export
-cps.normal = function(nsim = NULL,
-                      nclusters = NULL,
-                      nsubjects = NULL,
+cps.normal = function(nsim = NA,
+                      nclusters = NA,
+                      nsubjects = NA,
                       mu = 0,
-                      mu2 = NULL,
-                      ICC = NULL,
-                      sigma_sq = NULL,
-                      sigma_b_sq = NULL,
-                      ICC2 = NULL,
-                      sigma_sq2 = NULL,
-                      sigma_b_sq2 = NULL,
+                      mu2 = NA,
+                      ICC = NA,
+                      sigma_sq = NA,
+                      sigma_b_sq = NA,
+                      ICC2 = NA,
+                      sigma_sq2 = NA,
+                      sigma_b_sq2 = NA,
                       alpha = 0.05,
                       method = 'glmm',
                       quiet = FALSE,
                       all.sim.data = FALSE,
                       seed = NA,
                       poor.fit.override = FALSE,
+                      timelimit.override = FALSE,
                       irgtt = FALSE,
                       nofit = FALSE) {
   # option for reproducibility
@@ -251,7 +254,7 @@ cps.normal = function(nsim = NULL,
   
   # Validate NSIM, NCLUSTERS, NSUBJECTS
   sim.data.arg.list = list(nsim, nclusters, nsubjects)
-  sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
+  sim.data.args = unlist(lapply(sim.data.arg.list, is.na))
   if (sum(sim.data.args) > 0) {
     stop("NSIM, NCLUSTERS, & NSUBJECTS must all be specified. Please review your input values.")
   }
@@ -259,10 +262,16 @@ cps.normal = function(nsim = NULL,
   if (!is.wholenumber(nsim) || nsim < 1) {
     stop(paste0("NSIM", min1.warning))
   }
+
   if (!is.wholenumber(nclusters) || nclusters < 1) {
     stop(paste0("NCLUSTERS", min1.warning))
   }
-  if (!is.wholenumber(nsubjects) || nsubjects < 1) {
+  if (is.list(nsubjects)){
+    temp <- unlist(nsubjects)
+  } else {
+    temp <- nsubjects
+  }
+  if (!is.wholenumber(temp) || temp < 1) {
     stop(paste0("NSUBJECTS", min1.warning))
   }
   if (length(nclusters) > 2) {
@@ -301,39 +310,40 @@ cps.normal = function(nsim = NULL,
   
   ## Create variance parameters
   # sigma_b_sq, sigma_sq, ICC
-  if (!is.null(c(ICC, sigma_sq)) && is.null(sigma_b_sq)) {
+  if (!is.na(c(ICC, sigma_sq)) && is.na(sigma_b_sq)) {
     sigma_b_sq = ICC * sigma_sq / (1 - ICC)
   }
-  if (!is.null(c(ICC, sigma_b_sq)) && is.null(sigma_sq)) {
+  if (!is.na(c(ICC, sigma_b_sq)) && is.na(sigma_sq)) {
     sigma_sq = sigma_b_sq / ICC - sigma_b_sq
   }
-  if (!is.null(c(sigma_sq, sigma_b_sq)) && is.null(ICC)) {
+
+  if (!is.na(c(sigma_sq, sigma_b_sq)) && is.na(ICC)) {
     ICC = sigma_b_sq / (sigma_b_sq + sigma_sq)
   }
   # sigma_b_sq2, sigma_sq2, ICC2
-  if (!is.null(c(ICC2, sigma_sq2)) && is.null(sigma_b_sq2)) {
+  if (!is.na(c(ICC2, sigma_sq2)) && is.na(sigma_b_sq2)) {
     sigma_b_sq2 = ICC2 * sigma_sq2 / (1 - ICC2)
   }
-  if (!is.null(c(ICC2, sigma_b_sq2)) && is.null(sigma_sq2)) {
+  if (!is.na(c(ICC2, sigma_b_sq2)) && is.na(sigma_sq2)) {
     sigma_sq2 = sigma_b_sq2 / ICC2 - sigma_b_sq2
   }
-  if (!is.null(c(sigma_sq2, sigma_b_sq2)) && is.null(ICC2)) {
+  if (!is.na(c(sigma_sq2, sigma_b_sq2)) && is.na(ICC2)) {
     ICC2 = sigma_b_sq2 / (sigma_b_sq2 + sigma_sq2)
   }
   
   # Set within/between cluster variances & ICC for arm (if not already specified)
-  if (isTRUE(is.null(sigma_sq2))) {
+  if (isTRUE(is.na(sigma_sq2))) {
     sigma_sq2 <- sigma_sq
   }
-  if (isTRUE(is.null(sigma_b_sq2))) {
+  if (isTRUE(is.na(sigma_b_sq2))) {
     sigma_b_sq2 <- sigma_b_sq
   }
-  if (isTRUE(is.null(ICC2))) {
+  if (isTRUE(is.na(ICC2))) {
     ICC2 <- ICC
   }
   
   # Validate mu, mu2, ALPHA
-  if (is.null(mu) || is.null(mu2)) {
+  if (is.na(mu) || is.na(mu2)) {
     stop("MU and MU2 are required.")
   }
   min0.warning = " must be numeric."
@@ -347,16 +357,17 @@ cps.normal = function(nsim = NULL,
   # Validate ICC, sigma_sq, sigma_b_sq, ICC2, sigma_sq2, sigma_b_sq2
   
   parm1.arg.list = list(ICC, sigma_sq, sigma_b_sq)
-  parm1.args = unlist(lapply(parm1.arg.list, is.null))
+  parm1.args = unlist(lapply(parm1.arg.list, is.na))
   if (sum(parm1.args) > 1) {
     stop("At least two of the following terms must be specified: ICC, sigma_sq, sigma_b_sq")
   }
+
   if (round(ICC, 2) != round((sigma_b_sq / (sigma_b_sq + sigma_sq)), 2)) {
     stop("At least one of the following terms has been misspecified: ICC, sigma_sq, sigma_b_sq")
   }
   
   parm2.arg.list = list(ICC2, sigma_sq2, sigma_b_sq2)
-  parm2.args = unlist(lapply(parm2.arg.list, is.null))
+  parm2.args = unlist(lapply(parm2.arg.list, is.na))
   if (sum(parm2.args) > 1 && sum(parm2.args) != 3) {
     stop(
       "At least two of the following terms must be provided to simulate arm-specific
@@ -388,11 +399,14 @@ cps.normal = function(nsim = NULL,
   }
   
   # Create indicators for arm & cluster
+  if (is.list(nsubjects)){
+    nsubjects <- unlist(nsubjects)
+  }
   trt = c(rep(1, length.out = sum(nsubjects[1:nclusters[1]])),
           rep(2, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
+
   clust = unlist(lapply(1:sum(nclusters), function(x)
     rep(x, length.out = nsubjects[x])))
-  
   # Create simulation loop
   for (i in 1:nsim) {
     # Generate between-cluster effects
@@ -420,7 +434,7 @@ cps.normal = function(nsim = NULL,
     
     # Create single response vector
     y = c(y.0, y.1)
-    
+
     # Create data frame for simulated dataset
     sim.dat = data.frame(y = y, trt = trt, clust = clust)
     if (all.sim.data == TRUE) {
@@ -664,6 +678,14 @@ cps.normal = function(nsim = NULL,
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
         min.est = round(time.est %% 60, 0)
+        if (min.est > 2 && timelimit.override == FALSE){
+          stop(paste0("Estimated completion time: ",
+            hr.est,
+            'Hr:',
+            min.est,
+            'Min'
+          ))
+        }
         message(
           paste0(
             'Begin simulations :: Start Time: ',

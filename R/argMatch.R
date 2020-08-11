@@ -12,9 +12,20 @@
 
 
 
-argMatch <- function(fxnName, justNames = FALSE) {
+argMatch <- function(fxnName, justNames = FALSE, powerOverride = FALSE, fitOverride = FALSE, timeOverride = FALSE) {
   require("clusterPower")
 
+  if (powerOverride == TRUE){
+    low.power.override <- TRUE
+  }
+  if (fitOverride == TRUE){
+    poor.fit.override <- TRUE
+  }
+  if (timeOverride == TRUE){
+    timelimit.override <- TRUE
+  }
+  
+  
   # The arguments from which to choose
   nsim <-
     numericInput(

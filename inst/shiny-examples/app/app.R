@@ -172,28 +172,50 @@ ui <- fluidPage(
       ),
       actionButton(
         "button",
-        "Estimate CRT Power",
+        "Estimate Power",
         icon = icon("arrow-circle-right"),
         width = '100%',
         style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
-      )
-      
+      ),
+      actionButton('cancel', 'Cancel'),
+      checkboxInput("more", "Show advanced options", value = FALSE), 
+      conditionalPanel("input.more == true & input.meth == 'Simulation'",
+        checkboxInput("runforever", "Allow unlimited calculation time"),
+        checkboxInput("lowPowerOverride", "Allow completion when power is < 0.5"),
+        checkboxInput("poorFitOverride", "Allow completion when model fit is poor")
+    )
     ),
-    mainPanel(verbatimTextOutput("CRTpower", placeholder = TRUE))
+    mainPanel(shinycssloaders::withSpinner(verbatimTextOutput("CRTpower", placeholder = TRUE)))
   )
 )
 
+
+######################################
+
+    #       SERVER
+
+######################################
 server <- function(input, output, session) {
+  # Register user interrupt
+ # observeEvent(input$cancel,{
+#    print("Cancel")
+#    fire_interrupt()
+#  })
   answer <- eventReactive(input$button, {
     #make some helpful fxns to extract arg names
     updateArgs <- function(fxnName) {
+      argMatchResult <- clusterPower::argMatch(fxnName, justNames = TRUE, 
+                                               powerOverride = input$lowPowerOverride, 
+                                               fitOverride = input$poorFitOverride, 
+                                               timeOverride = input$runforever)
+      print(argMatchResult)
       argNames <-
         c(
           "nsubjects",
           "nclusters",
           "alpha",
           dplyr::intersect(
-            clusterPower::argMatch(justNames = TRUE),
+            argMatchResult,
             names(formals(fxnName))
           )
         )
@@ -221,7 +243,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      print(printresult("cps.normal"))
+      print(summary(printresult("cps.normal")))
     }
     if (input$type == 'Parallel' &
         input$dist == 'Binary' & input$meth == 'Analytic') {
