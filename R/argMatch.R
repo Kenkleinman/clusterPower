@@ -5,7 +5,7 @@
 #'
 #' @param fxnName String. The name of the function from which arguments should
 #' be drawn.
-#' @param justNames Logical. Default is FALSE. Should only argument names be returned?
+#' @param justNames Logical. Default is FALSE. Should only argument names be returned
 #'
 #' @return List of numericInput expressions.
 #' @export
@@ -93,7 +93,7 @@ argMatch <- function(fxnName, justNames = FALSE) {
     numericInput(
       "ICC",
       "Intracluster correlation coefficient (ICC)",
-      value = NA,
+      value = 0.05,
       min = 0,
       max = 1
     )
@@ -165,8 +165,8 @@ argMatch <- function(fxnName, justNames = FALSE) {
       max = 1
     )
   pooled <-
-    checkboxInput("pooled", "Pooled standard error?", value = FALSE)
-  p1inc <- checkboxInput("p1inc", "p1 > p2?", value = FALSE)
+    checkboxInput("pooled", "Pooled standard error", value = FALSE)
+  p1inc <- checkboxInput("p1inc", "p1 > p2", value = FALSE)
   multi_p_method <-
     selectInput(
       "multi.p.method",
@@ -185,7 +185,7 @@ argMatch <- function(fxnName, justNames = FALSE) {
       multiple = FALSE
     )
   tdist <-
-    checkboxInput("tdist", "Use t-distribution?", value = FALSE)
+    checkboxInput("tdist", "Use t-distribution", value = FALSE)
   means <-
     textInput(
       "means",
@@ -210,7 +210,7 @@ argMatch <- function(fxnName, justNames = FALSE) {
     max = 1
   )
   decrease <- checkboxInput("decrease",
-                            "Intervention probability < control probability?",
+                            "Intervention probability < control probability",
                             value = FALSE)
   mu0 <- numericInput("mu0", "Baseline (arm 1) effect", value = 0.1)
   beta <-
@@ -225,7 +225,7 @@ argMatch <- function(fxnName, justNames = FALSE) {
   r2 <- numericInput("r2",  "Mean event rate (Arm 2)", value = 0.2)
   r1inc <-
     checkboxInput("r1inc",
-                  "Intervention probability < control probability?",
+                  "Intervention probability < control probability",
                   value = FALSE)
   CVB <-
     numericInput("CVB", "Between-cluster coefficient of variation (CV)", value = 0.01)

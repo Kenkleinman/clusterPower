@@ -10,6 +10,7 @@
 
 
 ui <- fluidPage(
+  shinyjs::useShinyjs(),
   HTML(
     "<h3>Estimate Power for a Randomized Controlled Trial with clusterPower</h3>
         <p>To use the calculator, select the trial type, outcome distribution, and calculation method.<p>
@@ -50,6 +51,7 @@ ui <- fluidPage(
       numericInput("nclusters", "Number of Clusters", value = 10),
       numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
       numericInput("alpha", "alpha", value = 0.05),
+      shinyjs::hidden(numericInput("power", "power", value = NA)),
       conditionalPanel(
         "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Analytic'",
         clusterPower::argMatch("cpa.normal")
@@ -205,7 +207,7 @@ server <- function(input, output, session) {
     #make some helpful fxns to extract arg names
     updateArgs <- function(fxnName) {
       argMatchResult <- c(clusterPower::argMatch(fxnName, justNames = TRUE), 
-                          "lowPowerOverride", "poorFitOverride", "timelimitOverride")
+                          "lowPowerOverride", "poorFitOverride", "timelimitOverride", "power")
       argNames <-
         c(
           "nsubjects",
