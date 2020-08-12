@@ -57,7 +57,7 @@
 #' @param method Analytical method, either Generalized Linear Mixed Effects
 #' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm',
 #' 'gee') (required); default = 'glmm'.
-#' @param multi.p.method A string indicating the method to use for adjusting
+#' @param multi_p_method A string indicating the method to use for adjusting
 #' p-values for multiple comparisons. Choose one of "holm", "hochberg",
 #' "hommel", "bonferroni", "BH", "BY", "fdr", or "none" to leave p-values
 #' unadjusted. The default is "bonferroni". See \code{?p.adjust} for additional

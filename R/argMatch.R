@@ -12,20 +12,9 @@
 
 
 
-argMatch <- function(fxnName, justNames = FALSE, powerOverride = FALSE, fitOverride = FALSE, timeOverride = FALSE) {
+argMatch <- function(fxnName, justNames = FALSE) {
   require("clusterPower")
 
-  if (powerOverride == TRUE){
-    low.power.override <- TRUE
-  }
-  if (fitOverride == TRUE){
-    poor.fit.override <- TRUE
-  }
-  if (timeOverride == TRUE){
-    timelimit.override <- TRUE
-  }
-  
-  
   # The arguments from which to choose
   nsim <-
     numericInput(
@@ -178,7 +167,7 @@ argMatch <- function(fxnName, justNames = FALSE, powerOverride = FALSE, fitOverr
   pooled <-
     checkboxInput("pooled", "Pooled standard error?", value = FALSE)
   p1inc <- checkboxInput("p1inc", "p1 > p2?", value = FALSE)
-  multi.p.method <-
+  multi_p_method <-
     selectInput(
       "multi.p.method",
       "Multiple comparisons adjustment",
@@ -203,21 +192,18 @@ argMatch <- function(fxnName, justNames = FALSE, powerOverride = FALSE, fitOverr
       "Expected absolute treatment effect for each arm (comma delimited)",
       "1.2, 4.3, 5.2"
     )
-  low.power.override <- checkboxInput("low.power.override",
-                                      "Complete run even if power < 0.5?",
-                                      value = FALSE)
   steps <-
     numericInput("steps", "Number of crossover steps", value = 3)
-  p.e <-
+  pe <-
     numericInput(
-      "p.e",
+      "pe",
       "Outcome probability (Intervention arm)",
       value = 0.5,
       min = 0,
       max = 1
     )
-  p.c <- numericInput(
-    "p.c",
+  pc <- numericInput(
+    "pc",
     "Outcome probability (Control arm)",
     value = 0.1,
     min = 0,

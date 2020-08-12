@@ -24,7 +24,7 @@ ui <- fluidPage(
     sidebarPanel(
       actionButton(
         "button",
-        "Estimate CRT Power",
+        "DELETE THIS BUTTON",
         icon = icon("arrow-circle-right"),
         width = '100%',
         style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
@@ -180,9 +180,9 @@ ui <- fluidPage(
       actionButton('cancel', 'Cancel'),
       checkboxInput("more", "Show advanced options", value = FALSE), 
       conditionalPanel("input.more == true & input.meth == 'Simulation'",
-        checkboxInput("runforever", "Allow unlimited calculation time"),
-        checkboxInput("lowPowerOverride", "Allow completion when power is < 0.5"),
-        checkboxInput("poorFitOverride", "Allow completion when model fit is poor")
+        checkboxInput("timelimitOverride", "Allow unlimited calculation time", value = FALSE),
+        checkboxInput("lowPowerOverride", "Allow completion when power is < 0.5", value = FALSE),
+        checkboxInput("poorFitOverride", "Allow completion when model fit is poor", value = FALSE)
     )
     ),
     mainPanel(shinycssloaders::withSpinner(verbatimTextOutput("CRTpower", placeholder = TRUE)))
@@ -204,11 +204,8 @@ server <- function(input, output, session) {
   answer <- eventReactive(input$button, {
     #make some helpful fxns to extract arg names
     updateArgs <- function(fxnName) {
-      argMatchResult <- clusterPower::argMatch(fxnName, justNames = TRUE, 
-                                               powerOverride = input$lowPowerOverride, 
-                                               fitOverride = input$poorFitOverride, 
-                                               timeOverride = input$runforever)
-      print(argMatchResult)
+      argMatchResult <- c(clusterPower::argMatch(fxnName, justNames = TRUE), 
+                          "lowPowerOverride", "poorFitOverride", "timelimitOverride")
       argNames <-
         c(
           "nsubjects",

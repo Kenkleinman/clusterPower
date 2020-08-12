@@ -74,7 +74,7 @@
 #' # power = 0.8, 10 observations per cluster, no variation in cluster size, probability
 #' # in condition 1 of .1 and condition 2 of .2, and ICC = 0.1.
 #' \dontrun{
-#' cpa.binary(nsubjects=10, p1=.1, p2=.2, ICC=.1)
+#' cpa.binary(power = 0.08, nsubjects = 10, p1 = 0.1, p2 = 0.2, ICC = 0.1)
 #' }
 #' # 
 #' # The result, showing nclusters of greater than 37, suggests 38 clusters per 
@@ -84,7 +84,7 @@
 #' # observations per cluster no variation in cluster size, ICC of 0.1, and probability of 
 #' # .1 in condition 2, with power of .8.
 #' \dontrun{
-#' cpa.binary(nsubjects=10, nclusters = 38, p1=.1, p2=NA, ICC=.1, p1inc = FALSE)
+#' cpa.binary(power = 0.08, nsubjects = 10, nclusters = 38, p1 = 0.1, p2 = NA, ICC = 0.1, p1inc = FALSE)
 #' }
 #' # The result shows that p2 greater than 0.198922 can be detected with at least 80% power.
 #' 
@@ -99,7 +99,7 @@
 
 
 cpa.binary <- function(alpha = 0.05,
-                       power = 0.80,
+                       power = NA,
                        nclusters = NA,
                        nsubjects = NA,
                        CV = 0,

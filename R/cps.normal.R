@@ -54,16 +54,16 @@
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM, default) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee').
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
-#' @param all.sim.data Option to include a list of all simulated datasets in the output object.
+#' @param allSimData Option to include a list of all simulated datasets in the output object.
 #' Default = \code{FALSE}.
 #' @param seed Option to set the seed. Default, NA, selects a seed based on the system clock.
 #' @param irgtt Logical. Is the experimental design an individually randomized 
 #' group treatment trial? For details, see ?cps.irgtt.normal.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\% 
 #' of fits fail to converge.
 #' @param nofit Option to skip model fitting and analysis and instead return a dataframe with
 #' the simulated datasets. Default = \code{FALSE}.
-#' @param timelimit.override Logical. When FALSE (default), stops execution if the estimated completion time
+#' @param timelimitOverride Logical. When FALSE (default), stops execution if the estimated completion time
 #' is more than 2 minutes.
 #' 
 #' @return If \code{nofit = F}, a list with the following components:
@@ -89,7 +89,7 @@
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value", 
 #'                   "converge", (Did the model converge?)
-#'   \item If \code{all.sim.data = TRUE}, a list of data frames, each containing: 
+#'   \item If \code{allSimData = TRUE}, a list of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for arm), 
 #'                   "clust" (Indicator for cluster)
@@ -222,10 +222,10 @@ cps.normal = function(nsim = NA,
                       alpha = 0.05,
                       method = 'glmm',
                       quiet = FALSE,
-                      all.sim.data = FALSE,
+                      allSimData = FALSE,
                       seed = NA,
-                      poor.fit.override = FALSE,
-                      timelimit.override = FALSE,
+                      poorFitOverride = FALSE,
+                      timelimitOverride = FALSE,
                       irgtt = FALSE,
                       nofit = FALSE) {
   # option for reproducibility
@@ -392,7 +392,7 @@ cps.normal = function(nsim = NA,
       "QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)"
     )
   }
-  if (!is.logical(all.sim.data)) {
+  if (!is.logical(allSimData)) {
     stop(
       "ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
     )
@@ -437,7 +437,7 @@ cps.normal = function(nsim = NA,
 
     # Create data frame for simulated dataset
     sim.dat = data.frame(y = y, trt = trt, clust = clust)
-    if (all.sim.data == TRUE) {
+    if (allSimData == TRUE) {
       simulated.datasets[[i]] = sim.dat
     }
     
@@ -517,7 +517,7 @@ cps.normal = function(nsim = NA,
                   my.mod@optinfo$conv$lme4$messages)
           ) == FALSE, TRUE, FALSE))
           # option to stop the function early if fits are singular
-          if (poor.fit.override == FALSE) {
+          if (poorFitOverride == FALSE) {
             if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
               stop(
                 "more than 25% of simulations are singular fit: check model specifications"
@@ -584,7 +584,7 @@ cps.normal = function(nsim = NA,
                   my.mod@optinfo$conv$lme4$messages)
           ) == FALSE, TRUE, FALSE)
           # option to stop the function early if fits are singular
-          if (poor.fit.override == FALSE) {
+          if (poorFitOverride == FALSE) {
             if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
               stop(
                 "more than 25% of simulations are singular fit: check model specifications"
@@ -644,7 +644,7 @@ cps.normal = function(nsim = NA,
                   my.mod@optinfo$conv$lme4$messages)
           ) == TRUE, FALSE, TRUE)
           # option to stop the function early if fits are singular
-          if (poor.fit.override == FALSE) {
+          if (poorFitOverride == FALSE) {
             if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
               stop(
                 "more than 25% of simulations are singular fit: check model specifications"
@@ -678,7 +678,7 @@ cps.normal = function(nsim = NA,
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
         min.est = round(time.est %% 60, 0)
-        if (min.est > 2 && timelimit.override == FALSE){
+        if (min.est > 2 && timelimitOverride == FALSE){
           stop(paste0("Estimated completion time: ",
             hr.est,
             'Hr:',
