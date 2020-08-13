@@ -89,14 +89,25 @@ argMatch <- function(fxnName, justNames = FALSE) {
       value = 0,
       min = 0
     )
+  if (fxnName == "cps.binary"){
+    ICC <-
+      numericInput(
+        "ICC",
+        "Intracluster correlation coefficient (ICC)",
+        value = 0.05,
+        min = 0,
+        max = 1
+      )
+  } else {
   ICC <-
     numericInput(
       "ICC",
       "Intracluster correlation coefficient (ICC)",
-      value = 0.05,
+      value = NA,
       min = 0,
       max = 1
     )
+}
   vart <-
     numericInput("vart", "Total variation of the outcome", value = NA)
   seed <-

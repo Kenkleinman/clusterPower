@@ -63,6 +63,11 @@
 #' of fits fail to converge.
 #' @param nofit Option to skip model fitting and analysis and instead return a dataframe with
 #' the simulated datasets. Default = \code{FALSE}.
+#' @param lowPowerOverride Option to override \code{stop()} if the power
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the
+#' calculated power is returned regardless of value.
 #' @param timelimitOverride Logical. When FALSE (default), stops execution if the estimated completion time
 #' is more than 2 minutes.
 #' 
@@ -226,6 +231,7 @@ cps.normal = function(nsim = NA,
                       seed = NA,
                       poorFitOverride = FALSE,
                       timelimitOverride = FALSE,
+                      lowPowerOverride = FALSE,
                       irgtt = FALSE,
                       nofit = FALSE) {
   # option for reproducibility
@@ -669,6 +675,23 @@ cps.normal = function(nsim = NA,
       stat.vector[i] = gee.values['trt', 'Wald']
       pval.vector[i] = gee.values['trt', 'Pr(>|W|)']
       converge.vector[i] <- ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
+    }
+    
+    # stop the loop if power is <0.5
+    if (lowPowerOverride == FALSE && i < 50 && (i %% 10 == 0)) {
+      sig.val.temp <-
+        ifelse(pval.vector < alpha, 1, 0)
+      pval.power.temp <- sum(sig.val.temp, na.rm = TRUE) / i
+      if (pval.power.temp < 0.5) {
+        stop(
+          paste(
+            "Calculated power is < ",
+            pval.power.temp,
+            ". Set lowPowerOverride == TRUE to run the simulations anyway.",
+            sep = ""
+          )
+        )
+      }
     }
     
     # Update simulation progress information

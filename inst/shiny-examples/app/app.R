@@ -54,7 +54,7 @@ ui <- fluidPage(
       shinyjs::hidden(numericInput("power", "power", value = NA)),
       conditionalPanel(
         "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Analytic'",
-        clusterPower::argMatch("cpa.normal")
+        clusterPower::argMatch("cpa.normal"),
       ),
       conditionalPanel(
         "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Simulation'",
@@ -199,10 +199,11 @@ ui <- fluidPage(
 ######################################
 server <- function(input, output, session) {
   # Register user interrupt
- # observeEvent(input$cancel,{
+#  observeEvent(input$cancel,{
 #    print("Cancel")
-#    fire_interrupt()
+#    session$reload()
 #  })
+  
   answer <- eventReactive(input$button, {
     #make some helpful fxns to extract arg names
     updateArgs <- function(fxnName) {
@@ -231,10 +232,20 @@ server <- function(input, output, session) {
       return(holder)
     }
     
+    getNA <- function(oneArg) { 
+      observe({
+      if (!is.numeric(input$oneArg)) {
+        updateNumericInput(session, oneArg, NA)
+      }
+    })
+    }
+      
     printresult <- function(fxnName) {
       x <- rlang::exec(fxnName, !!!updateArgs(fxnName))
       return(x)
     }
+    
+
     
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
