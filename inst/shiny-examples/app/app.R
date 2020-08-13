@@ -250,7 +250,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Parallel' &
         input$dist == 'Binary' & input$meth == 'Simulation') {
-      print(printresult("cps.binary"))
+      print(summary(printresult("cps.binary")))
     }
     if (input$type == 'Parallel' &
         input$dist == 'Count' & input$meth == 'Analytic') {
@@ -258,7 +258,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Parallel' &
         input$dist == 'Count' & input$meth == 'Simulation') {
-      print(printresult("cps.count"))
+      print(summary(printresult("cps.count")))
     }
     if (input$type == 'Multi-Arm' &
         input$dist == 'Normal' & input$meth == 'Analytic') {

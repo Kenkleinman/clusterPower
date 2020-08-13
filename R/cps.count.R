@@ -40,8 +40,8 @@
 #' 
 #' @param c2 The mean event rate per unit time in the second arm.
 #' 
-#' @param c.diff Expected difference in mean event rates between groups, defined as
-#' \code{c.diff = c1 - c2}.
+#' @param cDiff Expected difference in mean event rates between groups, defined as
+#' \code{cDiff = c1 - c2}.
 #' 
 #' @param sigma_b_sq Between-cluster variance; if sigma_b_sq2 is not specified,
 #' between-cluster variances are assumed to be equal in the two arms. Accepts numeric. Required.
@@ -72,7 +72,7 @@
 #' completion time. Default = \code{FALSE}.
 #' 
 #' 
-#' @param all.sim.data Option to include a list of all simulated datasets in the output object.
+#' @param allSimData Option to include a list of all simulated datasets in the output object.
 #' Default = \code{FALSE}.
 #' 
 #' @param seed Option to set the seed. Default is NA.
@@ -110,7 +110,7 @@
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)),
 #'                   "p.value",
 #'                   "converge" (Did model converge for that set of simulated data?)
-#'   \item If \code{all.sim.data = TRUE}, a list of data frames, each containing:
+#'   \item If \code{allSimData = TRUE}, a list of data frames, each containing:
 #'                   "y" (Simulated response value),
 #'                   "trt" (Indicator for treatment arm),
 #'                   "clust" (Indicator for cluster)
@@ -182,7 +182,7 @@
 #'                       c1 = 20, c2 = 30, sigma_b_sq = 0.1,
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'gee', alpha = 0.05, quiet = FALSE,
-#'                       all.sim.data = FALSE, seed = 123)
+#'                       allSimData = FALSE, seed = 123)
 #' }                  
 #' # The resulting estimated power (if you set seed = 123) should be about 0.8.
 #'
@@ -199,7 +199,7 @@
 #'                       c1 = 20, c2 = 30, sigma_b_sq = 0.1,
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
-#'                       all.sim.data = FALSE, seed = 123)
+#'                       allSimData = FALSE, seed = 123)
 #' }               
 #' # The resulting estimated power (if you set seed = 123) should be about 0.95.
 #'
@@ -219,7 +219,7 @@
 #'                       sigma_b_sq = 0.1, sigma_b_sq2 = 0.05,
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
-#'                       all.sim.data = FALSE, seed = 123, optimizer = "L-BFGS-B")
+#'                       allSimData = FALSE, seed = 123, optimizer = "L-BFGS-B")
 #' }
 #' # The resulting estimated power (if you set seed = 123) should be about 0.75.
 #'
@@ -233,7 +233,7 @@ cps.count = function(nsim = NULL,
                      nclusters = NULL,
                      c1 = NULL,
                      c2 = NULL,
-                     c.diff = NULL,
+                     cDiff = NULL,
                      sigma_b_sq = NULL,
                      sigma_b_sq2 = NULL,
                      family = 'poisson',
@@ -242,7 +242,7 @@ cps.count = function(nsim = NULL,
                      method = 'glmm',
                      alpha = 0.05,
                      quiet = FALSE,
-                     all.sim.data = FALSE,
+                     allSimData = FALSE,
                      irgtt = FALSE,
                      seed = NA,
                      nofit = FALSE,
@@ -340,14 +340,14 @@ cps.count = function(nsim = NULL,
     stop("ALPHA must be a numeric value between 0 - 1")
   }
   
-  # Validate C1, C2, C.DIFF
-  parm1.arg.list = list(c1, c2, c.diff)
+  # Validate C1, C2, cDiff
+  parm1.arg.list = list(c1, c2, cDiff)
   parm1.args = unlist(lapply(parm1.arg.list, is.null))
   if (sum(parm1.args) > 1) {
-    stop("At least two of the following terms must be specified: C1, C2, C.DIFF")
+    stop("At least two of the following terms must be specified: C1, C2, cDiff")
   }
-  if (sum(parm1.args) == 0 && c.diff != abs(c1 - c2)) {
-    stop("At least one of the following terms has be misspecified: C1, C2, C.DIFF")
+  if (sum(parm1.args) == 0 && cDiff != abs(c1 - c2)) {
+    stop("At least one of the following terms has be misspecified: C1, C2, cDiff")
   }
   
   # Validate FAMILY, ANALYSIS, METHOD, QUIET
@@ -382,13 +382,13 @@ cps.count = function(nsim = NULL,
   
   # Calculate inputs & variance parameters
   if (is.null(c1)) {
-    c1 = abs(c.diff - c2)
+    c1 = abs(cDiff - c2)
   }
   if (is.null(c2)) {
-    c2 = abs(c1 - c.diff)
+    c2 = abs(c1 - cDiff)
   }
-  if (is.null(c.diff)) {
-    c.diff = c1 - c2
+  if (is.null(cDiff)) {
+    cDiff = c1 - c2
   }
   if (is.null(sigma_b_sq2)) {
     sigma_b_sq[2] = sigma_b_sq
@@ -451,7 +451,7 @@ cps.count = function(nsim = NULL,
     sim.dat = data.frame(trt = as.factor(trt),
                          clust = as.factor(clust),
                          y = as.integer(y))
-    if (all.sim.data == TRUE) {
+    if (allSimData == TRUE) {
       simulated.datasets[[i]] = list(sim.dat)
     }
     
@@ -694,7 +694,7 @@ cps.count = function(nsim = NULL,
   inputs = t(data.frame(
     'Arm1' = c("count" = c1, "risk.ratio" = c1.c2.rr),
     'Arm2' = c("count" = c2, 'risk.ratio' = c2.c1.rr),
-    'Difference' = c("count" = c.diff, 'risk.ratio' = c2.c1.rr - c1.c2.rr)
+    'Difference' = c("count" = cDiff, 'risk.ratio' = c2.c1.rr - c1.c2.rr)
   ))
 
   # Create object containing group-specific cluster sizes
