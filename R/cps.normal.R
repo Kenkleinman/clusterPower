@@ -27,17 +27,24 @@
 #' \code{clusterPower::cpa.normal}.
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer.  Required.
+#' 
 #' @param nclusters Number of clusters per condition; accepts single integer (implying equal numbers of clusters in the two groups)
 #' or vector of length 2 (unequal number of clusters per arm).  Required.
+#' 
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (implying equal cluster sizes for the two groups), 
 #' a vector of length two (equal cluster sizes within arm), or a vector of length \code{sum(nclusters)} 
 #' (unequal cluster sizes within arm).  Required.
+#' 
 #' @param mu Mean in the first arm; accepts numeric, default 0.  Required..
+#' 
 #' @param mu2 Mean in the second arm; accepts numeric.  Required.
 #' 
 #' At least 2 of the following must be specified:
+#' 
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 and 1.
+#' 
 #' @param sigma_sq Within-cluster variance; accepts numeric.
+#' 
 #' @param sigma_b_sq Between-cluster variance; accepts numeric.
 #' 
 #' 
@@ -45,31 +52,44 @@
 #' for the two groups. If one of the following is given, variance parameters differ 
 #' between treatment groups, and at least 2 of the following 
 #' must be specified:
+#' 
 #' @param ICC2 Intra-cluster correlation coefficient for clusters in the second arm.
+#' 
 #' @param sigma_sq2 Within-cluster variance for clusters in the second arm.
+#' 
 #' @param sigma_b_sq2 Between-cluster variance for clusters in the second arm.
 #' 
 #' Optional parameters:
+#' 
 #' @param alpha Significance level; default = 0.05.
+#' 
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM, default) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee').
+#' 
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
+#' 
 #' @param allSimData Option to include a list of all simulated datasets in the output object.
 #' Default = \code{FALSE}.
+#' 
 #' @param seed Option to set the seed. Default, NA, selects a seed based on the system clock.
+#' 
 #' @param irgtt Logical. Is the experimental design an individually randomized 
 #' group treatment trial? For details, see ?cps.irgtt.normal.
+#' 
 #' @param poorFitOverride Option to override \code{stop()} if more than 25\% 
 #' of fits fail to converge.
+#' 
 #' @param nofit Option to skip model fitting and analysis and instead return a dataframe with
 #' the simulated datasets. Default = \code{FALSE}.
+#' 
 #' @param lowPowerOverride Option to override \code{stop()} if the power
 #' is less than 0.5 after the first 50 simulations and every ten simulations
 #' thereafter. On function execution stop, the actual power is printed in the
 #' stop message. Default = FALSE. When TRUE, this check is ignored and the
 #' calculated power is returned regardless of value.
-#' @param timelimitOverride Logical. When FALSE (default), stops execution if the estimated completion time
-#' is more than 2 minutes.
+#' 
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
+#' is more than 2 minutes. Defaults to TRUE.
 #' 
 #' @return If \code{nofit = F}, a list with the following components:
 #' \itemize{
@@ -230,7 +250,7 @@ cps.normal = function(nsim = NA,
                       allSimData = FALSE,
                       seed = NA,
                       poorFitOverride = FALSE,
-                      timelimitOverride = FALSE,
+                      timelimitOverride = TRUE,
                       lowPowerOverride = FALSE,
                       irgtt = FALSE,
                       nofit = FALSE) {
@@ -248,8 +268,7 @@ cps.normal = function(nsim = NA,
   converge.vector <- rep(NA, length = nsim)
   simulated.datasets = list()
   
-  # Set start.time for progress iterator & initialize progress bar
-  start.time = Sys.time()
+  # initialize progress bar
   prog.bar =  progress::progress_bar$new(
     format = "(:spin) [:bar] :percent eta :eta",
     total = nsim,
@@ -467,7 +486,10 @@ cps.normal = function(nsim = NA,
       }
     }
     
-    # trt and clust are re-coded as trt2 and clust2 to work nicely with lme. This can be changed later.
+    #set start time
+    start.time = Sys.time()
+    
+    # trt and clust are re-coded as trt2 and clust2 to work nicely with lme.
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       if (irgtt == TRUE) {
@@ -513,22 +535,24 @@ cps.normal = function(nsim = NA,
           null.mod <-
             stats::update.formula(my.mod, y ~ 1 + (0 + as.factor(trt) |
                                                      clust))
-          glmm.values = summary(my.mod)$coefficients
-          pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|t|)'])
-          est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-          se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-          stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          converge.vector = append(converge.vector, ifelse(any(
+          glmm.values[i] = summary(my.mod)$coefficients
+          pval.vector[i] = glmm.values['trt', 'Pr(>|t|)']
+          est.vector[i] = glmm.values['trt', 'Estimate']
+          se.vector[i] = glmm.values['trt', 'Std. Error']
+          stat.vector[i] = glmm.values['trt', 't value']
+          converge.vector[i] = ifelse(any(
             grepl("singular",
                   my.mod@optinfo$conv$lme4$messages)
-          ) == FALSE, TRUE, FALSE))
+          ) == FALSE, TRUE, FALSE)
+          
           # option to stop the function early if fits are singular
-          if (poorFitOverride == FALSE) {
+          if (poorFitOverride == FALSE && converge.vector[i] == FALSE) {
             if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
               stop(
                 "more than 25% of simulations are singular fit: check model specifications"
               )
             }
+            
           }
         }
         #if not IRGTT, then the following:

@@ -52,7 +52,7 @@
 #' @param sigma_b_sq Between-cluster variance; accepts a vector of length
 #' \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
-#' @param all.sim.data Option to output list of all simulated datasets;
+#' @param allSimData Option to output list of all simulated datasets;
 #' default = FALSE.
 #' @param method Analytical method, either Generalized Linear Mixed Effects
 #' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm',
@@ -67,9 +67,9 @@
 #' @param seed Option to set.seed. Default is NULL.
 #' @param cores a string ("all") or numeric value indicating the number of cores to be
 #' used for parallel computing.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\%
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\%
 #' of fits fail to converge; default = FALSE.
-#' @param low.power.override Option to override \code{stop()} if the power
+#' @param lowPowerOverride Option to override \code{stop()} if the power
 #' is less than 0.5 after the first 50 simulations and every ten simulations
 #' thereafter. On function execution stop, the actual power is printed in the
 #' stop message. Default = FALSE. When TRUE, this check is ignored and the
@@ -83,6 +83,9 @@
 #' incompatible model types will trigger a list of compatible optimizer options.
 #' @param nofit Option to skip model fitting and analysis and return the simulated data.
 #' Defaults to \code{FALSE}.
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
+#' is more than 2 minutes. Defaults to TRUE.
+#' 
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{
@@ -93,7 +96,7 @@
 #'                but not included in this calculation.
 #'                }
 #'   \item{model.estimates}{
-#'   Produced only when all.sim.data=TRUE, data frame with columns
+#'   Produced only when allSimData=TRUE, data frame with columns
 #'   corresponding to each arm with the suffixes as follows:
 #'                   ".Estimate" (Estimate of treatment effect for a given
 #'                   simulation),
@@ -102,7 +105,7 @@
 #'                   ".pval"
 #'                   }
 #'   \item{overall.power.table}{
-#'   Produced only when all.sim.data=TRUE, table of F-test (when
+#'   Produced only when allSimData=TRUE, table of F-test (when
 #'   method="glmm") or chi-squared (when method="gee") significance test
 #'   results.
 #'   }
@@ -110,7 +113,7 @@
 #'   Overall power of model compared to H0. Omits non-convergent models.
 #'   }
 #'   \item{simulated.data}{
-#'   If \code{all.sim.data = TRUE}, a list of \code{nsim} data frames, each containing:
+#'   If \code{allSimData = TRUE}, a list of \code{nsim} data frames, each containing:
 #'                   "y" (Simulated response value),
 #'                   "trt" (Indicator for arm),
 #'                   "clust" (Indicator for cluster).
@@ -118,13 +121,13 @@
 #'   \item{model.fit.warning.percent}{
 #'   Character string containing the percent of \code{nsim} in which the
 #'   glmm fit was singular or failed to converge, produced only when
-#'   method == "glmm" & all.sim.data==FALSE.
+#'   method == "glmm" & allSimData==FALSE.
 #'   }
 #'   \item{model.fit.warning.incidence}{
 #'   Vector of length \code{nsim} denoting whether
 #'   or not a simulation glmm fit triggered a "singular fit"
 #'   or "non-convergence" error, produced only when
-#'   method = "glmm" & all.sim.data=TRUE.
+#'   method = "glmm" & allSimData=TRUE.
 #'   }
 #'   }
 #' If \code{nofit = T}, a data frame of the simulated data sets, containing:
@@ -146,9 +149,9 @@
 #'                        means = means.example, sigma_sq = sigma_sq.example,
 #'                        sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
 #'                        quiet = FALSE, ICC=NULL, method = 'glmm',
-#'                        all.sim.data = FALSE,
+#'                        allSimData = FALSE,
 #'                        seed = 123, cores = "all",
-#'                        poor.fit.override = FALSE,
+#'                        poorFitOverride = FALSE,
 #'                        optmethod = "nlminb")
 #'
 #'  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3,
@@ -157,8 +160,8 @@
 #'                                    sigma_sq = c(1.2, 1, 1.9),
 #'                                    sigma_b_sq = c(0.5, 1, 0.75),
 #'                                    quiet = FALSE, ICC=NULL, method = 'glmm',
-#'                                    all.sim.data = FALSE, seed = 123,
-#'                                    poor.fit.override = TRUE,
+#'                                    allSimData = FALSE, seed = 123,
+#'                                    poorFitOverride = TRUE,
 #'                                    cores = NULL,
 #'                                    optmethod = "nlminb")
 #'
@@ -168,8 +171,8 @@
 #'                                   sigma_sq = 0.1,
 #'                                   sigma_b_sq = 0.1, alpha = 0.05,
 #'                                   quiet = FALSE, ICC=NULL, method = 'glmm',
-#'                                   all.sim.data = FALSE, seed = 123,
-#'                                   poor.fit.override = TRUE, cores="all",
+#'                                   allSimData = FALSE, seed = 123,
+#'                                   poorFitOverride = TRUE, cores="all",
 #'                                   optmethod = "NLOPT_LN_NELDERMEAD")
 #' }
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan,
@@ -194,15 +197,16 @@ cps.ma.normal <- function(nsim = 1000,
                           ICC = NULL,
                           method = 'glmm',
                           multi.p.method = "bonferroni",
-                          all.sim.data = FALSE,
+                          allSimData = FALSE,
                           seed = NA,
                           cores = NULL,
-                          poor.fit.override = FALSE,
-                          low.power.override = FALSE,
+                          poorFitOverride = FALSE,
+                          lowPowerOverride = FALSE,
                           tdist = FALSE,
                           return.all.models = FALSE,
                           optmethod = "nlminb",
-                          nofit = FALSE) {
+                          nofit = FALSE,
+                          timelimitOverride = TRUE) {
   # create narms and nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
     # create narms and nclusters if not supplied by the user
@@ -234,6 +238,9 @@ cps.ma.normal <- function(nsim = 1000,
       !isTRUE(is.list(narms))) {
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
+  if(!is.numeric(means)){
+    means <- as.numeric(means)
+  }
   
   validateVariance(
     dist = "norm",
@@ -247,8 +254,8 @@ cps.ma.normal <- function(nsim = 1000,
     sigma_b_sq2 = NA,
     method = method,
     quiet = quiet,
-    all.sim.data = all.sim.data,
-    poor.fit.override = poor.fit.override
+    all.sim.data = allSimData,
+    poor.fit.override = poorFitOverride
   )
   
   # nclusters must be positive whole numbers
@@ -318,11 +325,12 @@ cps.ma.normal <- function(nsim = 1000,
     alpha = alpha,
     quiet = quiet,
     method = method,
-    all.sim.data = all.sim.data,
+    all.sim.data = allSimData,
     seed = seed,
     cores = cores,
-    poor.fit.override = poor.fit.override,
-    low.power.override = low.power.override,
+    poor.fit.override = poorFitOverride,
+    low.power.override = lowPowerOverride,
+    timelimitOverride = timelimitOverride,
     tdist = tdist,
     optmethod = optmethod,
     nofit = nofit,
@@ -464,7 +472,7 @@ cps.ma.normal <- function(nsim = 1000,
     ## Output objects for GLMM
     # Create list containing all output (class 'crtpwr.ma') and return
     
-    if (all.sim.data == TRUE && return.all.models == FALSE) {
+    if (allSimData == TRUE && return.all.models == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -520,7 +528,7 @@ cps.ma.normal <- function(nsim = 1000,
         class = 'crtpwr.ma'
       )
     }
-    if (return.all.models == FALSE && all.sim.data == FALSE) {
+    if (return.all.models == FALSE && allSimData == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -612,7 +620,7 @@ cps.ma.normal <- function(nsim = 1000,
     ## Output objects for GEE
     
     # Create list containing all output (class 'crtpwr.ma') and return
-    if (all.sim.data == TRUE & return.all.models == FALSE) {
+    if (allSimData == TRUE & return.all.models == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -664,7 +672,7 @@ cps.ma.normal <- function(nsim = 1000,
         class = 'crtpwr.ma'
       )
     }
-    if (return.all.models == FALSE && all.sim.data == FALSE) {
+    if (return.all.models == FALSE && allSimData == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,

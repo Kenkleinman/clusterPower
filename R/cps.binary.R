@@ -60,8 +60,8 @@
 #' thereafter. On function execution stop, the actual power is printed in the
 #' stop message. Default = FALSE. When TRUE, this check is ignored and the
 #' calculated power is returned regardless of value.
-#' @param timelimitOverride Logical. When FALSE (default), stops execution if the estimated completion time
-#' is more than 2 minutes.
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
+#' is more than 2 minutes. Defaults to TRUE.
 #'  
 #' @return If \code{nofit = F}, a list with the following components:
 #' \itemize{
@@ -194,7 +194,7 @@ cps.binary = function(nsim = NULL,
                       nofit = FALSE,
                       poorFitOverride = FALSE,
                       lowPowerOverride = FALSE,
-                      timelimitOverride = FALSE,
+                      timelimitOverride = TRUE,
                       irgtt = FALSE) {
   
   if (!is.na(seed)) {

@@ -57,6 +57,9 @@
 #' Defaults to \code{FALSE}. 
 #' @param optmethod Option to fit with a different optimizer (using the package 
 #' \code{optimx}). Defaults to \code{nlminb}.
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
+#' is more than 2 minutes. Defaults to TRUE.
+#' 
 #' @return A list with the following components:
 #' \describe{
 #'   \item{estimates}{List of \code{length(nsim)} containing gee- or glmm-fitted model 
@@ -112,7 +115,8 @@ cps.ma.normal.internal <-
            tdist = FALSE,
            optmethod = "nlminb",
            nofit = FALSE,
-           return.all.models = FALSE) {
+           return.all.models = FALSE,
+           timelimitOverride = TRUE) {
     # Create vectors to collect iteration-specific values
     simulated.datasets = list()
     
@@ -120,8 +124,7 @@ cps.ma.normal.internal <-
     narms = length(str.nsubjects)
     nclusters = sapply(str.nsubjects, length)
     
-    # Set start.time for progress iterator & initialize progress bar
-    start.time = Sys.time()
+    # initialize progress bar
     prog.bar =  progress::progress_bar$new(
       format = "(:spin) [:bar] :percent eta :eta",
       total = nsim,
@@ -229,6 +232,10 @@ cps.ma.normal.internal <-
       y <- sim.dat[[i]][["y"]]
       trt <- sim.dat[[i]][["trt"]]
       clust <- sim.dat[[i]][["clust"]]
+      
+      #set progress indicator
+      start.time = Sys.time()
+      
       if (quiet == FALSE) {
         if (i == 1) {
           message(paste0('Begin simulations :: Start Time: ', Sys.time()))
@@ -458,6 +465,21 @@ cps.ma.normal.internal <-
           }
         }
       }
+      
+      #time limit override (for Shiny)
+      if (i == 2) {
+        avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+        time.est = avg.iter.time * (nsim - 1) / 60
+        hr.est = time.est %/% 60
+        min.est = round(time.est %% 60, 0)
+        if (min.est > 2 && timelimitOverride == FALSE){
+          stop(paste0("Estimated completion time: ",
+                      hr.est,
+                      'Hr:',
+                      min.est,
+                      'Min'
+          ))
+        }
       
       if (i == nsim) {
         total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))

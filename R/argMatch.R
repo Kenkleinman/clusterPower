@@ -25,11 +25,12 @@ argMatch <- function(fxnName, justNames = FALSE) {
       min = 0
     )
   narms <-
-    numericInput(
+    sliderInput(
       "narms",
       "Number of arms",
       value = 3,
       min = 2,
+      max = 5,
       step = 1
     )
   mu <- numericInput("mu", "Mean in arm 1", value = 1.4)
@@ -110,11 +111,6 @@ argMatch <- function(fxnName, justNames = FALSE) {
 }
   vart <-
     numericInput("vart", "Total variation of the outcome", value = NA)
-  seed <-
-    numericInput("seed",
-                 "Set the seed (for repeatability)",
-                 value = NA,
-                 step = 1)
   ncontrols <-
     numericInput(
       "ncontrols",

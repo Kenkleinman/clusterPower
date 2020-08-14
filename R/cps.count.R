@@ -80,6 +80,18 @@
 #' @param nofit Option to skip model fitting and analysis and instead return a dataframe with
 #' the simulated datasets. Default = \code{FALSE}.
 #' 
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\% 
+#' of fits fail to converge.
+#' 
+#' @param lowPowerOverride Option to override \code{stop()} if the power
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the
+#' calculated power is returned regardless of value.
+#' 
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
+#' is more than 2 minutes. Defaults to TRUE.
+#' 
 #' @param optimizer Option to fit with a different optimizer from the package
 #' \code{optimx}. Defaults to L-BFGS-B. See optimx package documentation for all options.
 #' 
@@ -246,6 +258,9 @@ cps.count = function(nsim = NULL,
                      irgtt = FALSE,
                      seed = NA,
                      nofit = FALSE,
+                     poorFitOverride = FALSE,
+                     lowPowerOverride = FALSE,
+                     timelimitOverride = TRUE,
                      optimizer = "L-BFGS-B") {
   if (!is.na(seed)) {
     set.seed(seed = seed)
@@ -257,7 +272,6 @@ cps.count = function(nsim = NULL,
   pval.vector = NULL
   converge.vector = NULL
   simulated.datasets = list()
-  start.time = Sys.time()
   
   # Create progress bar
   prog.bar =  progress::progress_bar$new(
@@ -479,6 +493,9 @@ cps.count = function(nsim = NULL,
     # Note: Warnings will still be stored in 'warning.list'
     options(warn = -1)
     
+    #set start time
+    start.time = Sys.time()
+    
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       require("lme4")
@@ -612,6 +629,32 @@ cps.count = function(nsim = NULL,
       pval.vector[i] <- gee.values['trt2', 'Pr(>|W|)']
       converge.vector[i] <- ifelse(my.mod$geese$error != 0, FALSE, TRUE)
     }
+    
+    # stop the loop if power is <0.5
+    if (lowPowerOverride == FALSE && i < 50 && (i %% 10 == 0)) {
+      sig.val.temp <-
+        ifelse(pval.vector < alpha, 1, 0)
+      pval.power.temp <- sum(sig.val.temp, na.rm = TRUE) / i
+      if (pval.power.temp < 0.5) {
+        stop(
+          paste(
+            "Calculated power is < ",
+            pval.power.temp,
+            ". Set lowPowerOverride == TRUE to run the simulations anyway.",
+            sep = ""
+          )
+        )
+      }
+    }
+    
+    # option to stop the function early if fits are singular
+    if (poorFitOverride == FALSE && converge.vector[i] == FALSE) {
+      if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
+        stop(
+          "more than 25% of simulations are singular fit: check model specifications"
+        )
+      }
+    }
 
     # Set warnings to ON
     # Note: Warnings stored in 'warning.list'
@@ -624,6 +667,16 @@ cps.count = function(nsim = NULL,
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
         min.est = round(time.est %% 60, 0)
+        
+        #time limit override (for Shiny)
+        if (min.est > 2 && timelimitOverride == FALSE){
+          stop(paste0("Estimated completion time: ",
+                      hr.est,
+                      'Hr:',
+                      min.est,
+                      'Min'
+          ))
+        }
         message(
           paste0(
             'Begin simulations :: Start Time: ',

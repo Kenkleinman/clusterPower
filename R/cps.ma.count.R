@@ -44,7 +44,7 @@
 #' copying data across cores also may take some time. For time-savings,
 #' this function stops execution early if estimated power < 0.5 or more
 #' than 25\% of models produce a singular fit or non-convergence warning
-#' message, unless \code{poor.fit.override = TRUE}.
+#' message, unless \code{poorFitOverride = TRUE}.
 #'
 #'
 #'
@@ -98,12 +98,12 @@
 #' (GLMM) or generalized estimating equations (GEE). Accepts \code{c('glmm', 'gee')};
 #' default = \code{'glmm'}. Required.
 #'
-#' @param multi.p.method A string indicating the method to use for adjusting
+#' @param multi_p_method A string indicating the method to use for adjusting
 #' p-values for multiple comparisons. Choose one of "holm", "hochberg",
 #' "hommel", "bonferroni", "BH", "BY", "fdr", "none". The default is
 #' "bonferroni". See \code{?p.adjust} for additional details.
 #'
-#' @param all.sim.data Option to include a list of all simulated datasets in the output object.
+#' @param allSimData Option to include a list of all simulated datasets in the output object.
 #' Default = \code{FALSE}.
 #'
 #' @param seed Option to set the seed. Default is NULL.
@@ -116,10 +116,10 @@
 #' should be drawn from a \mjseqn{t} distribution rather than a normal distribution.
 #' Default = \code{FALSE}.
 #'
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge;
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\% of fits fail to converge;
 #' default = \code{FALSE}.
 #'
-#' @param low.power.override Option to override \code{stop()} if the power
+#' @param lowPowerOverride Option to override \code{stop()} if the power
 #' is less than 0.5 after the first 50 simulations and every ten simulations
 #' thereafter. On \code{stop}, the power calculated from the completed simulations is printed in the
 #' stop message. Default = \code{FALSE}. When \code{TRUE}, this check is ignored and the
@@ -155,19 +155,19 @@
 #'   (when method="gee") significance test results.}
 #'   \item{overall.power.summary}{Summary overall power of treatment model
 #'   compared to the null model.}
-#'   \item{sim.data}{Produced when all.sim.data==TRUE. List of \code{nsim}
+#'   \item{sim.data}{Produced when allSimData==TRUE. List of \code{nsim}
 #'   data frames, each containing:
 #'                   "y" (simulated response value),
 #'                   "trt" (indicator for treatment group or arm), and
 #'                   "clust" (indicator for cluster).}
 #'   \item{model.fit.warning.percent}{Character string containing the percent
 #'   of \code{nsim} in which the glmm fit was singular or failed to converge,
-#'   produced only when method = "glmm" & all.sim.data = FALSE.
+#'   produced only when method = "glmm" & allSimData = FALSE.
 #'   }
 #'   \item{model.fit.warning.incidence}{Vector of length \code{nsim} denoting
 #'   whether or not a simulation glmm fit triggered a "singular fit" or
 #'   "non-convergence" error, produced only when method = "glmm" &
-#'   all.sim.data=TRUE.
+#'   allSimData=TRUE.
 #'   }
 #'   }
 #'   If \code{nofit = T}, a data frame of the simulated data sets, containing:
@@ -203,7 +203,7 @@
 #'
 #' By default, this function stops execution early if estimated power < 0.5 or if more
 #' than 25\% of models produce a singular fit or non-convergence warning. In some cases, users
-#' may want to ignore singularity warnings (see \code{?isSingular}) by setting \code{poor.fit.override = TRUE}.
+#' may want to ignore singularity warnings (see \code{?isSingular}) by setting \code{poorFitOverride = TRUE}.
 #'
 #'
 #'
@@ -263,13 +263,13 @@ cps.ma.count <- function(nsim = 1000,
                          alpha = 0.05,
                          quiet = FALSE,
                          method = 'glmm',
-                         multi.p.method = "bonferroni",
-                         all.sim.data = FALSE,
+                         multi_p_method = "bonferroni",
+                         allSimData = FALSE,
                          seed = NA,
                          cores = NA,
                          tdist.re = FALSE,
-                         poor.fit.override = FALSE,
-                         low.power.override = FALSE,
+                         poorFitOverride = FALSE,
+                         lowPowerOverride = FALSE,
                          return.all.models = FALSE,
                          nofit = FALSE,
                          opt = "NLOPT_LN_BOBYQA") {
@@ -353,11 +353,15 @@ cps.ma.count <- function(nsim = 1000,
     message("Warning: LRT significance not calculable when narms<3. Use cps.count() instead.")
   }
   
+  if(!is.numeric(counts)){
+    counts <- as.numeric(counts)
+  }
+  
   # validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma=NA,
   #                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA,
   #                   sigma_b2=NA, method=method, quiet=quiet,
-  #                   all.sim.data=all.sim.data,
-  #                   poor.fit.override=poor.fit.override,
+  #                   all.sim.data=allSimData,
+  #                   poor.fit.override=poorFitOverride,
   #                   cores=cores)
   
   # Set warnings to OFF
@@ -373,10 +377,10 @@ cps.ma.count <- function(nsim = 1000,
     alpha = alpha,
     quiet = quiet,
     method = method,
-    all.sim.data = all.sim.data,
+    all.sim.data = allSimData,
     seed = seed,
-    poor.fit.override = poor.fit.override,
-    low.power.override = low.power.override,
+    poor.fit.override = poorFitOverride,
+    low.power.override = lowPowerOverride,
     tdist = tdist.re,
     cores = cores,
     family = family,
@@ -435,7 +439,7 @@ cps.ma.count <- function(nsim = 1000,
       std.error[i,] <- models[[i]][[10]][, 2]
       z.val[i,] <- models[[i]][[10]][, 3]
       p.val[i,] <-
-        p.adjust(models[[i]][[10]][, 4], method = multi.p.method)
+        p.adjust(models[[i]][[10]][, 4], method = multi_p_method)
     }
     
     # Organize the row/col names for the model estimates output
@@ -531,7 +535,7 @@ cps.ma.count <- function(nsim = 1000,
     
     ## Output objects for GLMM
     # Create list containing all output (class 'crtpwr.ma') and return
-    if (all.sim.data == TRUE && return.all.models == FALSE) {
+    if (allSimData == TRUE && return.all.models == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -587,7 +591,7 @@ cps.ma.count <- function(nsim = 1000,
         class = 'crtpwr.ma'
       )
     }
-    if (return.all.models == FALSE && all.sim.data == FALSE) {
+    if (return.all.models == FALSE && allSimData == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -698,7 +702,7 @@ cps.ma.count <- function(nsim = 1000,
     )
     
     # Create list containing all output (class 'crtpwr.ma') and return
-    if (all.sim.data == TRUE & return.all.models == FALSE) {
+    if (allSimData == TRUE & return.all.models == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -750,7 +754,7 @@ cps.ma.count <- function(nsim = 1000,
         class = 'crtpwr.ma'
       )
     }
-    if (return.all.models == FALSE && all.sim.data == FALSE) {
+    if (return.all.models == FALSE && allSimData == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,

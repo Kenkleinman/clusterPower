@@ -50,7 +50,6 @@ ui <- fluidPage(
                   choices = c("Analytic", "Simulation")),
       numericInput("nclusters", "Number of Clusters", value = 10),
       numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
-      numericInput("alpha", "alpha", value = 0.05),
       shinyjs::hidden(numericInput("power", "power", value = NA)),
       conditionalPanel(
         "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Analytic'",
@@ -181,10 +180,16 @@ ui <- fluidPage(
       ),
       actionButton('cancel', 'Cancel'),
       checkboxInput("more", "Show advanced options", value = FALSE), 
+      conditionalPanel("input.more == true",
+                       numericInput("alpha", "alpha", min = 0, max = 1, value = 0.05)),
       conditionalPanel("input.more == true & input.meth == 'Simulation'",
         checkboxInput("timelimitOverride", "Allow unlimited calculation time", value = FALSE),
         checkboxInput("lowPowerOverride", "Allow completion when power is < 0.5", value = FALSE),
-        checkboxInput("poorFitOverride", "Allow completion when model fit is poor", value = FALSE)
+        checkboxInput("poorFitOverride", "Allow completion when model fit is poor", value = FALSE),
+        numericInput("seed",
+                       "Set the seed (for repeatability)",
+                       value = NA,
+                       step = 1)
     )
     ),
     mainPanel(shinycssloaders::withSpinner(verbatimTextOutput("CRTpower", placeholder = TRUE)))
@@ -208,7 +213,8 @@ server <- function(input, output, session) {
     #make some helpful fxns to extract arg names
     updateArgs <- function(fxnName) {
       argMatchResult <- c(clusterPower::argMatch(fxnName, justNames = TRUE), 
-                          "lowPowerOverride", "poorFitOverride", "timelimitOverride", "power")
+                          "lowPowerOverride", "poorFitOverride", "timelimitOverride", 
+                          "power", "seed")
       argNames <-
         c(
           "nsubjects",
@@ -219,12 +225,12 @@ server <- function(input, output, session) {
             names(formals(fxnName))
           )
         )
-      holder <- list()
       arghelper <- function(argname) {
         x <- paste0("input$", argname)
         x <- eval(parse(text = x))
         return(x)
       }
+      holder <- list()
       for (i in 1:length(argNames)) {
         holder[[i]] <- arghelper(argNames[i])
       }

@@ -28,7 +28,7 @@
 #' copying data across cores also may take some time. For time-savings,
 #' this function stops execution early if estimated power < 0.5 or more
 #' than 25\% of models produce a singular fit or non-convergence warning
-#' message, unless \code{poor.fit.override = TRUE}.
+#' message, unless \code{poorFitOverride = TRUE}.
 #'
 #' Non-convergent models are not included in the calculation of exact confidence
 #' intervals.
@@ -54,20 +54,20 @@
 #' @param sigma_b_sq Between-cluster variance; accepts a vector of length
 #' \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
-#' @param all.sim.data Option to output list of all simulated datasets;
+#' @param allSimData Option to output list of all simulated datasets;
 #' default = FALSE.
 #' @param method Analytical method, either Generalized Linear Mixed Effects
 #' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm',
 #' 'gee') (required); default = 'glmm'.
-#' @param multi.p.method A string indicating the method to use for adjusting
+#' @param multi_p_method A string indicating the method to use for adjusting
 #' p-values for multiple comparisons. Choose one of "holm", "hochberg",
 #' "hommel", "bonferroni", "BH", "BY", "fdr", "none". The default is
 #' "bonferroni". See \code{?p.adjust} for additional details.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge or
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\% of fits fail to converge or
 #' power<0.5 after 50 iterations; default = FALSE.
-#' @param low.power.override Option to override \code{stop()} if the power
+#' @param lowPowerOverride Option to override \code{stop()} if the power
 #' is less than 0.5 after the first 50 simulations and every ten simulations
 #' thereafter. On function execution stop, the actual power is printed in the
 #' stop message. Default = FALSE. When TRUE, this check is ignored and the
@@ -99,19 +99,19 @@
 #'   (when method="gee") significance test results.}
 #'   \item{overall.power.summary}{Summary overall power of treatment model
 #'   compared to the null model.}
-#'   \item{sim.data}{Produced when all.sim.data==TRUE. List of \code{nsim}
+#'   \item{sim.data}{Produced when allSimData==TRUE. List of \code{nsim}
 #'   data frames, each containing:
 #'                   "y" (simulated response value),
 #'                   "trt" (indicator for treatment group or arm), and
 #'                   "clust" (indicator for cluster).}
 #'   \item{model.fit.warning.percent}{Character string containing the percent
 #'   of \code{nsim} in which the glmm fit was singular or failed to converge,
-#'   produced only when method = "glmm" & all.sim.data = FALSE.
+#'   produced only when method = "glmm" & allSimData = FALSE.
 #'   }
 #'   \item{model.fit.warning.incidence}{Vector of length \code{nsim} denoting
 #'   whether or not a simulation glmm fit triggered a "singular fit" or
 #'   "non-convergence" error, produced only when method = "glmm" &
-#'   all.sim.data=TRUE.
+#'   allSimData=TRUE.
 #'   }
 #'   }
 #' If \code{nofit = T}, a data frame of the simulated data sets, containing:
@@ -131,7 +131,7 @@
 #'                             nclusters = 15,
 #'                             probs = c(0.15, 0.23, 0.22),
 #'                             sigma_b_sq = c(0.1, 0.1, 0.1),
-#'                             alpha = 0.05, all.sim.data = TRUE,
+#'                             alpha = 0.05, allSimData = TRUE,
 #'                             seed = 123, cores="all")
 #'
 #' bin.ma.rct.bal <- cps.ma.binary(nsim = 100, nsubjects = 250, narms=3,
@@ -139,10 +139,10 @@
 #'                             probs = c(0.30, 0.5, 0.7),
 #'                             sigma_b_sq = 0.01, alpha = 0.05,
 #'                             quiet = FALSE, method = 'glmm',
-#'                             all.sim.data = FALSE,
-#'                             multi.p.method="none",
+#'                             allSimData = FALSE,
+#'                             multi_p_method="none",
 #'                             seed = 123, cores="all",
-#'                             poor.fit.override = TRUE)
+#'                             poorFitOverride = TRUE)
 #'}
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
@@ -155,13 +155,13 @@ cps.ma.binary <- function(nsim = 1000,
                           alpha = 0.05,
                           quiet = FALSE,
                           method = 'glmm',
-                          multi.p.method = "bonferroni",
-                          all.sim.data = FALSE,
+                          multi_p_method = "bonferroni",
+                          allSimData = FALSE,
                           seed = NULL,
                           cores = NA,
                           tdist = FALSE,
-                          poor.fit.override = FALSE,
-                          low.power.override = FALSE,
+                          poorFitOverride = FALSE,
+                          lowPowerOverride = FALSE,
                           nofit = FALSE,
                           opt = "bobyqa",
                           optmethod = "Nelder-Mead",
@@ -246,6 +246,10 @@ cps.ma.binary <- function(nsim = 1000,
     message("Warning: LRT significance not calculable when narms < 3. Use cps.binary() instead.")
   }
   
+  if(!is.numeric(probs)){
+    probs <- as.numeric(probs)
+  }
+  
   validateVariance(
     dist = "bin",
     alpha = alpha,
@@ -257,8 +261,8 @@ cps.ma.binary <- function(nsim = 1000,
     sigma_b_sq2 = NA,
     method = method,
     quiet = quiet,
-    all.sim.data = all.sim.data,
-    poor.fit.override = poor.fit.override,
+    all.sim.data = allSimData,
+    poor.fit.override = poorFitOverride,
     cores = cores,
     probs = probs
   )
@@ -272,10 +276,10 @@ cps.ma.binary <- function(nsim = 1000,
     alpha = alpha,
     quiet = quiet,
     method = method,
-    all.sim.data = all.sim.data,
+    all.sim.data = allSimData,
     seed = seed,
-    poor.fit.override = poor.fit.override,
-    low.power.override = low.power.override,
+    poor.fit.override = poorFitOverride,
+    low.power.override = lowPowerOverride,
     tdist = tdist,
     cores = cores,
     nofit = nofit,
@@ -331,7 +335,7 @@ cps.ma.binary <- function(nsim = 1000,
       std.error[i,] <- models[[i]][[10]][, 2]
       z.val[i,] <- models[[i]][[10]][, 3]
       p.val[i,] <-
-        p.adjust(models[[i]][[10]][, 4], method = multi.p.method)
+        p.adjust(models[[i]][[10]][, 4], method = multi_p_method)
     }
     
     # Organize the row/col names for the model estimates output
@@ -422,7 +426,7 @@ cps.ma.binary <- function(nsim = 1000,
     # Create list containing all output (class 'crtpwr.ma') and return
     
     
-    if (all.sim.data == TRUE && return.all.models == FALSE) {
+    if (allSimData == TRUE && return.all.models == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -478,7 +482,7 @@ cps.ma.binary <- function(nsim = 1000,
         class = 'crtpwr.ma'
       )
     }
-    if (return.all.models == FALSE && all.sim.data == FALSE) {
+    if (return.all.models == FALSE && allSimData == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -597,7 +601,7 @@ cps.ma.binary <- function(nsim = 1000,
     )
     
     # Create list containing all output (class 'crtpwr.ma') and return
-    if (all.sim.data == TRUE & return.all.models == FALSE) {
+    if (allSimData == TRUE & return.all.models == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -649,7 +653,7 @@ cps.ma.binary <- function(nsim = 1000,
         class = 'crtpwr.ma'
       )
     }
-    if (return.all.models == FALSE && all.sim.data == FALSE) {
+    if (return.all.models == FALSE && allSimData == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
