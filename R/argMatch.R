@@ -35,16 +35,29 @@ argMatch <- function(fxnName, justNames = FALSE) {
     )
   mu <- numericInput("mu", "Mean in arm 1", value = 1.4)
   mu2 <- numericInput("mu2", "Mean in arm 2", value = 3.2)
-  sigma_sq <-
-    numericInput("sigma_sq",
-                 "Within-cluster variance",
-                 value = 0.01,
-                 min = 0)
+  if (fxnName == "cps.ma.normal" ||
+      fxnName == "cps.ma.binary" || fxnName == "cps.ma.count") {
+    sigma_sq <-
+      textInput("sigma_sq",
+                "Within-cluster variance (comma delimited)",
+                value = "0.1, 0.1, 0.1")
+    sigma_b_sq <-
+      textInput("sigma_b_sq",
+                "Between-cluster variance (comma delimited)",
+                value = "0.01, 0.01, 0.01")
+  } else {
+    sigma_sq <-
+      numericInput("sigma_sq",
+                   "Within-cluster variance",
+                   value = 0.01,
+                   min = 0
+      )
   sigma_b_sq <-
     numericInput("sigma_b_sq",
                  "Between-cluster variance",
                  value = 0.1,
                  min = 0)
+  }
   sigma_sq2 <-
     numericInput("sigma_sq2",
                  "Within-cluster variance (Arm 2)",
@@ -79,14 +92,14 @@ argMatch <- function(fxnName, justNames = FALSE) {
   sigma_b_sq0 <-
     numericInput(
       "sigma_b_sq0",
-      "Pre-treatment between-cluster variance",
+      "Pre-treatment between-cluster variance for arm 1",
       value = 0,
       min = 0
     )
   sigma_b_sq1 <-
     numericInput(
       "sigma_b_sq1",
-      "Pre-treatment between-cluster variance",
+      "Pre-treatment between-cluster variance for arm 2",
       value = 0,
       min = 0
     )
@@ -197,7 +210,7 @@ argMatch <- function(fxnName, justNames = FALSE) {
     textInput(
       "means",
       "Expected absolute treatment effect for each arm (comma delimited)",
-      "1.2, 4.3, 5.2"
+      "22.0, 21.0, 22.5"
     )
   steps <-
     numericInput("steps", "Number of crossover steps", value = 3)

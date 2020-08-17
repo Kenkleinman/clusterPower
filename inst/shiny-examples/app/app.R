@@ -57,7 +57,7 @@ ui <- fluidPage(
       ),
       conditionalPanel(
         "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.normal")
+        clusterPower::argMatch("cps.normal"),
       ),
       conditionalPanel(
         "input.type == 'Parallel' & input.dist == 'Binary' & input.meth == 'Analytic'",
@@ -186,6 +186,7 @@ ui <- fluidPage(
         checkboxInput("timelimitOverride", "Allow unlimited calculation time", value = FALSE),
         checkboxInput("lowPowerOverride", "Allow completion when power is < 0.5", value = FALSE),
         checkboxInput("poorFitOverride", "Allow completion when model fit is poor", value = FALSE),
+        textInput("optmethod", "Specify an optimization method", value = "NLOPT_LN_NELDERMEAD"),
         numericInput("seed",
                        "Set the seed (for repeatability)",
                        value = NA,
@@ -214,7 +215,7 @@ server <- function(input, output, session) {
     updateArgs <- function(fxnName) {
       argMatchResult <- c(clusterPower::argMatch(fxnName, justNames = TRUE), 
                           "lowPowerOverride", "poorFitOverride", "timelimitOverride", 
-                          "power", "seed")
+                          "power", "seed", "optmethod")
       argNames <-
         c(
           "nsubjects",

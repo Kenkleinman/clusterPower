@@ -227,22 +227,23 @@ cps.ma.normal.internal <-
       return(sim.dat)
     }
     
+    # status message
+    if (quiet == FALSE && i == 1) {
+        message(paste0('Begin simulations :: Start Time: ', Sys.time()))
+    }
+    
     for (i in 1:nsim) {
       # Update simulation progress information
       y <- sim.dat[[i]][["y"]]
       trt <- sim.dat[[i]][["trt"]]
       clust <- sim.dat[[i]][["clust"]]
       
-      #set progress indicator
-      start.time = Sys.time()
+      # Iterate progress bar
+      prog.bar$update(i / nsim)
+      Sys.sleep(1 / 100)
       
-      if (quiet == FALSE) {
-        if (i == 1) {
-          message(paste0('Begin simulations :: Start Time: ', Sys.time()))
-        }
-        # Iterate progress bar
-        prog.bar$update(i / nsim)
-        Sys.sleep(1 / 100)
+      if (i == 1){
+      start.time = Sys.time()
       }
       
       # trt and clust are re-coded as trt2 and clust2 to work nicely with lme. This can be changed later.
@@ -412,6 +413,23 @@ cps.ma.normal.internal <-
           }
         }
         
+        #time limit override (for Shiny)
+        if (i == 10) {
+          avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+          time.est = (avg.iter.time/10) * (nsim - 10) / 60
+          hr.est = time.est %/% 60
+          min.est = round(time.est %% 60, 0)
+          if (min.est > 2 && timelimitOverride == FALSE) {
+            stop(paste0(
+              "Estimated completion time: ",
+              hr.est,
+              'Hr:',
+              min.est,
+              'Min'
+            ))
+          }
+        }
+        
         model.values[[i]] <-  summary(my.mod)
       } #end of loop
       
@@ -465,23 +483,6 @@ cps.ma.normal.internal <-
               )
             )
           }
-        }
-      }
-      
-      #time limit override (for Shiny)
-      if (i == 1) {
-        avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-        time.est = avg.iter.time * (nsim - 1) / 60
-        hr.est = time.est %/% 60
-        min.est = round(time.est %% 60, 0)
-        if (min.est > 2 && timelimitOverride == FALSE) {
-          stop(paste0(
-            "Estimated completion time: ",
-            hr.est,
-            'Hr:',
-            min.est,
-            'Min'
-          ))
         }
       }
       

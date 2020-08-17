@@ -332,6 +332,14 @@ cps.ma.count <- function(nsim = 1000,
     str.nsubjects <- nsubjects
   }
   
+  # allow entries to be entered as text for Shiny app
+  if (!is.numeric(counts)) {
+    counts <- as.numeric(unlist(strsplit(counts, split = ", ")))
+  }
+  if (!is.numeric(sigma_b_sq)) {
+    sigma_b_sq <- as.numeric(unlist(strsplit(sigma_b_sq, split = ", ")))
+  }
+  
   # allows for counts, sigma_b_sq to be entered as scalar
   if (length(sigma_b_sq) == 1) {
     sigma_b_sq <- rep(sigma_b_sq, narms)
@@ -355,10 +363,6 @@ cps.ma.count <- function(nsim = 1000,
   
   if (narms < 3) {
     message("Warning: LRT significance not calculable when narms<3. Use cps.count() instead.")
-  }
-  
-  if (!is.numeric(counts)) {
-    counts <- as.numeric(counts)
   }
   
   # validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma=NA,

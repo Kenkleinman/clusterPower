@@ -165,13 +165,21 @@ cps.ma.binary <- function(nsim = 1000,
                           tdist = FALSE,
                           poorFitOverride = FALSE,
                           lowPowerOverride = FALSE,
-                          tiemlimitOverride = TRUE,
+                          timelimitOverride = TRUE,
                           nofit = FALSE,
                           opt = "bobyqa",
                           optmethod = "Nelder-Mead",
                           return.all.models = FALSE) {
   # use this later to determine total elapsed time
   start.time <- Sys.time()
+  
+  # allow some arguments to be entered as text for the Shiny app
+  if (!is.numeric(sigma_b_sq)) {
+    sigma_b_sq <- as.numeric(unlist(strsplit(sigma_b_sq, split = ", ")))
+  }
+  if (!is.numeric(probs)) {
+    probs <- as.numeric(unlist(strsplit(probs, split = ", ")))
+  }
   
   # create narms and nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
@@ -250,10 +258,6 @@ cps.ma.binary <- function(nsim = 1000,
     message("Warning: LRT significance not calculable when narms < 3. Use cps.binary() instead.")
   }
   
-  if (!is.numeric(probs)) {
-    probs <- as.numeric(probs)
-  }
-  
   validateVariance(
     dist = "bin",
     alpha = alpha,
@@ -284,7 +288,7 @@ cps.ma.binary <- function(nsim = 1000,
     seed = seed,
     poor.fit.override = poorFitOverride,
     low.power.override = lowPowerOverride,
-    timelimtiOverride = timelimitOverride,
+    timelimitOverride = timelimitOverride,
     tdist = tdist,
     cores = cores,
     nofit = nofit,

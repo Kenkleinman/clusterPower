@@ -207,6 +207,18 @@ cps.ma.normal <- function(nsim = 1000,
                           optmethod = "nlminb",
                           nofit = FALSE,
                           timelimitOverride = TRUE) {
+  
+  # allow some arguments to be entered as text for Shiny app
+  if (!is.numeric(means)) {
+    means <- as.numeric(unlist(strsplit(means, split = ", ")))
+  }
+  if (!is.numeric(sigma_b_sq)) {
+    sigma_b_sq <- as.numeric(unlist(strsplit(sigma_b_sq, split = ", ")))
+  }
+  if (!is.numeric(sigma_sq)) {
+    sigma_sq <- as.numeric(unlist(strsplit(sigma_sq, split = ", ")))
+  }
+  
   # create narms and nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
     # create narms and nclusters if not supplied by the user
@@ -237,9 +249,6 @@ cps.ma.normal <- function(nsim = 1000,
   if (length(nsubjects) == 1 & length(nclusters) == 1 &
       !isTRUE(is.list(narms))) {
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
-  }
-  if (!is.numeric(means)) {
-    means <- as.numeric(means)
   }
   
   validateVariance(
