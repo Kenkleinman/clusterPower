@@ -2,17 +2,17 @@
 #'
 #'
 #'
-#' @description 
+#' @description
 #' \loadmathjax
-#' 
-#'  
-#' This function uses Monte Carlo methods (simulations) to estimate 
+#'
+#'
+#' This function uses Monte Carlo methods (simulations) to estimate
 #' power for cluster-randomized trials for integer-valued outcomes with two or more
-#' trial conditions. Users 
+#' trial conditions. Users
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
-#' 
-#' Users must specify the desired number of simulations, number of subjects per 
+#'
+#' Users must specify the desired number of simulations, number of subjects per
 #' cluster, number of clusters per treatment arm, between-cluster variance, and
 #' two of the following three parameters: mean event rate per unit time in one group,
 #' the mean event rate per unit time in the second group, and/or the
@@ -28,9 +28,9 @@
 #' cluster, number of clusters per treatment arm, group probabilities, and the
 #' between-cluster variance. Significance level, analytic method, whether progress
 #' updates are displayed, poor/singular fit override, and whether or not to return the
-#' simulated data may also be specified. 
-#' 
-#' This user-friendly function calls an internal function; the internal function 
+#' simulated data may also be specified.
+#'
+#' This user-friendly function calls an internal function; the internal function
 #' can be called
 #' directly by the user to return the fitted models rather than the power
 #' summaries (see \code{?cps.ma.count.internal} for details).
@@ -77,13 +77,13 @@
 #'
 #' @param analysis Family used for data analysis; currently only applicable when \code{method = 'glmm'}.
 #' Accepts c('poisson', 'neg.binom'); default = 'poisson'. Required.
-#' 
-#' @param negBinomSize Only used when generating simulated data from the 
-#' negative binomial (family = 'neg.binom'), this is the target for number of 
-#' successful trials, or the dispersion parameter (the shape parameter of the gamma 
-#' mixing distribution). Must be positive and defaults to 1. Required when 
+#'
+#' @param negBinomSize Only used when generating simulated data from the
+#' negative binomial (family = 'neg.binom'), this is the target for number of
+#' successful trials, or the dispersion parameter (the shape parameter of the gamma
+#' mixing distribution). Must be positive and defaults to 1. Required when
 #' family = 'neg.binom'.
-#' 
+#'
 #' @param sigma_b_sq Between-cluster variance for each arm; accepts a scalar
 #' (if all arms have the same between-cluster variance) or a vector of length
 #' \code{narms}. Required.
@@ -124,6 +124,9 @@
 #' thereafter. On \code{stop}, the power calculated from the completed simulations is printed in the
 #' stop message. Default = \code{FALSE}. When \code{TRUE}, this check is ignored and the
 #' calculated power is returned regardless of value.
+#'
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated
+#' completion time is more than 2 minutes. Defaults to TRUE.
 #'
 #' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
 #' the overall model comparisons, and the convergence report vector. This is equivalent
@@ -212,18 +215,18 @@
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @examples
-#' 
-#' # For a 3-arm trial with 4, 4, and 5 clusters in each arm, respectively, 
-#' # specify the number of subjects in each cluster with 3 vectors in a list, 
+#'
+#' # For a 3-arm trial with 4, 4, and 5 clusters in each arm, respectively,
+#' # specify the number of subjects in each cluster with 3 vectors in a list,
 #' # each vector representing a study arm. For each cluster, in no particular
-#' # order, denote the number of subjects. In this example, the first arm 
+#' # order, denote the number of subjects. In this example, the first arm
 #' # contains 150, 200, 50, and 100 subjects in each of the 4 clusters. The second
-#' # arm contains 50, 150, 210, and 100 subjects in each of 4 clusters, while 
-#' # the third arm contains 70, 200, 150, 50, and 100 subjects in each of 5 
-#' # clusters. The expected outcomes for each arm are 10, 55, and 65, and 
-#' # the sigma_b_sq values are 1, 1, and 2, respectively. Assuming 
+#' # arm contains 50, 150, 210, and 100 subjects in each of 4 clusters, while
+#' # the third arm contains 70, 200, 150, 50, and 100 subjects in each of 5
+#' # clusters. The expected outcomes for each arm are 10, 55, and 65, and
+#' # the sigma_b_sq values are 1, 1, and 2, respectively. Assuming
 #' # seed = 123, the overall power for this trial should be 0.81.
-#' 
+#'
 #' \dontrun{
 #' nsubjects.example <- list(c(150, 200, 50, 100), c(50, 150, 210, 100), c(70, 200, 150, 50, 100))
 #' counts.example <- c(10, 55, 65)
@@ -236,12 +239,12 @@
 #'                             alpha = 0.05, seed = 123)
 #'}
 #'
-#' # For a different trial with 4 arms, each arm has 4 clusters which 
-#' # each contain 100 subjects. Expected counts for each arm are 30 
+#' # For a different trial with 4 arms, each arm has 4 clusters which
+#' # each contain 100 subjects. Expected counts for each arm are 30
 #' # for the first arm, 35 for the second, 70 for the third, and 40
-#' # for the fourth. Similarly, sigma_b_sq for each arm are 1 
+#' # for the fourth. Similarly, sigma_b_sq for each arm are 1
 #' # for the first arm, 1.2 for the second, 1 for the third, and 0.9
-#' # for the fourth. Assuming seed = 123, the overall power for this 
+#' # for the fourth. Assuming seed = 123, the overall power for this
 #' # trial should be 0.84
 #'
 #' \dontrun{
@@ -270,6 +273,7 @@ cps.ma.count <- function(nsim = 1000,
                          tdist.re = FALSE,
                          poorFitOverride = FALSE,
                          lowPowerOverride = FALSE,
+                         timelimitOverride = TRUE,
                          return.all.models = FALSE,
                          nofit = FALSE,
                          opt = "NLOPT_LN_BOBYQA") {
@@ -353,7 +357,7 @@ cps.ma.count <- function(nsim = 1000,
     message("Warning: LRT significance not calculable when narms<3. Use cps.count() instead.")
   }
   
-  if(!is.numeric(counts)){
+  if (!is.numeric(counts)) {
     counts <- as.numeric(counts)
   }
   
@@ -381,6 +385,7 @@ cps.ma.count <- function(nsim = 1000,
     seed = seed,
     poor.fit.override = poorFitOverride,
     low.power.override = lowPowerOverride,
+    timelimitOverride = timelimitOverride,
     tdist = tdist.re,
     cores = cores,
     family = family,
@@ -435,10 +440,10 @@ cps.ma.count <- function(nsim = 1000,
     p.val = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]][[10]][, 1]
-      std.error[i,] <- models[[i]][[10]][, 2]
-      z.val[i,] <- models[[i]][[10]][, 3]
-      p.val[i,] <-
+      Estimates[i, ] <- models[[i]][[10]][, 1]
+      std.error[i, ] <- models[[i]][[10]][, 2]
+      z.val[i, ] <- models[[i]][[10]][, 3]
+      p.val[i, ] <-
         p.adjust(models[[i]][[10]][, 4], method = multi_p_method)
     }
     
@@ -502,10 +507,10 @@ cps.ma.count <- function(nsim = 1000,
       ),
       immediate. = TRUE)
     }
-
+    
     # Calculate and store power estimate & confidence intervals
     power.parms <- confintCalc(alpha = alpha,
-                                p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)]))
+                               p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)]))
     
     # Store simulation output in data frame
     ma.model.est <-
@@ -628,10 +633,10 @@ cps.ma.count <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]]$coefficients[, 1]
-      std.error[i,] <- models[[i]]$coefficients[, 2]
-      Wald[i,] <- models[[i]]$coefficients[, 3]
-      Pr[i,] <- models[[i]]$coefficients[, 4]
+      Estimates[i, ] <- models[[i]]$coefficients[, 1]
+      std.error[i, ] <- models[[i]]$coefficients[, 2]
+      Wald[i, ] <- models[[i]]$coefficients[, 3]
+      Pr[i, ] <- models[[i]]$coefficients[, 4]
     }
     
     # Organize the row/col names for the output

@@ -30,7 +30,7 @@ argMatch <- function(fxnName, justNames = FALSE) {
       "Number of arms",
       value = 3,
       min = 2,
-      max = 5,
+      max = 10,
       step = 1
     )
   mu <- numericInput("mu", "Mean in arm 1", value = 1.4)

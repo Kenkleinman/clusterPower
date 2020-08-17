@@ -85,7 +85,7 @@
 #' Defaults to \code{FALSE}.
 #' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
 #' is more than 2 minutes. Defaults to TRUE.
-#' 
+#'
 #' @return A list with the following components:
 #' \describe{
 #'   \item{power}{
@@ -238,7 +238,7 @@ cps.ma.normal <- function(nsim = 1000,
       !isTRUE(is.list(narms))) {
     stop("User must provide narms when nsubjects and nclusters are both scalar.")
   }
-  if(!is.numeric(means)){
+  if (!is.numeric(means)) {
     means <- as.numeric(means)
   }
   
@@ -381,18 +381,18 @@ cps.ma.normal <- function(nsim = 1000,
     
     if (max(sigma_sq) != min(sigma_sq)) {
       for (i in 1:nsim) {
-        Estimates[i, ] <- models[[i]][20][[1]][, 1]
-        std.error[i, ] <- models[[i]][20][[1]][, 2]
-        t.val[i, ] <- models[[i]][20][[1]][, 4]
-        p.val[i, ] <- models[[i]][20][[1]][, 5]
+        Estimates[i,] <- models[[i]][20][[1]][, 1]
+        std.error[i,] <- models[[i]][20][[1]][, 2]
+        t.val[i,] <- models[[i]][20][[1]][, 4]
+        p.val[i,] <- models[[i]][20][[1]][, 5]
       }
       keep.names <- rownames(models[[1]][20][[1]])
     } else {
       for (i in 1:nsim) {
-        Estimates[i, ] <- models[[i]][[10]][, 1]
-        std.error[i, ] <- models[[i]][[10]][, 2]
-        t.val[i, ] <- models[[i]][[10]][, 4]
-        p.val[i, ] <- models[[i]][[10]][, 5]
+        Estimates[i,] <- models[[i]][[10]][, 1]
+        std.error[i,] <- models[[i]][[10]][, 2]
+        t.val[i,] <- models[[i]][[10]][, 4]
+        p.val[i,] <- models[[i]][[10]][, 5]
       }
       keep.names <- rownames(models[[1]][[10]])
     }
@@ -459,10 +459,8 @@ cps.ma.normal <- function(nsim = 1000,
     }
     
     # Calculate and store power estimate & confidence intervals
-    power.parms <- confintCalc(
-      alpha = alpha,
-      p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])
-    )
+    power.parms <- confintCalc(alpha = alpha,
+                               p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)]))
     
     # Store simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, t.val, p.val)
@@ -565,10 +563,10 @@ cps.ma.normal <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i, ] <- models[[i]]$coefficients[, 1]
-      std.error[i, ] <- models[[i]]$coefficients[, 2]
-      Wald[i, ] <- models[[i]]$coefficients[, 3]
-      Pr[i, ] <-
+      Estimates[i,] <- models[[i]]$coefficients[, 1]
+      std.error[i,] <- models[[i]]$coefficients[, 2]
+      Wald[i,] <- models[[i]]$coefficients[, 3]
+      Pr[i,] <-
         p.adjust(models[[i]]$coefficients[, 4], method = multi.p.method)
     }
     
@@ -610,7 +608,7 @@ cps.ma.normal <- function(nsim = 1000,
     
     # Calculate and store power estimate & confidence intervals
     power.parms <- confintCalc(alpha = alpha,
-                                p.val = Pr[, 2:narms])
+                               p.val = Pr[, 2:narms])
     
     # Store GEE simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)

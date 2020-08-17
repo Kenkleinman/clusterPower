@@ -1,6 +1,7 @@
 #' Simulation-based power estimation for binary outcome multi-arm
 #' cluster-randomized trials.
 #'
+
 #' This function uses iterative simulations to determine
 #' approximate power for multi-arm cluster-randomized controlled trials with
 #' binary outcomes of interest. Users can modify a variety of parameters to
@@ -72,6 +73,8 @@
 #' thereafter. On function execution stop, the actual power is printed in the
 #' stop message. Default = FALSE. When TRUE, this check is ignored and the
 #' calculated power is returned regardless of value.
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated
+#' completion time is more than 2 minutes. Defaults to TRUE.
 #' @param cores String ("all"), NA, or scalar value indicating the number of cores
 #' to be used for parallel computing. Default = NA (no parallel computing).
 #' @param tdist Logical value indicating whether simulated data should be
@@ -162,6 +165,7 @@ cps.ma.binary <- function(nsim = 1000,
                           tdist = FALSE,
                           poorFitOverride = FALSE,
                           lowPowerOverride = FALSE,
+                          tiemlimitOverride = TRUE,
                           nofit = FALSE,
                           opt = "bobyqa",
                           optmethod = "Nelder-Mead",
@@ -246,7 +250,7 @@ cps.ma.binary <- function(nsim = 1000,
     message("Warning: LRT significance not calculable when narms < 3. Use cps.binary() instead.")
   }
   
-  if(!is.numeric(probs)){
+  if (!is.numeric(probs)) {
     probs <- as.numeric(probs)
   }
   
@@ -280,6 +284,7 @@ cps.ma.binary <- function(nsim = 1000,
     seed = seed,
     poor.fit.override = poorFitOverride,
     low.power.override = lowPowerOverride,
+    timelimtiOverride = timelimitOverride,
     tdist = tdist,
     cores = cores,
     nofit = nofit,
@@ -331,10 +336,10 @@ cps.ma.binary <- function(nsim = 1000,
     p.val = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]][[10]][, 1]
-      std.error[i,] <- models[[i]][[10]][, 2]
-      z.val[i,] <- models[[i]][[10]][, 3]
-      p.val[i,] <-
+      Estimates[i, ] <- models[[i]][[10]][, 1]
+      std.error[i, ] <- models[[i]][[10]][, 2]
+      z.val[i, ] <- models[[i]][[10]][, 3]
+      p.val[i, ] <-
         p.adjust(models[[i]][[10]][, 4], method = multi_p_method)
     }
     
@@ -391,10 +396,8 @@ cps.ma.binary <- function(nsim = 1000,
     }
     
     # Calculate and store power estimate & confidence intervals
-    power.parms <- confintCalc(
-      alpha = alpha,
-      p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])
-    )
+    power.parms <- confintCalc(alpha = alpha,
+                               p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)]))
     
     # Store simulation output in data frame
     ma.model.est <-
@@ -519,10 +522,10 @@ cps.ma.binary <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]]$coefficients[, 1]
-      std.error[i,] <- models[[i]]$coefficients[, 2]
-      Wald[i,] <- models[[i]]$coefficients[, 3]
-      Pr[i,] <- models[[i]]$coefficients[, 4]
+      Estimates[i, ] <- models[[i]]$coefficients[, 1]
+      std.error[i, ] <- models[[i]]$coefficients[, 2]
+      Wald[i, ] <- models[[i]]$coefficients[, 3]
+      Pr[i, ] <- models[[i]]$coefficients[, 4]
     }
     
     # Organize the row/col names for the output
@@ -573,7 +576,7 @@ cps.ma.binary <- function(nsim = 1000,
       )
     
     power.parms <- confintCalc(alpha = alpha,
-                                p.val = Pr[, 2:narms])
+                               p.val = Pr[, 2:narms])
     
     # Store GEE simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)
