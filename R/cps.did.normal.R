@@ -419,7 +419,6 @@ cps.did.normal = function(nsim = NULL,
     }
     
     # Update progress information
-    if (quiet == FALSE) {
       if (i == 1) {
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         time.est = avg.iter.time * (nsim - 1) / 60
@@ -433,6 +432,7 @@ cps.did.normal = function(nsim = NULL,
                       'Min'
           ))
         }
+        if (quiet == FALSE) {
         message(
           paste0(
             'Begin simulations :: Start Time: ',

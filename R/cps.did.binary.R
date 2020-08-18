@@ -514,7 +514,7 @@ cps.did.binary = function(nsim = NULL,
     
     # Update progress information
       # Print simulation start message
-      if (length(est.vector) == 1) {
+      if (i == 1) {
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60

@@ -92,14 +92,14 @@ argMatch <- function(fxnName, justNames = FALSE) {
   sigma_b_sq0 <-
     numericInput(
       "sigma_b_sq0",
-      "Pre-treatment between-cluster variance for arm 1",
+      "Pre-treatment between-cluster variance",
       value = 0,
       min = 0
     )
   sigma_b_sq1 <-
     numericInput(
       "sigma_b_sq1",
-      "Pre-treatment between-cluster variance for arm 2",
+      "Post-treatment between-cluster variance",
       value = 0,
       min = 0
     )

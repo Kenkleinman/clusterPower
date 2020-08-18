@@ -39,7 +39,16 @@
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
-#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param allSimData Option to output list of all simulated datasets; default = FALSE.
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\%
+#' of fits fail to converge; default = FALSE.
+#' @param lowPowerOverride Option to override \code{stop()} if the power
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the
+#' calculated power is returned regardless of value.
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
+#' is more than 2 minutes. Defaults to TRUE.
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'L-BFGS-B'.
 #' @param seed Option to set.seed. Default is NULL.
 #' 
@@ -64,7 +73,7 @@
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value", 
 #'                   "sig.val" (Is p-value less than alpha?)
-#'   \item If \code{all.sim.data = TRUE}, a list of data frames, each containing: 
+#'   \item If \code{allSimData = TRUE}, a list of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for arm),
 #'                   "time.point" (Indicator for step; "t1" = time point 0) 
@@ -90,7 +99,7 @@
 #' binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 50, nclusters = 12, 
 #'                               p1 = 0.1, p2 = 0.2, steps = 3, 
 #'                               sigma_b_sq = 1, alpha = 0.05, method = 'glmm', 
-#'                               quiet = FALSE, all.sim.data = FALSE, seed = 123)
+#'                               quiet = FALSE, allSimData = FALSE, seed = 123)
 #' }
 #'
 #' @author Alexander R. Bogdan 
@@ -110,7 +119,10 @@ cps.sw.binary = function(nsim = NULL,
                          alpha = 0.05,
                          method = 'glmm',
                          quiet = FALSE,
-                         all.sim.data = FALSE,
+                         allSimData = FALSE,
+                         poorFitOverride = FALSE,
+                         lowPowerOverride = FALSE, 
+                         timelimitOverride = TRUE,
                          opt = 'L-BFGS-B',
                          seed = NULL) {
   if (!is.na(seed)) {
@@ -240,7 +252,7 @@ cps.sw.binary = function(nsim = NULL,
     sigma_b_sq[2] = sigma_b_sq
   }
   
-  # Validate ALPHA, METHOD, QUIET, ALL.SIM.DATA
+  # Validate ALPHA, METHOD, QUIET, allSimData
   if (!is.numeric(alpha) || alpha < 0 || alpha > 1) {
     stop("ALPHA", min0.warning)
   }
@@ -255,9 +267,9 @@ cps.sw.binary = function(nsim = NULL,
       "QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)"
     )
   }
-  if (!is.logical(all.sim.data)) {
+  if (!is.logical(allSimData)) {
     stop(
-      "ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
+      "allSimData must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
     )
   }
   
@@ -340,8 +352,8 @@ cps.sw.binary = function(nsim = NULL,
     iter.values = cbind(stats::aggregate(y ~ trt + time.point, data = sim.dat, mean)[, 3])
     values.vector = values.vector + iter.values
     
-    # Store simulated data sets if ALL.SIM.DATA == TRUE
-    if (all.sim.data == TRUE) {
+    # Store simulated data sets if allSimData == TRUE
+    if (allSimData == TRUE) {
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
     
@@ -387,13 +399,47 @@ cps.sw.binary = function(nsim = NULL,
       converge[i] = ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     
+    # option to stop the function early if fits are singular
+    if (poorFitOverride == FALSE && converge[i] == FALSE) {
+      if (sum(converge == FALSE, na.rm = TRUE) > (nsim * .25)) {
+        stop(
+          "more than 25% of simulations are singular fit: check model specifications"
+        )
+      }
+    }
+    
+    # stop the loop if power is <0.5
+    if (lowPowerOverride == FALSE && i < 50 && (i %% 10 == 0)) {
+      sig.val.temp <-
+        ifelse(pval.vector < alpha, 1, 0)
+      pval.power.temp <- sum(sig.val.temp, na.rm = TRUE) / i
+      if (pval.power.temp < 0.5) {
+        stop(
+          paste(
+            "Calculated power is < ",
+            pval.power.temp,
+            ". Set lowPowerOverride == TRUE to run the simulations anyway.",
+            sep = ""
+          )
+        )
+      }
+    }
+    
     # Update progress information
-    if (quiet == FALSE) {
       if (i == 1) {
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
         min.est = round(time.est %% 60, 0)
+        if (min.est > 2 && timelimitOverride == FALSE){
+          stop(paste0("Estimated completion time: ",
+                      hr.est,
+                      'Hr:',
+                      min.est,
+                      'Min'
+          ))
+        }
+        if (quiet == FALSE) {
         message(
           paste0(
             'Begin simulations :: Start Time: ',

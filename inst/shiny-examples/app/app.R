@@ -23,13 +23,6 @@ ui <- fluidPage(
   column(12, bookmarkButton("Save App State")),
   sidebarLayout(
     sidebarPanel(
-      actionButton(
-        "button",
-        "DELETE THIS BUTTON",
-        icon = icon("arrow-circle-right"),
-        width = '100%',
-        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
-      ),
       selectInput(
         "type",
         "CRT Type",
@@ -308,7 +301,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Normal' & input$meth == 'Simulation') {
-      print(printresult("cps.did.normal"))
+      print(summary(printresult("cps.did.normal")))
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Binary' & input$meth == 'Analytic') {
@@ -316,7 +309,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Binary' & input$meth == 'Simulation') {
-      print(printresult("cps.did.binary"))
+      print(summary(printresult("cps.did.binary")))
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Count' & input$meth == 'Analytic') {
@@ -324,7 +317,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Count' & input$meth == 'Simulation') {
-      print(printresult("cps.did.count"))
+      print(summary(printresult("cps.did.count")))
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Normal' & input$meth == 'Analytic') {
@@ -332,7 +325,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Normal' & input$meth == 'Simulation') {
-      print(printresult("cps.sw.normal"))
+      print(summary(printresult("cps.sw.normal")))
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Binary' & input$meth == 'Analytic') {
@@ -340,7 +333,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Binary' & input$meth == 'Simulation') {
-      print(printresult("cps.sw.binary"))
+      print(summary(printresult("cps.sw.binary")))
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Count' & input$meth == 'Analytic') {
@@ -348,7 +341,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Count' & input$meth == 'Simulation') {
-      print(printresult("cps.sw.count"))
+      print(summary(printresult("cps.sw.count")))
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Normal' & input$meth == 'Analytic') {
@@ -356,7 +349,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Normal' & input$meth == 'Simulation') {
-      print(printresult("cps.irgtt.normal"))
+      print(summary(printresult("cps.irgtt.normal")))
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Binary' & input$meth == 'Analytic') {
@@ -364,7 +357,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Binary' & input$meth == 'Simulation') {
-      print(printresult("cps.irgtt.binary"))
+      print(summary(printresult("cps.irgtt.binary")))
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Count' & input$meth == 'Analytic') {
@@ -372,7 +365,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Count' & input$meth == 'Simulation') {
-      print(printresult("cps.irgtt.count"))
+      print(summary(printresult("cps.irgtt.count")))
     }
   })
   output$CRTpower <- renderPrint({
