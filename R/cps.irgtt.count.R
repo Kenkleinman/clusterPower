@@ -42,7 +42,16 @@
 #' @param alpha Significance level. Default = 0.05.
 #' @param quiet When set to FALSE, displays simulation progress and estimated 
 #' completion time. Default = FALSE.
-#' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE.
+#' @param allSimData Option to output list of all simulated datasets. Default = FALSE.
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\%
+#' of fits fail to converge; default = FALSE.
+#' @param lowPowerOverride Option to override \code{stop()} if the power
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the
+#' calculated power is returned regardless of value.
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
+#' is more than 2 minutes. Defaults to TRUE.
 #' @param nofit Option to skip model fitting and analysis and return the simulated data.
 #' Defaults to \code{FALSE}.
 #' @param seed Option to set seed. Default is NA.
@@ -70,7 +79,7 @@
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value",
 #'                   "sig.val" (Is p-value less than alpha?)
-#'   \item If \code{all.sim.data = TRUE}, a list of data frames, each containing: 
+#'   \item If \code{allSimData = TRUE}, a list of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for arm), 
 #'                   "clust" (Indicator for cluster)
@@ -92,7 +101,7 @@
 #' irgtt.count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(500, 10), nclusters = 500, 
 #'                              c1 = 85, c2 = 450, sigma_b_sq2 = 0.25, 
 #'                              family = 'poisson', analysis = 'poisson',
-#'                              alpha = 0.05, quiet = FALSE, all.sim.data = FALSE)
+#'                              alpha = 0.05, quiet = FALSE, allSimData = FALSE)
 #' }
 #'
 #' @export
@@ -113,7 +122,10 @@ cps.irgtt.count <-
            negBinomSize = 1,
            alpha = 0.05,
            quiet = FALSE,
-           all.sim.data = FALSE,
+           allSimData = FALSE,
+           poorFitOverride = FALSE,
+           lowPowerOverride = FALSE, 
+           timelimitOverride = TRUE,
            nofit = FALSE,
            seed = NA,
            opt = "L-BFGS-B") {
@@ -150,7 +162,10 @@ cps.irgtt.count <-
         method = 'glmm',
         alpha = alpha,
         quiet = quiet,
-        all.sim.data = all.sim.data,
+        allSimData = allSimData,
+        poorFitOverride = poorFitOverride,
+        lowPowerOverride = lowPowerOverride, 
+        timelimitOverride = timelimitOverride,
         nofit = nofit,
         seed = seed,
         irgtt = TRUE,

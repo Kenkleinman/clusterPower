@@ -53,7 +53,19 @@
 #' 
 #' @param quiet When set to FALSE, displays simulation start time and completion time. Default is TRUE.
 #' 
-#' @param all.sim.data Option to output list of all simulated datasets. Default = FALSE
+#' @param allSimData Option to output list of all simulated datasets. Default = FALSE.
+#' 
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\%
+#' of fits fail to converge; default = FALSE.
+#' 
+#' @param lowPowerOverride Option to override \code{stop()} if the power
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the
+#' calculated power is returned regardless of value.
+#' 
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
+#' is more than 2 minutes. Defaults to TRUE.
 #' 
 #' @param nofit Option to skip model fitting and analysis and only return the simulated data.
 #' Default = \code{FALSE}.
@@ -86,7 +98,7 @@
 #'                   "p.value", 
 #'                   "converge" (Did simulated model converge?), 
 #'                   "sig.val" (Is p-value less than alpha?)
-#'   \item If \code{all.sim.data = TRUE}, a list of data frames, each containing: 
+#'   \item If \code{allSimData = TRUE}, a list of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for arm), 
 #'                   "clust" (Indicator for cluster), 
@@ -112,7 +124,7 @@
 #' \dontrun{
 #' did.binary.sim = cps.did.binary(nsim = 100, nsubjects = 20, nclusters = 10, 
 #'                                 p1 = 0.2, p2 = 0.45, sigma_b_sq0 = 1, alpha = 0.05,
-#'                                 method = 'glmm', all.sim.data = FALSE, seed = 123)
+#'                                 method = 'glmm', allSimData = FALSE, seed = 123)
 #' }
 #'
 #' @author Alexander R. Bogdan 
@@ -147,7 +159,10 @@ cps.did.binary = function(nsim = NULL,
                           alpha = 0.05,
                           method = 'glmm',
                           quiet = TRUE,
-                          all.sim.data = FALSE,
+                          allSimData = FALSE,
+                          poorFitOverride = FALSE,
+                          lowPowerOverride = FALSE, 
+                          timelimitOverride = TRUE,
                           seed = NA,
                           nofit = FALSE) {
   if (!is.na(seed)) {
@@ -164,7 +179,6 @@ cps.did.binary = function(nsim = NULL,
   lmer.icc.vector = NULL
   values.vector = cbind(c(0, 0, 0, 0))
   simulated.datasets = list()
-  start.time = Sys.time()
   
   # Create progress bar
   prog.bar =  progress::progress_bar$new(
@@ -300,7 +314,7 @@ cps.did.binary = function(nsim = NULL,
   }
   sigma_b_sq1 = sigma_b_sq1 + sigma_b_sq0
   
-  # Validate ALPHA, METHOD, QUIET, ALL.SIM.DATA
+  # Validate ALPHA, METHOD, QUIET, allSimData
   if (!is.numeric(alpha) || alpha < 0 || alpha > 1) {
     stop("ALPHA must be a numeric value between 0 - 1")
   }
@@ -315,9 +329,9 @@ cps.did.binary = function(nsim = NULL,
       "QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)"
     )
   }
-  if (!is.logical(all.sim.data)) {
+  if (!is.logical(allSimData)) {
     stop(
-      "ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
+      "allSimData must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
     )
   }
   
@@ -340,6 +354,8 @@ cps.did.binary = function(nsim = NULL,
   
   # Set warnings to OFF
   options(warn = -1)
+  
+  start.time = Sys.time()
   
   ### Create simulation loop
   for (i in 1:nsim) {
@@ -395,7 +411,7 @@ cps.did.binary = function(nsim = NULL,
       period = as.factor(period),
       clust = as.factor(clust)
     )
-    if (all.sim.data == TRUE) {
+    if (allSimData == TRUE) {
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
     
@@ -469,14 +485,49 @@ cps.did.binary = function(nsim = NULL,
       pval.vector[i] = gee.values['trt2:period1', 'Pr(>|W|)']
       converge[i] <- ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
+    
+    # option to stop the function early if fits are singular
+    if (poorFitOverride == FALSE && converge[i] == FALSE) {
+      if (sum(converge == FALSE, na.rm = TRUE) > (nsim * .25)) {
+        stop(
+          "more than 25% of simulations are singular fit: check model specifications"
+        )
+      }
+    }
+    
+    # stop the loop if power is <0.5
+    if (lowPowerOverride == FALSE && i < 50 && (i %% 10 == 0)) {
+      sig.val.temp <-
+        ifelse(pval.vector < alpha, 1, 0)
+      pval.power.temp <- sum(sig.val.temp, na.rm = TRUE) / i
+      if (pval.power.temp < 0.5) {
+        stop(
+          paste(
+            "Calculated power is < ",
+            pval.power.temp,
+            ". Set lowPowerOverride == TRUE to run the simulations anyway.",
+            sep = ""
+          )
+        )
+      }
+    }
+    
     # Update progress information
-    if (quiet == FALSE) {
       # Print simulation start message
       if (length(est.vector) == 1) {
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
         min.est = round(time.est %% 60, 0)
+        if (min.est > 2 && timelimitOverride == FALSE){
+          stop(paste0("Estimated completion time: ",
+                      hr.est,
+                      'Hr:',
+                      min.est,
+                      'Min'
+          ))
+        }
+        if (quiet == FALSE) {
         message(
           paste0(
             'Begin simulations :: Start Time: ',
@@ -581,7 +632,7 @@ cps.did.binary = function(nsim = NULL,
   )
   
   # Check & governor for inclusion of simulated datasets
-  if (all.sim.data == FALSE &&
+  if (allSimData == FALSE &&
       (sum(converge == FALSE) < sum(converge == TRUE) * 0.05)) {
     simulated.datasets = NULL
   }

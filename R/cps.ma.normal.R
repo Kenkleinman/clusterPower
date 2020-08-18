@@ -74,6 +74,8 @@
 #' thereafter. On function execution stop, the actual power is printed in the
 #' stop message. Default = FALSE. When TRUE, this check is ignored and the
 #' calculated power is returned regardless of value.
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
+#' is more than 2 minutes. Defaults to TRUE.
 #' @param tdist Logical; use t-distribution instead of normal distribution
 #' for simulation values, default = FALSE.
 #' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
@@ -83,8 +85,6 @@
 #' incompatible model types will trigger a list of compatible optimizer options.
 #' @param nofit Option to skip model fitting and analysis and return the simulated data.
 #' Defaults to \code{FALSE}.
-#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
-#' is more than 2 minutes. Defaults to TRUE.
 #'
 #' @return A list with the following components:
 #' \describe{
