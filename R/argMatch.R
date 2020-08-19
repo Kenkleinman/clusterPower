@@ -14,7 +14,7 @@
 
 argMatch <- function(fxnName, justNames = FALSE) {
   require("clusterPower")
-
+  
   # The arguments from which to choose
   nsim <-
     numericInput(
@@ -48,21 +48,44 @@ argMatch <- function(fxnName, justNames = FALSE) {
   } else {
     sigma_sq <-
       numericInput("sigma_sq",
-                   "Within-cluster variance",
+                   "Within-cluster variance (Arm 1)",
                    value = 0.01,
-                   min = 0
-      )
-  sigma_b_sq <-
-    numericInput("sigma_b_sq",
-                 "Between-cluster variance",
-                 value = 0.1,
-                 min = 0)
+                   min = 0)
+    if (fxnName == "cps.irgtt.normal" ||
+        fxnName == "cps.irgtt.binary" ||
+        fxnName == "cps.irgtt.count") {
+      sigma_b_sq <-
+        numericInput(
+          "sigma_b_sq",
+          "Between-cluster variance (Arm 1)",
+          value = 0,
+          min = 0
+        )
+    } else {
+      sigma_b_sq <-
+        numericInput(
+          "sigma_b_sq",
+          "Between-cluster variance (Arm 1)",
+          value = 0.1,
+          min = 0
+        )
+    }
   }
+  
   sigma_sq2 <-
     numericInput("sigma_sq2",
                  "Within-cluster variance (Arm 2)",
                  value = 0.01,
                  min = 0)
+  
+  sigma_b_sq2 <-
+    numericInput(
+      "sigma_b_sq2",
+      "Between-cluster variance (Arm 2)",
+      value = 0,
+      min = 0
+    )
+  
   sigma_b_sq2 <-
     numericInput(
       "sigma_b_sq2",
@@ -70,6 +93,7 @@ argMatch <- function(fxnName, justNames = FALSE) {
       value = 0.1,
       min = 0
     )
+  
   CV <-
     numericInput("CV", "Coefficient of variation (CV)", value = 0)
   d <- numericInput("d", "Means difference", value = 1)
@@ -103,7 +127,7 @@ argMatch <- function(fxnName, justNames = FALSE) {
       value = 0,
       min = 0
     )
-  if (fxnName == "cps.binary"){
+  if (fxnName == "cps.binary") {
     ICC <-
       numericInput(
         "ICC",
@@ -113,15 +137,15 @@ argMatch <- function(fxnName, justNames = FALSE) {
         max = 1
       )
   } else {
-  ICC <-
-    numericInput(
-      "ICC",
-      "Intracluster correlation coefficient (ICC)",
-      value = NA,
-      min = 0,
-      max = 1
-    )
-}
+    ICC <-
+      numericInput(
+        "ICC",
+        "Intracluster correlation coefficient (ICC)",
+        value = NA,
+        min = 0,
+        max = 1
+      )
+  }
   vart <-
     numericInput("vart", "Total variation of the outcome", value = NA)
   ncontrols <-
@@ -251,7 +275,8 @@ argMatch <- function(fxnName, justNames = FALSE) {
     numericInput("CVB", "Between-cluster coefficient of variation (CV)", value = 0.01)
   lambda1 <-
     numericInput("lambda1", "Baseline rate for outcome of interest", value = 1.75)
-  RR <- numericInput("RR", "Intervention relative risk", value = 0.9)
+  RR <-
+    numericInput("RR", "Intervention relative risk", value = 0.9)
   c1 <-
     numericInput(
       "c1",
@@ -273,14 +298,14 @@ argMatch <- function(fxnName, justNames = FALSE) {
               "Mean event per unit time for each arm (comma delimited)",
               "30, 35, 70")
   
-  if (justNames == TRUE){
+  if (justNames == TRUE) {
     return(objects())
   }
   
-# compare the function arguments to the objects above  
+  # compare the function arguments to the objects above
   temp <- dplyr::intersect(objects(), names(formals(fxnName)))
   
-# store the expressions in a list 
+  # store the expressions in a list
   holder <- list()
   for (i in 1:length(temp)) {
     if (!is.null(temp[i])) {

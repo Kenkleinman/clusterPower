@@ -402,7 +402,7 @@ cps.did.normal = function(nsim = NULL,
     }
     
     # stop the loop if power is <0.5
-    if (lowPowerOverride == FALSE && i < 50 && (i %% 10 == 0)) {
+    if (lowPowerOverride == FALSE && i > 50 && (i %% 10 == 0)) {
       sig.val.temp <-
         ifelse(pval.vector < alpha, 1, 0)
       pval.power.temp <- sum(sig.val.temp, na.rm = TRUE) / i

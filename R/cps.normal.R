@@ -518,10 +518,11 @@ cps.normal = function(nsim = NA,
               control = nlme::lmeControl(opt = 'optim')
             ),
             silent = TRUE)
-          pval.vector[i] = glmm.values['as.factor(trt2)1', 'p-value']
-          est.vector[i] = glmm.values['as.factor(trt2)1', 'Value']
-          se.vector[i] = glmm.values['as.factor(trt2)1', 'Std.Error']
-          stat.vector[i] = glmm.values['as.factor(trt2)1', 't-value']
+
+          pval.vector[i] = glmm.values['as.factor(trt2)2', 'p-value']
+          est.vector[i] = glmm.values['as.factor(trt2)2', 'Value']
+          se.vector[i] = glmm.values['as.factor(trt2)2', 'Std.Error']
+          stat.vector[i] = glmm.values['as.factor(trt2)2', 't-value']
           converge.vector[i] <-
             ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE)
         }
@@ -702,7 +703,7 @@ cps.normal = function(nsim = NA,
     }
     
     # stop the loop if power is <0.5
-    if (lowPowerOverride == FALSE && i < 50 && (i %% 10 == 0)) {
+    if (lowPowerOverride == FALSE && i > 50 && (i %% 10 == 0)) {
       sig.val.temp <-
         ifelse(pval.vector < alpha, 1, 0)
       pval.power.temp <- sum(sig.val.temp, na.rm = TRUE) / i

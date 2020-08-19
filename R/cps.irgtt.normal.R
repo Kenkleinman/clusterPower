@@ -98,13 +98,13 @@
 
 
 cps.irgtt.normal <-
-  function(nsim = NULL,
-           nsubjects = NULL,
-           nclusters = NULL,
-           mu = NULL,
-           mu2 = NULL,
-           ICC = NULL,
-           sigma_sq = NULL,
+  function(nsim = NA,
+           nsubjects = NA,
+           nclusters = NA,
+           mu = NA,
+           mu2 = NA,
+           ICC = NA,
+           sigma_sq = NA,
            sigma_b_sq = 0,
            ICC2 = ICC,
            sigma_sq2 = sigma_sq,
@@ -117,6 +117,14 @@ cps.irgtt.normal <-
            poorFitOverride = FALSE,
            lowPowerOverride = FALSE,
            timelimitOverride = TRUE) {
+    
+    if (is.na(sigma_b_sq) && !is.na(sigma_b_sq2)){
+      sigma_b_sq <- 0
+    }
+    if (is.na(sigma_b_sq2) && !is.na(sigma_b_sq)){
+      sigma_b_sq2 <- 0
+    }
+    
     if (sigma_b_sq == 0 & sigma_b_sq2 == 0) {
       warning(
         "sigma_b_sq in both arms is 0. This is equivalent to a t-test. Did you mean to enter a sigma_b_sq value for the arm containing clustered observations?"

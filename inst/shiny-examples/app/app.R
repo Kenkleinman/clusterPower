@@ -173,8 +173,17 @@ ui <- fluidPage(
       ),
       actionButton('cancel', 'Cancel'),
       checkboxInput("more", "Show advanced options", value = FALSE), 
+      
       conditionalPanel("input.more == true",
-                       numericInput("alpha", "alpha", min = 0, max = 1, value = 0.05)),
+                       sliderInput(
+                         "alpha",
+                         "Significance level (alpha)",
+                         value = 0.05,
+                         min = 0.01,
+                         max = 0.1,
+                         step = 0.02
+                       )),
+      
       conditionalPanel("input.more == true & input.meth == 'Simulation'",
         checkboxInput("timelimitOverride", "Allow unlimited calculation time", value = FALSE),
         checkboxInput("lowPowerOverride", "Allow completion when power is < 0.5", value = FALSE),
