@@ -1,112 +1,115 @@
 #' Model fits for simulations for multi-arm designs with count outcome.
 #'
-#' Generally called from \code{cps.ma.count()}, this function uses iterative 
-#' simulations to model significance of treatment effects for cluster-randomized 
-#' controlled trials. Users can modify a variety of parameters to suit the 
-#' simulations to their desired experimental situation. 
-#' 
-#' This function can be called directly in order to give the user access to the 
-#' simulated model fits in addition to the simulated data, the latter of which 
-#' can also be accessed here or using the function \code{cps.ma.count()}. This 
+#' Generally called from \code{cps.ma.count()}, this function uses iterative
+#' simulations to model significance of treatment effects for cluster-randomized
+#' controlled trials. Users can modify a variety of parameters to suit the
+#' simulations to their desired experimental situation.
+#'
+#' This function can be called directly in order to give the user access to the
+#' simulated model fits in addition to the simulated data, the latter of which
+#' can also be accessed here or using the function \code{cps.ma.count()}. This
 #' function does not produce power estimates, just simulated data and model fits.
-#' 
-#' To call this function independenty, users must specify the desired number of 
+#'
+#' To call this function independenty, users must specify the desired number of
 #' simulations, number of subjects per cluster, number of clusters per treatment
-#' arm, group proportions, and between-cluster variance. Significance level, 
-#' analytic method, progress updates and simulated data set output may also be 
+#' arm, group proportions, and between-cluster variance. Significance level,
+#' analytic method, progress updates and simulated data set output may also be
 #' specified.
-#' 
+#'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' 
+#'
 #' @param family A string consisting of either 'poisson' or 'neg.binom'.
-#' 
-#' @param str.nsubjects Number of subjects per treatment group; accepts a list 
-#' with one entry per arm. Each entry is a vector containing the number of 
+#'
+#' @param str.nsubjects Number of subjects per treatment group; accepts a list
+#' with one entry per arm. Each entry is a vector containing the number of
 #' subjects per cluster (required).
-#' 
-#' @param counts Expected outcome for each arm; accepts a vector 
+#'
+#' @param counts Expected outcome for each arm; accepts a vector
 #' of length \code{narms} (required).
-#' 
-#' @param sigma_b_sq Between-cluster variance; accepts a vector of length 
+#'
+#' @param sigma_b_sq Between-cluster variance; accepts a vector of length
 #' \code{narms} (required).
-#' 
+#'
 #' @param alpha Significance level; default = 0.05.
-#' 
-#' @param method Analytical method, either Generalized Linear Mixed Effects 
-#' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 
+#'
+#' @param method Analytical method, either Generalized Linear Mixed Effects
+#' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm',
 #' 'gee') (required); default = 'glmm'.
-#' 
+#'
 #' @param analysis Family used for data analysis; currently only applicable when \code{method = 'glmm'}.
 #' Accepts c('poisson', 'neg.binom'); default = 'poisson'. Required.
-#' 
-#' @param negBinomSize Only used when generating simulated data from the 
-#' negative binomial (family = 'neg.binom'), this is the target for number of 
-#' successful trials, or the dispersion parameter (the shape parameter of the gamma 
-#' mixing distribution). Must be positive and defaults to 1. Required when 
+#'
+#' @param negBinomSize Only used when generating simulated data from the
+#' negative binomial (family = 'neg.binom'), this is the target for number of
+#' successful trials, or the dispersion parameter (the shape parameter of the gamma
+#' mixing distribution). Must be positive and defaults to 1. Required when
 #' family = 'neg.binom'.
-#' 
-#' @param quiet When set to FALSE, displays simulation progress and estimated 
+#'
+#' @param quiet When set to FALSE, displays simulation progress and estimated
 #' completion time; default is FALSE.
-#' 
-#' @param all.sim.data Option to output list of all simulated datasets; 
+#'
+#' @param all.sim.data Option to output list of all simulated datasets;
 #' default = FALSE.
-#' 
+#'
 #' @param seed Option to set.seed. Default is NULL.
-#' 
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
+#'
+#' @param poor.fit.override Option to override \code{stop()} if more than 25\%
 #' of fits fail to converge.
-#' 
-#' @param low.power.override Option to override \code{stop()} if the power 
+#'
+#' @param low.power.override Option to override \code{stop()} if the power
 #' is less than 0.5 after the first 50 simulations and every ten simulations
-#' thereafter. On function execution stop, the actual power is printed in the 
-#' stop message. Default = FALSE. When TRUE, this check is ignored and the 
-#' calculated power is returned regardless of value. 
-#' 
-#' @param tdist Logical; use t-distribution instead of normal distribution for 
+#' thereafter. On function execution stop, the actual power is printed in the
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the
+#' calculated power is returned regardless of value.
+#'
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated
+#' completion time is more than 2 minutes. Defaults to TRUE.
+#'
+#' @param tdist Logical; use t-distribution instead of normal distribution for
 #' simulation values, default = FALSE.
-#' 
-#' @param cores A string ("all") NA, or numeric value indicating the number of 
-#' cores to be used for parallel computing. When this option is set to NA, no 
+#'
+#' @param cores A string ("all") NA, or numeric value indicating the number of
+#' cores to be used for parallel computing. When this option is set to NA, no
 #' parallel computing is used.
-#' 
-#' @param nofit Option to skip model fitting and analysis and return the 
-#' simulated data. Defaults to \code{FALSE}. 
-#' 
-#' @param opt Option to fit with a different optimizer algorithm. Setting this 
-#' to "auto" tests an example fit using the \code{nloptr} package and selects 
+#'
+#' @param nofit Option to skip model fitting and analysis and return the
+#' simulated data. Defaults to \code{FALSE}.
+#'
+#' @param opt Option to fit with a different optimizer algorithm. Setting this
+#' to "auto" tests an example fit using the \code{nloptr} package and selects
 #' the first algorithm that converges.
-#' 
+#'
 #' @return A list with the following components:
 #' \itemize{
-#'   \item List of length(nsim) containing gee- or glmm-fitted the model 
+#'   \item List of length(nsim) containing gee- or glmm-fitted the model
 #'   summaries.
 #'   \item Compares fitted model to a model for H0 using ML (anova).
-#'   \item List of data frames, each containing: 
-#'                   "y" (Simulated response value), 
-#'                   "trt" (Indicator for treatment group), 
+#'   \item List of data frames, each containing:
+#'                   "y" (Simulated response value),
+#'                   "trt" (Indicator for treatment group),
 #'                   "clust" (Indicator for cluster)
-#'   \item A vector of length \code{nsim} consisting of 1 and 0. 
+#'   \item A vector of length \code{nsim} consisting of 1 and 0.
 #'           When a model fails to converge, failed.to.converge==1, otherwise 0.
 #' }
-#' 
-#' @examples 
+#'
+#' @examples
 #' \dontrun{
-#' 
+#'
 #' nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
 #' counts.example <- c(75, 120, 100)
 #' sigma_b_sq.example <- c(0.2, 0.1, 0.1)
-#' 
-#' count.ma.rct <- cps.ma.count.internal (nsim = 10, 
-#'                             str.nsubjects = nsubjects.example, 
+#'
+#' count.ma.rct <- cps.ma.count.internal (nsim = 10,
+#'                             str.nsubjects = nsubjects.example,
 #'                             counts = counts.example,
-#'                             sigma_b_sq = sigma_b_sq.example, 
-#'                             alpha = 0.05, all.sim.data = FALSE, 
-#'                             seed = 123, cores="all", poor.fit.override=TRUE, 
-#'                             opt = "NLOPT_LN_BOBYQA") 
+#'                             sigma_b_sq = sigma_b_sq.example,
+#'                             alpha = 0.05, all.sim.data = FALSE,
+#'                             seed = 123, cores="all", poor.fit.override=TRUE,
+#'                             opt = "NLOPT_LN_BOBYQA")
 #' }
-#' 
+#'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
-#' 
+#'
 #' @export
 
 cps.ma.count.internal <-
@@ -124,6 +127,7 @@ cps.ma.count.internal <-
            seed = NA,
            poor.fit.override = FALSE,
            low.power.override = FALSE,
+           timelimitOverride = TRUE,
            tdist = FALSE,
            cores = cores,
            nofit = FALSE,
@@ -216,7 +220,7 @@ cps.ma.count.internal <-
         }
         randintrandint <- exp(randint.holder)
       }
-
+      
       # Create y-value
       y.intercept <- vector(mode = "numeric",
                             length = sum(unlist(str.nsubjects.)))
@@ -271,7 +275,8 @@ cps.ma.count.internal <-
         nc <- cores
       }
       ## Create clusters and initialize the progress bar
-      cl <- parallel::makeCluster(rep("localhost", nc), type = "SOCK")
+      cl <-
+        parallel::makeCluster(rep("localhost", nc), type = "SOCK")
       doSNOW::registerDoSNOW(cl)
     }
     pb <- txtProgressBar(min = 1, max = nsim, style = 3)
@@ -280,15 +285,23 @@ cps.ma.count.internal <-
     opts <- list(progress = progress)
     
     # Update simulation progress information
+    sim.start <- Sys.time()
+    lme4::glmer(sim.dat[, 1] ~ as.factor(trt) + (1 |
+                                                   clust),
+                family = stats::poisson(link = 'log'))
+    avg.iter.time = as.numeric(difftime(Sys.time(), sim.start, units = 'secs'))
+    time.est = avg.iter.time * (nsim - 1) / 60
+    hr.est = time.est %/% 60
+    min.est = round(time.est %% 60, 0)
+    #time limit override (for Shiny)
+    if (min.est > 2 && timelimitOverride == FALSE) {
+      stop(paste0("Estimated completion time: ",
+                  hr.est,
+                  'Hr:',
+                  min.est,
+                  'Min'))
+    }
     if (quiet == FALSE) {
-      sim.start <- Sys.time()
-      lme4::glmer(sim.dat[, 1] ~ as.factor(trt) + (1 |
-                                                     clust),
-                  family = stats::poisson(link = 'log'))
-      avg.iter.time = as.numeric(difftime(Sys.time(), sim.start, units = 'secs'))
-      time.est = avg.iter.time * (nsim - 1) / 60
-      hr.est = time.est %/% 60
-      min.est = round(time.est %% 60, 0)
       message(
         paste0(
           'Begin simulations :: Start Time: ',
@@ -311,6 +324,7 @@ cps.ma.count.internal <-
         prog.bar$tick(0)
       }
     }
+    
     if (is.na(cores) & quiet == FALSE) {
       # Iterate progress bar
       prog.bar$update(1 / 5)
@@ -471,7 +485,7 @@ cps.ma.count.internal <-
             )
         }
       }
-
+      
       for (i in 1:nsim) {
         converged[i] <-
           ifelse(is.null(my.mod[[i]]@optinfo$conv$lme4$messages),
@@ -532,17 +546,28 @@ cps.ma.count.internal <-
     
     # Fit GEE (geeglm)
     if (method == 'gee') {
+      sim.start <- Sys.time()
+      geepack::geeglm(
+        sim.dat[, 1] ~ as.factor(trt),
+        family = stats::poisson(link = 'log'),
+        id = clust,
+        corstr = "exchangeable"
+      )
+      time.est = avg.iter.time * (nsim - 1) / 60
+      hr.est = time.est %/% 60
+      min.est = round(time.est %% 60, 0)
+      
+      #time limit override (for Shiny)
+      if (min.est > 2 && timelimitOverride == FALSE) {
+        stop(paste0(
+          "Estimated completion time: ",
+          hr.est,
+          'Hr:',
+          min.est,
+          'Min'
+        ))
+      }
       if (quiet == FALSE) {
-        sim.start <- Sys.time()
-        geepack::geeglm(
-          sim.dat[, 1] ~ as.factor(trt),
-          family = stats::poisson(link = 'log'),
-          id = clust,
-          corstr = "exchangeable"
-        )
-        time.est = avg.iter.time * (nsim - 1) / 60
-        hr.est = time.est %/% 60
-        min.est = round(time.est %% 60, 0)
         message(
           paste0(
             'Begin simulations :: Start Time: ',
@@ -611,10 +636,12 @@ cps.ma.count.internal <-
         Sys.sleep(1 / 100)
       }
       null.mod <- list()
-      null.mod[[i]] <- geepack::geeglm(sim.dat[, i] ~ 1,
-                                 family = stats::quasipoisson(link = 'log'),
-                                 id = clust,
-                                 corstr = "exchangeable")
+      null.mod[[i]] <- geepack::geeglm(
+        sim.dat[, i] ~ 1,
+        family = stats::quasipoisson(link = 'log'),
+        id = clust,
+        corstr = "exchangeable"
+      )
       # get the overall p-values (>Chisq)
       model.compare <-
         foreach::foreach(i = 1:nsim, .inorder = FALSE) %fun% {
@@ -659,6 +686,6 @@ cps.ma.count.internal <-
         "optimizer algorithm" = goodopt
       )
     }
-
+    
     return(complete.output.internal)
   } #end of function

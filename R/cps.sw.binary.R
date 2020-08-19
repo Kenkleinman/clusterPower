@@ -25,8 +25,8 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
 #' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
-#' @param p.ntrt Expected probability of outcome in arm 1. Accepts scalar between 0 - 1 (required).
-#' @param p.trt Expected probability of outcome in arm 2. Accepts scalar between 0 - 1 (required).
+#' @param p1 Expected probability of outcome in arm 1. Accepts scalar between 0 - 1 (required).
+#' @param p2 Expected probability of outcome in arm 2. Accepts scalar between 0 - 1 (required).
 #' @param steps Number of crossover steps; a baseline step (all clusters in arm 1) is assumed. 
 #' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 
 #' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
@@ -39,7 +39,16 @@
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
-#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param allSimData Option to output list of all simulated datasets; default = FALSE.
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\%
+#' of fits fail to converge; default = FALSE.
+#' @param lowPowerOverride Option to override \code{stop()} if the power
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the
+#' calculated power is returned regardless of value.
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
+#' is more than 2 minutes. Defaults to TRUE.
 #' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'L-BFGS-B'.
 #' @param seed Option to set.seed. Default is NULL.
 #' 
@@ -64,13 +73,19 @@
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value", 
 #'                   "sig.val" (Is p-value less than alpha?)
-#'   \item List of data frames, each containing: 
+#'   \item If \code{allSimData = TRUE}, a list of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for arm),
 #'                   "time.point" (Indicator for step; "t1" = time point 0) 
 #'                   "clust" (Indicator for cluster), 
 #'                   "period" (Indicator for at which step a cluster crosses over)
 #' }
+#'  If \code{nofit = T}, a data frame of the simulated data sets, containing:
+#' \itemize{
+#'   \item "arm" (Indicator for treatment arm)
+#'   \item "clust" (Indicator for cluster)
+#'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+#'   }
 #' 
 #' @examples 
 #' 
@@ -82,9 +97,9 @@
 #' 
 #' \dontrun{
 #' binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 50, nclusters = 12, 
-#'                               p.ntrt = 0.1, p.trt = 0.2, steps = 3, 
+#'                               p1 = 0.1, p2 = 0.2, steps = 3, 
 #'                               sigma_b_sq = 1, alpha = 0.05, method = 'glmm', 
-#'                               quiet = FALSE, all.sim.data = FALSE, seed = 123)
+#'                               quiet = FALSE, allSimData = FALSE, seed = 123)
 #' }
 #'
 #' @author Alexander R. Bogdan 
@@ -94,22 +109,22 @@
 #' @export
 
 
-
-
 cps.sw.binary = function(nsim = NULL,
                          nsubjects = NULL,
                          nclusters = NULL,
-                         p.ntrt = NULL,
-                         p.trt = NULL,
+                         p1 = NULL,
+                         p2 = NULL,
                          steps = NULL,
                          sigma_b_sq = NULL,
                          alpha = 0.05,
                          method = 'glmm',
                          quiet = FALSE,
-                         all.sim.data = FALSE,
+                         allSimData = FALSE,
+                         poorFitOverride = FALSE,
+                         lowPowerOverride = FALSE, 
+                         timelimitOverride = TRUE,
                          opt = 'L-BFGS-B',
                          seed = NULL) {
-  
   if (!is.na(seed)) {
     set.seed(seed = seed)
   }
@@ -181,10 +196,10 @@ cps.sw.binary = function(nsim = NULL,
   
   # Validate P.NTRT & P.TRT
   min0.warning = " must be a numeric value between 0 - 1"
-  if (p.ntrt < 0 || p.ntrt > 1) {
+  if (p1 < 0 || p1 > 1) {
     stop("P.NTRT", min0.warning)
   }
-  if (p.trt < 0 || p.trt > 1) {
+  if (p2 < 0 || p2 > 1) {
     stop("P.TRT", min0.warning)
   }
   
@@ -237,7 +252,7 @@ cps.sw.binary = function(nsim = NULL,
     sigma_b_sq[2] = sigma_b_sq
   }
   
-  # Validate ALPHA, METHOD, QUIET, ALL.SIM.DATA
+  # Validate ALPHA, METHOD, QUIET, allSimData
   if (!is.numeric(alpha) || alpha < 0 || alpha > 1) {
     stop("ALPHA", min0.warning)
   }
@@ -252,9 +267,9 @@ cps.sw.binary = function(nsim = NULL,
       "QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)"
     )
   }
-  if (!is.logical(all.sim.data)) {
+  if (!is.logical(allSimData)) {
     stop(
-      "ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
+      "allSimData must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
     )
   }
   
@@ -283,8 +298,8 @@ cps.sw.binary = function(nsim = NULL,
   sim.dat['y'] = 0
   
   # Calculate log odds for each group
-  logit.p.ntrt = log(p.ntrt / (1 - p.ntrt))
-  logit.p.trt = log(p.trt / (1 - p.trt))
+  logit.p1 = log(p1 / (1 - p1))
+  logit.p2 = log(p2 / (1 - p2))
   
   if (method == 'glmm') {
     require("optimx")
@@ -305,7 +320,7 @@ cps.sw.binary = function(nsim = NULL,
                               sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0),
                               1,
                               expit(
-                                logit.p.ntrt +
+                                logit.p1 +
                                   ntrt.cluster.effects[j] +
                                   stats::rnorm(sum(sim.dat[, 'clust'] == j &
                                                      sim.dat[, 'trt'] == 0))
@@ -318,7 +333,7 @@ cps.sw.binary = function(nsim = NULL,
                             stats::rbinom(
                               sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1),
                               1,
-                              expit(logit.p.trt +
+                              expit(logit.p2 +
                                       trt.cluster.effects[j] +
                                       stats::rnorm(sum(
                                         sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1
@@ -337,8 +352,8 @@ cps.sw.binary = function(nsim = NULL,
     iter.values = cbind(stats::aggregate(y ~ trt + time.point, data = sim.dat, mean)[, 3])
     values.vector = values.vector + iter.values
     
-    # Store simulated data sets if ALL.SIM.DATA == TRUE
-    if (all.sim.data == TRUE) {
+    # Store simulated data sets if allSimData == TRUE
+    if (allSimData == TRUE) {
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
     
@@ -384,13 +399,47 @@ cps.sw.binary = function(nsim = NULL,
       converge[i] = ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     
+    # option to stop the function early if fits are singular
+    if (poorFitOverride == FALSE && converge[i] == FALSE) {
+      if (sum(converge == FALSE, na.rm = TRUE) > (nsim * .25)) {
+        stop(
+          "more than 25% of simulations are singular fit: check model specifications"
+        )
+      }
+    }
+    
+    # stop the loop if power is <0.5
+    if (lowPowerOverride == FALSE && i > 50 && (i %% 10 == 0)) {
+      sig.val.temp <-
+        ifelse(pval.vector < alpha, 1, 0)
+      pval.power.temp <- sum(sig.val.temp, na.rm = TRUE) / i
+      if (pval.power.temp < 0.5) {
+        stop(
+          paste(
+            "Calculated power is < ",
+            pval.power.temp,
+            ". Set lowPowerOverride == TRUE to run the simulations anyway.",
+            sep = ""
+          )
+        )
+      }
+    }
+    
     # Update progress information
-    if (quiet == FALSE) {
       if (i == 1) {
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
         min.est = round(time.est %% 60, 0)
+        if (min.est > 2 && timelimitOverride == FALSE){
+          stop(paste0("Estimated completion time: ",
+                      hr.est,
+                      'Hr:',
+                      min.est,
+                      'Min'
+          ))
+        }
+        if (quiet == FALSE) {
         message(
           paste0(
             'Begin simulations :: Start Time: ',
@@ -469,7 +518,7 @@ cps.sw.binary = function(nsim = NULL,
   )
   
   # Create object containing expected arm 1 and arm 2 probabilities
-  group.probs = data.frame("Outcome.Probabilities" = c("Arm.1" = p.ntrt, "Arm.2" = p.trt))
+  group.probs = data.frame("Outcome.Probabilities" = c("Arm.1" = p1, "Arm.2" = p2))
   
   # Create object containing cluster sizes
   cluster.sizes = nsubjects

@@ -4,7 +4,7 @@
 #' or determine parameters to obtain a target power.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-#'   \code{ncontrols}, \code{d}, \code{varu}, \code{vare}, and \code{varr}
+#'   \code{ncontrols}, \code{d}, \code{varu}, \code{varei}, and \code{varr}
 #'   must be passed as \code{NA}. Note that \code{alpha} and \code{power}
 #'   have non-\code{NA} defaults, so if those are the parameters of 
 #'   interest they must be explicitly passed as \code{NA}.
@@ -28,15 +28,15 @@
 #' @param ncontrols The number of subjects in the control arm.
 #' @param d The expected treatment effect.
 #' @param varu The variance of the cluster level random effect for clusters in the intervention arm.
-#' @param vare The variance of the subject level random error for individuals in the intervention arm.
+#' @param varei The variance of the subject level random error for individuals in the intervention arm.
 #' @param varr The variance of the subject level random error for individuals in the control arm.
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
 #' @return The computed argument.
 #' @examples 
 #' # Find the required number of control subjects for an IRGTT with alpha = 0.05, power = 0.80,
-#' # nclusters = 10, nsubjects = 10, d = 0.5 units, varu = 0.1, vare = 0.9, varr = 1.
-#' cpa.irgtt.normal(nclusters=10, nsubjects = 10, d = 0.5, varu = 0.1, vare = 0.9, varr = 1)
+#' # nclusters = 10, nsubjects = 10, d = 0.5 units, varu = 0.1, varei = 0.9, varr = 1.
+#' cpa.irgtt.normal(nclusters=10, nsubjects = 10, d = 0.5, varu = 0.1, varei = 0.9, varr = 1)
 #' # 
 #' # The result, ncontrols = 77.81084, suggests 78 subjects in the control arm should be recruited.
 #' # This means that the total number of subjects in the study is nclusters*nsubjects + ncontrols = 10*10 + 78 = 178.
@@ -56,7 +56,7 @@ cpa.irgtt.normal <-
            ncontrols = NA,
            d = NA,
            varu = NA,
-           vare = NA,
+           varei = NA,
            varr = NA,
            tol = .Machine$double.eps ^ 0.25) {
     # list of needed inputs
@@ -68,7 +68,7 @@ cpa.irgtt.normal <-
            ncontrols,
            d,
            varu,
-           vare,
+           varei,
            varr)
     neednames <-
       c("alpha",
@@ -78,13 +78,13 @@ cpa.irgtt.normal <-
         "ncontrols",
         "d",
         "varu",
-        "vare",
+        "varei",
         "varr")
     needind <- which(unlist(lapply(needlist, is.na)))
     # check to see that exactly one needed param is NA
     
     if (length(needind) != 1) {
-      neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'ncontrols', 'd', 'varu', 'vare', and 'varr' must be NA."
+      neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'ncontrols', 'd', 'varu', 'varei', and 'varr' must be NA."
       stop(neederror)
     }
     
@@ -94,7 +94,7 @@ cpa.irgtt.normal <-
     pwr <- quote({
       # variance of treatment effect d
       vard <-
-        (nsubjects * varu + vare) / (nclusters * nsubjects) + varr / ncontrols
+        (nsubjects * varu + varei) / (nclusters * nsubjects) + varr / ncontrols
       
       zcrit <- qnorm(alpha / 2, lower.tail = FALSE)
       zstat <- abs(d) / sqrt(vard)
@@ -170,10 +170,10 @@ cpa.irgtt.normal <-
       )$root
     }
     
-    # calculate vare
-    if (is.na(vare)) {
-      vare <- stats::uniroot(
-        function(vare)
+    # calculate varei
+    if (is.na(varei)) {
+      varei <- stats::uniroot(
+        function(varei)
           eval(pwr) - power,
         interval = c(1e-07, 1e+07),
         tol = tol,

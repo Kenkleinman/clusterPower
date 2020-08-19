@@ -45,14 +45,23 @@
 #' or generalized estimating equations (GEE). Accepts c('glmm', 'gee'); default = 'glmm'. Required.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion 
 #' time, default = TRUE.
-#' @param all.sim.data Option to include a list of all simulated datasets in the output object.
+#' @param allSimData Option to include a list of all simulated datasets in the output object.
 #' Default = \code{FALSE}.
 #' @param nofit Option to skip model fitting and analysis and instead return a dataframe with
 #' the simulated datasets. Default = \code{FALSE}.
-#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param allSimData Option to output list of all simulated datasets; default = FALSE.
 #' @param nofit Option to skip model fitting and analysis and only return the simulated data.
 #' Default = \code{FALSE}.
 #' @param seed Option to set the seed. Default is NA.
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\% 
+#' of fits fail to converge.
+#' @param lowPowerOverride Option to override \code{stop()} if the power
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the
+#' calculated power is returned regardless of value.
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
+#' is more than 2 minutes. Defaults to TRUE.
 #'  
 #' @return If \code{nofit = F}, a list with the following components:
 #' \itemize{
@@ -79,7 +88,7 @@
 #'   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'   "p.value", 
 #'   "converge" (Did simulated model converge?)
-#'   \item If all.sim.data = TRUE, list of data frames, each containing: "y" (Simulated response value), 
+#'   \item If allSimData = TRUE, list of data frames, each containing: "y" (Simulated response value), 
 #'   "trt" (Indicator for treatment group), "clust" (Indicator for cluster)
 #'   \item List of warning messages produced by non-convergent models; 
 #'   Includes model number for cross-referencing against \code{model.estimates}
@@ -151,7 +160,7 @@
 #' \dontrun{
 #' binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.8,
 #'                         p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
-#'                         method = 'glmm', all.sim.data = FALSE)
+#'                         method = 'glmm', allSimData = FALSE)
 #' }
 #'
 #' # Estimate power for a trial just as above, except that in the first arm,
@@ -161,7 +170,7 @@
 #' \dontrun{
 #' binary.sim2 = cps.binary(nsim = 100, nsubjects = c(c(rep(10,9),100),rep(20,10)), nclusters = 10, p1 = 0.8,
 #'                         p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
-#'                         method = 'gee', all.sim.data = FALSE)
+#'                         method = 'gee', allSimData = FALSE)
 #' }
 #'
 #'
@@ -179,10 +188,13 @@ cps.binary = function(nsim = NULL,
                       sigma_b_sq2 = NULL,
                       alpha = 0.05,
                       method = 'glmm',
-                      quiet = TRUE,
-                      all.sim.data = FALSE,
+                      quiet = FALSE,
+                      allSimData = FALSE,
                       seed = NA,
                       nofit = FALSE,
+                      poorFitOverride = FALSE,
+                      lowPowerOverride = FALSE,
+                      timelimitOverride = TRUE,
                       irgtt = FALSE) {
   
   if (!is.na(seed)) {
@@ -201,7 +213,6 @@ cps.binary = function(nsim = NULL,
   converge.vector = NULL
   simulated.datasets = list()
   warning.list = list()
-  start.time = Sys.time()
   
   # Create progress bar
   prog.bar =  progress::progress_bar$new(
@@ -295,7 +306,7 @@ cps.binary = function(nsim = NULL,
     stop("Both terms must be specified: p1, p2")
   }
 
-  # Validate ALPHA, METHOD, QUIET, ALL.SIM.DATA
+  # Validate ALPHA, METHOD, QUIET, allSimData
   if (!is.numeric(alpha) || alpha < 0) {
     stop("ALPHA", min0.warning)
   } else if (alpha > 1) {
@@ -312,9 +323,9 @@ cps.binary = function(nsim = NULL,
       "QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)"
     )
   }
-  if (!is.logical(all.sim.data)) {
+  if (!is.logical(allSimData)) {
     stop(
-      "ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
+      "allSimData must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
     )
   }
   
@@ -389,7 +400,7 @@ cps.binary = function(nsim = NULL,
     
     # Create and store data frame for simulated dataset
     sim.dat = data.frame(y = y, trt = trt, clust = clust)
-    if (all.sim.data == TRUE && nofit == FALSE) {
+    if (allSimData == TRUE && nofit == FALSE) {
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
     
@@ -434,6 +445,8 @@ cps.binary = function(nsim = NULL,
     # Note: Warnings will still be stored in 'warning.list'
     options(warn = -1)
     
+    start.time = Sys.time()
+    
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       if (irgtt == TRUE) {
@@ -467,6 +480,9 @@ cps.binary = function(nsim = NULL,
         stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
         pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
       }
+      if (poorFitOverride == FALSE && length(converge.vector) > 10 && sum(converge.vector, na.rm = TRUE) < (nsim * 0.75)) {
+        stop("more than 25% of simulations are singular fit: check model specifications")
+      }
     }
     
     # Set warnings to OFF
@@ -491,14 +507,14 @@ cps.binary = function(nsim = NULL,
       converge.vector = append(converge.vector, ifelse(summary(my.mod)$error == 0, TRUE, FALSE))
     }
     
-    # Update simulation progress information
-    if (quiet == FALSE) {
       # Print simulation start message
+
       if (length(est.vector) == 1) {
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
         min.est = round(time.est %% 60, 0)
+        if (quiet == FALSE) {
         message(
           paste0(
             'Begin simulations :: Start Time: ',
@@ -510,16 +526,42 @@ cps.binary = function(nsim = NULL,
             'Min'
           )
         )
+        }
+        if (min.est > 2 && timelimitOverride == FALSE){
+          stop(paste0("Estimated completion time: ",
+                      hr.est,
+                      'Hr:',
+                      min.est,
+                      'Min'
+          ))
+        }
       }
-      # Print simulation complete message
-      if (sum(converge.vector) == nsim) {
-        message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
+    # Update simulation progress information
+    if (quiet == FALSE){
+      prog.bar$update(sum(converge.vector == TRUE) / nsim)
+      Sys.sleep(1 / 100)
+    }
+    # stop the loop if power is <0.5
+    if (lowPowerOverride == FALSE && length(pval.vector) > 50) {
+      sig.val.temp <-
+        ifelse(pval.vector < alpha, 1, 0)
+      pval.power.temp <- sum(sig.val.temp, na.rm = TRUE) / length(pval.vector)
+      if (pval.power.temp < 0.5) {
+        stop(
+          paste(
+            "Calculated power is < ",
+            pval.power.temp,
+            ". Set lowPowerOverride == TRUE to run the simulations anyway.",
+            sep = ""
+          )
+        )
       }
     }
-    # Iterate progress bar
-    prog.bar$update(sum(converge.vector == TRUE) / nsim)
-    Sys.sleep(1 / 100)
-    
+  }
+  # Print simulation complete message
+    if (quiet == FALSE && sum(converge.vector) == nsim) {
+        message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
+      }
     # Governor to prevent infinite non-convergence loop
     converge.ratio <-
       sum(converge.vector == FALSE) / sum(converge.vector == TRUE)
@@ -528,7 +570,7 @@ cps.binary = function(nsim = NULL,
         "WARNING! The number of non-convergent models exceeds the number of convergent models by a factor of 4. Consider reducing sigma_b_sq"
       )
     }
-  }
+
   ## Output objects
   # Create object containing summary statement
   if (irgtt == FALSE) {
@@ -564,8 +606,7 @@ cps.binary = function(nsim = NULL,
   
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
-  browser()
-  power.parms <- confintCalc(alpha = alpha,
+  power.parms <- clusterPower::confintCalc(alpha = alpha,
                               p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs
@@ -607,8 +648,8 @@ cps.binary = function(nsim = NULL,
   
   # Check & governor for inclusion of simulated datasets
   # Note: If number of non-convergent models exceeds 5% of NSIM, 
-  # override ALL.SIM.DATA and output all simulated data sets
-  if (all.sim.data == FALSE &&
+  # override allSimData and output all simulated data sets
+  if (allSimData == FALSE &&
       (sum(converge.vector == FALSE) < sum(converge.vector == TRUE) * 0.05)) {
     simulated.datasets = NULL
   }

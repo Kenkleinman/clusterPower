@@ -2,17 +2,17 @@
 #'
 #'
 #'
-#' @description 
+#' @description
 #' \loadmathjax
-#' 
-#'  
-#' This function uses Monte Carlo methods (simulations) to estimate 
+#'
+#'
+#' This function uses Monte Carlo methods (simulations) to estimate
 #' power for cluster-randomized trials for integer-valued outcomes with two or more
-#' trial conditions. Users 
+#' trial conditions. Users
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
-#' 
-#' Users must specify the desired number of simulations, number of subjects per 
+#'
+#' Users must specify the desired number of simulations, number of subjects per
 #' cluster, number of clusters per treatment arm, between-cluster variance, and
 #' two of the following three parameters: mean event rate per unit time in one group,
 #' the mean event rate per unit time in the second group, and/or the
@@ -28,9 +28,9 @@
 #' cluster, number of clusters per treatment arm, group probabilities, and the
 #' between-cluster variance. Significance level, analytic method, whether progress
 #' updates are displayed, poor/singular fit override, and whether or not to return the
-#' simulated data may also be specified. 
-#' 
-#' This user-friendly function calls an internal function; the internal function 
+#' simulated data may also be specified.
+#'
+#' This user-friendly function calls an internal function; the internal function
 #' can be called
 #' directly by the user to return the fitted models rather than the power
 #' summaries (see \code{?cps.ma.count.internal} for details).
@@ -44,7 +44,7 @@
 #' copying data across cores also may take some time. For time-savings,
 #' this function stops execution early if estimated power < 0.5 or more
 #' than 25\% of models produce a singular fit or non-convergence warning
-#' message, unless \code{poor.fit.override = TRUE}.
+#' message, unless \code{poorFitOverride = TRUE}.
 #'
 #'
 #'
@@ -68,7 +68,7 @@
 #' the vector of cluster counts must match the length of the \code{nsubjects} vectors.
 #' Required.
 #'
-#' @param counts Mean event rates per unit time for each arm; accepts a scalar
+#' @param counts Mean event per unit time for each arm; accepts a scalar
 #' (if all arms have the same event rate) or
 #' a vector of length \code{narms}. Required.
 #'
@@ -77,13 +77,13 @@
 #'
 #' @param analysis Family used for data analysis; currently only applicable when \code{method = 'glmm'}.
 #' Accepts c('poisson', 'neg.binom'); default = 'poisson'. Required.
-#' 
-#' @param negBinomSize Only used when generating simulated data from the 
-#' negative binomial (family = 'neg.binom'), this is the target for number of 
-#' successful trials, or the dispersion parameter (the shape parameter of the gamma 
-#' mixing distribution). Must be positive and defaults to 1. Required when 
+#'
+#' @param negBinomSize Only used when generating simulated data from the
+#' negative binomial (family = 'neg.binom'), this is the target for number of
+#' successful trials, or the dispersion parameter (the shape parameter of the gamma
+#' mixing distribution). Must be positive and defaults to 1. Required when
 #' family = 'neg.binom'.
-#' 
+#'
 #' @param sigma_b_sq Between-cluster variance for each arm; accepts a scalar
 #' (if all arms have the same between-cluster variance) or a vector of length
 #' \code{narms}. Required.
@@ -98,12 +98,12 @@
 #' (GLMM) or generalized estimating equations (GEE). Accepts \code{c('glmm', 'gee')};
 #' default = \code{'glmm'}. Required.
 #'
-#' @param multi.p.method A string indicating the method to use for adjusting
+#' @param multi_p_method A string indicating the method to use for adjusting
 #' p-values for multiple comparisons. Choose one of "holm", "hochberg",
 #' "hommel", "bonferroni", "BH", "BY", "fdr", "none". The default is
 #' "bonferroni". See \code{?p.adjust} for additional details.
 #'
-#' @param all.sim.data Option to include a list of all simulated datasets in the output object.
+#' @param allSimData Option to include a list of all simulated datasets in the output object.
 #' Default = \code{FALSE}.
 #'
 #' @param seed Option to set the seed. Default is NULL.
@@ -112,18 +112,21 @@
 #' string ("all"), NA (no parallel computing), or scalar value indicating
 #' the number of CPUs to use. Default = NA.
 #'
-#' @param tdist Logical value indicating whether cluster-level random effects
+#' @param tdist.re Logical value indicating whether cluster-level random effects
 #' should be drawn from a \mjseqn{t} distribution rather than a normal distribution.
 #' Default = \code{FALSE}.
 #'
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge;
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\% of fits fail to converge;
 #' default = \code{FALSE}.
 #'
-#' @param low.power.override Option to override \code{stop()} if the power
+#' @param lowPowerOverride Option to override \code{stop()} if the power
 #' is less than 0.5 after the first 50 simulations and every ten simulations
 #' thereafter. On \code{stop}, the power calculated from the completed simulations is printed in the
 #' stop message. Default = \code{FALSE}. When \code{TRUE}, this check is ignored and the
 #' calculated power is returned regardless of value.
+#'
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated
+#' completion time is more than 2 minutes. Defaults to TRUE.
 #'
 #' @param return.all.models Logical; Returns all of the fitted models, the simulated data,
 #' the overall model comparisons, and the convergence report vector. This is equivalent
@@ -155,20 +158,26 @@
 #'   (when method="gee") significance test results.}
 #'   \item{overall.power.summary}{Summary overall power of treatment model
 #'   compared to the null model.}
-#'   \item{sim.data}{Produced when all.sim.data==TRUE. List of \code{nsim}
+#'   \item{sim.data}{Produced when allSimData==TRUE. List of \code{nsim}
 #'   data frames, each containing:
 #'                   "y" (simulated response value),
 #'                   "trt" (indicator for treatment group or arm), and
 #'                   "clust" (indicator for cluster).}
 #'   \item{model.fit.warning.percent}{Character string containing the percent
 #'   of \code{nsim} in which the glmm fit was singular or failed to converge,
-#'   produced only when method = "glmm" & all.sim.data = FALSE.
+#'   produced only when method = "glmm" & allSimData = FALSE.
 #'   }
 #'   \item{model.fit.warning.incidence}{Vector of length \code{nsim} denoting
 #'   whether or not a simulation glmm fit triggered a "singular fit" or
 #'   "non-convergence" error, produced only when method = "glmm" &
-#'   all.sim.data=TRUE.
+#'   allSimData=TRUE.
 #'   }
+#'   }
+#'   If \code{nofit = T}, a data frame of the simulated data sets, containing:
+#' \itemize{
+#'   \item "arm" (Indicator for treatment arm)
+#'   \item "cluster" (Indicator for cluster)
+#'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
 #'   }
 #'
 #'
@@ -197,7 +206,7 @@
 #'
 #' By default, this function stops execution early if estimated power < 0.5 or if more
 #' than 25\% of models produce a singular fit or non-convergence warning. In some cases, users
-#' may want to ignore singularity warnings (see \code{?isSingular}) by setting \code{poor.fit.override = TRUE}.
+#' may want to ignore singularity warnings (see \code{?isSingular}) by setting \code{poorFitOverride = TRUE}.
 #'
 #'
 #'
@@ -206,18 +215,18 @@
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @examples
-#' 
-#' # For a 3-arm trial with 4, 4, and 5 clusters in each arm, respectively, 
-#' # specify the number of subjects in each cluster with 3 vectors in a list, 
+#'
+#' # For a 3-arm trial with 4, 4, and 5 clusters in each arm, respectively,
+#' # specify the number of subjects in each cluster with 3 vectors in a list,
 #' # each vector representing a study arm. For each cluster, in no particular
-#' # order, denote the number of subjects. In this example, the first arm 
+#' # order, denote the number of subjects. In this example, the first arm
 #' # contains 150, 200, 50, and 100 subjects in each of the 4 clusters. The second
-#' # arm contains 50, 150, 210, and 100 subjects in each of 4 clusters, while 
-#' # the third arm contains 70, 200, 150, 50, and 100 subjects in each of 5 
-#' # clusters. The expected outcomes for each arm are 10, 55, and 65, and 
-#' # the sigma_b_sq values are 1, 1, and 2, respectively. Assuming 
+#' # arm contains 50, 150, 210, and 100 subjects in each of 4 clusters, while
+#' # the third arm contains 70, 200, 150, 50, and 100 subjects in each of 5
+#' # clusters. The expected outcomes for each arm are 10, 55, and 65, and
+#' # the sigma_b_sq values are 1, 1, and 2, respectively. Assuming
 #' # seed = 123, the overall power for this trial should be 0.81.
-#' 
+#'
 #' \dontrun{
 #' nsubjects.example <- list(c(150, 200, 50, 100), c(50, 150, 210, 100), c(70, 200, 150, 50, 100))
 #' counts.example <- c(10, 55, 65)
@@ -230,12 +239,12 @@
 #'                             alpha = 0.05, seed = 123)
 #'}
 #'
-#' # For a different trial with 4 arms, each arm has 4 clusters which 
-#' # each contain 100 subjects. Expected counts for each arm are 30 
+#' # For a different trial with 4 arms, each arm has 4 clusters which
+#' # each contain 100 subjects. Expected counts for each arm are 30
 #' # for the first arm, 35 for the second, 70 for the third, and 40
-#' # for the fourth. Similarly, sigma_b_sq for each arm are 1 
+#' # for the fourth. Similarly, sigma_b_sq for each arm are 1
 #' # for the first arm, 1.2 for the second, 1 for the third, and 0.9
-#' # for the fourth. Assuming seed = 123, the overall power for this 
+#' # for the fourth. Assuming seed = 123, the overall power for this
 #' # trial should be 0.84
 #'
 #' \dontrun{
@@ -257,13 +266,14 @@ cps.ma.count <- function(nsim = 1000,
                          alpha = 0.05,
                          quiet = FALSE,
                          method = 'glmm',
-                         multi.p.method = "bonferroni",
-                         all.sim.data = FALSE,
+                         multi_p_method = "bonferroni",
+                         allSimData = FALSE,
                          seed = NA,
                          cores = NA,
-                         tdist = FALSE,
-                         poor.fit.override = FALSE,
-                         low.power.override = FALSE,
+                         tdist.re = FALSE,
+                         poorFitOverride = FALSE,
+                         lowPowerOverride = FALSE,
+                         timelimitOverride = TRUE,
                          return.all.models = FALSE,
                          nofit = FALSE,
                          opt = "NLOPT_LN_BOBYQA") {
@@ -322,6 +332,14 @@ cps.ma.count <- function(nsim = 1000,
     str.nsubjects <- nsubjects
   }
   
+  # allow entries to be entered as text for Shiny app
+  if (!is.numeric(counts)) {
+    counts <- as.numeric(unlist(strsplit(counts, split = ", ")))
+  }
+  if (!is.numeric(sigma_b_sq)) {
+    sigma_b_sq <- as.numeric(unlist(strsplit(sigma_b_sq, split = ", ")))
+  }
+  
   # allows for counts, sigma_b_sq to be entered as scalar
   if (length(sigma_b_sq) == 1) {
     sigma_b_sq <- rep(sigma_b_sq, narms)
@@ -350,8 +368,8 @@ cps.ma.count <- function(nsim = 1000,
   # validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma=NA,
   #                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA,
   #                   sigma_b2=NA, method=method, quiet=quiet,
-  #                   all.sim.data=all.sim.data,
-  #                   poor.fit.override=poor.fit.override,
+  #                   all.sim.data=allSimData,
+  #                   poor.fit.override=poorFitOverride,
   #                   cores=cores)
   
   # Set warnings to OFF
@@ -367,11 +385,12 @@ cps.ma.count <- function(nsim = 1000,
     alpha = alpha,
     quiet = quiet,
     method = method,
-    all.sim.data = all.sim.data,
+    all.sim.data = allSimData,
     seed = seed,
-    poor.fit.override = poor.fit.override,
-    low.power.override = low.power.override,
-    tdist = tdist,
+    poor.fit.override = poorFitOverride,
+    low.power.override = lowPowerOverride,
+    timelimitOverride = timelimitOverride,
+    tdist = tdist.re,
     cores = cores,
     family = family,
     analysis = analysis,
@@ -425,11 +444,11 @@ cps.ma.count <- function(nsim = 1000,
     p.val = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]][[10]][, 1]
-      std.error[i,] <- models[[i]][[10]][, 2]
-      z.val[i,] <- models[[i]][[10]][, 3]
-      p.val[i,] <-
-        p.adjust(models[[i]][[10]][, 4], method = multi.p.method)
+      Estimates[i, ] <- models[[i]][[10]][, 1]
+      std.error[i, ] <- models[[i]][[10]][, 2]
+      z.val[i, ] <- models[[i]][[10]][, 3]
+      p.val[i, ] <-
+        p.adjust(models[[i]][[10]][, 4], method = multi_p_method)
     }
     
     # Organize the row/col names for the model estimates output
@@ -492,10 +511,10 @@ cps.ma.count <- function(nsim = 1000,
       ),
       immediate. = TRUE)
     }
-
+    
     # Calculate and store power estimate & confidence intervals
     power.parms <- confintCalc(alpha = alpha,
-                                p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)]))
+                               p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)]))
     
     # Store simulation output in data frame
     ma.model.est <-
@@ -525,7 +544,7 @@ cps.ma.count <- function(nsim = 1000,
     
     ## Output objects for GLMM
     # Create list containing all output (class 'crtpwr.ma') and return
-    if (all.sim.data == TRUE && return.all.models == FALSE) {
+    if (allSimData == TRUE && return.all.models == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -581,7 +600,7 @@ cps.ma.count <- function(nsim = 1000,
         class = 'crtpwr.ma'
       )
     }
-    if (return.all.models == FALSE && all.sim.data == FALSE) {
+    if (return.all.models == FALSE && allSimData == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -618,10 +637,10 @@ cps.ma.count <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]]$coefficients[, 1]
-      std.error[i,] <- models[[i]]$coefficients[, 2]
-      Wald[i,] <- models[[i]]$coefficients[, 3]
-      Pr[i,] <- models[[i]]$coefficients[, 4]
+      Estimates[i, ] <- models[[i]]$coefficients[, 1]
+      std.error[i, ] <- models[[i]]$coefficients[, 2]
+      Wald[i, ] <- models[[i]]$coefficients[, 3]
+      Pr[i, ] <- models[[i]]$coefficients[, 4]
     }
     
     # Organize the row/col names for the output
@@ -692,7 +711,7 @@ cps.ma.count <- function(nsim = 1000,
     )
     
     # Create list containing all output (class 'crtpwr.ma') and return
-    if (all.sim.data == TRUE & return.all.models == FALSE) {
+    if (allSimData == TRUE & return.all.models == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -744,7 +763,7 @@ cps.ma.count <- function(nsim = 1000,
         class = 'crtpwr.ma'
       )
     }
-    if (return.all.models == FALSE && all.sim.data == FALSE) {
+    if (return.all.models == FALSE && allSimData == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,

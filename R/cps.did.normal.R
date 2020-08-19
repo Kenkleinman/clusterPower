@@ -34,8 +34,17 @@
 #' @param alpha Significance level. Default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\%
+#' of fits fail to converge; default = FALSE.
+#' @param lowPowerOverride Option to override \code{stop()} if the power
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the
+#' calculated power is returned regardless of value.
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
+#' is more than 2 minutes. Defaults to TRUE.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
-#' @param all.sim.data Option to output list of all simulated datasets; default = FALSE.
+#' @param allSimData Option to output list of all simulated datasets; default = FALSE.
 #' @param nofit Option to skip model fitting and analysis and only return the simulated data.
 #' Default = \code{FALSE}.
 #' @param seed Option to set the seed. Default is NA.
@@ -64,12 +73,20 @@
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value", 
 #'                   "sig.val" (Is p-value less than alpha?)
-#'   \item List of data frames, each containing: 
+#'   \item If \code{allSimData = TRUE}, a list of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for arm), 
 #'                   "clust" (Indicator for cluster), 
 #'                   "period" (Indicator for time point)
 #' }
+#' If \code{nofit = T}, a data frame of the simulated data sets, containing:
+#' 
+#' \itemize{
+#'   \item "arm" (Indicator for treatment arm)
+#'   \item "cluster" (Indicator for cluster)
+#'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+#'   }
+#' 
 #' @examples 
 #' 
 #' # Estimate power for a trial with 6 clusters in arm 1 and 6 clusters in arm 2, 
@@ -91,6 +108,7 @@
 #' @export
 
 
+
 cps.did.normal = function(nsim = NULL,
                           nsubjects = NULL,
                           nclusters = NULL,
@@ -101,11 +119,13 @@ cps.did.normal = function(nsim = NULL,
                           sigma_b_sq1 = 0,
                           alpha = 0.05,
                           method = 'glmm',
+                          poorFitOverride = FALSE,
+                          lowPowerOverride = FALSE, 
+                          timelimitOverride = TRUE,
                           quiet = FALSE,
-                          all.sim.data = FALSE,
+                          allSimData = FALSE,
                           seed = NA,
                           nofit = FALSE) {
-  
   if (!is.na(seed)) {
     set.seed(seed = seed)
   }
@@ -119,8 +139,7 @@ cps.did.normal = function(nsim = NULL,
   values.vector = cbind(c(0, 0, 0, 0))
   simulated.datasets = list()
   
-  # Set start.time for progress iterator & initialize progress bar
-  start.time = Sys.time()
+  # initialize progress bar
   prog.bar =  progress::progress_bar$new(
     format = "(:spin) [:bar] :percent eta :eta",
     total = nsim,
@@ -172,7 +191,8 @@ cps.did.normal = function(nsim = NULL,
     nsubjects = rep(nsubjects, 2)
   }
   if (length(nclusters) == 2 &&
-      length(nsubjects) != 1 && length(nsubjects) != sum(nclusters)) {
+      length(nsubjects) != 1 &&
+      length(nsubjects) != sum(nclusters)) {
     stop(
       "A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS"
     )
@@ -223,7 +243,7 @@ cps.did.normal = function(nsim = NULL,
   }
   sigma_b_sq1 = sigma_b_sq1 + sigma_b_sq0
   
-  # Validate METHOD, QUIET, ALL.SIM.DATA
+  # Validate METHOD, QUIET, allSimData
   if (!is.element(method, c('glmm', 'gee'))) {
     stop(
       "METHOD must be either 'glmm' (Generalized Linear Mixed Model)
@@ -235,9 +255,9 @@ cps.did.normal = function(nsim = NULL,
       "QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)"
     )
   }
-  if (!is.logical(all.sim.data)) {
+  if (!is.logical(allSimData)) {
     stop(
-      "ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
+      "allSimData must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
     )
   }
   
@@ -247,6 +267,8 @@ cps.did.normal = function(nsim = NULL,
           rep(2, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
   clust = unlist(lapply(1:sum(nclusters), function(x)
     rep(x, length.out = nsubjects[x])))
+  
+  start.time = Sys.time()
   
   # Create simulation loop
   for (i in 1:nsim) {
@@ -294,7 +316,9 @@ cps.did.normal = function(nsim = NULL,
       rep(randint.trt.1[x], length.out = nsubjects[nclusters[1] + x])))
     y1.trt.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])],
                                   function(x)
-                                    stats::rnorm(x, mean = mu2, sd = sqrt(sigma_sq[4]))))
+                                    stats::rnorm(
+                                      x, mean = mu2, sd = sqrt(sigma_sq[4])
+                                    )))
     y1.trt.post = y1.trt.bclust + y1.trt.wclust + stats::rnorm(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
     
     # Create single response vector
@@ -307,17 +331,19 @@ cps.did.normal = function(nsim = NULL,
       clust = clust,
       period = period
     )
-    if (all.sim.data == TRUE) {
+    if (allSimData == TRUE) {
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
-
+    
     # option to return simulated data only
     if (nofit == TRUE) {
       if (!exists("nofitop")) {
-        nofitop <- data.frame(period = sim.dat['period'],
-                              cluster = sim.dat['clust'],
-                              arm = sim.dat['trt'],
-                              y1 = sim.dat["y"])
+        nofitop <- data.frame(
+          period = sim.dat['period'],
+          cluster = sim.dat['clust'],
+          arm = sim.dat['trt'],
+          y1 = sim.dat["y"]
+        )
       } else {
         nofitop[, length(nofitop) + 1] <- sim.dat["y"]
       }
@@ -366,13 +392,47 @@ cps.did.normal = function(nsim = NULL,
       converge[i] <- ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     
+    # option to stop the function early if fits are singular
+    if (poorFitOverride == FALSE && converge[i] == FALSE) {
+      if (sum(converge == FALSE, na.rm = TRUE) > (nsim * .25)) {
+        stop(
+          "more than 25% of simulations are singular fit: check model specifications"
+        )
+      }
+    }
+    
+    # stop the loop if power is <0.5
+    if (lowPowerOverride == FALSE && i > 50 && (i %% 10 == 0)) {
+      sig.val.temp <-
+        ifelse(pval.vector < alpha, 1, 0)
+      pval.power.temp <- sum(sig.val.temp, na.rm = TRUE) / i
+      if (pval.power.temp < 0.5) {
+        stop(
+          paste(
+            "Calculated power is < ",
+            pval.power.temp,
+            ". Set lowPowerOverride == TRUE to run the simulations anyway.",
+            sep = ""
+          )
+        )
+      }
+    }
+    
     # Update progress information
-    if (quiet == FALSE) {
       if (i == 1) {
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
         min.est = round(time.est %% 60, 0)
+        if (min.est > 2 && timelimitOverride == FALSE){
+          stop(paste0("Estimated completion time: ",
+                      hr.est,
+                      'Hr:',
+                      min.est,
+                      'Min'
+          ))
+        }
+        if (quiet == FALSE) {
         message(
           paste0(
             'Begin simulations :: Start Time: ',

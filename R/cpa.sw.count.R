@@ -11,7 +11,7 @@
 #' @param steps Number of time steps
 #' @param nsubjects Average size of each cluster
 #' @param ICC Intra-class correlation coefficient (default = 0.01)
-#' @param sig.level Significance level (default=0.05)
+#' @param alpha Significance level (default=0.05)
 #' @param which.var String character specifying which variance to report.
 #' Options are the default value \code{'within'} or \code{'total'}.
 #' @param X A design matrix indicating the time
@@ -21,7 +21,9 @@
 #' @param all.returned.objects Logical. Default = FALSE, indicating that only the
 #' estimated power should be returned. When TRUE, all objects (listed below) are 
 #' returned.
+#' 
 #' @return \item{power}{ The resulting power } 
+#' 
 #' When all.returned.objects = TRUE, returned items also include:
 #' \item{sigma.y}{The estimated total (marginal) sd for the outcome} 
 #' \item{sigma.e}{The estimated residual sd} 
@@ -31,8 +33,10 @@
 #' - n.time.points = The number of steps in the SW design (steps)
 #' - avg.cluster.size = The average cluster size (nsubjects)
 #' - design.matrix = The design matrix for the SWT under consideration }
+#' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' 
 #' @references Baio, G; Copas, A; Ambler, G; Hargreaves, J; Beard, E; and Omar,
 #' RZ Sample size calculation for a stepped wedge trial. Trials, 16:354. Aug
 #' 2015.
@@ -52,7 +56,7 @@ cpa.sw.count <-
            steps,
            nsubjects,
            ICC = 0.01,
-           sig.level = 0.05,
+           alpha = 0.05,
            which.var = "within",
            X = NULL,
            all.returned.objects = FALSE) {
@@ -84,6 +88,32 @@ cpa.sw.count <-
         is.na(all.returned.objects)) {
       errorCondition(message = "all.returned.objects must be logical.")
     }
+    # define Baio's sw.design.mat fxn
+    
+    sw.design.mat <- function (I, J, H = NULL) 
+    {
+      if (sum(sapply(list(I, J, H), is.null)) != 1) {
+        warning("exactly one of 'I', 'J' and 'H' must be NULL")
+      }
+      if (is.null(I)) {
+        I <- H * J
+      }
+      if (is.null(J)) {
+        J <- I/H
+      }
+      if (is.null(H)) {
+        H <- I/J
+      }
+      X <- matrix(0, I, (J + 1))
+      for (i in 2:(J + 1)) {
+        X[1:((i - 1) * H), i] <- 1
+      }
+      row.names(X) <- sample(1:I, I)
+      colnames(X) <- c("Baseline", paste0("Time ", 
+                                          1:J))
+      return(X)
+    }
+    
     
     #define Baio's HH.count
     HH.count <-
@@ -93,7 +123,7 @@ cpa.sw.count <-
                 J,
                 K,
                 rho = 0,
-                sig.level = 0.05,
+                alpha = 0.05,
                 which.var = "within",
                 X = NULL)
       {
@@ -126,7 +156,7 @@ cpa.sw.count <-
                                                                           2 + (U ^ 2 + I * (J + 1) * U - (J + 1) *
                                                                                  W - I * V) * sigma.a ^
                                                                           2)
-        power <- pnorm(theta / sqrt(v) - qnorm(1 - sig.level / 2))
+        power <- pnorm(theta / sqrt(v) - qnorm(1 - alpha / 2))
         setting <-
           list(
             n.clusters = I,
@@ -154,7 +184,7 @@ cpa.sw.count <-
         J = steps,
         K = nsubjects,
         rho = ICC,
-        sig.level = sig.level,
+        alpha = alpha,
         which.var = which.var,
         X = X
       )

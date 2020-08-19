@@ -27,17 +27,24 @@
 #' \code{clusterPower::cpa.normal}.
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer.  Required.
+#' 
 #' @param nclusters Number of clusters per condition; accepts single integer (implying equal numbers of clusters in the two groups)
 #' or vector of length 2 (unequal number of clusters per arm).  Required.
+#' 
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (implying equal cluster sizes for the two groups), 
 #' a vector of length two (equal cluster sizes within arm), or a vector of length \code{sum(nclusters)} 
 #' (unequal cluster sizes within arm).  Required.
+#' 
 #' @param mu Mean in the first arm; accepts numeric, default 0.  Required..
+#' 
 #' @param mu2 Mean in the second arm; accepts numeric.  Required.
 #' 
 #' At least 2 of the following must be specified:
+#' 
 #' @param ICC Intra-cluster correlation coefficient; accepts a value between 0 and 1.
+#' 
 #' @param sigma_sq Within-cluster variance; accepts numeric.
+#' 
 #' @param sigma_b_sq Between-cluster variance; accepts numeric.
 #' 
 #' 
@@ -45,24 +52,44 @@
 #' for the two groups. If one of the following is given, variance parameters differ 
 #' between treatment groups, and at least 2 of the following 
 #' must be specified:
+#' 
 #' @param ICC2 Intra-cluster correlation coefficient for clusters in the second arm.
+#' 
 #' @param sigma_sq2 Within-cluster variance for clusters in the second arm.
+#' 
 #' @param sigma_b_sq2 Between-cluster variance for clusters in the second arm.
 #' 
 #' Optional parameters:
+#' 
 #' @param alpha Significance level; default = 0.05.
+#' 
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM, default) or 
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee').
+#' 
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
-#' @param all.sim.data Option to include a list of all simulated datasets in the output object.
+#' 
+#' @param allSimData Option to include a list of all simulated datasets in the output object.
 #' Default = \code{FALSE}.
+#' 
 #' @param seed Option to set the seed. Default, NA, selects a seed based on the system clock.
+#' 
 #' @param irgtt Logical. Is the experimental design an individually randomized 
 #' group treatment trial? For details, see ?cps.irgtt.normal.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\% 
+#' 
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\% 
 #' of fits fail to converge.
+#' 
 #' @param nofit Option to skip model fitting and analysis and instead return a dataframe with
 #' the simulated datasets. Default = \code{FALSE}.
+#' 
+#' @param lowPowerOverride Option to override \code{stop()} if the power
+#' is less than 0.5 after the first 50 simulations and every ten simulations
+#' thereafter. On function execution stop, the actual power is printed in the
+#' stop message. Default = FALSE. When TRUE, this check is ignored and the
+#' calculated power is returned regardless of value.
+#' 
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
+#' is more than 2 minutes. Defaults to TRUE.
 #' 
 #' @return If \code{nofit = F}, a list with the following components:
 #' \itemize{
@@ -87,16 +114,15 @@
 #'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
 #'                   "p.value", 
 #'                   "converge", (Did the model converge?)
-#'   \item If all.sim.data = TRUE, list of data frames, each containing: 
+#'   \item If \code{allSimData = TRUE}, a list of data frames, each containing: 
 #'                   "y" (Simulated response value), 
 #'                   "trt" (Indicator for arm), 
 #'                   "clust" (Indicator for cluster)
 #'                   }
 #' 
 #' If \code{nofit = T}, a data frame of the simulated data sets, containing:
-#' 
 #' \itemize{
-#'   \item "trt" (Indicator for treatment arm)
+#'   \item "arm" (Indicator for treatment arm)
 #'   \item "clust" (Indicator for cluster)
 #'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
 #'   }
@@ -207,23 +233,25 @@
 #' 
 #' 
 #' @export
-cps.normal = function(nsim = NULL,
-                      nclusters = NULL,
-                      nsubjects = NULL,
+cps.normal = function(nsim = NA,
+                      nclusters = NA,
+                      nsubjects = NA,
                       mu = 0,
-                      mu2 = NULL,
-                      ICC = NULL,
-                      sigma_sq = NULL,
-                      sigma_b_sq = NULL,
-                      ICC2 = NULL,
-                      sigma_sq2 = NULL,
-                      sigma_b_sq2 = NULL,
+                      mu2 = NA,
+                      ICC = NA,
+                      sigma_sq = NA,
+                      sigma_b_sq = NA,
+                      ICC2 = NA,
+                      sigma_sq2 = NA,
+                      sigma_b_sq2 = NA,
                       alpha = 0.05,
                       method = 'glmm',
                       quiet = FALSE,
-                      all.sim.data = FALSE,
+                      allSimData = FALSE,
                       seed = NA,
-                      poor.fit.override = FALSE,
+                      poorFitOverride = FALSE,
+                      timelimitOverride = TRUE,
+                      lowPowerOverride = FALSE,
                       irgtt = FALSE,
                       nofit = FALSE) {
   # option for reproducibility
@@ -240,8 +268,7 @@ cps.normal = function(nsim = NULL,
   converge.vector <- rep(NA, length = nsim)
   simulated.datasets = list()
   
-  # Set start.time for progress iterator & initialize progress bar
-  start.time = Sys.time()
+  # initialize progress bar
   prog.bar =  progress::progress_bar$new(
     format = "(:spin) [:bar] :percent eta :eta",
     total = nsim,
@@ -252,7 +279,7 @@ cps.normal = function(nsim = NULL,
   
   # Validate NSIM, NCLUSTERS, NSUBJECTS
   sim.data.arg.list = list(nsim, nclusters, nsubjects)
-  sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
+  sim.data.args = unlist(lapply(sim.data.arg.list, is.na))
   if (sum(sim.data.args) > 0) {
     stop("NSIM, NCLUSTERS, & NSUBJECTS must all be specified. Please review your input values.")
   }
@@ -260,10 +287,16 @@ cps.normal = function(nsim = NULL,
   if (!is.wholenumber(nsim) || nsim < 1) {
     stop(paste0("NSIM", min1.warning))
   }
+
   if (!is.wholenumber(nclusters) || nclusters < 1) {
     stop(paste0("NCLUSTERS", min1.warning))
   }
-  if (!is.wholenumber(nsubjects) || nsubjects < 1) {
+  if (is.list(nsubjects)){
+    temp <- unlist(nsubjects)
+  } else {
+    temp <- nsubjects
+  }
+  if (!is.wholenumber(temp) || temp < 1) {
     stop(paste0("NSUBJECTS", min1.warning))
   }
   if (length(nclusters) > 2) {
@@ -302,39 +335,40 @@ cps.normal = function(nsim = NULL,
   
   ## Create variance parameters
   # sigma_b_sq, sigma_sq, ICC
-  if (!is.null(c(ICC, sigma_sq)) && is.null(sigma_b_sq)) {
+  if (!is.na(c(ICC, sigma_sq)) && is.na(sigma_b_sq)) {
     sigma_b_sq = ICC * sigma_sq / (1 - ICC)
   }
-  if (!is.null(c(ICC, sigma_b_sq)) && is.null(sigma_sq)) {
+  if (!is.na(c(ICC, sigma_b_sq)) && is.na(sigma_sq)) {
     sigma_sq = sigma_b_sq / ICC - sigma_b_sq
   }
-  if (!is.null(c(sigma_sq, sigma_b_sq)) && is.null(ICC)) {
+
+  if (!is.na(c(sigma_sq, sigma_b_sq)) && is.na(ICC)) {
     ICC = sigma_b_sq / (sigma_b_sq + sigma_sq)
   }
   # sigma_b_sq2, sigma_sq2, ICC2
-  if (!is.null(c(ICC2, sigma_sq2)) && is.null(sigma_b_sq2)) {
+  if (!is.na(c(ICC2, sigma_sq2)) && is.na(sigma_b_sq2)) {
     sigma_b_sq2 = ICC2 * sigma_sq2 / (1 - ICC2)
   }
-  if (!is.null(c(ICC2, sigma_b_sq2)) && is.null(sigma_sq2)) {
+  if (!is.na(c(ICC2, sigma_b_sq2)) && is.na(sigma_sq2)) {
     sigma_sq2 = sigma_b_sq2 / ICC2 - sigma_b_sq2
   }
-  if (!is.null(c(sigma_sq2, sigma_b_sq2)) && is.null(ICC2)) {
+  if (!is.na(c(sigma_sq2, sigma_b_sq2)) && is.na(ICC2)) {
     ICC2 = sigma_b_sq2 / (sigma_b_sq2 + sigma_sq2)
   }
   
   # Set within/between cluster variances & ICC for arm (if not already specified)
-  if (isTRUE(is.null(sigma_sq2))) {
+  if (isTRUE(is.na(sigma_sq2))) {
     sigma_sq2 <- sigma_sq
   }
-  if (isTRUE(is.null(sigma_b_sq2))) {
+  if (isTRUE(is.na(sigma_b_sq2))) {
     sigma_b_sq2 <- sigma_b_sq
   }
-  if (isTRUE(is.null(ICC2))) {
+  if (isTRUE(is.na(ICC2))) {
     ICC2 <- ICC
   }
   
   # Validate mu, mu2, ALPHA
-  if (is.null(mu) || is.null(mu2)) {
+  if (is.na(mu) || is.na(mu2)) {
     stop("MU and MU2 are required.")
   }
   min0.warning = " must be numeric."
@@ -348,16 +382,17 @@ cps.normal = function(nsim = NULL,
   # Validate ICC, sigma_sq, sigma_b_sq, ICC2, sigma_sq2, sigma_b_sq2
   
   parm1.arg.list = list(ICC, sigma_sq, sigma_b_sq)
-  parm1.args = unlist(lapply(parm1.arg.list, is.null))
+  parm1.args = unlist(lapply(parm1.arg.list, is.na))
   if (sum(parm1.args) > 1) {
     stop("At least two of the following terms must be specified: ICC, sigma_sq, sigma_b_sq")
   }
+
   if (round(ICC, 2) != round((sigma_b_sq / (sigma_b_sq + sigma_sq)), 2)) {
     stop("At least one of the following terms has been misspecified: ICC, sigma_sq, sigma_b_sq")
   }
   
   parm2.arg.list = list(ICC2, sigma_sq2, sigma_b_sq2)
-  parm2.args = unlist(lapply(parm2.arg.list, is.null))
+  parm2.args = unlist(lapply(parm2.arg.list, is.na))
   if (sum(parm2.args) > 1 && sum(parm2.args) != 3) {
     stop(
       "At least two of the following terms must be provided to simulate arm-specific
@@ -382,18 +417,21 @@ cps.normal = function(nsim = NULL,
       "QUIET must be either TRUE (No progress information shown) or FALSE (Progress information shown)"
     )
   }
-  if (!is.logical(all.sim.data)) {
+  if (!is.logical(allSimData)) {
     stop(
       "ALL.SIM.DATA must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
     )
   }
   
   # Create indicators for arm & cluster
+  if (is.list(nsubjects)){
+    nsubjects <- unlist(nsubjects)
+  }
   trt = c(rep(1, length.out = sum(nsubjects[1:nclusters[1]])),
           rep(2, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
+
   clust = unlist(lapply(1:sum(nclusters), function(x)
     rep(x, length.out = nsubjects[x])))
-  
   # Create simulation loop
   for (i in 1:nsim) {
     # Generate between-cluster effects
@@ -421,10 +459,10 @@ cps.normal = function(nsim = NULL,
     
     # Create single response vector
     y = c(y.0, y.1)
-    
+
     # Create data frame for simulated dataset
     sim.dat = data.frame(y = y, trt = trt, clust = clust)
-    if (all.sim.data == TRUE) {
+    if (allSimData == TRUE) {
       simulated.datasets[[i]] = sim.dat
     }
     
@@ -448,7 +486,10 @@ cps.normal = function(nsim = NULL,
       }
     }
     
-    # trt and clust are re-coded as trt2 and clust2 to work nicely with lme. This can be changed later.
+    #set start time
+    start.time = Sys.time()
+    
+    # trt and clust are re-coded as trt2 and clust2 to work nicely with lme.
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       if (irgtt == TRUE) {
@@ -477,10 +518,11 @@ cps.normal = function(nsim = NULL,
               control = nlme::lmeControl(opt = 'optim')
             ),
             silent = TRUE)
-          pval.vector[i] = glmm.values['as.factor(trt2)1', 'p-value']
-          est.vector[i] = glmm.values['as.factor(trt2)1', 'Value']
-          se.vector[i] = glmm.values['as.factor(trt2)1', 'Std.Error']
-          stat.vector[i] = glmm.values['as.factor(trt2)1', 't-value']
+
+          pval.vector[i] = glmm.values['as.factor(trt2)2', 'p-value']
+          est.vector[i] = glmm.values['as.factor(trt2)2', 'Value']
+          se.vector[i] = glmm.values['as.factor(trt2)2', 'Std.Error']
+          stat.vector[i] = glmm.values['as.factor(trt2)2', 't-value']
           converge.vector[i] <-
             ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE)
         }
@@ -494,22 +536,24 @@ cps.normal = function(nsim = NULL,
           null.mod <-
             stats::update.formula(my.mod, y ~ 1 + (0 + as.factor(trt) |
                                                      clust))
-          glmm.values = summary(my.mod)$coefficients
-          pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|t|)'])
-          est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-          se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-          stat.vector = append(stat.vector, glmm.values['trt', 't value'])
-          converge.vector = append(converge.vector, ifelse(any(
+          glmm.values[i] = summary(my.mod)$coefficients
+          pval.vector[i] = glmm.values['trt', 'Pr(>|t|)']
+          est.vector[i] = glmm.values['trt', 'Estimate']
+          se.vector[i] = glmm.values['trt', 'Std. Error']
+          stat.vector[i] = glmm.values['trt', 't value']
+          converge.vector[i] = ifelse(any(
             grepl("singular",
                   my.mod@optinfo$conv$lme4$messages)
-          ) == FALSE, TRUE, FALSE))
+          ) == FALSE, TRUE, FALSE)
+          
           # option to stop the function early if fits are singular
-          if (poor.fit.override == FALSE) {
+          if (poorFitOverride == FALSE && converge.vector[i] == FALSE) {
             if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
               stop(
                 "more than 25% of simulations are singular fit: check model specifications"
               )
             }
+            
           }
         }
         #if not IRGTT, then the following:
@@ -571,7 +615,7 @@ cps.normal = function(nsim = NULL,
                   my.mod@optinfo$conv$lme4$messages)
           ) == FALSE, TRUE, FALSE)
           # option to stop the function early if fits are singular
-          if (poor.fit.override == FALSE) {
+          if (poorFitOverride == FALSE) {
             if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
               stop(
                 "more than 25% of simulations are singular fit: check model specifications"
@@ -631,7 +675,7 @@ cps.normal = function(nsim = NULL,
                   my.mod@optinfo$conv$lme4$messages)
           ) == TRUE, FALSE, TRUE)
           # option to stop the function early if fits are singular
-          if (poor.fit.override == FALSE) {
+          if (poorFitOverride == FALSE) {
             if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
               stop(
                 "more than 25% of simulations are singular fit: check model specifications"
@@ -658,6 +702,23 @@ cps.normal = function(nsim = NULL,
       converge.vector[i] <- ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
     
+    # stop the loop if power is <0.5
+    if (lowPowerOverride == FALSE && i > 50 && (i %% 10 == 0)) {
+      sig.val.temp <-
+        ifelse(pval.vector < alpha, 1, 0)
+      pval.power.temp <- sum(sig.val.temp, na.rm = TRUE) / i
+      if (pval.power.temp < 0.5) {
+        stop(
+          paste(
+            "Calculated power is < ",
+            pval.power.temp,
+            ". Set lowPowerOverride == TRUE to run the simulations anyway.",
+            sep = ""
+          )
+        )
+      }
+    }
+    
     # Update simulation progress information
     if (quiet == FALSE) {
       if (i == 1) {
@@ -665,6 +726,14 @@ cps.normal = function(nsim = NULL,
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
         min.est = round(time.est %% 60, 0)
+        if (min.est > 2 && timelimitOverride == FALSE){
+          stop(paste0("Estimated completion time: ",
+            hr.est,
+            'Hr:',
+            min.est,
+            'Min'
+          ))
+        }
         message(
           paste0(
             'Begin simulations :: Start Time: ',

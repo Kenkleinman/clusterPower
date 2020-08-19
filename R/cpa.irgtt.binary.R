@@ -4,7 +4,7 @@
 #' or determine parameters to obtain a target power.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-#'   \code{ncontrols}, \code{icc}, \code{p.e}, and \code{p.c}
+#'   \code{ncontrols}, \code{ICC}, \code{p.e}, and \code{p.c}
 #'   must be passed as \code{NA}. Note that \code{alpha} and \code{power}
 #'   have non-\code{NA} defaults, so if those are the parameters of 
 #'   interest they must be explicitly passed as \code{NA}.
@@ -26,7 +26,7 @@
 #' @param nclusters The number of clusters in the intervention arm.
 #' @param nsubjects The number of subjects in each cluster in the intervention arm.
 #' @param ncontrols The number of subjects in the control arm.
-#' @param icc The intracluster correlation coefficient, the correlation in outcome measurements between
+#' @param ICC The intracluster correlation coefficient, the correlation in outcome measurements between
 #'   two individuals from the same cluster in the intervention arm.
 #' @param p.e The expected probability of the outcome in the intervention arm.
 #' @param p.c The expected probability of the outcome in the control arm.
@@ -38,11 +38,15 @@
 #' @return The computed argument.
 #' @examples 
 #' # Find the required number of subjects per intervention cluster an IRGTT with alpha = 0.05,
-#' power = 0.80, nclusters = 23, ncontrols = 146, icc = 0.05, p.e = 0.397, and p.c = 0.243.
-#' cpa.irgtt.binary(nclusters=23, ncontrols = 146, icc = 0.05, p.e = 0.397, p.c = 0.243, decrease = FALSE)
+#' # power = 0.80, nclusters = 23, ncontrols = 146, ICC = 0.05, p.e = 0.397, and p.c = 0.243.
+#' 
+#' cpa.irgtt.binary(nclusters=23, ncontrols = 146, ICC = 0.05, p.e = 0.397, p.c = 0.243, decrease = FALSE)
+#' 
 #' # 
-#' # The result, nsubjects = 7.96624, suggests 8 subjects per cluster in the intervention arm should be recruited.
-#' # This means that the total number of subjects in the study is nclusters*nsubjects + ncontrols = 23*8 + 146 = 330.
+#' # The result, nsubjects = 7.96624, suggests 8 subjects per cluster 
+#' # in the intervention arm should be recruited.
+#' # This means that the total number of subjects in the 
+#' # study is nclusters * nsubjects + ncontrols = 23 * 8 + 146 = 330.
 #' 
 #' @references Moerbeek, M. and Wong, W. K. (2008) Sample size formulae for trials comparing
 #' group and individual treatments in a multilevel model. Statist. Med., 27:2850-2864. 
@@ -52,18 +56,18 @@
 
 cpa.irgtt.binary <- function(alpha = 0.05, power = 0.80, nclusters = NA,
                              nsubjects = NA, ncontrols = NA, 
-                             icc = NA, p.e = NA, p.c = NA,
+                             ICC = NA, p.e = NA, p.c = NA,
                              decrease = TRUE,
                              tol = .Machine$double.eps^0.25){
   
   # list of needed inputs
-  needlist <- list(alpha, power, nclusters, nsubjects, ncontrols, icc, p.e, p.c)
-  neednames <- c("alpha", "power", "nclusters", "nsubjects", "ncontrols", "icc", "p.e", "p.c")
+  needlist <- list(alpha, power, nclusters, nsubjects, ncontrols, ICC, p.e, p.c)
+  neednames <- c("alpha", "power", "nclusters", "nsubjects", "ncontrols", "ICC", "p.e", "p.c")
   needind <- which(unlist(lapply(needlist, is.na)))
   # check to see that exactly one needed param is NA
   
   if (length(needind) != 1) {
-    neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'ncontrols', 'icc', 'p.e', and 'p.c' must be NA."
+    neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'ncontrols', 'ICC', 'p.e', and 'p.c' must be NA."
     stop(neederror)
   } 
   
@@ -73,7 +77,7 @@ cpa.irgtt.binary <- function(alpha = 0.05, power = 0.80, nclusters = NA,
   pwr <- quote({
     
     # design effect in intervention arm
-    DE <- (nsubjects - 1)*icc + 1
+    DE <- (nsubjects - 1)*ICC + 1
     
     # variance of treatment effect d
     vard <- p.e*(1-p.e)*DE/(nclusters*nsubjects) + p.c*(1-p.c)/ncontrols
@@ -117,9 +121,9 @@ cpa.irgtt.binary <- function(alpha = 0.05, power = 0.80, nclusters = NA,
                                 tol = tol, extendInt = "upX")$root
   }
   
-  # calculate icc
-  if (is.na(icc)) {
-    icc <- stats::uniroot(function(icc) eval(pwr) - power,
+  # calculate ICC
+  if (is.na(ICC)) {
+    ICC <- stats::uniroot(function(ICC) eval(pwr) - power,
                           interval = c(1e-10, 1 - 1e-10),
                           tol = tol)$root
   }

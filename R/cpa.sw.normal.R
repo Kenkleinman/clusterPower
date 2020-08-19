@@ -48,7 +48,10 @@
 #'   invalid arguments are given.
 #'   
 #' @section Authors:
-#' Jonathan Moyer (\email{jon.moyer@@gmail.com}), Ken Kleinman (\email{ken.kleinman@@gmail.com}), Alexandria C. Sakrejda
+#' Jonathan Moyer (\email{jon.moyer@@gmail.com}),
+#' Alexandria C. Sakrejda (\email{acbro0@@gmail.com}), 
+#' Ken Kleinman (\email{ken.kleinman@@gmail.com})
+#' 
 #' @references Baio G, Copas A, Ambler G, et al., 2015. Sample size calculation for a stepped wedge trial. Trials. 16:354.
 #' @param alpha The level of significance of the test, the probability of a
 #'   Type I error.

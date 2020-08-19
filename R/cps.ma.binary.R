@@ -1,6 +1,7 @@
 #' Simulation-based power estimation for binary outcome multi-arm
 #' cluster-randomized trials.
 #'
+
 #' This function uses iterative simulations to determine
 #' approximate power for multi-arm cluster-randomized controlled trials with
 #' binary outcomes of interest. Users can modify a variety of parameters to
@@ -28,7 +29,7 @@
 #' copying data across cores also may take some time. For time-savings,
 #' this function stops execution early if estimated power < 0.5 or more
 #' than 25\% of models produce a singular fit or non-convergence warning
-#' message, unless \code{poor.fit.override = TRUE}.
+#' message, unless \code{poorFitOverride = TRUE}.
 #'
 #' Non-convergent models are not included in the calculation of exact confidence
 #' intervals.
@@ -54,24 +55,26 @@
 #' @param sigma_b_sq Between-cluster variance; accepts a vector of length
 #' \code{narms} (required).
 #' @param alpha Significance level; default = 0.05.
-#' @param all.sim.data Option to output list of all simulated datasets;
+#' @param allSimData Option to output list of all simulated datasets;
 #' default = FALSE.
 #' @param method Analytical method, either Generalized Linear Mixed Effects
 #' Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm',
 #' 'gee') (required); default = 'glmm'.
-#' @param multi.p.method A string indicating the method to use for adjusting
+#' @param multi_p_method A string indicating the method to use for adjusting
 #' p-values for multiple comparisons. Choose one of "holm", "hochberg",
 #' "hommel", "bonferroni", "BH", "BY", "fdr", "none". The default is
 #' "bonferroni". See \code{?p.adjust} for additional details.
 #' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
 #' @param seed Option to set.seed. Default is NULL.
-#' @param poor.fit.override Option to override \code{stop()} if more than 25\% of fits fail to converge or
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\% of fits fail to converge or
 #' power<0.5 after 50 iterations; default = FALSE.
-#' @param low.power.override Option to override \code{stop()} if the power
+#' @param lowPowerOverride Option to override \code{stop()} if the power
 #' is less than 0.5 after the first 50 simulations and every ten simulations
 #' thereafter. On function execution stop, the actual power is printed in the
 #' stop message. Default = FALSE. When TRUE, this check is ignored and the
 #' calculated power is returned regardless of value.
+#' @param timelimitOverride Logical. When FALSE, stops execution if the estimated
+#' completion time is more than 2 minutes. Defaults to TRUE.
 #' @param cores String ("all"), NA, or scalar value indicating the number of cores
 #' to be used for parallel computing. Default = NA (no parallel computing).
 #' @param tdist Logical value indicating whether simulated data should be
@@ -99,20 +102,26 @@
 #'   (when method="gee") significance test results.}
 #'   \item{overall.power.summary}{Summary overall power of treatment model
 #'   compared to the null model.}
-#'   \item{sim.data}{Produced when all.sim.data==TRUE. List of \code{nsim}
+#'   \item{sim.data}{Produced when allSimData==TRUE. List of \code{nsim}
 #'   data frames, each containing:
 #'                   "y" (simulated response value),
 #'                   "trt" (indicator for treatment group or arm), and
 #'                   "clust" (indicator for cluster).}
 #'   \item{model.fit.warning.percent}{Character string containing the percent
 #'   of \code{nsim} in which the glmm fit was singular or failed to converge,
-#'   produced only when method = "glmm" & all.sim.data = FALSE.
+#'   produced only when method = "glmm" & allSimData = FALSE.
 #'   }
 #'   \item{model.fit.warning.incidence}{Vector of length \code{nsim} denoting
 #'   whether or not a simulation glmm fit triggered a "singular fit" or
 #'   "non-convergence" error, produced only when method = "glmm" &
-#'   all.sim.data=TRUE.
+#'   allSimData=TRUE.
 #'   }
+#'   }
+#' If \code{nofit = T}, a data frame of the simulated data sets, containing:
+#' \itemize{
+#'   \item "arm" (Indicator for treatment arm)
+#'   \item "cluster" (Indicator for cluster)
+#'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
 #'   }
 #'
 #' @examples
@@ -125,7 +134,7 @@
 #'                             nclusters = 15,
 #'                             probs = c(0.15, 0.23, 0.22),
 #'                             sigma_b_sq = c(0.1, 0.1, 0.1),
-#'                             alpha = 0.05, all.sim.data = TRUE,
+#'                             alpha = 0.05, allSimData = TRUE,
 #'                             seed = 123, cores="all")
 #'
 #' bin.ma.rct.bal <- cps.ma.binary(nsim = 100, nsubjects = 250, narms=3,
@@ -133,10 +142,10 @@
 #'                             probs = c(0.30, 0.5, 0.7),
 #'                             sigma_b_sq = 0.01, alpha = 0.05,
 #'                             quiet = FALSE, method = 'glmm',
-#'                             all.sim.data = FALSE,
-#'                             multi.p.method="none",
+#'                             allSimData = FALSE,
+#'                             multi_p_method="none",
 #'                             seed = 123, cores="all",
-#'                             poor.fit.override = TRUE)
+#'                             poorFitOverride = TRUE)
 #'}
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
@@ -149,19 +158,28 @@ cps.ma.binary <- function(nsim = 1000,
                           alpha = 0.05,
                           quiet = FALSE,
                           method = 'glmm',
-                          multi.p.method = "bonferroni",
-                          all.sim.data = FALSE,
-                          seed = NA,
+                          multi_p_method = "bonferroni",
+                          allSimData = FALSE,
+                          seed = NULL,
                           cores = NA,
                           tdist = FALSE,
-                          poor.fit.override = FALSE,
-                          low.power.override = FALSE,
+                          poorFitOverride = FALSE,
+                          lowPowerOverride = FALSE,
+                          timelimitOverride = TRUE,
                           nofit = FALSE,
                           opt = "bobyqa",
                           optmethod = "Nelder-Mead",
                           return.all.models = FALSE) {
   # use this later to determine total elapsed time
   start.time <- Sys.time()
+  
+  # allow some arguments to be entered as text for the Shiny app
+  if (!is.numeric(sigma_b_sq)) {
+    sigma_b_sq <- as.numeric(unlist(strsplit(sigma_b_sq, split = ", ")))
+  }
+  if (!is.numeric(probs)) {
+    probs <- as.numeric(unlist(strsplit(probs, split = ", ")))
+  }
   
   # create narms and nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
@@ -251,8 +269,8 @@ cps.ma.binary <- function(nsim = 1000,
     sigma_b_sq2 = NA,
     method = method,
     quiet = quiet,
-    all.sim.data = all.sim.data,
-    poor.fit.override = poor.fit.override,
+    all.sim.data = allSimData,
+    poor.fit.override = poorFitOverride,
     cores = cores,
     probs = probs
   )
@@ -266,10 +284,11 @@ cps.ma.binary <- function(nsim = 1000,
     alpha = alpha,
     quiet = quiet,
     method = method,
-    all.sim.data = all.sim.data,
+    all.sim.data = allSimData,
     seed = seed,
-    poor.fit.override = poor.fit.override,
-    low.power.override = low.power.override,
+    poor.fit.override = poorFitOverride,
+    low.power.override = lowPowerOverride,
+    timelimitOverride = timelimitOverride,
     tdist = tdist,
     cores = cores,
     nofit = nofit,
@@ -321,11 +340,11 @@ cps.ma.binary <- function(nsim = 1000,
     p.val = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]][[10]][, 1]
-      std.error[i,] <- models[[i]][[10]][, 2]
-      z.val[i,] <- models[[i]][[10]][, 3]
-      p.val[i,] <-
-        p.adjust(models[[i]][[10]][, 4], method = multi.p.method)
+      Estimates[i, ] <- models[[i]][[10]][, 1]
+      std.error[i, ] <- models[[i]][[10]][, 2]
+      z.val[i, ] <- models[[i]][[10]][, 3]
+      p.val[i, ] <-
+        p.adjust(models[[i]][[10]][, 4], method = multi_p_method)
     }
     
     # Organize the row/col names for the model estimates output
@@ -381,10 +400,8 @@ cps.ma.binary <- function(nsim = 1000,
     }
     
     # Calculate and store power estimate & confidence intervals
-    power.parms <- confintCalc(
-      alpha = alpha,
-      p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])
-    )
+    power.parms <- confintCalc(alpha = alpha,
+                               p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)]))
     
     # Store simulation output in data frame
     ma.model.est <-
@@ -416,7 +433,7 @@ cps.ma.binary <- function(nsim = 1000,
     # Create list containing all output (class 'crtpwr.ma') and return
     
     
-    if (all.sim.data == TRUE && return.all.models == FALSE) {
+    if (allSimData == TRUE && return.all.models == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -472,7 +489,7 @@ cps.ma.binary <- function(nsim = 1000,
         class = 'crtpwr.ma'
       )
     }
-    if (return.all.models == FALSE && all.sim.data == FALSE) {
+    if (return.all.models == FALSE && allSimData == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -509,10 +526,10 @@ cps.ma.binary <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]]$coefficients[, 1]
-      std.error[i,] <- models[[i]]$coefficients[, 2]
-      Wald[i,] <- models[[i]]$coefficients[, 3]
-      Pr[i,] <- models[[i]]$coefficients[, 4]
+      Estimates[i, ] <- models[[i]]$coefficients[, 1]
+      std.error[i, ] <- models[[i]]$coefficients[, 2]
+      Wald[i, ] <- models[[i]]$coefficients[, 3]
+      Pr[i, ] <- models[[i]]$coefficients[, 4]
     }
     
     # Organize the row/col names for the output
@@ -563,7 +580,7 @@ cps.ma.binary <- function(nsim = 1000,
       )
     
     power.parms <- confintCalc(alpha = alpha,
-                                p.val = Pr[, 2:narms])
+                               p.val = Pr[, 2:narms])
     
     # Store GEE simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)
@@ -591,7 +608,7 @@ cps.ma.binary <- function(nsim = 1000,
     )
     
     # Create list containing all output (class 'crtpwr.ma') and return
-    if (all.sim.data == TRUE & return.all.models == FALSE) {
+    if (allSimData == TRUE & return.all.models == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
@@ -643,7 +660,7 @@ cps.ma.binary <- function(nsim = 1000,
         class = 'crtpwr.ma'
       )
     }
-    if (return.all.models == FALSE && all.sim.data == FALSE) {
+    if (return.all.models == FALSE && allSimData == FALSE) {
       complete.output = structure(
         list(
           "overview" = summary.message,
