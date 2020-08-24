@@ -41,40 +41,51 @@ ui <- fluidPage(
       ),
       selectInput("meth", "Method",
                   choices = c("Analytic", "Simulation")),
+      # Below values can be reset to defaults using the restore defaults button
+      div(
+        id = "allValues",
       numericInput("nclusters", "Number of Clusters", value = 10),
       numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
       shinyjs::hidden(numericInput("power", "power", value = NA)),
       conditionalPanel(
         "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Analytic'",
         clusterPower::argMatch("cpa.normal"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cpa.normal"))
       ),
       conditionalPanel(
         "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Simulation'",
         clusterPower::argMatch("cps.normal"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.normal"))
       ),
       conditionalPanel(
         "input.type == 'Parallel' & input.dist == 'Binary' & input.meth == 'Analytic'",
-        clusterPower::argMatch("cpa.binary")
+        clusterPower::argMatch("cpa.binary"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cpa.binary"))
       ),
       conditionalPanel(
         "input.type == 'Parallel' & input.dist == 'Binary' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.binary")
+        clusterPower::argMatch("cps.binary"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.binary"))
       ),
       conditionalPanel(
         "input.type == 'Parallel' & input.dist == 'Count' & input.meth == 'Analytic'",
-        clusterPower::argMatch("cpa.count")
+        clusterPower::argMatch("cpa.count"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cpa.count"))
       ),
       conditionalPanel(
         "input.type == 'Parallel' & input.dist == 'Count' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.count")
+        clusterPower::argMatch("cps.count"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.count"))
       ),
       conditionalPanel(
         "input.type == 'Multi-Arm' & input.dist == 'Normal' & input.meth == 'Analytic'",
-        clusterPower::argMatch("cpa.ma.normal")
+        clusterPower::argMatch("cpa.ma.normal"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cpa.ma.normal"))
       ),
       conditionalPanel(
         "input.type == 'Multi-Arm' & input.dist == 'Normal' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.ma.normal")
+        clusterPower::argMatch("cps.ma.normal"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.ma.normal"))
       ),
       conditionalPanel(
         "input.type == 'Multi-Arm' & input.dist == 'Binary' & input.meth == 'Analytic'",
@@ -82,7 +93,8 @@ ui <- fluidPage(
       ),
       conditionalPanel(
         "input.type == 'Multi-Arm' & input.dist == 'Binary' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.ma.binary")
+        clusterPower::argMatch("cps.ma.binary"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.ma.binary"))
       ),
       conditionalPanel(
         "input.type == 'Multi-Arm' & input.dist == 'Count' & input.meth == 'Analytic'",
@@ -90,23 +102,28 @@ ui <- fluidPage(
       ),
       conditionalPanel(
         "input.type == 'Multi-Arm' & input.dist == 'Count' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.ma.count")
+        clusterPower::argMatch("cps.ma.count"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.ma.count"))
       ),
       conditionalPanel(
         "input.type == 'Difference-in-Difference' & input.dist == 'Normal' & input.meth == 'Analytic'",
-        clusterPower::argMatch("cpa.did.normal")
+        clusterPower::argMatch("cpa.did.normal"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cpa.did.normal"))
       ),
       conditionalPanel(
         "input.type == 'Difference-in-Difference' & input.dist == 'Normal' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.did.normal")
+        clusterPower::argMatch("cps.did.normal"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.did.normal"))
       ),
       conditionalPanel(
         "input.type == 'Difference-in-Difference' & input.dist == 'Binary' & input.meth == 'Analytic'",
-        clusterPower::argMatch("cpa.did.binary")
+        clusterPower::argMatch("cpa.did.binary"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cpa.did.binary"))
       ),
       conditionalPanel(
         "input.type == 'Difference-in-Difference' & input.dist == 'Binary' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.did.binary")
+        clusterPower::argMatch("cps.did.binary"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.did.binary"))
       ),
       conditionalPanel(
         "input.type == 'Difference-in-Difference' & input.dist == 'Count' & input.meth == 'Analytic'",
@@ -114,47 +131,58 @@ ui <- fluidPage(
       ),
       conditionalPanel(
         "input.type == 'Difference-in-Difference' & input.dist == 'Count' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.did.count")
+        clusterPower::argMatch("cps.did.count"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.did.count"))
       ),
       conditionalPanel(
         "input.type == 'Stepped Wedge' & input.dist == 'Normal' & input.meth == 'Analytic'",
-        clusterPower::argMatch("cpa.sw.normal")
+        clusterPower::argMatch("cpa.sw.normal"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cpa.sw.normal"))
       ),
       conditionalPanel(
         "input.type == 'Stepped Wedge' & input.dist == 'Normal' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.sw.normal")
+        clusterPower::argMatch("cps.sw.normal"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.sw.normal"))
       ),
       conditionalPanel(
         "input.type == 'Stepped Wedge' & input.dist == 'Binary' & input.meth == 'Analytic'",
-        clusterPower::argMatch("cpa.sw.binary")
+        clusterPower::argMatch("cpa.sw.binary"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cpa.sw.binary"))
       ),
       conditionalPanel(
         "input.type == 'Stepped Wedge' & input.dist == 'Binary' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.sw.binary")
+        clusterPower::argMatch("cps.sw.binary"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.sw.binary"))
       ),
       conditionalPanel(
         "input.type == 'Stepped Wedge' & input.dist == 'Count' & input.meth == 'Analytic'",
-        clusterPower::argMatch("cpa.sw.count")
+        clusterPower::argMatch("cpa.sw.count"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cpa.sw.count"))
       ),
       conditionalPanel(
         "input.type == 'Stepped Wedge' & input.dist == 'Count' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.sw.count")
+        clusterPower::argMatch("cps.sw.count"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.sw.count"))
       ),
       conditionalPanel(
         "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Analytic'",
-        clusterPower::argMatch("cpa.irgtt.normal")
+        clusterPower::argMatch("cpa.irgtt.normal"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cpa.irgtt.normal"))
       ),
       conditionalPanel(
         "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.irgtt.normal")
+        clusterPower::argMatch("cps.irgtt.normal"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.irgtt.normal"))
       ),
       conditionalPanel(
         "input.type == 'Individually-Randomized Group' & input.dist == 'Binary' & input.meth == 'Analytic'",
-        clusterPower::argMatch("cpa.irgtt.binary")
+        clusterPower::argMatch("cpa.irgtt.binary"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cpa.irgtt.binary"))
       ),
       conditionalPanel(
         "input.type == 'Individually-Randomized Group' & input.dist == 'Binary' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.irgtt.binary")
+        clusterPower::argMatch("cps.irgtt.binary"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.irgtt.binary"))
       ),
       conditionalPanel(
         "input.type == 'Individually-Randomized Group' & input.dist == 'Count' & input.meth == 'Analytic'",
@@ -162,8 +190,11 @@ ui <- fluidPage(
       ),
       conditionalPanel(
         "input.type == 'Individually-Randomized Group' & input.dist == 'Count' & input.meth == 'Simulation'",
-        clusterPower::argMatch("cps.irgtt.count")
-      ),
+        clusterPower::argMatch("cps.irgtt.count"),
+        shinyjs::hidden(textInput("fxnName", "clusterPower function name", value = "cps.irgtt.count"))
+      )
+      ), #end of values that can be reset with the restore defaults button
+      
       actionButton(
         "button",
         "Estimate Power",
@@ -173,7 +204,6 @@ ui <- fluidPage(
       ),
       actionButton('cancel', 'Cancel'),
       checkboxInput("more", "Show advanced options", value = FALSE), 
-      
       conditionalPanel("input.more == true",
                        sliderInput(
                          "alpha",
@@ -182,8 +212,8 @@ ui <- fluidPage(
                          min = 0.01,
                          max = 0.1,
                          step = 0.02
-                       )),
-      
+                       )
+      ),
       conditionalPanel("input.more == true & input.meth == 'Simulation'",
         checkboxInput("timelimitOverride", "Allow unlimited calculation time", value = FALSE),
         checkboxInput("lowPowerOverride", "Allow completion when power is < 0.5", value = FALSE),
@@ -193,9 +223,14 @@ ui <- fluidPage(
                        "Set the seed (for repeatability)",
                        value = NA,
                        step = 1)
-    )
     ),
-    mainPanel(shinycssloaders::withSpinner(verbatimTextOutput("CRTpower", placeholder = TRUE)))
+    conditionalPanel("input.more == true",
+    actionButton("restoreDefault", "Restore default parameters"),
+    actionButton("reload", "Reset all", icon = icon("trash-alt"))
+    )),
+    mainPanel(dataTableOutput("tbl"),
+              shinycssloaders::withSpinner(verbatimTextOutput("CRTpower", placeholder = TRUE))
+              )
   )
 )
 
@@ -206,59 +241,56 @@ ui <- fluidPage(
 
 ######################################
 server <- function(input, output, session) {
-  # Register user interrupt
-#  observeEvent(input$cancel,{
-#    print("Cancel")
-#    session$reload()
-#  })
+
+  # Reload the app
+  observeEvent(input$reload,{
+    session$reload()
+  })
   
-  answer <- eventReactive(input$button, {
-    #make some helpful fxns to extract arg names
-    updateArgs <- function(fxnName) {
-      argMatchResult <- c(clusterPower::argMatch(fxnName, justNames = TRUE), 
-                          "lowPowerOverride", "poorFitOverride", "timelimitOverride", 
-                          "power", "seed", "optmethod")
-      argNames <-
-        c(
-          "nsubjects",
-          "nclusters",
-          "alpha",
-          dplyr::intersect(
-            argMatchResult,
-            names(formals(fxnName))
-          )
+  # Restore default values
+  observeEvent(input$restoreDefault,{
+    shinyjs::reset("allValues")
+  })
+  
+  #make some helpful fxns to extract arg names
+  updateArgs <- function(fxnName) {
+    argMatchResult <- c(clusterPower::argMatch(fxnName, justNames = TRUE), 
+                        "lowPowerOverride", "poorFitOverride", "timelimitOverride", 
+                        "power", "seed", "optmethod")
+    argNames <-
+      c(
+        "nsubjects",
+        "nclusters",
+        "alpha",
+        dplyr::intersect(
+          argMatchResult,
+          names(formals(fxnName))
         )
-      arghelper <- function(argname) {
-        x <- paste0("input$", argname)
-        x <- eval(parse(text = x))
-        return(x)
-      }
-      holder <- list()
-      for (i in 1:length(argNames)) {
-        holder[[i]] <- arghelper(argNames[i])
-      }
-      names(holder) <- argNames
-      return(holder)
-    }
-    
-    getNA <- function(oneArg) { 
-      observe({
-      if (!is.numeric(input$oneArg)) {
-        updateNumericInput(session, oneArg, NA)
-      }
-    })
-    }
-      
-    printresult <- function(fxnName) {
-      x <- rlang::exec(fxnName, !!!updateArgs(fxnName))
+      )
+    arghelper <- function(argname) {
+      x <- paste0("input$", argname)
+      x <- eval(parse(text = x))
       return(x)
     }
-    
-
-    
+    holder <- list()
+    for (i in 1:length(argNames)) {
+      holder[[i]] <- arghelper(argNames[i])
+    }
+    names(holder) <- argNames
+    return(holder)
+  }
+  
+  printresult <- function(fxnName) {
+    x <- rlang::exec(fxnName, !!!updateArgs(fxnName))
+    return(x)
+  }
+  #end of fxns to extract argument names
+  
+  answer <- eventReactive(input$button, {
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
       print(printresult("cpa.normal"))
+      fxnName <- "cpa.normal"
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
@@ -377,12 +409,18 @@ server <- function(input, output, session) {
       print(summary(printresult("cps.irgtt.count")))
     }
   })
+  
+
+  # create input data table
+  args <- reactive({t(data.frame(unlist(updateArgs(input$fxnName))))
+  })
+  output$tbl <- shiny::renderDataTable(
+    args(), options = list(lengthChange = FALSE, searching = FALSE, paging = FALSE)
+  )
   output$CRTpower <- renderPrint({
     answer()
   })
-  
-  # output$hist <- renderPlot(hist(sample()), res = 96)
-}
+} #end of server fxn
 
 
 

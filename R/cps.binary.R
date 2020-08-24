@@ -480,7 +480,7 @@ cps.binary = function(nsim = NULL,
         stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
         pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
       }
-      if (poorFitOverride == FALSE && length(converge.vector) > 10 && sum(converge.vector, na.rm = TRUE) < (nsim * 0.75)) {
+      if (poorFitOverride == FALSE && length(converge.vector) > 10 && sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * 0.25)) {
         stop("more than 25% of simulations are singular fit: check model specifications")
       }
     }
