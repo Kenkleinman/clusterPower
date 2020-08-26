@@ -8,10 +8,32 @@
 #
 
 library(shinythemes)
+library(shiny)
+library(shinyBS)
+
+get_vignette_link <- function(...) {
+  x <- vignette(...)
+  if (nzchar(out <- x$PDF)) {
+    ext <- tools::file_ext(out)
+    port <- if (tolower(ext) == "html")
+      tools::startDynamicHelp(NA)
+    else
+      0L
+    if (port > 0L) {
+      out <- sprintf("http://127.0.0.1:%d/library/%s/doc/%s",
+                     port,
+                     basename(x$Dir),
+                     out)
+      return(out)
+    }
+  }
+  stop("no html help found")
+}
+
 
 ui <- fluidPage(
   theme = shinytheme("united"),
-  titlePanel("clusterPower"),
+  headerPanel("clusterPower"),
   shinyjs::useShinyjs(),
   HTML(
     "<h3>Power Estimation for Randomized Controlled Trials</h3>
@@ -297,8 +319,61 @@ ui <- fluidPage(
         "Results",
         shinycssloaders::withSpinner(verbatimTextOutput("CRTpower", placeholder = TRUE))
       ),
-      tabPanel("Parameters",
-               dataTableOutput("tbl"))
+      tabPanel(
+        "Parameters",
+        dataTableOutput("tbl"),
+        HTML(
+          "This table shows the values that the Shiny app passes
+                   to the R functions based on user input."
+        )
+      ),
+      tabPanel(
+        "Help",
+        HTML("<h3>Getting started</h3>"),
+        HTML("<p>The clusterPower package is intended to perform power calculations for many of the most common 
+             randomized controlled trial (RCT) designs. This app does not allow the user to access all of the 
+             functions available in the clusterPower R package, such as calculating the numbers of clusters or
+             subjects needed to obtain a specific power, returning the raw simulated datasets, or viewing the 
+             results of each model fit. For these functions, use clusterPower with the R console rather than
+             from within the applet.</p>
+             <p>The first and most important step for using this app is to choose the appropriate experimental 
+             design and outcome distribution for your RCT. For more on this topic, consult the "),
+        tags$a("clusterPower vignette.", href = get_vignette_link("clusterpower", package = "clusterPower")),
+        HTML(" To return to this page, click the back or reload button at the top of your browser window.</p>"),
+        HTML("<h4>Choosing a distribution</h4>"),
+        HTML("<p>After you have selected the RCT type using the pulldown menu, select the outcome distribution using
+             the next pulldown menu. The options here include normal, binary, and count distributions. Use normal 
+             distribution when your measurement of interest is a numeric value. This can include measurements like
+             descriptive variables such as weights, lab results, density, etc. Choose binary distribution if your 
+             outcome is a yes/no type of response metric, which would be found in studies with outcomes 
+             represented by exactly two choices (sometimes qualitative), such as survived/deceased, uninfected/infected, 
+             or participated/withdrew. Choose count when the outcome has more than two possible outcomes, such as 
+             uninfected/infected/recovered/died.</p>"),
+        HTML("<h4>Choosing a method</h4>"),
+        HTML("<p>The user can choose the calculation method using the 'Method' dropdown menu. The choices are analytical 
+        or simulation. Analytical methods have the advantage that calculations are sometimes faster than 
+             simulated methods, but many make assumptions about variance or balance in design that may sacrifice 
+             the accuracy of the power estimation. Simulated methods take longer to run but are more flexible because
+             they make fewer assumptions. Furthermore, analytical methods don't exist for all RCT types, meaning that in 
+             those cases the simulation approach may be the user's only option. However, analytical and simulated 
+             power estimation will likely produce similar results.</p>"),
+        HTML("<h4>Parameters</h4>"),
+        HTML("<p>Depending on the user's choices as outlined in the previous sections, different parameter entry 
+             options will appear in the left-hand panel. All of these include the number of observations (or 
+             subjects, depending on design requirements), and the number of clusters in each arm. Other options 
+             include variables representing the expected outcomes for each arm, and those representing measures 
+             of variablity among and within clusters. For simulated methods, the user can also supply a number 
+             of simulations they would like to use for calculation.</p>
+             <p>Here the user may want to consult the 'Parameters' tab option, which displays the verbatim
+             parameter values that the app passes to the clusterPower backend as they are entered by the user. 
+             This table also shows the internal argument names for each parameter, which may help a user 
+             reproduce the applet results from the R console, if necessary.</p>"),
+        HTML("<h4>Advanced options</h4>"),
+        HTML(""),
+        HTML(
+          "This Beta has minimal documentation; please contact ken.kleinman@gmail.com with any feedback."
+        )
+      )
     ))
   )
 )
@@ -482,6 +557,9 @@ server <- function(input, output, session) {
   })
   
   
+  
+  output$vign <- renderUI(HTML(readLines(get_vignette_link("clusterpower", package = "clusterPower"))))
+
   # create input data table
   args <- reactive({
     t(data.frame(unlist(updateArgs(input$fxnName))))
