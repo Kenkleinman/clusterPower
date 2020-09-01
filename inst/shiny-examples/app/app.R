@@ -281,6 +281,7 @@ ui <- fluidPage(
       checkboxInput("more", "Show advanced options", value = FALSE),
       conditionalPanel(
         "input.more == true",
+        bookmarkButton("Save App State"),
         sliderInput(
           "alpha",
           "Significance level (alpha)",
@@ -310,8 +311,7 @@ ui <- fluidPage(
       conditionalPanel(
         "input.more == true",
         actionButton("restoreDefault", "Restore default parameters"),
-        actionButton("reload", "Reset all", icon = icon("trash-alt")),
-        column(12, bookmarkButton("Save App State")),
+        actionButton("reload", "Reset all", icon = icon("trash-alt"))
       )
     ),
     mainPanel(tabsetPanel(
@@ -323,56 +323,87 @@ ui <- fluidPage(
         "Parameters",
         dataTableOutput("tbl"),
         HTML(
-          "This table shows the values that the Shiny app passes
-                   to the R functions based on user input."
-        )
+          "<p>This table shows the values that the Shiny app passes
+                   to the R functions based on user input.</p>"
+        ),
+        actionButton("morehelp", "Details")
       ),
       tabPanel(
         "Help",
         HTML("<h3>Getting started</h3>"),
-        HTML("<p>The clusterPower package is intended to perform power calculations for many of the most common 
-             randomized controlled trial (RCT) designs. This app does not allow the user to access all of the 
+        HTML(
+          "<p>The clusterPower package is intended to perform power calculations for many of the most common
+             randomized controlled trial (RCT) designs. This app does not allow the user to access all of the
              functions available in the clusterPower R package, such as calculating the numbers of clusters or
-             subjects needed to obtain a specific power, returning the raw simulated datasets, or viewing the 
+             subjects needed to obtain a specific power, returning the raw simulated datasets, or viewing the
              results of each model fit. For these functions, use clusterPower with the R console rather than
              from within the applet.</p>
-             <p>The first and most important step for using this app is to choose the appropriate experimental 
-             design and outcome distribution for your RCT. For more on this topic, consult the "),
-        tags$a("clusterPower vignette.", href = get_vignette_link("clusterpower", package = "clusterPower")),
-        HTML(" To return to this page, click the back or reload button at the top of your browser window.</p>"),
-        HTML("<h4>Choosing a distribution</h4>"),
-        HTML("<p>After you have selected the RCT type using the pulldown menu, select the outcome distribution using
-             the next pulldown menu. The options here include normal, binary, and count distributions. Use normal 
+             <p>The first and most important step for using this app is to choose the appropriate experimental
+             design and outcome distribution for your RCT. For more on this topic, consult the "
+        ),
+        tags$a(
+          "clusterPower vignette.",
+          href = get_vignette_link("clusterpower", package = "clusterPower"), target = "_blank"),
+        HTML(
+          "To return to this page, click the back or reload button at the top of your browser window.</p>
+          <h4>Choosing a distribution</h4>
+          <p>After you have selected the RCT type using the pulldown menu, select the outcome distribution using
+             the next pulldown menu. The options here include normal, binary, and count distributions. Use normal
              distribution when your measurement of interest is a numeric value. This can include measurements like
-             descriptive variables such as weights, lab results, density, etc. Choose binary distribution if your 
-             outcome is a yes/no type of response metric, which would be found in studies with outcomes 
-             represented by exactly two choices (sometimes qualitative), such as survived/deceased, uninfected/infected, 
-             or participated/withdrew. Choose count when the outcome has more than two possible outcomes, such as 
-             uninfected/infected/recovered/died.</p>"),
-        HTML("<h4>Choosing a method</h4>"),
-        HTML("<p>The user can choose the calculation method using the 'Method' dropdown menu. The choices are analytical 
-        or simulation. Analytical methods have the advantage that calculations are sometimes faster than 
-             simulated methods, but many make assumptions about variance or balance in design that may sacrifice 
+             descriptive variables such as weights, lab results, density, etc. Choose binary distribution if your
+             outcome is a yes/no type of response metric, which would be found in studies with outcomes
+             represented by exactly two choices (sometimes qualitative), such as survived/deceased, uninfected/infected,
+             or participated/withdrew. Choose count when the outcome has more than two possible outcomes, such as
+             uninfected/infected/recovered/died.</p>
+             <h4>Choosing a method</h4>
+        <p>The user can choose the calculation method using the 'Method' dropdown menu. The choices are analytical
+        or simulation. Analytical methods have the advantage that calculations are sometimes faster than
+             simulated methods, but many make assumptions about variance or balance in design that may sacrifice
              the accuracy of the power estimation. Simulated methods take longer to run but are more flexible because
-             they make fewer assumptions. Furthermore, analytical methods don't exist for all RCT types, meaning that in 
-             those cases the simulation approach may be the user's only option. However, analytical and simulated 
-             power estimation will likely produce similar results.</p>"),
-        HTML("<h4>Parameters</h4>"),
-        HTML("<p>Depending on the user's choices as outlined in the previous sections, different parameter entry 
-             options will appear in the left-hand panel. All of these include the number of observations (or 
-             subjects, depending on design requirements), and the number of clusters in each arm. Other options 
-             include variables representing the expected outcomes for each arm, and those representing measures 
-             of variablity among and within clusters. For simulated methods, the user can also supply a number 
+             they make fewer assumptions. Furthermore, analytical methods don't exist for all RCT types, meaning that in
+             those cases the simulation approach may be the user's only option. However, analytical and simulated
+             power estimation will likely produce similar results.</p>
+             <h4>Parameters</h4>
+        <p>Depending on the user's choices as outlined in the previous sections, different parameter entry
+             options will appear in the left-hand panel. All of these include the number of observations (or
+             subjects, depending on design requirements), and the number of clusters in each arm. Other options
+             include variables representing the expected outcomes for each arm, and those representing measures
+             of variablity among and within clusters. For simulated methods, the user can also supply a number
              of simulations they would like to use for calculation.</p>
              <p>Here the user may want to consult the 'Parameters' tab option, which displays the verbatim
-             parameter values that the app passes to the clusterPower backend as they are entered by the user. 
-             This table also shows the internal argument names for each parameter, which may help a user 
-             reproduce the applet results from the R console, if necessary.</p>"),
-        HTML("<h4>Advanced options</h4>"),
-        HTML(""),
-        HTML(
-          "This Beta has minimal documentation; please contact ken.kleinman@gmail.com with any feedback."
-        )
+             parameter values that the app passes to the clusterPower backend as they are entered by the user.
+             This table also shows the internal argument names for each parameter.</p>
+             <h4>Advanced options</h4>
+        <p>The checkbox near the bottom of the left-hand panel opens the Advanced Options for the app. For
+             all analysis types, these options include options to bookmark the app state, restore the default
+             parameters, or reset (reload) the app. Users can also adjust the significance cutoff value alpha
+             using the slider. Typically this value is set to 0.05, which is the default for this app.</p>
+             <p>For the simulation methods, there are 3-4 additional controls. These include:</p>
+             <p>1) Time limit override: Simulation methods sometimes take a long time to complete. Each
+             operation will produce a time estimate based on a few model fits. If the estimate is longer than
+             2 minutes, the function will stop and return the estimated time to produce the desired fits.
+             Unchecking this option allows the app to run indefinitely, so users can remove the time limit
+             constraint if they choose.</p>
+             <p>2) Low power override: The simulated methods also have a built-in option to stop fitting
+             models if the calculated power is lower than 0.5. Generally, 0.8 is the ideal power target
+             for RCT power estimation, so estimations that are very low trigger the alogrithm to stop
+             fitting so that the user doesn't have to wait for the run to finish. However, the low power
+             error can be overridden by selecting the low power override option.</p>
+             <p>3) Poor fit override: When more than 25% of models fail to converge, the default app state
+             will stop the calculation with an error, again to prevent the user from waiting a long time
+             for uninformative results. Lack of convergence generally is an indication that the data is
+             not a good fit for the models. This is ideally addressed by adjusting the model parameters.
+             However, if the user wants to allow the procedure to run despite lack of convergence, the
+             poor fit override option will override this error. Use this option with caution, as models
+             lacking convergence may produce unreliable estimates.</p>
+             <p>4) Some simulated methods allow the user to specify an optimizer, which can sometimes
+             address convergence issues as an alternative to overriding the poor fit checks or excluding
+             non-convergent models.</p>
+          <h4>Obtaining results</h4>
+          <p>After selecting the desired parameters, submit the job by clicking the Estimate Power button
+          near the bottom of the screen. When complete, results will appear on the Results tab. Please
+          keep in mind that calculations may take up to 2 minutes to complete, unless the user has chosen 
+          to override the time limit, in which case the wait time may be longer."),
       )
     ))
   )
@@ -556,10 +587,12 @@ server <- function(input, output, session) {
     }
   })
   
+  observeEvent(input$morehelp, {
+    showModal(modalDialog(HTML(window.open(
+      sprintf("http://127.0.0.1:%d/library/clusterPower/html/%s", 
+                                tools::startDynamicHelp(NA), paste0(input$fxnName, ".html"))))))
+  })
   
-  
-  output$vign <- renderUI(HTML(readLines(get_vignette_link("clusterpower", package = "clusterPower"))))
-
   # create input data table
   args <- reactive({
     t(data.frame(unlist(updateArgs(input$fxnName))))
