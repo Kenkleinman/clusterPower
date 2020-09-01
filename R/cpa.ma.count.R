@@ -5,6 +5,6 @@
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
 #' @export
-cpa.ma.count <- function() {
-  errorCondition("No method exists for cpa.ma.count. Use cps.ma.count instead.")
+cpa.ma.count <- function(...) {
+  return("No method exists for cpa.ma.count. Use cps.ma.count instead.")
 }

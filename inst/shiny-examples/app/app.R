@@ -71,201 +71,126 @@ ui <- fluidPage(
         shinyjs::hidden(numericInput("power", "power", value = NA)),
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Analytic'",
-          clusterPower::argMatch("cpa.normal"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cpa.normal")
-          )
+          clusterPower::argMatch("cpa.normal")
         ),
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.normal"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.normal")
-          )
+          clusterPower::argMatch("cps.normal")
         ),
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Binary' & input.meth == 'Analytic'",
-          clusterPower::argMatch("cpa.binary"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cpa.binary")
-          )
+          clusterPower::argMatch("cpa.binary")
         ),
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Binary' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.binary"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.binary")
-          )
+          clusterPower::argMatch("cps.binary")
         ),
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Count' & input.meth == 'Analytic'",
-          clusterPower::argMatch("cpa.count"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cpa.count")
-          )
+          clusterPower::argMatch("cpa.count")
         ),
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Count' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.count"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.count")
-          )
+          clusterPower::argMatch("cps.count")
         ),
         conditionalPanel(
           "input.type == 'Multi-Arm' & input.dist == 'Normal' & input.meth == 'Analytic'",
-          clusterPower::argMatch("cpa.ma.normal"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cpa.ma.normal")
-          )
+          clusterPower::argMatch("cpa.ma.normal")
         ),
         conditionalPanel(
           "input.type == 'Multi-Arm' & input.dist == 'Normal' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.ma.normal"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.ma.normal")
-          )
+          clusterPower::argMatch("cps.ma.normal")
         ),
         conditionalPanel(
           "input.type == 'Multi-Arm' & input.dist == 'Binary' & input.meth == 'Analytic'",
-          print("No method exists. Use the simulation option instead.")
+          HTML("No method exists. Use the simulation option instead.")
         ),
         conditionalPanel(
           "input.type == 'Multi-Arm' & input.dist == 'Binary' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.ma.binary"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.ma.binary")
-          )
+          clusterPower::argMatch("cps.ma.binary")
         ),
         conditionalPanel(
           "input.type == 'Multi-Arm' & input.dist == 'Count' & input.meth == 'Analytic'",
-          print("No method exists. Use the simulation option instead.")
+          HTML("No method exists. Use the simulation option instead.")
         ),
         conditionalPanel(
           "input.type == 'Multi-Arm' & input.dist == 'Count' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.ma.count"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.ma.count")
-          )
+          clusterPower::argMatch("cps.ma.count")
         ),
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Normal' & input.meth == 'Analytic'",
-          clusterPower::argMatch("cpa.did.normal"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cpa.did.normal")
-          )
+          clusterPower::argMatch("cpa.did.normal")
         ),
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Normal' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.did.normal"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.did.normal")
-          )
+          clusterPower::argMatch("cps.did.normal")
         ),
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Binary' & input.meth == 'Analytic'",
-          clusterPower::argMatch("cpa.did.binary"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cpa.did.binary")
-          )
+          clusterPower::argMatch("cpa.did.binary")
         ),
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Binary' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.did.binary"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.did.binary")
-          )
+          clusterPower::argMatch("cps.did.binary")
         ),
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Count' & input.meth == 'Analytic'",
-          print("No method exists. Use the simulation option instead.")
+          HTML("No method exists. Use the simulation option instead.")
         ),
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Count' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.did.count"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.did.count")
-          )
+          clusterPower::argMatch("cps.did.count")
         ),
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Normal' & input.meth == 'Analytic'",
-          clusterPower::argMatch("cpa.sw.normal"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cpa.sw.normal")
-          )
+          clusterPower::argMatch("cpa.sw.normal")
         ),
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Normal' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.sw.normal"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.sw.normal")
-          )
+          clusterPower::argMatch("cps.sw.normal")
         ),
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Binary' & input.meth == 'Analytic'",
-          clusterPower::argMatch("cpa.sw.binary"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cpa.sw.binary")
-          )
+          clusterPower::argMatch("cpa.sw.binary")
         ),
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Binary' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.sw.binary"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.sw.binary")
-          )
+          clusterPower::argMatch("cps.sw.binary")
         ),
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Count' & input.meth == 'Analytic'",
-          clusterPower::argMatch("cpa.sw.count"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cpa.sw.count")
-          )
+          clusterPower::argMatch("cpa.sw.count")
         ),
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Count' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.sw.count"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.sw.count")
-          )
+          clusterPower::argMatch("cps.sw.count")
         ),
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Analytic'",
-          clusterPower::argMatch("cpa.irgtt.normal"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cpa.irgtt.normal")
-          )
+          clusterPower::argMatch("cpa.irgtt.normal")
         ),
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.irgtt.normal"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.irgtt.normal")
-          )
+          clusterPower::argMatch("cps.irgtt.normal")
         ),
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Binary' & input.meth == 'Analytic'",
-          clusterPower::argMatch("cpa.irgtt.binary"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cpa.irgtt.binary")
-          )
+          clusterPower::argMatch("cpa.irgtt.binary")
         ),
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Binary' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.irgtt.binary"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.irgtt.binary")
-          )
+          clusterPower::argMatch("cps.irgtt.binary")
         ),
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Count' & input.meth == 'Analytic'",
-          print("No method exists. Use the simulation option instead.")
+          HTML("No method exists. Use the simulation option instead.")
         ),
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Count' & input.meth == 'Simulation'",
-          clusterPower::argMatch("cps.irgtt.count"),
-          shinyjs::hidden(
-            textInput("fxnName", "clusterPower function name", value = "cps.irgtt.count")
-          )
+          clusterPower::argMatch("cps.irgtt.count")
+        ),
+        shinyjs::hidden(
+          textInput("fxnName", "clusterPower function name", value = "cpa.normal")
         )
       ),
       #end of values that can be reset with the restore defaults button
@@ -324,9 +249,10 @@ ui <- fluidPage(
         dataTableOutput("tbl"),
         HTML(
           "<p>This table shows the values that the Shiny app passes
-                   to the R functions based on user input.</p>"
+                   to the R functions based on user input. It is updated 
+          when clusterPower returns a result.</p>"
         ),
-        actionButton("morehelp", "Details")
+        uiOutput("helpdetails")
       ),
       tabPanel(
         "Help",
@@ -343,7 +269,9 @@ ui <- fluidPage(
         ),
         tags$a(
           "clusterPower vignette.",
-          href = get_vignette_link("clusterpower", package = "clusterPower"), target = "_blank"),
+          href = get_vignette_link("clusterpower", package = "clusterPower"),
+          target = "_blank"
+        ),
         HTML(
           "To return to this page, click the back or reload button at the top of your browser window.</p>
           <h4>Choosing a distribution</h4>
@@ -402,8 +330,9 @@ ui <- fluidPage(
           <h4>Obtaining results</h4>
           <p>After selecting the desired parameters, submit the job by clicking the Estimate Power button
           near the bottom of the screen. When complete, results will appear on the Results tab. Please
-          keep in mind that calculations may take up to 2 minutes to complete, unless the user has chosen 
-          to override the time limit, in which case the wait time may be longer."),
+          keep in mind that calculations may take up to 2 minutes to complete, unless the user has chosen
+          to override the time limit, in which case the wait time may be longer."
+        ),
       )
     ))
   )
@@ -467,130 +396,165 @@ server <- function(input, output, session) {
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
       print(printresult("cpa.normal"))
-      fxnName <- "cpa.normal"
+      updateTextInput(session, "fxnName", value = "cpa.normal")
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
       print(summary(printresult("cps.normal")))
+      updateTextInput(session, "fxnName", value = "cps.normal")
     }
     if (input$type == 'Parallel' &
         input$dist == 'Binary' & input$meth == 'Analytic') {
       print(printresult("cpa.binary"))
+      updateTextInput(session, "fxnName", value = "cpa.binary")
     }
     if (input$type == 'Parallel' &
         input$dist == 'Binary' & input$meth == 'Simulation') {
       print(summary(printresult("cps.binary")))
+      updateTextInput(session, "fxnName", value = "cps.binary")
     }
     if (input$type == 'Parallel' &
         input$dist == 'Count' & input$meth == 'Analytic') {
       print(printresult("cpa.count"))
+      updateTextInput(session, "fxnName", value = "cpa.count")
     }
     if (input$type == 'Parallel' &
         input$dist == 'Count' & input$meth == 'Simulation') {
       print(summary(printresult("cps.count")))
+      updateTextInput(session, "fxnName", value = "cps.count")
     }
     if (input$type == 'Multi-Arm' &
         input$dist == 'Normal' & input$meth == 'Analytic') {
       print(printresult("cpa.ma.normal"))
+      updateTextInput(session, "fxnName", value = "cpa.ma.normal")
     }
     if (input$type == 'Multi-Arm' &
         input$dist == 'Normal' & input$meth == 'Simulation') {
       print(printresult("cps.ma.normal"))
+      updateTextInput(session, "fxnName", value = "cps.ma.normal")
     }
     if (input$type == 'Multi-Arm' &
         input$dist == 'Binary' & input$meth == 'Analytic') {
-      print("No method exists. Use the simulation option instead.")
+      print(printresult("cpa.ma.binary"))
+      updateTextInput(session, "fxnName", value = "cpa.ma.binary")
     }
     if (input$type == 'Multi-Arm' &
         input$dist == 'Binary' & input$meth == 'Simulation') {
       print(printresult("cps.ma.binary"))
+      updateTextInput(session, "fxnName", value = "cps.ma.binary")
     }
     if (input$type == 'Multi-Arm' &
         input$dist == 'Count' & input$meth == 'Analytic') {
-      print("No method exists. Use the simulation option instead.")
+      print(printresult("cpa.ma.count"))
+      updateTextInput(session, "fxnName", value = "cpa.ma.count")
     }
     if (input$type == 'Multi-Arm' &
         input$dist == 'Count' & input$meth == 'Simulation') {
       print(printresult("cps.ma.count"))
+      updateTextInput(session, "fxnName", value = "cps.ma.count")
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Normal' & input$meth == 'Analytic') {
       print(printresult("cpa.did.normal"))
+      updateTextInput(session, "fxnName", value = "cpa.did.normal")
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Normal' & input$meth == 'Simulation') {
       print(summary(printresult("cps.did.normal")))
+      updateTextInput(session, "fxnName", value = "cps.did.normal")
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Binary' & input$meth == 'Analytic') {
       print(printresult("cpa.did.binary"))
+      updateTextInput(session, "fxnName", value = "cpa.did.binary")
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Binary' & input$meth == 'Simulation') {
       print(summary(printresult("cps.did.binary")))
+      updateTextInput(session, "fxnName", value = "cps.did.binary")
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Count' & input$meth == 'Analytic') {
-      print("No method exists. Use the simulation option instead.")
+      print(printresult("cpa.did.count"))
+      updateTextInput(session, "fxnName", value = "cpa.did.count")
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Count' & input$meth == 'Simulation') {
       print(summary(printresult("cps.did.count")))
+      updateTextInput(session, "fxnName", value = "cps.did.count")
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Normal' & input$meth == 'Analytic') {
       print(printresult("cpa.sw.normal"))
+      updateTextInput(session, "fxnName", value = "cpa.sw.normal")
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Normal' & input$meth == 'Simulation') {
       print(summary(printresult("cps.sw.normal")))
+      updateTextInput(session, "fxnName", value = "cps.sw.normal")
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Binary' & input$meth == 'Analytic') {
       print(printresult("cpa.sw.binary"))
+      updateTextInput(session, "fxnName", value = "cpa.sw.binary")
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Binary' & input$meth == 'Simulation') {
       print(summary(printresult("cps.sw.binary")))
+      updateTextInput(session, "fxnName", value = "cps.sw.binary")
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Count' & input$meth == 'Analytic') {
       print(printresult("cpa.sw.count"))
+      updateTextInput(session, "fxnName", value = "cpa.sw.count")
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Count' & input$meth == 'Simulation') {
       print(summary(printresult("cps.sw.count")))
+      updateTextInput(session, "fxnName", value = "cps.sw.count")
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Normal' & input$meth == 'Analytic') {
       print(printresult("cpa.irgtt.normal"))
+      updateTextInput(session, "fxnName", value = "cpa.irgtt.normal")
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Normal' & input$meth == 'Simulation') {
       print(summary(printresult("cps.irgtt.normal")))
+      updateTextInput(session, "fxnName", value = "cps.irgtt.normal")
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Binary' & input$meth == 'Analytic') {
       print(printresult("cpa.irgtt.binary"))
+      updateTextInput(session, "fxnName", value = "cpa.irgtt.binary")
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Binary' & input$meth == 'Simulation') {
       print(summary(printresult("cps.irgtt.binary")))
+      updateTextInput(session, "fxnName", value = "cps.irgtt.binary")
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Count' & input$meth == 'Analytic') {
-      print("No method exists. Use the simulation option instead.")
+      print(printresult("cpa.irgtt.count"))
+      updateTextInput(session, "fxnName", value = "cpa.irgtt.count")
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Count' & input$meth == 'Simulation') {
       print(summary(printresult("cps.irgtt.count")))
+      updateTextInput(session, "fxnName", value = "cps.irgtt.count")
     }
   })
   
-  observeEvent(input$morehelp, {
-    showModal(modalDialog(HTML(window.open(
-      sprintf("http://127.0.0.1:%d/library/clusterPower/html/%s", 
-                                tools::startDynamicHelp(NA), paste0(input$fxnName, ".html"))))))
+  output$helpdetails <- renderUI({
+    a(
+      "Tell me more about this.",
+      href = sprintf(
+        "http://127.0.0.1:%d/library/clusterPower/html/%s",
+        tools::startDynamicHelp(NA),
+        paste0(input$fxnName, ".html")
+      ),
+      target = "_blank"
+    )
   })
   
   # create input data table
