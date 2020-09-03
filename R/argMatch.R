@@ -127,12 +127,13 @@ argMatch <- function(fxnName, justNames = FALSE) {
       value = 0,
       min = 0
     )
-  if (fxnName == "cps.binary") {
+  if (fxnName == "cpa.binary") {
     ICC <-
       numericInput(
         "ICC",
         "Intracluster correlation coefficient (ICC)",
         value = 0.05,
+        step = 0.01,
         min = 0,
         max = 1
       )
@@ -142,6 +143,7 @@ argMatch <- function(fxnName, justNames = FALSE) {
         "ICC",
         "Intracluster correlation coefficient (ICC)",
         value = NA,
+        step = 0.01,
         min = 0,
         max = 1
       )

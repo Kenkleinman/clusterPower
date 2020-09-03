@@ -33,7 +33,6 @@ get_vignette_link <- function(...) {
 
 ui <- fluidPage(
   theme = shinytheme("united"),
- # titlePanel("clusterPower"),
   h1(id="big-heading", "Power Estimation for Randomized Controlled Trials: clusterPower"),
   tags$style(HTML("#big-heading{color: #337ab7;}")),
   shinyjs::useShinyjs(),
@@ -399,7 +398,7 @@ server <- function(input, output, session) {
   
   #which events to observe
   watchfor <- reactive({
-    list(input$dist,input$meth, input$type)
+    list(input$dist,input$meth, input$type, input$button)
   }) # end of which events to observe
   
   # update help documentation and params table when function is selected
@@ -662,16 +661,19 @@ server <- function(input, output, session) {
     )
   })
   
-  # create input data table
+  # create reactive input data table
   args <- reactive({
     t(data.frame(unlist(updateArgs(input$fxnName))))
   })
+  observe(args())
   output$tbl <- shiny::renderDataTable(args(),
                                        options = list(
                                          lengthChange = FALSE,
                                          searching = FALSE,
                                          paging = FALSE
                                        ))
+  # end create reactive input data table
+  
   output$CRTpower <- renderPrint({
     answer()
   })
