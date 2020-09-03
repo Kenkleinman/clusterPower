@@ -33,16 +33,10 @@ get_vignette_link <- function(...) {
 
 ui <- fluidPage(
   theme = shinytheme("united"),
-  headerPanel("clusterPower"),
+ # titlePanel("clusterPower"),
+  h1(id="big-heading", "Power Estimation for Randomized Controlled Trials: clusterPower"),
+  tags$style(HTML("#big-heading{color: #337ab7;}")),
   shinyjs::useShinyjs(),
-  HTML(
-    "<h3>Power Estimation for Randomized Controlled Trials</h3>
-        <p>To use the calculator, select the trial type, outcome distribution, and calculation method.<p>
-        <p>Then enter values for the quantities that appear below. When complete, select the ESTIMATE POWER button.</p>"
-  ),
-  HTML(
-    "This Beta has minimal documentation; please contact ken.kleinman@gmail.com with any feedback."
-  ),
   sidebarLayout(
     sidebarPanel(
       selectInput(
@@ -188,9 +182,6 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Count' & input.meth == 'Simulation'",
           clusterPower::argMatch("cps.irgtt.count")
-        ),
-        shinyjs::hidden(
-          textInput("fxnName", "clusterPower function name", value = "cpa.normal")
         )
       ),
       #end of values that can be reset with the restore defaults button
@@ -235,7 +226,9 @@ ui <- fluidPage(
       ),
       conditionalPanel(
         "input.more == true",
-        actionButton("restoreDefault", "Restore default parameters"),
+        actionButton("restoreDefault", "Restore default parameters",
+                     width = '100%',
+                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
         actionButton("reload", "Reset all", icon = icon("trash-alt"))
       )
     ),
@@ -247,15 +240,27 @@ ui <- fluidPage(
       tabPanel(
         "Parameters",
         dataTableOutput("tbl"),
+        shinyjs::hidden(
+          textInput("fxnName", "clusterPower function name", value = "cpa.normal")
+        ),
+        wellPanel(
         HTML(
           "<p>This table shows the values that the Shiny app passes
                    to the R functions based on user input. It is updated 
           when clusterPower returns a result.</p>"
         ),
-        uiOutput("helpdetails")
-      ),
+        uiOutput("helpdetails"),
+        HTML(
+          "<p>Note: for more advanced features, see the clusterPower R package.</p>"
+        )
+      )),
       tabPanel(
         "Help",
+        HTML(
+          "<p>To use the calculator, select the trial type, outcome distribution, and calculation method.
+        Then enter values for the quantities that appear below. When complete, select the ESTIMATE POWER button.</p>
+          <p>Please contact ken.kleinman@gmail.com with any feedback.</p>"
+        ),
         HTML("<h3>Getting started</h3>"),
         HTML(
           "<p>The clusterPower package is intended to perform power calculations for many of the most common
@@ -392,158 +397,258 @@ server <- function(input, output, session) {
   }
   #end of fxns to extract argument names
   
-  answer <- eventReactive(input$button, {
+  #which events to observe
+  watchfor <- reactive({
+    list(input$dist,input$meth, input$type)
+  }) # end of which events to observe
+  
+  # update help documentation and params table when function is selected
+  observeEvent(watchfor(), {
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
-      print(printresult("cpa.normal"))
       updateTextInput(session, "fxnName", value = "cpa.normal")
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      print(summary(printresult("cps.normal")))
       updateTextInput(session, "fxnName", value = "cps.normal")
     }
     if (input$type == 'Parallel' &
         input$dist == 'Binary' & input$meth == 'Analytic') {
-      print(printresult("cpa.binary"))
       updateTextInput(session, "fxnName", value = "cpa.binary")
     }
     if (input$type == 'Parallel' &
         input$dist == 'Binary' & input$meth == 'Simulation') {
-      print(summary(printresult("cps.binary")))
       updateTextInput(session, "fxnName", value = "cps.binary")
     }
     if (input$type == 'Parallel' &
         input$dist == 'Count' & input$meth == 'Analytic') {
-      print(printresult("cpa.count"))
       updateTextInput(session, "fxnName", value = "cpa.count")
     }
     if (input$type == 'Parallel' &
         input$dist == 'Count' & input$meth == 'Simulation') {
-      print(summary(printresult("cps.count")))
       updateTextInput(session, "fxnName", value = "cps.count")
     }
     if (input$type == 'Multi-Arm' &
         input$dist == 'Normal' & input$meth == 'Analytic') {
-      print(printresult("cpa.ma.normal"))
       updateTextInput(session, "fxnName", value = "cpa.ma.normal")
     }
     if (input$type == 'Multi-Arm' &
         input$dist == 'Normal' & input$meth == 'Simulation') {
-      print(printresult("cps.ma.normal"))
       updateTextInput(session, "fxnName", value = "cps.ma.normal")
     }
     if (input$type == 'Multi-Arm' &
         input$dist == 'Binary' & input$meth == 'Analytic') {
-      print(printresult("cpa.ma.binary"))
       updateTextInput(session, "fxnName", value = "cpa.ma.binary")
     }
     if (input$type == 'Multi-Arm' &
         input$dist == 'Binary' & input$meth == 'Simulation') {
-      print(printresult("cps.ma.binary"))
       updateTextInput(session, "fxnName", value = "cps.ma.binary")
     }
     if (input$type == 'Multi-Arm' &
         input$dist == 'Count' & input$meth == 'Analytic') {
-      print(printresult("cpa.ma.count"))
       updateTextInput(session, "fxnName", value = "cpa.ma.count")
     }
     if (input$type == 'Multi-Arm' &
         input$dist == 'Count' & input$meth == 'Simulation') {
-      print(printresult("cps.ma.count"))
       updateTextInput(session, "fxnName", value = "cps.ma.count")
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Normal' & input$meth == 'Analytic') {
-      print(printresult("cpa.did.normal"))
       updateTextInput(session, "fxnName", value = "cpa.did.normal")
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Normal' & input$meth == 'Simulation') {
-      print(summary(printresult("cps.did.normal")))
       updateTextInput(session, "fxnName", value = "cps.did.normal")
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Binary' & input$meth == 'Analytic') {
-      print(printresult("cpa.did.binary"))
       updateTextInput(session, "fxnName", value = "cpa.did.binary")
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Binary' & input$meth == 'Simulation') {
-      print(summary(printresult("cps.did.binary")))
       updateTextInput(session, "fxnName", value = "cps.did.binary")
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Count' & input$meth == 'Analytic') {
-      print(printresult("cpa.did.count"))
       updateTextInput(session, "fxnName", value = "cpa.did.count")
     }
     if (input$type == 'Difference-in-Difference' &
         input$dist == 'Count' & input$meth == 'Simulation') {
-      print(summary(printresult("cps.did.count")))
       updateTextInput(session, "fxnName", value = "cps.did.count")
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Normal' & input$meth == 'Analytic') {
-      print(printresult("cpa.sw.normal"))
       updateTextInput(session, "fxnName", value = "cpa.sw.normal")
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Normal' & input$meth == 'Simulation') {
-      print(summary(printresult("cps.sw.normal")))
       updateTextInput(session, "fxnName", value = "cps.sw.normal")
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Binary' & input$meth == 'Analytic') {
-      print(printresult("cpa.sw.binary"))
       updateTextInput(session, "fxnName", value = "cpa.sw.binary")
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Binary' & input$meth == 'Simulation') {
-      print(summary(printresult("cps.sw.binary")))
       updateTextInput(session, "fxnName", value = "cps.sw.binary")
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Count' & input$meth == 'Analytic') {
-      print(printresult("cpa.sw.count"))
       updateTextInput(session, "fxnName", value = "cpa.sw.count")
     }
     if (input$type == 'Stepped Wedge' &
         input$dist == 'Count' & input$meth == 'Simulation') {
-      print(summary(printresult("cps.sw.count")))
       updateTextInput(session, "fxnName", value = "cps.sw.count")
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Normal' & input$meth == 'Analytic') {
-      print(printresult("cpa.irgtt.normal"))
       updateTextInput(session, "fxnName", value = "cpa.irgtt.normal")
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Normal' & input$meth == 'Simulation') {
-      print(summary(printresult("cps.irgtt.normal")))
       updateTextInput(session, "fxnName", value = "cps.irgtt.normal")
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Binary' & input$meth == 'Analytic') {
-      print(printresult("cpa.irgtt.binary"))
       updateTextInput(session, "fxnName", value = "cpa.irgtt.binary")
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Binary' & input$meth == 'Simulation') {
-      print(summary(printresult("cps.irgtt.binary")))
       updateTextInput(session, "fxnName", value = "cps.irgtt.binary")
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Count' & input$meth == 'Analytic') {
-      print(printresult("cpa.irgtt.count"))
       updateTextInput(session, "fxnName", value = "cpa.irgtt.count")
     }
     if (input$type == 'Individually-Randomized Group' &
         input$dist == 'Count' & input$meth == 'Simulation') {
-      print(summary(printresult("cps.irgtt.count")))
       updateTextInput(session, "fxnName", value = "cps.irgtt.count")
     }
-  })
+  }) # end update help documentation and params table when function is selected
+  
+  # call the clusterPower functions
+  answer <- eventReactive(input$button, {
+    if (input$type == 'Parallel' &&
+        input$dist == 'Normal' && input$meth == 'Analytic') {
+      print(printresult("cpa.normal"))
+    }
+    if (input$type == 'Parallel' &&
+        input$dist == 'Normal' && input$meth == 'Simulation') {
+      print(summary(printresult("cps.normal")))
+    }
+    if (input$type == 'Parallel' &
+        input$dist == 'Binary' & input$meth == 'Analytic') {
+      print(printresult("cpa.binary"))
+    }
+    if (input$type == 'Parallel' &
+        input$dist == 'Binary' & input$meth == 'Simulation') {
+      print(summary(printresult("cps.binary")))
+    }
+    if (input$type == 'Parallel' &
+        input$dist == 'Count' & input$meth == 'Analytic') {
+      print(printresult("cpa.count"))
+    }
+    if (input$type == 'Parallel' &
+        input$dist == 'Count' & input$meth == 'Simulation') {
+      print(summary(printresult("cps.count")))
+    }
+    if (input$type == 'Multi-Arm' &
+        input$dist == 'Normal' & input$meth == 'Analytic') {
+      print(printresult("cpa.ma.normal"))
+    }
+    if (input$type == 'Multi-Arm' &
+        input$dist == 'Normal' & input$meth == 'Simulation') {
+      print(printresult("cps.ma.normal"))
+    }
+    if (input$type == 'Multi-Arm' &
+        input$dist == 'Binary' & input$meth == 'Analytic') {
+      print(printresult("cpa.ma.binary"))
+    }
+    if (input$type == 'Multi-Arm' &
+        input$dist == 'Binary' & input$meth == 'Simulation') {
+      print(printresult("cps.ma.binary"))
+    }
+    if (input$type == 'Multi-Arm' &
+        input$dist == 'Count' & input$meth == 'Analytic') {
+      print(printresult("cpa.ma.count"))
+    }
+    if (input$type == 'Multi-Arm' &
+        input$dist == 'Count' & input$meth == 'Simulation') {
+      print(printresult("cps.ma.count"))
+    }
+    if (input$type == 'Difference-in-Difference' &
+        input$dist == 'Normal' & input$meth == 'Analytic') {
+      print(printresult("cpa.did.normal"))
+    }
+    if (input$type == 'Difference-in-Difference' &
+        input$dist == 'Normal' & input$meth == 'Simulation') {
+      print(summary(printresult("cps.did.normal")))
+    }
+    if (input$type == 'Difference-in-Difference' &
+        input$dist == 'Binary' & input$meth == 'Analytic') {
+      print(printresult("cpa.did.binary"))
+    }
+    if (input$type == 'Difference-in-Difference' &
+        input$dist == 'Binary' & input$meth == 'Simulation') {
+      print(summary(printresult("cps.did.binary")))
+    }
+    if (input$type == 'Difference-in-Difference' &
+        input$dist == 'Count' & input$meth == 'Analytic') {
+      print(printresult("cpa.did.count"))
+    }
+    if (input$type == 'Difference-in-Difference' &
+        input$dist == 'Count' & input$meth == 'Simulation') {
+      print(summary(printresult("cps.did.count")))
+    }
+    if (input$type == 'Stepped Wedge' &
+        input$dist == 'Normal' & input$meth == 'Analytic') {
+      print(printresult("cpa.sw.normal"))
+    }
+    if (input$type == 'Stepped Wedge' &
+        input$dist == 'Normal' & input$meth == 'Simulation') {
+      print(summary(printresult("cps.sw.normal")))
+    }
+    if (input$type == 'Stepped Wedge' &
+        input$dist == 'Binary' & input$meth == 'Analytic') {
+      print(printresult("cpa.sw.binary"))
+    }
+    if (input$type == 'Stepped Wedge' &
+        input$dist == 'Binary' & input$meth == 'Simulation') {
+      print(summary(printresult("cps.sw.binary")))
+    }
+    if (input$type == 'Stepped Wedge' &
+        input$dist == 'Count' & input$meth == 'Analytic') {
+      print(printresult("cpa.sw.count"))
+    }
+    if (input$type == 'Stepped Wedge' &
+        input$dist == 'Count' & input$meth == 'Simulation') {
+      print(summary(printresult("cps.sw.count")))
+    }
+    if (input$type == 'Individually-Randomized Group' &
+        input$dist == 'Normal' & input$meth == 'Analytic') {
+      print(printresult("cpa.irgtt.normal"))
+    }
+    if (input$type == 'Individually-Randomized Group' &
+        input$dist == 'Normal' & input$meth == 'Simulation') {
+      print(summary(printresult("cps.irgtt.normal")))
+    }
+    if (input$type == 'Individually-Randomized Group' &
+        input$dist == 'Binary' & input$meth == 'Analytic') {
+      print(printresult("cpa.irgtt.binary"))
+    }
+    if (input$type == 'Individually-Randomized Group' &
+        input$dist == 'Binary' & input$meth == 'Simulation') {
+      print(summary(printresult("cps.irgtt.binary")))
+    }
+    if (input$type == 'Individually-Randomized Group' &
+        input$dist == 'Count' & input$meth == 'Analytic') {
+      print(printresult("cpa.irgtt.count"))
+    }
+    if (input$type == 'Individually-Randomized Group' &
+        input$dist == 'Count' & input$meth == 'Simulation') {
+      print(summary(printresult("cps.irgtt.count")))
+    }
+  }) # end call the clusterPower functions
   
   output$helpdetails <- renderUI({
     a(
