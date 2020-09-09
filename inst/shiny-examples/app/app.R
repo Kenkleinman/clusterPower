@@ -231,7 +231,11 @@ ui <- fluidPage(
         actionButton("reload", "Reset all", icon = icon("trash-alt"))
       )
     ),
+    
+    # Tabs start
+    
     mainPanel(tabsetPanel(
+      tabPanel("DEBUG", textOutput("powe")),
       tabPanel(
         "Results",
         shinycssloaders::withSpinner(verbatimTextOutput("CRTpower", placeholder = TRUE))
@@ -338,7 +342,7 @@ ui <- fluidPage(
           to override the time limit, in which case the wait time may be longer."
         ),
       )
-    ))
+    )) # Tabs end
   )
 )
 
@@ -648,6 +652,9 @@ server <- function(input, output, session) {
       print(summary(printresult("cps.irgtt.count")))
     }
   }) # end call the clusterPower functions
+  ##################
+  
+  output$powe <- renderText(input$ICC)
   
   output$helpdetails <- renderUI({
     a(
@@ -677,6 +684,7 @@ server <- function(input, output, session) {
   output$CRTpower <- renderPrint({
     answer()
   })
+
 } #end of server fxn
 
 
