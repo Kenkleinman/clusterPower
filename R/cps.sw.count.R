@@ -25,8 +25,8 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
 #' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
-#' @param c.ntrt Expected outcome count in arm 1. Accepts scalar (required).
-#' @param c.trt Expected outcome count in arm 2. Accepts scalar (required).
+#' @param c1 Expected outcome count in arm 1. Accepts scalar (required).
+#' @param c2 Expected outcome count in arm 2. Accepts scalar (required).
 #' @param steps Number of crossover steps; a baseline step (all clusters in arm 1) is assumed. 
 #' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 
 #' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
@@ -108,7 +108,7 @@
 #' 
 #' \dontrun{
 #' count.sw.rct = cps.sw.count(nsim = 100, nsubjects = 15, nclusters = 12, 
-#'                               c.ntrt = 4, c.trt = 5, steps = 3, sigma_b_sq = 1, 
+#'                               c1 = 4, c2 = 5, steps = 3, sigma_b_sq = 1, 
 #'                               alpha = 0.05, family = 'poisson', analysis = 'poisson', 
 #'                               method = 'glmm', seed = 123)
 #' }
@@ -125,8 +125,8 @@
 cps.sw.count = function(nsim = NULL,
                         nsubjects = NULL,
                         nclusters = NULL,
-                        c.ntrt = NULL,
-                        c.trt = NULL,
+                        c1 = NULL,
+                        c2 = NULL,
                         steps = NULL,
                         sigma_b_sq = NULL,
                         alpha = 0.05,
@@ -204,10 +204,10 @@ cps.sw.count = function(nsim = NULL,
   }
   
   # Validate C.NTRT & C.TRT
-  if (length(c.ntrt) != 1 || c.ntrt < 1) {
+  if (length(c1) != 1 || c1 < 1) {
     stop("C.NTRT", min1.warning)
   }
-  if (length(c.trt) != 1 || c.trt < 1) {
+  if (length(c2) != 1 || c2 < 1) {
     stop("C.TRT", min1.warning)
   }
   
@@ -318,8 +318,8 @@ cps.sw.count = function(nsim = NULL,
   sim.dat['y'] = 0
   
   # Calculate log odds for each group
-  log.c.ntrt = log(c.ntrt)
-  log.c.trt = log(c.trt)
+  log.c1 = log(c1)
+  log.c2 = log(c2)
   
   if (method == 'glmm') {
     require('optimx')
@@ -330,8 +330,8 @@ cps.sw.count = function(nsim = NULL,
     # Create vectors of cluster effects
     ntrt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b_sq[1]))
     trt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b_sq[2]))
-    ntrt.linpred = ntrt.cluster.effects + log.c.ntrt
-    trt.linpred = trt.cluster.effects + log.c.trt
+    ntrt.linpred = ntrt.cluster.effects + log.c1
+    trt.linpred = trt.cluster.effects + log.c2
     
     for (j in 1:nclusters) {
       if (family == 'poisson') {
@@ -570,7 +570,7 @@ cps.sw.count = function(nsim = NULL,
   )
   
   # Create object containing expected arm 1 and arm 2 probabilities
-  exp.counts = data.frame("Expected.Counts" = c("Arm.1" = c.ntrt, "Arm.2" = c.trt))
+  exp.counts = data.frame("Expected.Counts" = c("Arm.1" = c1, "Arm.2" = c2))
   
   # Create object containing cluster sizes
   cluster.sizes = nsubjects

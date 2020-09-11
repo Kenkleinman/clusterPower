@@ -82,21 +82,15 @@ argMatch <- function(fxnName, justNames = FALSE) {
     numericInput(
       "sigma_b_sq2",
       "Between-cluster variance (Arm 2)",
-      value = 0,
-      min = 0
-    )
-  
-  sigma_b_sq2 <-
-    numericInput(
-      "sigma_b_sq2",
-      "Between-cluster variance (Arm 2)",
       value = 0.1,
       min = 0
     )
   
   CV <-
     numericInput("CV", "Coefficient of variation (CV)", value = 0)
+  
   d <- numericInput("d", "Means difference", value = 1)
+  
   rho_c <-
     numericInput("rho_c",
                  "Baseline and post-test cluster-level correlation",
@@ -203,7 +197,7 @@ argMatch <- function(fxnName, justNames = FALSE) {
   p1inc <- checkboxInput("p1inc", "p1 > p2", value = FALSE)
   multi_p_method <-
     selectInput(
-      "multi.p.method",
+      "multi_p_method",
       "Multiple comparisons adjustment",
       choices = c(
         "holm",

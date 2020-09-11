@@ -196,7 +196,7 @@ cps.ma.normal <- function(nsim = 1000,
                           quiet = FALSE,
                           ICC = NULL,
                           method = 'glmm',
-                          multi.p.method = "bonferroni",
+                          multi_p_method = "bonferroni",
                           allSimData = FALSE,
                           seed = NA,
                           cores = NULL,
@@ -576,7 +576,7 @@ cps.ma.normal <- function(nsim = 1000,
       std.error[i,] <- models[[i]]$coefficients[, 2]
       Wald[i,] <- models[[i]]$coefficients[, 3]
       Pr[i,] <-
-        p.adjust(models[[i]]$coefficients[, 4], method = multi.p.method)
+        p.adjust(models[[i]]$coefficients[, 4], method = multi_p_method)
     }
     
     # Organize the row/col names for the output
