@@ -70,7 +70,7 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Analytic'",
           numericInput("CVcpanormal", "Coefficient of variation (CV)", value = 0),
-          numericInput("dcpanormal", "Means difference", value = 1),
+          numericInput("dcpanormal", "Means difference", value = 0.43),
           numericInput(
             "ICCcpanormal",
             "Intracluster correlation coefficient (ICC)",
@@ -100,30 +100,38 @@ ui <- fluidPage(
           numericInput(
             "nsimcpsnormal",
             "Number of simulations",
-            value = 1000,
+            value = 100,
             max = 500000,
             min = 0
           ),
           numericInput(
-            "ICCcps.normal",
-            "Intracluster correlation coefficient (ICC)",
+            "ICCcpsnormal",
+            "Intracluster correlation coefficient (ICC, Arm 1)",
             value = NA,
             step = 0.01,
             min = 0,
             max = 1
           ),
-          numericInput("mucpsnormal", "Mean in arm 1", value = 1.4),
-          numericInput("mu2cpsnormal", "Mean in arm 2", value = 3.2),
+          numericInput(
+            "ICC2cpsnormal",
+            "Intracluster correlation coefficient (ICC, Arm 2)",
+            value = NA,
+            step = 0.01,
+            min = 0,
+            max = 1
+          ),
+          numericInput("mucpsnormal", "Mean in arm 1", value = 1.1),
+          numericInput("mu2cpsnormal", "Mean in arm 2", value = 1.5),
           numericInput(
             "sigma_sqcpsnormal",
             "Within-cluster variance (Arm 1)",
-            value = 0.01,
+            value = 0.1,
             min = 0
           ),
           numericInput(
             "sigma_sq2cpsnormal",
             "Within-cluster variance (Arm 2)",
-            value = 0.01,
+            value = 0.1,
             min = 0
           ),
           numericInput(
@@ -147,7 +155,7 @@ ui <- fluidPage(
           numericInput(
             "ICCcpabinary",
             "Intracluster correlation coefficient (ICC)",
-            value = NA,
+            value = 0.05,
             step = 0.01,
             min = 0,
             max = 1
@@ -162,7 +170,7 @@ ui <- fluidPage(
           numericInput(
             "p2cpabinary",
             "Outcome proportion (Arm 2)",
-            value = 0.5,
+            value = 0.24,
             min = 0,
             max = 1
           ),
@@ -177,7 +185,7 @@ ui <- fluidPage(
           numericInput(
             "nsimcpsbinary",
             "Number of simulations",
-            value = 1000,
+            value = 100,
             max = 500000,
             min = 0
           ),
@@ -232,7 +240,7 @@ ui <- fluidPage(
           numericInput(
             "nsimcpscount",
             "Number of simulations",
-            value = 1000,
+            value = 100,
             max = 500000,
             min = 0
           ),
@@ -270,7 +278,7 @@ ui <- fluidPage(
           numericInput(
             "nsimcpamanormal",
             "Number of simulations",
-            value = 1000,
+            value = 100,
             max = 500000,
             min = 0
           ),
@@ -300,7 +308,7 @@ ui <- fluidPage(
           numericInput(
             "nsimcpsmanormal",
             "Number of simulations",
-            value = 1000,
+            value = 100,
             max = 500000,
             min = 0
           ),
@@ -358,7 +366,7 @@ ui <- fluidPage(
           numericInput(
             "nsimcpsmabinary",
             "Number of simulations",
-            value = 1000,
+            value = 100,
             max = 500000,
             min = 0
           ),
@@ -396,7 +404,7 @@ ui <- fluidPage(
             selected = "bonferroni",
             multiple = FALSE
           ),
-          checkboxInput("tdist", "Use t-distribution", value = FALSE)
+          checkboxInput("tdistcpsmabinary", "Use t-distribution", value = FALSE)
         ),
         
         # cpa.ma.count (no method)
@@ -411,7 +419,7 @@ ui <- fluidPage(
           numericInput(
             "nsimcpsmacount",
             "Number of simulations",
-            value = 1000,
+            value = 100,
             max = 500000,
             min = 0
           ),
@@ -448,7 +456,8 @@ ui <- fluidPage(
             ),
             selected = "bonferroni",
             multiple = FALSE
-          )
+          ),
+          checkboxInput("tdistcpsmacount", "Use t-distribution", value = FALSE)
         ),
         
         # cpa.did.normal input start
@@ -482,14 +491,14 @@ ui <- fluidPage(
           numericInput(
             "nsimcpsdidnormal",
             "Number of simulations",
-            value = 1000,
+            value = 100,
             max = 500000,
             min = 0
           ),
           numericInput("mucpsdidnormal", "Mean in arm 1", value = 1.4),
           numericInput("mu2cpsdidnormal", "Mean in arm 2", value = 3.2),
           numericInput(
-            "sigma_sqcpsdidnormal",
+            "sigma_sq",
             "Within-cluster variance (Arm 1)",
             value = 0.01,
             min = 0
@@ -531,7 +540,7 @@ ui <- fluidPage(
           numericInput(
             "nsimcpsdidbinary",
             "Number of simulations",
-            value = 1000,
+            value = 100,
             max = 500000,
             min = 0
           ),
@@ -575,7 +584,7 @@ ui <- fluidPage(
           numericInput(
             "nsimcpsdidcount",
             "Number of simulations",
-            value = 1000,
+            value = 100,
             max = 500000,
             min = 0
           ),
@@ -637,7 +646,7 @@ ui <- fluidPage(
           numericInput(
             "nsimcpsswnormal",
             "Number of simulations",
-            value = 1000,
+            value = 100,
             max = 500000,
             min = 0
           ),
@@ -681,285 +690,289 @@ ui <- fluidPage(
           numericInput(
             "nsimcpsswbinary",
             "Number of simulations",
-            value = 1000,
+            value = 100,
             max = 500000,
             min = 0
           ),
-          numericInput("stepscpsswbinary", "Number of crossover steps", value = 3),
-        numericInput(
-          "p1cpsswbinary",
-          "Outcome proportion (Arm 1)",
-          value = 0.1,
-          min = 0,
-          max = 1
+          numericInput("stepscpsswbinary", "Number of crossover steps", value = 3
+          ),
+          numericInput(
+            "p1cpsswbinary",
+            "Outcome proportion (Arm 1)",
+            value = 0.1,
+            min = 0,
+            max = 1
+          ),
+          numericInput(
+            "p2cpsswbinary",
+            "Outcome proportion (Arm 2)",
+            value = 0.5,
+            min = 0,
+            max = 1
+          ),
+          numericInput(
+            "sigma_b_sqcpsswbinary",
+            "Between-cluster variance (Arm 1)",
+            value = 0.1,
+            min = 0
+          )
         ),
-        numericInput(
-          "p2cpsswbinary",
-          "Outcome proportion (Arm 2)",
-          value = 0.5,
-          min = 0,
-          max = 1
+        
+        
+        # cpa.sw.count input start
+        conditionalPanel(
+          "input.type == 'Stepped Wedge' & input.dist == 'Count' & input.meth == 'Analytic'",
+          numericInput("stepscpaswcount", "Number of crossover steps", value = 3),
+          numericInput(
+            "ICCcpaswcount",
+            "Intracluster correlation coefficient (ICC)",
+            value = NA,
+            step = 0.01,
+            min = 0,
+            max = 1
+          ),
+          numericInput(
+            "lambda1cpaswcount",
+            "Baseline rate for outcome of interest",
+            value = 1.75
+          ),
+          numericInput("RRcpaswcount", "Intervention relative risk", value = 0.9)
         ),
-        numericInput(
-          "sigma_b_sqcpsswbinary",
-          "Between-cluster variance (Arm 1)",
-          value = 0.1,
-          min = 0
+        
+        # cps.sw.count input start
+        conditionalPanel(
+          "input.type == 'Stepped Wedge' & input.dist == 'Count' & input.meth == 'Simulation'",
+          numericInput(
+            "nsimcpsmacount",
+            "Number of simulations",
+            value = 100,
+            max = 500000,
+            min = 0
+          ),
+          numericInput("stepscpsswnormal", "Number of crossover steps", value = 3),
+          numericInput(
+            "c1cpsdidcount",
+            "Expected outcome count (Arm 1)",
+            value = 5,
+            step = 1,
+            min = 0
+          ),
+          numericInput(
+            "c2cpsdidcount",
+            "Expected outcome count (Arm 2)",
+            value = 7,
+            step = 1,
+            min = 0
+          ),
+          numericInput(
+            "sigma_b_sqcpsdidcount",
+            "Between-cluster variance (Arm 1)",
+            value = 0.1,
+            min = 0
+          )
+        ),
+        
+        # cpa.irgtt.normal input start
+        conditionalPanel(
+          "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Analytic'",
+          numericInput("dcpairgttnormal", "Means difference", value = 1),
+          numericInput(
+            "ncontrolscpairgttnormal",
+            "Number of control subjects",
+            value = 10,
+            step = 1,
+            min = 0
+          ),
+          numericInput(
+            "vareicpairgttnormal",
+            "Intervention arm subject random error variance",
+            value = 0.1,
+            min = 0
+          ),
+          numericInput(
+            "varrcpairgttnormal",
+            "Control arm subject random error variance",
+            value = 0.1,
+            min = 0
+          ),
+          numericInput(
+            "varucpairgttnormal",
+            "Intervention arm cluster random effect variance",
+            value = 0.1,
+            min = 0
+          )
+        ),
+        
+        # cps.irgtt.normal input start
+        conditionalPanel(
+          "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Simulation'",
+          numericInput(
+            "nsimcpsirgttnormal",
+            "Number of simulations",
+            value = 100,
+            max = 500000,
+            min = 0
+          ),
+          numericInput("mucpsirgttnormal", "Mean in arm 1", value = 1.4),
+          numericInput("mu2cpsirgttnormal", "Mean in arm 2", value = 3.2),
+          numericInput(
+            "ICCcpsirgttnormal",
+            "Intracluster correlation coefficient (ICC)",
+            value = NA,
+            step = 0.01,
+            min = 0,
+            max = 1
+          ),
+          numericInput(
+            "sigma_sqcpsirgttnormal",
+            "Within-cluster variance (Arm 1)",
+            value = 0.01,
+            min = 0
+          ),
+          numericInput(
+            "sigma_sq2cpsirgttnormal",
+            "Within-cluster variance (Arm 2)",
+            value = 0.01,
+            min = 0
+          ),
+          numericInput(
+            "sigma_b_sqcpsirgttnormal",
+            "Between-cluster variance (Arm 1)",
+            value = 0.1,
+            min = 0
+          ),
+          numericInput(
+            "sigma_b_sq2cpsirgttnormal",
+            "Between-cluster variance (Arm 2)",
+            value = 0.1,
+            min = 0
+          )
+        ),
+        
+        # cpa.irgtt.binary input start
+        conditionalPanel(
+          "input.type == 'Individually-Randomized Group' & input.dist == 'Binary' & input.meth == 'Analytic'",
+          numericInput(
+            "p1cpairgttbinary",
+            "Outcome proportion (Arm 1)",
+            value = 0.1,
+            min = 0,
+            max = 1
+          ),
+          numericInput(
+            "p2cpairgttbinary",
+            "Outcome proportion (Arm 2)",
+            value = 0.5,
+            min = 0,
+            max = 1
+          ),
+          numericInput(
+            "ncontrolscpairgttbinary",
+            "Number of control subjects",
+            value = 10,
+            step = 1,
+            min = 0
+          ),
+          numericInput(
+            "ICCcpairgttbinary",
+            "Intracluster correlation coefficient (ICC)",
+            value = NA,
+            step = 0.01,
+            min = 0,
+            max = 1
+          ),
+          checkboxInput(
+            "decreasecpairgttbinary",
+            "Intervention probability < control probability",
+            value = FALSE
+          )
+        ),
+        
+        # cps.irgtt.binary input start
+        conditionalPanel(
+          "input.type == 'Individually-Randomized Group' & input.dist == 'Binary' & input.meth == 'Simulation'",
+          numericInput(
+            "nsimcpsirgttbinary",
+            "Number of simulations",
+            value = 100,
+            max = 500000,
+            min = 0
+          ),
+          numericInput(
+            "p1cpsirgttbinary",
+            "Outcome proportion (Arm 1)",
+            value = 0.1,
+            min = 0,
+            max = 1
+          ),
+          numericInput(
+            "p2cpsirgttbinary",
+            "Outcome proportion (Arm 2)",
+            value = 0.5,
+            min = 0,
+            max = 1
+          ),
+          numericInput(
+            "sigma_b_sqcpsirgttbinary",
+            "Between-cluster variance (Arm 1)",
+            value = 0.1,
+            min = 0
+          ),
+          numericInput(
+            "sigma_b_sq2cpsirgttbinary",
+            "Between-cluster variance (Arm 2)",
+            value = 0.1,
+            min = 0
+          )
+        ),
+        
+        # cpa.irgtt.count (no method)
+        conditionalPanel(
+          "input.type == 'Individually-Randomized Group' & input.dist == 'Count' & input.meth == 'Analytic'",
+          HTML("No method exists. Use the simulation option instead.")
+        ),
+        
+        # cps.irgtt.count input start
+        conditionalPanel(
+          "input.type == 'Individually-Randomized Group' & input.dist == 'Count' & input.meth == 'Simulation'",
+          numericInput(
+            "nsimcpsirgttcount",
+            "Number of simulations",
+            value = 100,
+            max = 500000,
+            min = 0
+          ),
+          numericInput(
+            "sigma_b_sqcpsirgttcount",
+            "Between-cluster variance (Arm 1)",
+            value = 0.1,
+            min = 0
+          ),
+          numericInput(
+            "sigma_b_sq2cpsirgttcount",
+            "Between-cluster variance (Arm 2)",
+            value = 0.1,
+            min = 0
+          ),
+          numericInput(
+            "c1cpsirgttcount",
+            "Expected outcome count (Arm 1)",
+            value = 5,
+            step = 1,
+            min = 0
+          ),
+          numericInput(
+            "c2cpsirgttcount",
+            "Expected outcome count (Arm 2)",
+            value = 7,
+            step = 1,
+            min = 0
+          )
         )
       ),
       
-      # cpa.sw.count input start
-      conditionalPanel(
-        "input.type == 'Stepped Wedge' & input.dist == 'Count' & input.meth == 'Analytic'",
-        numericInput("stepscpaswcount", "Number of crossover steps", value = 3),
-        numericInput(
-          "ICCcpaswcount",
-          "Intracluster correlation coefficient (ICC)",
-          value = NA,
-          step = 0.01,
-          min = 0,
-          max = 1
-        ),
-        numericInput(
-          "lambda1cpaswcount",
-          "Baseline rate for outcome of interest",
-          value = 1.75
-        ),
-        numericInput("RRcpaswcount", "Intervention relative risk", value = 0.9)
-      ),
+      #end of values that can be reset with the restore defaults button
       
-      # cps.sw.count input start
-      conditionalPanel(
-        "input.type == 'Stepped Wedge' & input.dist == 'Count' & input.meth == 'Simulation'",
-        numericInput(
-          "nsimcpsmacount",
-          "Number of simulations",
-          value = 1000,
-          max = 500000,
-          min = 0
-        ),
-        numericInput("stepscpsswnormal", "Number of crossover steps", value = 3),
-        numericInput(
-          "c1cpsdidcount",
-          "Expected outcome count (Arm 1)",
-          value = 5,
-          step = 1,
-          min = 0
-        ),
-        numericInput(
-          "c2cpsdidcount",
-          "Expected outcome count (Arm 2)",
-          value = 7,
-          step = 1,
-          min = 0
-        ),
-        numericInput(
-          "sigma_b_sqcpsdidcount",
-          "Between-cluster variance (Arm 1)",
-          value = 0.1,
-          min = 0
-        )
-      ),
-      
-      # cpa.irgtt.normal input start
-      conditionalPanel(
-        "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Analytic'",
-        numericInput("dcpairgttnormal", "Means difference", value = 1),
-        numericInput(
-          "ncontrolscpairgttnormal",
-          "Number of control subjects",
-          value = 10,
-          step = 1,
-          min = 0
-        ),
-        numericInput(
-          "vareicpairgttnormal",
-          "Intervention arm subject random error variance",
-          value = 0.1,
-          min = 0
-        ),
-        numericInput(
-          "varrcpairgttnormal",
-          "Control arm subject random error variance",
-          value = 0.1,
-          min = 0
-        ),
-        numericInput(
-          "varucpairgttnormal",
-          "Intervention arm cluster random effect variance",
-          value = 0.1,
-          min = 0
-        )
-      ),
-      
-      # cps.irgtt.normal input start
-      conditionalPanel(
-        "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Simulation'",
-        numericInput(
-          "nsimcpsirgttnormal",
-          "Number of simulations",
-          value = 1000,
-          max = 500000,
-          min = 0
-        ),
-        numericInput("mucpsirgttnormal", "Mean in arm 1", value = 1.4),
-        numericInput("mu2cpsirgttnormal", "Mean in arm 2", value = 3.2),
-        numericInput(
-          "ICCcpsirgttnormal",
-          "Intracluster correlation coefficient (ICC)",
-          value = NA,
-          step = 0.01,
-          min = 0,
-          max = 1
-        ),
-        numericInput(
-          "sigma_sqcpsirgttnormal",
-          "Within-cluster variance (Arm 1)",
-          value = 0.01,
-          min = 0
-        ),
-        numericInput(
-          "sigma_sq2cpsirgttnormal",
-          "Within-cluster variance (Arm 2)",
-          value = 0.01,
-          min = 0
-        ),
-        numericInput(
-          "sigma_b_sqcpsirgttnormal",
-          "Between-cluster variance (Arm 1)",
-          value = 0.1,
-          min = 0
-        ),
-        numericInput(
-          "sigma_b_sq2cpsirgttnormal",
-          "Between-cluster variance (Arm 2)",
-          value = 0.1,
-          min = 0
-        )
-      ),
-      
-      # cpa.irgtt.binary input start
-      conditionalPanel(
-        "input.type == 'Individually-Randomized Group' & input.dist == 'Binary' & input.meth == 'Analytic'",
-        numericInput(
-          "p1cpairgttbinary",
-          "Outcome proportion (Arm 1)",
-          value = 0.1,
-          min = 0,
-          max = 1
-        ),
-        numericInput(
-          "p2cpairgttbinary",
-          "Outcome proportion (Arm 2)",
-          value = 0.5,
-          min = 0,
-          max = 1
-        ),
-        numericInput(
-          "ncontrolscpairgttbinary",
-          "Number of control subjects",
-          value = 10,
-          step = 1,
-          min = 0
-        ),
-        numericInput(
-          "ICCcpairgttbinary",
-          "Intracluster correlation coefficient (ICC)",
-          value = NA,
-          step = 0.01,
-          min = 0,
-          max = 1
-        ),
-        checkboxInput(
-          "decreasecpairgttbinary",
-          "Intervention probability < control probability",
-          value = FALSE
-        )
-      ),
-      
-      # cps.irgtt.binary input start
-      conditionalPanel(
-        "input.type == 'Individually-Randomized Group' & input.dist == 'Binary' & input.meth == 'Simulation'",
-        numericInput(
-          "nsimcpsirgttbinary",
-          "Number of simulations",
-          value = 1000,
-          max = 500000,
-          min = 0
-        ),
-        numericInput(
-          "p1cpsirgttbinary",
-          "Outcome proportion (Arm 1)",
-          value = 0.1,
-          min = 0,
-          max = 1
-        ),
-        numericInput(
-          "p2cpsirgttbinary",
-          "Outcome proportion (Arm 2)",
-          value = 0.5,
-          min = 0,
-          max = 1
-        ),
-        numericInput(
-          "sigma_b_sqcpsirgttbinary",
-          "Between-cluster variance (Arm 1)",
-          value = 0.1,
-          min = 0
-        ),
-        numericInput(
-          "sigma_b_sq2cpsirgttbinary",
-          "Between-cluster variance (Arm 2)",
-          value = 0.1,
-          min = 0
-        )
-      ),
-      
-      # cpa.irgtt.count (no method)
-      conditionalPanel(
-        "input.type == 'Individually-Randomized Group' & input.dist == 'Count' & input.meth == 'Analytic'",
-        HTML("No method exists. Use the simulation option instead.")
-      ),
-      
-      # cps.irgtt.count input start
-      conditionalPanel(
-        "input.type == 'Individually-Randomized Group' & input.dist == 'Count' & input.meth == 'Simulation'",
-        numericInput(
-          "nsimcpsirgttcount",
-          "Number of simulations",
-          value = 1000,
-          max = 500000,
-          min = 0
-        ),
-        numericInput(
-          "sigma_b_sqcpsirgttcount",
-          "Between-cluster variance (Arm 1)",
-          value = 0.1,
-          min = 0
-        ),
-        numericInput(
-          "sigma_b_sq2cpsirgttcount",
-          "Between-cluster variance (Arm 2)",
-          value = 0.1,
-          min = 0
-        ),
-        numericInput(
-          "c1cpsirgttcount",
-          "Expected outcome count (Arm 1)",
-          value = 5,
-          step = 1,
-          min = 0
-        ),
-        numericInput(
-          "c2cpsirgttcount",
-          "Expected outcome count (Arm 2)",
-          value = 7,
-          step = 1,
-          min = 0
-        )
-      )
-    ), #end of values that can be reset with the restore defaults button
-  
       actionButton(
         "button",
         "Estimate Power",
@@ -1010,7 +1023,7 @@ ui <- fluidPage(
     # Tabs start
     
     mainPanel(tabsetPanel(
-      tabPanel("DEBUG", textOutput("powe")),
+      # tabPanel("DEBUG", textOutput("powe")),
       tabPanel(
         "Results",
         shinycssloaders::withSpinner(verbatimTextOutput("CRTpower", placeholder = TRUE))
@@ -1022,16 +1035,15 @@ ui <- fluidPage(
           textInput("fxnName", "clusterPower function name", value = "cpa.normal")
         ),
         wellPanel(
-        HTML(
-          "<p>This table shows the values that the Shiny app passes
-                   to the R functions based on user input. It is updated 
-          when clusterPower returns a result.</p>"
-        ),
-        uiOutput("helpdetails"),
-        HTML(
-          "<p>Note: for more advanced features, see the clusterPower R package.</p>"
-        )
-      )),
+          HTML(
+            "<p>This table shows the values that the Shiny app passes
+                   to the R functions.</p>"
+          ),
+          uiOutput("helpdetails"),
+          HTML(
+            "<p>Note: for more advanced features, see the clusterPower R package.</p>"
+          )
+        )),
       tabPanel(
         "Help",
         HTML(
@@ -1309,123 +1321,477 @@ server <- function(input, output, session) {
   answer <- eventReactive(input$button, {
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
-      print(printresult("cpa.normal"))
+      print(cpa.normal(alpha = input$alpha, power = input$power, 
+                       nclusters = input$nclusters, 
+                       nsubjects = input$nsubjects, 
+                       sigma_sq = input$sigma_sqcpanormal, 
+                       sigma_b_sq = input$sigma_b_sqcpanormal, 
+                       CV = input$CVcpanormal, d = input$dcpanormal, 
+                       ICC = input$ICCcpanormal, vart = input$vartcpanormal))
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      print(summary(printresult("cps.normal")))
+      print(summary(cps.normal(nsim = input$nsimcpsnormal, 
+                               nclusters = input$nclusters, 
+                               nsubjects = input$nsubjects, 
+                               mu = input$mucpsnormal, 
+                               mu2 = input$mu2cpsnormal, 
+                               ICC = input$ICCcpsnormal, 
+                               sigma_sq = input$sigma_sqcpsnormal, 
+                               sigma_b_sq = input$sigma_b_sqcpsnormal, 
+                               ICC2 = input$ICC2cpsnormal, 
+                               sigma_sq2 = input$sigma_sq2cpsnormal, 
+                               sigma_b_sq2 = input$sigma_b_sq2cpsnormal, 
+                               alpha = input$alpha, 
+                               seed = input$seed, 
+                               poorFitOverride = input$poorFitOverride, 
+                               timelimitOverride = input$timelimitOverride, 
+                               lowPowerOverride = input$lowPowerOverride)))
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
-      print(printresult("cpa.binary"))
+      print(
+        cpa.binary(
+          alpha = input$alpha,
+          power = input$power,
+          nclusters = input$nclusters,
+          nsubjects = input$nsubjects,
+          CV = input$CVcpabinary,
+          p1 = input$p1cpabinary,
+          p2 = input$p2cpabinary,
+          ICC = input$ICCcpabinary,
+          pooled = input$pooledcpabinary,
+          p1inc = input$p1inccpabinary,
+          tdist = input$tdistcpabinary
+        )
+      )
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
-      print(summary(printresult("cps.binary")))
+      print(summary(
+        cps.binary(
+          nsim = input$nsimcpsbinary,
+          nsubjects = input$nsubjects,
+          nclusters = input$nclusters,
+          p1 = input$p1cpsbinary,
+          p2 = input$p2cpsbinary,
+          sigma_b_sq = input$sigma_b_sqcpsbinary,
+          sigma_b_sq2 = input$sigma_b_sq2cpsbinary,
+          alpha = input$alpha,
+          seed = input$seed,
+          poorFitOverride = input$poorFitOverride,
+          lowPowerOverride = input$lowPowerOverride,
+          timelimitOverride = input$timelimitOverride
+        )
+      ))
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
-      print(printresult("cpa.count"))
+      print(
+        cpa.count(
+          alpha = input$alpha,
+          power = input$power,
+          nclusters = input$nclusters,
+          nsubjects = input$nsubjects,
+          r1 = input$r1cpacount,
+          r2 = input$r2cpacount,
+          CVB = input$CVBcpacount,
+          r1inc = input$r1inccpacount
+        )
+      )
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      print(summary(printresult("cps.count")))
+      print(summary(
+        cps.count(
+          nsim = input$nsimcpscount,
+          nsubjects = input$nsubjects,
+          nclusters = input$nclusters,
+          c1 = input$c1cpscount,
+          c2 = input$c2cpscount,
+          sigma_b_sq = input$sigma_b_sqcpscount,
+          sigma_b_sq2 = input$sigma_b_sq2cpscount,
+          alpha = input$alpha,
+          seed = input$seed,
+          poorFitOverride = input$poorFitOverride,
+          lowPowerOverride = input$lowPowerOverride,
+          timelimitOverride = input$timelimitOverride
+        )
+      ))
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
-      print(printresult("cpa.ma.normal"))
+      print(
+        cpa.ma.normal(
+          alpha = input$alpha,
+          power = input$power,
+          narms = input$narmscpamanormal,
+          nclusters = input$nclusters,
+          nsubjects = input$nsubjects,
+          vara = input$varacpamanormal,
+          varc = input$varccpamanormal,
+          vare = input$varecpamanormal
+        )
+      )
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      print(printresult("cps.ma.normal"))
+      print(cps.ma.normal(          
+        nsim = input$nsim,
+        nsubjects = input$nsubjects,
+        narms = input$narmscpsmanormal,
+        nclusters = input$nclusters,
+        means = input$meanscpsmanormal,
+        sigma_sq = input$sigma_sqcpsmanormal,
+        sigma_b_sq = input$sigma_b_sqcpsmanormal,
+        alpha = input$alpha,
+        ICC = input$ICCcpsmanormal,
+        multi_p_method = input$multi_p_methodcpsmanormal,
+        seed = input$seed,
+        poorFitOverride = input$poorFitOverride,
+        lowPowerOverride = input$lowPowerOverride,
+        tdist = input$tdistcpsmanormal,
+        optmethod = input$optmethod,
+        timelimitOverride = input$timelimitOverride))
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
-      print(printresult("cpa.ma.binary"))
+      print(cpa.ma.binary())
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
-      print(printresult("cps.ma.binary"))
+      print(
+        cps.ma.binary(
+          nsim = input$nsimcpsmabinary,
+          nsubjects = input$nsubjects,
+          narms = input$narmscpsmabinary,
+          nclusters = input$nclusters,
+          probs = input$probscpsmabinary,
+          sigma_b_sq = input$sigma_b_sqcpsmabinary,
+          alpha = input$alpha,
+          multi_p_method = input$multi_p_methodcpsmabinary,
+          seed = input$seed,
+          tdist = input$tdistcpsmabinary,
+          poorFitOverride = input$poorFitOverride,
+          lowPowerOverride = input$lowPowerOverride,
+          timelimitOverride = input$timelimitOverride
+        ))
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
-      print(printresult("cpa.ma.count"))
+      print(cpa.ma.count())
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      print(printresult("cps.ma.count"))
+      print(
+        cps.ma.count(
+          nsim = input$nsimcpsmacount,
+          nsubjects = input$nsubjects,
+          narms = input$narmscpsmacount,
+          nclusters = input$nclusters,
+          counts = input$countscpsmacount,
+          sigma_b_sq = input$sigma_b_sqcpsmacount,
+          alpha = input$alpha,
+          multi_p_method = input$multi_p_methodcpsmacount,
+          seed = input$seed,
+          cores = input$corescpsmacount,
+          tdist = input$tdistcpsmacount,
+          poorFitOverride = input$poorFitOverride,
+          lowPowerOverride = input$lowPowerOverride,
+          timelimitOverride = input$timelimitOverride
+        )
+      )
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
-      print(printresult("cpa.did.normal"))
+      print(
+        cpa.did.normal(
+          alpha = input$alpha,
+          power = input$power,
+          nclusters = input$nclusters,
+          nsubjects = input$nsubjects,
+          d = input$dcpadidnormal,
+          ICC = input$ICCcpadidnormal,
+          rho_c = input$rho_ccpadidnormal,
+          rho_s = input$rho_scpadidnormal,
+          vart = input$vartcpadidnormal
+        )
+      )
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      print(summary(printresult("cps.did.normal")))
+      print(summary(
+        cps.did.normal(
+          nsim = input$nsimcpsdidnormal,
+          nsubjects = input$nsubjects,
+          nclusters = input$nclusters,
+          mu = input$mucpsdidnormal,
+          mu2 = input$mu2cpsdidnormal,
+          sigma_sq = input$sigma_sqcpsdidnormal,
+          sigma_b_sq0 = input$sigma_b_sq0cpsdidnormal,
+          sigma_b_sq1 = input$sigma_b_sq1cpsdidnormal,
+          alpha = input$alpha,
+          poorFitOverride = input$poorFitOverride,
+          lowPowerOverride = input$lowPowerOverride,
+          timelimitOverride = input$timelimitOverride,
+          seed = input$seed
+        )
+      ))
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
-      print(printresult("cpa.did.binary"))
+      print(
+        cpa.did.binary(
+          alpha = input$alpha,
+          power = input$power,
+          nclusters = input$nclusters,
+          nsubjects = input$nsubjects,
+          p = input$pcpadidbinary,
+          d = input$dcpadidbinary,
+          ICC = input$ICCcpadidbinary,
+          rho_c = input$rho_ccpadidbinary,
+          rho_s = input$rho_scpadidbinary
+        )
+      )
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
-      print(summary(printresult("cps.did.binary")))
+      print(summary(
+        cps.did.binary(
+          nsim = input$nsimcpsdidbinary,
+          nsubjects = input$nsubjects,
+          nclusters = input$nclusters,
+          p1 = input$p1cpsdidbinary,
+          p2 = input$p2cpsdidbinary,
+          sigma_b_sq0 = input$sigma_b_sq0cpsdidbinary,
+          sigma_b_sq1 = input$sigma_b_sq1cpsdidbinary,
+          alpha = input$alpha,
+          poorFitOverride = input$poorFitOverride,
+          lowPowerOverride = input$lowPowerOverride,
+          timelimitOverride = input$timelimitOverride,
+          seed = input$seed
+        )
+      ))
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
-      print(printresult("cpa.did.count"))
+      print(cpa.did.count())
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      print(summary(printresult("cps.did.count")))
+      print(summary(
+        cps.did.count(
+          nsim = input$nsimcpsdidcount,
+          nsubjects = input$nsubjects,
+          nclusters = input$nclusters,
+          c1 = input$c1cpsdidcount,
+          c2 = input$c2cpsdidcount,
+          sigma_b_sq0 = input$sigma_b_sq0cpsdidcount,
+          sigma_b_sq1 = input$sigma_b_sq1cpsdidcount,
+          alpha = input$alpha,
+          poorFitOverride = input$poorFitOverride,
+          lowPowerOverride = input$lowPowerOverride,
+          timelimitOverride = input$timelimitOverride,
+          seed = input$seed
+        )
+      ))
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
-      print(printresult("cpa.sw.normal"))
+      print(
+        cpa.sw.normal(
+          alpha = input$alpha,
+          power = input$power,
+          nclusters = input$nclusters,
+          nsubjects = input$nsubjects,
+          ntimes = input$ntimescpaswnormal,
+          d = input$dcpaswnormal,
+          ICC = input$ICCcpaswnormal,
+          rho_c = input$rho_ccpaswnormal,
+          rho_s = input$rho_scpaswnormal,
+          vart = input$vartcpaswnormal
+        )
+      )
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      print(summary(printresult("cps.sw.normal")))
+      print(summary(
+        cps.sw.normal(
+          alpha = input$alpha,
+          power = input$power,
+          nclusters = input$nclusters,
+          nsubjects = input$nsubjects,
+          ntimes = input$ntimescpaswnormal,
+          d = input$dcpaswnormal,
+          ICC = input$ICCcpaswnormal,
+          rho_c = input$rho_ccpaswnormal,
+          rho_s = input$rho_scpaswnormal,
+          vart = input$vartcpaswnormal
+        )
+      ))
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
-      print(printresult("cpa.sw.binary"))
+      print(
+        cpa.sw.binary(
+          nclusters = input$nclusters,
+          steps = input$stepscpaswbinary,
+          nsubjects = input$nsubjects,
+          d = input$dcpaswbinary,
+          ICC = input$ICCcpaswbinary,
+          beta = input$betacpaswbinary,
+          mu0 = input$mu0cpaswbinary
+        )
+      )
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
-      print(summary(printresult("cps.sw.binary")))
+      print(summary(
+        cps.sw.binary(
+          nsim = input$nsimcpsswbinary,
+          nsubjects = input$nsubjects,
+          nclusters = input$nclusters,
+          p1 = input$p1cpsswbinary,
+          p2 = input$p2cpsswbinary,
+          steps = input$stepscpsswbinary,
+          sigma_b_sq = input$sigma_b_sqcpsswbinary,
+          alpha = input$alpha,
+          poorFitOverride = input$poorFitOverride,
+          lowPowerOverride = input$lowPowerOverride,
+          timelimitOverride = input$timelimitOverride,
+          seed = input$seed
+        )
+      ))
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
-      print(printresult("cpa.sw.count"))
+      print(
+        cpa.sw.count(
+          lambda1 = input$lambda1cpaswcount,
+          RR = input$RRcpaswcount,
+          nclusters = input$nclusters,
+          steps = input$stepscpaswcount,
+          nsubjects = input$nsubjects,
+          ICC = input$ICCcpaswcount,
+          alpha = input$alpha
+        )
+      )
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      print(summary(printresult("cps.sw.count")))
+      print(summary(
+        cps.sw.count(
+          nsim = input$nsimcpsswcount,
+          nsubjects = input$nsubjects,
+          nclusters = input$nclusters,
+          c1 = input$c1cpsswcount,
+          c2 = input$c2cpsswcount,
+          steps = input$stepscpsswcount,
+          sigma_b_sq = input$sigma_b_sqcpsswcount,
+          alpha = input$alpha,
+          poorFitOverride = input$poorFitOverride,
+          lowPowerOverride = input$lowPowerOverride,
+          timelimitOverride = input$timelimitOverride,
+          seed = input$seed
+        )
+      ))
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
-      print(printresult("cpa.irgtt.normal"))
+      print(
+        cpa.irgtt.normal(
+          alpha = input$alpha,
+          power = input$power,
+          nclusters = input$nclusters,
+          nsubjects = input$nsubjects,
+          ncontrols = input$ncontrolscpairgttnormal,
+          d = input$dcpairgttnormal,
+          varu = input$varucpairgttnormal,
+          varei = input$vareicpairgttnormal,
+          varr = input$varrcpairgttnormal
+        )
+      )
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      print(summary(printresult("cps.irgtt.normal")))
+      print(summary(
+        cps.irgtt.normal(
+          nsim = input$nsimcpsirgttnormal,
+          nsubjects = input$nsubjects,
+          nclusters = input$nclusters,
+          mu = input$mucpsirgttnormal,
+          mu2 = input$mu2cpsirgttnormal,
+          ICC = input$ICCcpsirgttnormal,
+          sigma_sq = input$sigma_sqcpsirgttnormal,
+          sigma_b_sq = input$sigma_b_sqcpsirgttnormal,
+          ICC2 = input$ICC2cpsirgttnormal,
+          sigma_sq2 = input$sigma_sq2cpsirgttnormal,
+          sigma_b_sq2 = input$sigma_b_sq2cpsirgttnormal,
+          alpha = input$alpha,
+          seed = input$seed,
+          poorFitOverride = input$poorFitOverride,
+          lowPowerOverride = input$lowPowerOverride,
+          timelimitOverride = input$timelimitOverride
+        )
+      ))
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
-      print(printresult("cpa.irgtt.binary"))
+      print(
+        cpa.irgtt.binary(
+          alpha = input$alpha,
+          power = input$power,
+          nclusters = input$nclusters,
+          nsubjects = input$nsubjects,
+          ncontrols = input$ncontrolscpairgttbinary,
+          ICC = input$ICCcpairgttbinary,
+          p2 = input$p2cpairgttbinary,
+          p1 = input$p1cpairgttbinary,
+          decrease = input$decreasecpairgttbinary
+        )
+      )
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
-      print(summary(printresult("cps.irgtt.binary")))
+      print(summary(
+        cps.irgtt.binary(
+          nsim = input$nsimcpsirgttbinary,
+          nsubjects = input$nsubjects,
+          nclusters = input$nclusters,
+          p1 = input$p1cpsirgttbinary,
+          p2 = input$p2cpsirgttbinary,
+          sigma_b_sq = input$sigma_b_sqcpsirgttbinary,
+          sigma_b_sq2 = input$sigma_b_sq2cpsirgttbinary,
+          alpha = input$alpha,
+          poorFitOverride = input$poorFitOverride,
+          lowPowerOverride = input$lowPowerOverride,
+          timelimitOverride = input$timelimitOverride,
+          seed = input$seed
+        )
+      ))
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
-      print(printresult("cpa.irgtt.count"))
+      print(cpa.irgtt.count())
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      print(summary(printresult("cps.irgtt.count")))
+      print(summary(
+        cps.irgtt.count(
+          nsim = input$nsimcpsirgttcount,
+          nsubjects = input$nsubjects,
+          nclusters = input$nclusters,
+          c1 = input$c1cpsirgttcount,
+          c2 = input$c2cpsirgttcount,
+          sigma_b_sq = input$sigma_b_sqcpsirgttcount,
+          sigma_b_sq2 = input$sigma_b_sq2cpsirgttcount,
+          alpha = input$alpha,
+          poorFitOverride = input$poorFitOverride,
+          lowPowerOverride = input$lowPowerOverride,
+          timelimitOverride = input$timelimitOverride,
+          seed = input$seed
+        )
+      ))
     }
   }) # end call the clusterPower functions
   ##################
@@ -1459,10 +1825,11 @@ server <- function(input, output, session) {
   output$CRTpower <- renderPrint({
     answer()
   })
-
+  
 } #end of server fxn
 
 
 
 # Run the application
 shinyApp(ui = ui, server = server)
+
