@@ -218,6 +218,13 @@ cps.ma.normal <- function(nsim = 1000,
   if (!is.numeric(sigma_sq)) {
     sigma_sq <- as.numeric(unlist(strsplit(sigma_sq, split = ", ")))
   }
+  if (!is.numeric(nclusters)) {
+    nclusters <- as.numeric(unlist(strsplit(means, split = ", ")))
+  }
+  if (!is.numeric(nsubjects)) {
+    nsubjects <- as.numeric(unlist(strsplit(means, split = ", ")))
+  }
+  
   
   # create narms and nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
