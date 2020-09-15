@@ -83,11 +83,13 @@ ui <- fluidPage(
             "sigma_sqcpanormal",
             "Within-cluster variance (Arm 1)",
             value = 0.01,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sqcpanormal",
             "Between-cluster variance (Arm 1)",
+            step = 0.001,
             value = 0.1,
             min = 0
           ),
@@ -120,30 +122,34 @@ ui <- fluidPage(
             min = 0,
             max = 1
           ),
-          numericInput("mucpsnormal", "Mean in arm 1", value = 1.1),
+          numericInput("mucpsnormal", "Mean in arm 1", value = 2.4),
           numericInput("mu2cpsnormal", "Mean in arm 2", value = 1.5),
           numericInput(
             "sigma_sqcpsnormal",
             "Within-cluster variance (Arm 1)",
-            value = 0.1,
+            value = 0.2,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_sq2cpsnormal",
             "Within-cluster variance (Arm 2)",
-            value = 0.1,
+            value = 0.2,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sqcpsnormal",
             "Between-cluster variance (Arm 1)",
-            value = 0.1,
+            value = 0.5,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sq2cpsnormal",
             "Between-cluster variance (Arm 2)",
-            value = 0.1,
+            value = 0.5,
+            step = 0.001,
             min = 0
           )
         ),
@@ -164,6 +170,7 @@ ui <- fluidPage(
             "p1cpabinary",
             "Outcome proportion (Arm 1)",
             value = 0.1,
+            step = 0.001,
             min = 0,
             max = 1
           ),
@@ -171,6 +178,7 @@ ui <- fluidPage(
             "p2cpabinary",
             "Outcome proportion (Arm 2)",
             value = 0.24,
+            step = 0.001,
             min = 0,
             max = 1
           ),
@@ -192,7 +200,8 @@ ui <- fluidPage(
           numericInput(
             "p1cpsbinary",
             "Outcome proportion (Arm 1)",
-            value = 0.1,
+            value = 0.8,
+            step = 0.001,
             min = 0,
             max = 1
           ),
@@ -200,19 +209,22 @@ ui <- fluidPage(
             "p2cpsbinary",
             "Outcome proportion (Arm 2)",
             value = 0.5,
+            step = 0.001,
             min = 0,
             max = 1
           ),
           numericInput(
             "sigma_b_sqcpsbinary",
             "Between-cluster variance (Arm 1)",
-            value = 0.1,
+            value = 1,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sq2cpsbinary",
             "Between-cluster variance (Arm 2)",
-            value = 0.1,
+            value = 1,
+            step = 0.001,
             min = 0
           )
         ),
@@ -225,8 +237,8 @@ ui <- fluidPage(
             "Between-cluster coefficient of variation (CV)",
             value = 0.01
           ),
-          numericInput("r1cpacount",  "Mean event rate (Arm 1)", value = 0.1),
-          numericInput("r2cpacount",  "Mean event rate (Arm 2)", value = 0.2),
+          numericInput("r1cpacount",  "Mean event rate (Arm 1)", value = 0.2),
+          numericInput("r2cpacount",  "Mean event rate (Arm 2)", value = 0.35),
           checkboxInput(
             "r1inccpacount",
             "Intervention probability < control probability",
@@ -247,26 +259,28 @@ ui <- fluidPage(
           numericInput(
             "sigma_b_sqcpscount",
             "Between-cluster variance (Arm 1)",
-            value = 0.1,
+            value = 0.5,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sq2cpscount",
             "Between-cluster variance (Arm 2)",
-            value = 0.1,
+            value = 0.5,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "c1cpscount",
             "Expected outcome count (Arm 1)",
-            value = 5,
+            value = 200,
             step = 1,
             min = 0
           ),
           numericInput(
             "c2cpscount",
             "Expected outcome count (Arm 2)",
-            value = 7,
+            value = 80,
             step = 1,
             min = 0
           )
@@ -276,28 +290,32 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Multi-Arm' & input.dist == 'Normal' & input.meth == 'Analytic'",
           numericInput(
-            "nsimcpamanormal",
-            "Number of simulations",
-            value = 100,
-            max = 500000,
-            min = 0
+            "narmscpamanormal",
+            "Number of arms",
+            value = 3,
+            max = 50,
+            min = 2,
+            step = 1
           ),
           numericInput(
             "varacpamanormal",
             "Between-arm variance",
-            value = 0.1,
+            value = 0.02,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "varccpamanormal",
             "Between-cluster variance",
-            value = 0.1,
+            value = 0.01,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "varecpamanormal",
             "Within-cluster variance",
             value = 0.1,
+            step = 0.001,
             min = 0
           )
         ),
@@ -500,6 +518,7 @@ ui <- fluidPage(
           numericInput(
             "sigma_sq",
             "Within-cluster variance (Arm 1)",
+            step = 0.001,
             value = 0.01,
             min = 0
           ),
@@ -507,12 +526,14 @@ ui <- fluidPage(
             "sigma_b_sq0cpsdidnormal",
             "Pre-treatment between-cluster variance",
             value = 0,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sq1cpsdidnormal",
             "Post-treatment between-cluster variance",
             value = 0,
+            step = 0.001,
             min = 0
           )
         ),
@@ -548,6 +569,7 @@ ui <- fluidPage(
             "p1cpsdidbinary",
             "Outcome proportion (Arm 1)",
             value = 0.1,
+            step = 0.001,
             min = 0,
             max = 1
           ),
@@ -555,6 +577,7 @@ ui <- fluidPage(
             "p2cpsdidbinary",
             "Outcome proportion (Arm 2)",
             value = 0.5,
+            step = 0.001,
             min = 0,
             max = 1
           ),
@@ -562,12 +585,14 @@ ui <- fluidPage(
             "sigma_b_sq0cpsdidbinary",
             "Pre-treatment between-cluster variance",
             value = 0,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sq1cpsdidbinary",
             "Post-treatment between-cluster variance",
             value = 0,
+            step = 0.001,
             min = 0
           )
         ),
@@ -606,12 +631,14 @@ ui <- fluidPage(
             "sigma_b_sq0cpsdidcount",
             "Pre-treatment between-cluster variance",
             value = 0,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sq1cpsdidcount",
             "Post-treatment between-cluster variance",
             value = 0,
+            step = 0.001,
             min = 0
           )
         ),
@@ -657,12 +684,14 @@ ui <- fluidPage(
             "sigma_sqcpsswnormal",
             "Within-cluster variance (Arm 1)",
             value = 0.01,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sqcpsswnormal",
             "Between-cluster variance (Arm 1)",
             value = 0.1,
+            step = 0.001,
             min = 0
           )
         ),
@@ -700,6 +729,7 @@ ui <- fluidPage(
             "p1cpsswbinary",
             "Outcome proportion (Arm 1)",
             value = 0.1,
+            step = 0.001,
             min = 0,
             max = 1
           ),
@@ -707,6 +737,7 @@ ui <- fluidPage(
             "p2cpsswbinary",
             "Outcome proportion (Arm 2)",
             value = 0.5,
+            step = 0.001,
             min = 0,
             max = 1
           ),
@@ -714,6 +745,7 @@ ui <- fluidPage(
             "sigma_b_sqcpsswbinary",
             "Between-cluster variance (Arm 1)",
             value = 0.1,
+            step = 0.001,
             min = 0
           )
         ),
@@ -768,6 +800,7 @@ ui <- fluidPage(
             "sigma_b_sqcpsdidcount",
             "Between-cluster variance (Arm 1)",
             value = 0.1,
+            step = 0.001,
             min = 0
           )
         ),
@@ -787,18 +820,21 @@ ui <- fluidPage(
             "vareicpairgttnormal",
             "Intervention arm subject random error variance",
             value = 0.1,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "varrcpairgttnormal",
             "Control arm subject random error variance",
             value = 0.1,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "varucpairgttnormal",
             "Intervention arm cluster random effect variance",
             value = 0.1,
+            step = 0.001,
             min = 0
           )
         ),
@@ -827,24 +863,28 @@ ui <- fluidPage(
             "sigma_sqcpsirgttnormal",
             "Within-cluster variance (Arm 1)",
             value = 0.01,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_sq2cpsirgttnormal",
             "Within-cluster variance (Arm 2)",
             value = 0.01,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sqcpsirgttnormal",
             "Between-cluster variance (Arm 1)",
             value = 0.1,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sq2cpsirgttnormal",
             "Between-cluster variance (Arm 2)",
             value = 0.1,
+            step = 0.001,
             min = 0
           )
         ),
@@ -856,6 +896,7 @@ ui <- fluidPage(
             "p1cpairgttbinary",
             "Outcome proportion (Arm 1)",
             value = 0.1,
+            step = 0.001,
             min = 0,
             max = 1
           ),
@@ -863,6 +904,7 @@ ui <- fluidPage(
             "p2cpairgttbinary",
             "Outcome proportion (Arm 2)",
             value = 0.5,
+            step = 0.001,
             min = 0,
             max = 1
           ),
@@ -902,6 +944,7 @@ ui <- fluidPage(
             "p1cpsirgttbinary",
             "Outcome proportion (Arm 1)",
             value = 0.1,
+            step = 0.001,
             min = 0,
             max = 1
           ),
@@ -909,6 +952,7 @@ ui <- fluidPage(
             "p2cpsirgttbinary",
             "Outcome proportion (Arm 2)",
             value = 0.5,
+            step = 0.001,
             min = 0,
             max = 1
           ),
@@ -916,12 +960,14 @@ ui <- fluidPage(
             "sigma_b_sqcpsirgttbinary",
             "Between-cluster variance (Arm 1)",
             value = 0.1,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sq2cpsirgttbinary",
             "Between-cluster variance (Arm 2)",
             value = 0.1,
+            step = 0.001,
             min = 0
           )
         ),
@@ -946,12 +992,14 @@ ui <- fluidPage(
             "sigma_b_sqcpsirgttcount",
             "Between-cluster variance (Arm 1)",
             value = 0.1,
+            step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sq2cpsirgttcount",
             "Between-cluster variance (Arm 2)",
             value = 0.1,
+            step = 0.001,
             min = 0
           ),
           numericInput(
