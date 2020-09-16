@@ -264,7 +264,7 @@ cps.ma.normal <- function(nsim = 1000,
     stop("nclusters must be postive integer values.")
   }
   print("checkpoint 3")
-   nsubjects must be positive whole numbers
+  # nsubjects must be positive whole numbers
   if (sum(is.wholenumber(unlist(nsubjects)) == FALSE) != 0 ||
       sum(unlist(nsubjects) < 1) != 0) {
    stop("nsubjects must be positive integer values.")
