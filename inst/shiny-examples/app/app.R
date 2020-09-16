@@ -362,7 +362,7 @@ ui <- fluidPage(
             "Expected absolute treatment effect for each arm (comma delimited)",
             "22.0, 21.0, 22.5"
           ),
-          textInput("ICCcpsmanormal", "Intracluster correlation coefficient (ICC)", value = "NA, NA, NA"),
+          textInput("ICCcpsmanormal", "Intracluster correlation coefficient (ICC)", value = NULL),
           textInput(
             "sigma_sqcpsmanormal",
             "Within-cluster variance (comma delimited)",
@@ -1130,7 +1130,9 @@ ui <- fluidPage(
 
       ####  DEBUG ACCESS PANEL START #####      
       
-       tabPanel("DEBUG", tableOutput("show_inputs")),
+       tabPanel("DEBUG", actionButton("browser", "browser"),
+                tableOutput("show_inputs"),
+                ),
       
       #### DEBUG ACCESS PANEL END #####
       
@@ -1507,8 +1509,8 @@ server <- function(input, output, session) {
         cpa.count(
           alpha = input$alpha,
           power = input$power,
-          nclusters = input$nclusters,
-          nsubjects = input$nsubjects,
+          nclusters = input$nclusterscpacount,
+          nsubjects = input$nsubjectscpacount,
           r1 = input$r1cpacount,
           r2 = input$r2cpacount,
           CVB = input$CVBcpacount,
@@ -1521,8 +1523,8 @@ server <- function(input, output, session) {
       print(summary(
         cps.count(
           nsim = input$nsimcpscount,
-          nsubjects = input$nsubjects,
-          nclusters = input$nclusters,
+          nsubjects = input$nsubjectscpscount,
+          nclusters = input$nclusterscpscount,
           c1 = input$c1cpscount,
           c2 = input$c2cpscount,
           sigma_b_sq = input$sigma_b_sqcpscount,
@@ -1542,8 +1544,8 @@ server <- function(input, output, session) {
           alpha = input$alpha,
           power = input$power,
           narms = input$narmscpamanormal,
-          nclusters = input$nclusters,
-          nsubjects = input$nsubjects,
+          nclusters = input$nclusterscpamanormal,
+          nsubjects = input$nsubjectscpamanormal,
           vara = input$varacpamanormal,
           varc = input$varccpamanormal,
           vare = input$varecpamanormal
@@ -1553,7 +1555,7 @@ server <- function(input, output, session) {
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
       print(cps.ma.normal(          
-        nsim = input$nsim,
+        nsim = input$nsimcpsmanormal,
         nsubjects = textToNum(input$nsubjectscpsmanormal),
         narms = input$narmscpsmanormal,
         nclusters = textToNum(input$nclusterscpsmanormal),
@@ -1929,6 +1931,10 @@ server <- function(input, output, session) {
   
   output$show_inputs <- renderTable({
     AllInputs()
+  })
+  
+  observeEvent(input$browser,{
+    browser()
   })
   
 #########################################
