@@ -208,24 +208,6 @@ cps.ma.normal <- function(nsim = 1000,
                           nofit = FALSE,
                           timelimitOverride = TRUE) {
   
-  # allow some arguments to be entered as text for Shiny app
-  if (!is.numeric(means)) {
-    means <- as.numeric(unlist(strsplit(means, split = ", ")))
-  }
-  if (!is.numeric(sigma_b_sq)) {
-    sigma_b_sq <- as.numeric(unlist(strsplit(sigma_b_sq, split = ", ")))
-  }
-  if (!is.numeric(sigma_sq)) {
-    sigma_sq <- as.numeric(unlist(strsplit(sigma_sq, split = ", ")))
-  }
-  if (!is.numeric(nclusters)) {
-    nclusters <- as.numeric(unlist(strsplit(means, split = ", ")))
-  }
-  if (!is.numeric(nsubjects)) {
-    nsubjects <- as.numeric(unlist(strsplit(means, split = ", ")))
-  }
-  
-  
   # create narms and nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
     # create narms and nclusters if not supplied by the user
@@ -243,10 +225,10 @@ cps.ma.normal <- function(nsim = 1000,
     narms <- length(nclusters)
   }
   
-  # input validation steps
- # if (!is.wholenumber(nsim) || nsim < 1 || length(nsim) > 1) {
-#    stop("nsim must be a positive integer of length 1.")
-#  }
+   # input validation steps
+  if (!is.wholenumber(nsim) || nsim < 1 || length(nsim) > 1) {
+    stop("nsim must be a positive integer of length 1.")
+  }
   if (is.null(nsubjects)) {
     stop("nsubjects must be specified. See ?cps.ma.normal for help.")
   }
