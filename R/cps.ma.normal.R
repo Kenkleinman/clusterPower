@@ -226,6 +226,7 @@ cps.ma.normal <- function(nsim = 1000,
   }
   
    # input validation steps
+  print("checkpoint 1")
   if (!is.wholenumber(nsim) || nsim < 1 || length(nsim) > 1) {
     stop("nsim must be a positive integer of length 1.")
   }
@@ -257,16 +258,17 @@ cps.ma.normal <- function(nsim = 1000,
   )
   
   # nclusters must be positive whole numbers
- # if (sum(is.wholenumber(nclusters) == FALSE) != 0 ||
-#      sum(unlist(nclusters) < 1) != 0) {
-#    stop("nclusters must be postive integer values.")
-#  }
-  
-  # nsubjects must be positive whole numbers
- # if (sum(is.wholenumber(unlist(nsubjects)) == FALSE) != 0 ||
-#      sum(unlist(nsubjects) < 1) != 0) {
-#    stop("nsubjects must be positive integer values.")
-#  }
+  print("checkpoint 2")
+  if (sum(is.wholenumber(nclusters) == FALSE) != 0 ||
+      sum(unlist(nclusters) < 1) != 0) {
+    stop("nclusters must be postive integer values.")
+  }
+  print("checkpoint 3")
+   nsubjects must be positive whole numbers
+  if (sum(is.wholenumber(unlist(nsubjects)) == FALSE) != 0 ||
+      sum(unlist(nsubjects) < 1) != 0) {
+   stop("nsubjects must be positive integer values.")
+  }
   # Create nsubjects structure from narms and nclusters when nsubjects is scalar
   if (length(nsubjects) == 1) {
     str.nsubjects <- lapply(nclusters, function(x)
