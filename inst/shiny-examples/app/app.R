@@ -300,7 +300,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Multi-Arm' & input.dist == 'Normal' & input.meth == 'Analytic'",
           numericInput("nclusterscpamanormal", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpamanormal", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpamanormal",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput(
             "narmscpamanormal",
             "Number of arms",
@@ -335,7 +339,11 @@ ui <- fluidPage(
         # cps.ma.normal input start
         conditionalPanel(
           "input.type == 'Multi-Arm' & input.dist == 'Normal' & input.meth == 'Simulation'",
-          textInput("nclusterscpsmanormal", "Number of Clusters (comma delimited)", value = "10, 10, 10"),
+          textInput(
+            "nclusterscpsmanormal",
+            "Number of Clusters (comma delimited)",
+            value = "10, 10, 10"
+          ),
           textInput(
             "nsubjectscpsmanormal",
             "Number of Observations (per cluster, comma delimited)",
@@ -362,7 +370,11 @@ ui <- fluidPage(
             "Expected absolute treatment effect for each arm (comma delimited)",
             "22.0, 21.0, 22.5"
           ),
-          textInput("ICCcpsmanormal", "Intracluster correlation coefficient (ICC)", value = NULL),
+          textInput(
+            "ICCcpsmanormal",
+            "Intracluster correlation coefficient (ICC)",
+            value = NULL
+          ),
           textInput(
             "sigma_sqcpsmanormal",
             "Within-cluster variance (comma delimited)",
@@ -765,8 +777,7 @@ ui <- fluidPage(
             max = 500000,
             min = 0
           ),
-          numericInput("stepscpsswbinary", "Number of crossover steps", value = 3
-          ),
+          numericInput("stepscpsswbinary", "Number of crossover steps", value = 3),
           numericInput(
             "p1cpsswbinary",
             "Outcome proportion (Arm 1)",
@@ -1117,22 +1128,26 @@ ui <- fluidPage(
       ),
       conditionalPanel(
         "input.more == true",
-        actionButton("restoreDefault", "Restore default parameters",
-                     width = '100%',
-                     style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+        actionButton(
+          "restoreDefault",
+          "Restore default parameters",
+          width = '100%',
+          style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+        ),
         actionButton("reload", "Reset all", icon = icon("trash-alt"))
       )
     ),
- ########################   
+    ########################
     # Tabs start
- ########################   
+    ########################
     mainPanel(tabsetPanel(
-
-      ####  DEBUG ACCESS PANEL START #####      
+      ####  DEBUG ACCESS PANEL START #####
       
-       tabPanel("DEBUG", actionButton("browser", "browser"),
-                tableOutput("show_inputs"),
-                ),
+      tabPanel(
+        "DEBUG",
+        actionButton("browser", "browser"),
+        tableOutput("show_inputs"),
+      ),
       
       #### DEBUG ACCESS PANEL END #####
       
@@ -1155,7 +1170,8 @@ ui <- fluidPage(
           HTML(
             "<p>Note: for more advanced features, see the clusterPower R package.</p>"
           )
-        )),
+        )
+      ),
       tabPanel(
         "Help",
         HTML(
@@ -1307,7 +1323,7 @@ server <- function(input, output, session) {
   
   #which events to observe
   watchfor <- reactive({
-    list(input$dist,input$meth, input$type, input$button)
+    list(input$dist, input$meth, input$type, input$button)
   }) # end of which events to observe
   
   # update help documentation and params table when function is selected
@@ -1439,32 +1455,43 @@ server <- function(input, output, session) {
   answer <- eventReactive(input$button, {
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
-      print(cpa.normal(alpha = input$alpha, power = input$power, 
-                       nclusters = input$nclusters, 
-                       nsubjects = input$nsubjects, 
-                       sigma_sq = input$sigma_sqcpanormal, 
-                       sigma_b_sq = input$sigma_b_sqcpanormal, 
-                       CV = input$CVcpanormal, d = input$dcpanormal, 
-                       ICC = input$ICCcpanormal, vart = input$vartcpanormal))
+      print(
+        cpa.normal(
+          alpha = input$alpha,
+          power = input$power,
+          nclusters = input$nclusters,
+          nsubjects = input$nsubjects,
+          sigma_sq = input$sigma_sqcpanormal,
+          sigma_b_sq = input$sigma_b_sqcpanormal,
+          CV = input$CVcpanormal,
+          d = input$dcpanormal,
+          ICC = input$ICCcpanormal,
+          vart = input$vartcpanormal
+        )
+      )
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      print(summary(cps.normal(nsim = input$nsimcpsnormal, 
-                               nclusters = input$nclusters, 
-                               nsubjects = input$nsubjects, 
-                               mu = input$mucpsnormal, 
-                               mu2 = input$mu2cpsnormal, 
-                               ICC = input$ICCcpsnormal, 
-                               sigma_sq = input$sigma_sqcpsnormal, 
-                               sigma_b_sq = input$sigma_b_sqcpsnormal, 
-                               ICC2 = input$ICC2cpsnormal, 
-                               sigma_sq2 = input$sigma_sq2cpsnormal, 
-                               sigma_b_sq2 = input$sigma_b_sq2cpsnormal, 
-                               alpha = input$alpha, 
-                               seed = input$seed, 
-                               poorFitOverride = input$poorFitOverride, 
-                               timelimitOverride = input$timelimitOverride, 
-                               lowPowerOverride = input$lowPowerOverride)))
+      print(summary(
+        cps.normal(
+          nsim = input$nsimcpsnormal,
+          nclusters = input$nclusters,
+          nsubjects = input$nsubjects,
+          mu = input$mucpsnormal,
+          mu2 = input$mu2cpsnormal,
+          ICC = input$ICCcpsnormal,
+          sigma_sq = input$sigma_sqcpsnormal,
+          sigma_b_sq = input$sigma_b_sqcpsnormal,
+          ICC2 = input$ICC2cpsnormal,
+          sigma_sq2 = input$sigma_sq2cpsnormal,
+          sigma_b_sq2 = input$sigma_b_sq2cpsnormal,
+          alpha = input$alpha,
+          seed = input$seed,
+          poorFitOverride = input$poorFitOverride,
+          timelimitOverride = input$timelimitOverride,
+          lowPowerOverride = input$lowPowerOverride
+        )
+      ))
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
@@ -1554,23 +1581,26 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      print(cps.ma.normal(          
-        nsim = input$nsimcpsmanormal,
-        nsubjects = textToNum(input$nsubjectscpsmanormal),
-        narms = input$narmscpsmanormal,
-        nclusters = textToNum(input$nclusterscpsmanormal),
-        means = textToNum(input$meanscpsmanormal),
-        sigma_sq = textToNum(input$sigma_sqcpsmanormal),
-        sigma_b_sq = textToNum(input$sigma_b_sqcpsmanormal),
-        alpha = input$alpha,
-        ICC = textToNum(input$ICCcpsmanormal),
-        multi_p_method = input$multi_p_methodcpsmanormal,
-        seed = input$seed,
-        poorFitOverride = input$poorFitOverride,
-        lowPowerOverride = input$lowPowerOverride,
-        tdist = input$tdistcpsmanormal,
-        optmethod = input$optmethod,
-        timelimitOverride = input$timelimitOverride))
+      print(
+        cps.ma.normal(
+          nsim = input$nsimcpsmanormal,
+          nsubjects = textToNum(input$nsubjectscpsmanormal),
+          narms = input$narmscpsmanormal,
+          nclusters = textToNum(input$nclusterscpsmanormal),
+          means = textToNum(input$meanscpsmanormal),
+          sigma_sq = textToNum(input$sigma_sqcpsmanormal),
+          sigma_b_sq = textToNum(input$sigma_b_sqcpsmanormal),
+          alpha = input$alpha,
+          ICC = textToNum(input$ICCcpsmanormal),
+          multi_p_method = input$multi_p_methodcpsmanormal,
+          seed = input$seed,
+          poorFitOverride = input$poorFitOverride,
+          lowPowerOverride = input$lowPowerOverride,
+          tdist = input$tdistcpsmanormal,
+          optmethod = input$optmethod,
+          timelimitOverride = input$timelimitOverride
+        )
+      )
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
@@ -1593,7 +1623,8 @@ server <- function(input, output, session) {
           poorFitOverride = input$poorFitOverride,
           lowPowerOverride = input$lowPowerOverride,
           timelimitOverride = input$timelimitOverride
-        ))
+        )
+      )
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
@@ -1915,9 +1946,9 @@ server <- function(input, output, session) {
   ##################
   
   
-#########################################
+  #########################################
   #### DEBUG ACCESS PANEL #####
-#########################################
+  #########################################
   
   AllInputs <- reactive({
     x <- reactiveValuesToList(input)
@@ -1933,11 +1964,11 @@ server <- function(input, output, session) {
     AllInputs()
   })
   
-  observeEvent(input$browser,{
+  observeEvent(input$browser, {
     browser()
   })
   
-#########################################
+  #########################################
   
   output$helpdetails <- renderUI({
     a(
@@ -1974,4 +2005,3 @@ server <- function(input, output, session) {
 
 # Run the application
 shinyApp(ui = ui, server = server)
-
