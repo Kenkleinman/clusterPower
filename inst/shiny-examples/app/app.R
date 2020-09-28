@@ -468,19 +468,19 @@ ui <- fluidPage(
         # cps.ma.count input start
         conditionalPanel(
           "input.type == 'Multi-Arm' & input.dist == 'Count' & input.meth == 'Simulation'",
-          numericInput("nclusterscpsmacount", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpsmacount", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpsmacount", "Number of Clusters", value = 25),
+          numericInput("nsubjectscpsmacount", "Number of Observations (per cluster)", value = 100),
           numericInput(
             "nsimcpsmacount",
             "Number of simulations",
-            value = 100,
+            value = 10,
             max = 500000,
             min = 0
           ),
           sliderInput(
             "narmscpsmacount",
             "Number of arms",
-            value = 3,
+            value = 4,
             min = 2,
             max = 10,
             step = 1
@@ -488,12 +488,12 @@ ui <- fluidPage(
           textInput(
             "countscpsmacount",
             "Mean event per unit time for each arm (comma delimited)",
-            "30, 35, 70"
+            "30, 35, 70, 40"
           ),
           textInput(
             "sigma_b_sqcpsmacount",
             "Between-cluster variance (comma delimited)",
-            value = "0.01, 0.01, 0.01"
+            value = "1, 1.2, 1, 0.9"
           ),
           selectInput(
             "multi_p_methodcpsmacount",
@@ -765,16 +765,16 @@ ui <- fluidPage(
         # cpa.sw.binary input start
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Binary' & input.meth == 'Analytic'",
-          numericInput("nclusterscpaswbinary", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpaswbinary", "Number of Observations (per cluster)", value = 20),
-          numericInput("stepscpaswbinary", "Number of crossover steps", value = 3),
-          numericInput("dcpaswbinary", "Means difference", value = 1),
-          numericInput("mu0cpaswbinary", "Baseline (arm 1) effect", value = 0.1),
+          numericInput("nclusterscpaswbinary", "Number of Clusters", value = 50),
+          numericInput("nsubjectscpaswbinary", "Number of Observations (per cluster)", value = 100),
+          numericInput("stepscpaswbinary", "Number of crossover steps", value = 2),
+          numericInput("dcpaswbinary", "Means difference", value = -0.75),
+          numericInput("mu0cpaswbinary", "Baseline (arm 1) effect", value = 0.2),
           numericInput("betacpaswbinary", "Treatment (arm 2) effect", value = 0.4),
           numericInput(
             "ICCcpaswbinary",
             "Intracluster correlation coefficient (ICC)",
-            value = NA,
+            value = 0.01,
             step = 0.01,
             min = 0,
             max = 1
@@ -829,7 +829,7 @@ ui <- fluidPage(
           numericInput(
             "ICCcpaswcount",
             "Intracluster correlation coefficient (ICC)",
-            value = NA,
+            value = 0.05,
             step = 0.01,
             min = 0,
             max = 1
@@ -837,9 +837,9 @@ ui <- fluidPage(
           numericInput(
             "lambda1cpaswcount",
             "Baseline rate for outcome of interest",
-            value = 1.75
+            value = 0.65
           ),
-          numericInput("RRcpaswcount", "Intervention relative risk", value = 0.9)
+          numericInput("RRcpaswcount", "Intervention relative risk", value = 0.6)
         ),
         
         # cps.sw.count input start
@@ -881,34 +881,34 @@ ui <- fluidPage(
         # cpa.irgtt.normal input start
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Analytic'",
-          numericInput("nclusterscpairgttnormal", "Number of clusters in the clustered arm", value = 10),
-          numericInput("nsubjectscpairgttnormal", "Number of observations per cluster in the clustered arm", value = 20),
+          numericInput("nclusterscpairgttnormal", "Number of clusters in the clustered arm", value = 8),
+          numericInput("nsubjectscpairgttnormal", "Number of observations per cluster in the clustered arm", value = 15),
           numericInput(
             "ncontrolscpairgttnormal",
             "Number of subjects in the unclustered arm",
-            value = 200,
+            value = 40,
             step = 1,
             min = 0
           ),
-          numericInput("dcpairgttnormal", "Means difference", value = 1),
+          numericInput("dcpairgttnormal", "Means difference", value = 1.03),
           numericInput(
             "vareicpairgttnormal",
             "Intervention arm subject random error variance",
-            value = 0.1,
+            value = 0.5,
             step = 0.001,
             min = 0
           ),
           numericInput(
             "varrcpairgttnormal",
             "Control arm subject random error variance",
-            value = 0.1,
+            value = 0.2,
             step = 0.001,
             min = 0
           ),
           numericInput(
             "varucpairgttnormal",
             "Intervention arm cluster random effect variance",
-            value = 0.1,
+            value = 1,
             step = 0.001,
             min = 0
           )
@@ -1172,6 +1172,26 @@ ui <- fluidPage(
       
       tabPanel(
         "Results",
+        conditionalPanel(
+          "input.meth == 'Simulation'",
+        wellPanel(
+          HTML(
+            "<p>Note: If the estimated calculation time is longer than 3 minutes,
+            the process will not run unless you override the time limit 
+            under advanced options.</p>"
+          )
+        )
+        ),
+        conditionalPanel(
+          "input.type == 'Stepped Wedge' & input.dist == 'Binary' & 
+          input.meth == 'Analytic' & input.stepscpaswbinary > 3",
+          wellPanel(
+            HTML(
+              "<p>Note: Crossover steps > 3 will substantially increase 
+              calculation time. </p>"
+            )
+          )
+        ),
         shinycssloaders::withSpinner(verbatimTextOutput("CRTpower", placeholder = TRUE))
       ),
       tabPanel(
@@ -1323,7 +1343,7 @@ server <- function(input, output, session) {
                          names(formals(fxnName))))
     arghelper <- function(argname) {
       x <- paste0("input$", argname)
-      x <- eval(parse(text = x))
+    #  x <- eval(parse(text = x))
       return(x)
     }
     holder <- list()
@@ -1662,7 +1682,6 @@ server <- function(input, output, session) {
           alpha = input$alpha,
           multi_p_method = input$multi_p_methodcpsmacount,
           seed = input$seed,
-          cores = input$corescpsmacount,
           tdist = input$tdistcpsmacount,
           poorFitOverride = input$poorFitOverride,
           lowPowerOverride = input$lowPowerOverride,
@@ -1802,6 +1821,7 @@ server <- function(input, output, session) {
         input$dist == 'Binary' && input$meth == 'Analytic') {
       print(
         cpa.sw.binary(
+          alpha = input$alpha,
           nclusters = input$nclusterscpaswbinary,
           steps = input$stepscpaswbinary,
           nsubjects = input$nsubjectscpaswbinary,
@@ -1885,7 +1905,7 @@ server <- function(input, output, session) {
       print(summary(
         cps.irgtt.normal(
           nsim = input$nsimcpsirgttnormal,
-          nsubjects = input$nsubjectscpsirgttnormal,
+          nsubjects = c(input$nsubjectscpsirgttnormal, input$nsubjects2cpsirgttnormal),
           nclusters = input$nclusterscpsirgttnormal,
           mu = input$mucpsirgttnormal,
           mu2 = input$mu2cpsirgttnormal,
@@ -1924,7 +1944,7 @@ server <- function(input, output, session) {
       print(summary(
         cps.irgtt.binary(
           nsim = input$nsimcpsirgttbinary,
-          nsubjects = input$nsubjectscpsirgttbinary,
+          nsubjects = c(input$nsubjectscpsirgttbinary, input$nsubjects2cpsirgttbinary),
           nclusters = input$nclusterscpsirgttbinary,
           p1 = input$p1cpsirgttbinary,
           p2 = input$p2cpsirgttbinary,
@@ -1947,7 +1967,7 @@ server <- function(input, output, session) {
       print(summary(
         cps.irgtt.count(
           nsim = input$nsimcpsirgttcount,
-          nsubjects = input$nsubjectscpsirgttcount,
+          nsubjects = c(input$nsubjectscpsirgttcount, input$nsubjects2cpsirgttcount),
           nclusters = input$nclusterscpsirgttcount,
           c1 = input$c1cpsirgttcount,
           c2 = input$c2cpsirgttcount,
