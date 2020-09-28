@@ -67,8 +67,8 @@ ui <- fluidPage(
         #input for cpa.normal
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Analytic'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpanormal", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpanormal", "Number of Observations (per cluster)", value = 20),
           numericInput("CVcpanormal", "Coefficient of variation (CV)", value = 0),
           numericInput("dcpanormal", "Means difference", value = 0.43),
           numericInput(
@@ -99,8 +99,8 @@ ui <- fluidPage(
         # input for cps.normal
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Simulation'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpsnormal", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpsnormal", "Number of Observations (per cluster)", value = 20),
           numericInput(
             "nsimcpsnormal",
             "Number of simulations",
@@ -159,8 +159,8 @@ ui <- fluidPage(
         # cpa.binary inputs start
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Binary' & input.meth == 'Analytic'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpabinary", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpabinary", "Number of Observations (per cluster)", value = 20),
           numericInput("CVcpabinary", "Coefficient of variation (CV)", value = 0),
           numericInput(
             "ICCcpabinary",
@@ -194,8 +194,8 @@ ui <- fluidPage(
         # cps.binary inputs start
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Binary' & input.meth == 'Simulation'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpsbinary", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpsbinary", "Number of Observations (per cluster)", value = 20),
           numericInput(
             "nsimcpsbinary",
             "Number of simulations",
@@ -238,8 +238,8 @@ ui <- fluidPage(
         # cpa.count input starts
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Count' & input.meth == 'Analytic'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpacount", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpacount", "Number of Observations (per cluster)", value = 20),
           numericInput(
             "CVBcpacount",
             "Between-cluster coefficient of variation (CV)",
@@ -257,8 +257,8 @@ ui <- fluidPage(
         # cps.count input starts
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Count' & input.meth == 'Simulation'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpscount", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpscount", "Number of Observations (per cluster)", value = 20),
           numericInput(
             "nsimcpscount",
             "Number of simulations",
@@ -413,8 +413,8 @@ ui <- fluidPage(
         # cps.ma.binary input start
         conditionalPanel(
           "input.type == 'Multi-Arm' & input.dist == 'Binary' & input.meth == 'Simulation'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpsmabinary", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpsmabinary", "Number of Observations (per cluster)", value = 20),
           numericInput(
             "nsimcpsmabinary",
             "Number of simulations",
@@ -468,8 +468,8 @@ ui <- fluidPage(
         # cps.ma.count input start
         conditionalPanel(
           "input.type == 'Multi-Arm' & input.dist == 'Count' & input.meth == 'Simulation'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpsmacount", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpsmacount", "Number of Observations (per cluster)", value = 20),
           numericInput(
             "nsimcpsmacount",
             "Number of simulations",
@@ -517,13 +517,13 @@ ui <- fluidPage(
         # cpa.did.normal input start
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Normal' & input.meth == 'Analytic'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
-          numericInput("dcpadidnormal", "Means difference", value = 1),
+          numericInput("nclusterscpadidnormal", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpadidnormal", "Number of Observations (per cluster)", value = 20),
+          numericInput("dcpadidnormal", "Means difference", value = 1.02),
           numericInput(
             "ICCcpadidnormal",
             "Intracluster correlation coefficient (ICC)",
-            value = NA,
+            value = 0.05,
             step = 0.01,
             min = 0,
             max = 1
@@ -538,14 +538,14 @@ ui <- fluidPage(
             "Baseline and post-test subject-level correlation",
             value = 0
           ),
-          numericInput("vartcpadidnormal", "Total variation of the outcome", value = NA)
+          numericInput("vartcpadidnormal", "Total variation of the outcome", value = 3)
         ),
         
         # cps.did.normal input start
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Normal' & input.meth == 'Simulation'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpsdidnormal", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpsdidnormal", "Number of Observations (per cluster)", value = 20),
           numericInput(
             "nsimcpsdidnormal",
             "Number of simulations",
@@ -581,27 +581,35 @@ ui <- fluidPage(
         # cpa.did.binary input start
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Binary' & input.meth == 'Analytic'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
-          numericInput("dcpadidbinary", "Means difference", value = 1),
-          numericInput("pcpadidbinary", "Mean post-test expected proportion", value = 1),
+          numericInput("nclusterscpadidbinary", "Number of Clusters", value = 33),
+          numericInput("nsubjectscpadidbinary", "Number of Observations (per cluster)", value = 50),
+          numericInput("dcpadidbinary", "Means difference", value = 0.1),
+          numericInput("pcpadidbinary", "Mean post-test expected proportion", value = 0.5),
+          numericInput(
+            "ICCcpadidbinary",
+            "Intracluster correlation coefficient (ICC)",
+            value = 0.05,
+            step = 0.01,
+            min = 0,
+            max = 1
+          ),
           numericInput(
             "rho_ccpadidbinary",
             "Baseline and post-test cluster-level correlation",
-            value = 0
+            value = 0.3
           ),
           numericInput(
             "rho_scpadidbinary",
             "Baseline and post-test subject-level correlation",
-            value = 0
+            value = 0.7
           )
         ),
         
         # cps.did.binary input start
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Binary' & input.meth == 'Simulation'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpsdidbinary", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpsdidbinary", "Number of Observations (per cluster)", value = 20),
           numericInput(
             "nsimcpsdidbinary",
             "Number of simulations",
@@ -650,8 +658,8 @@ ui <- fluidPage(
         # cps.did.count input start
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Count' & input.meth == 'Simulation'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpsdidcount", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpsdidcount", "Number of Observations (per cluster)", value = 20),
           numericInput(
             "nsimcpsdidcount",
             "Number of simulations",
@@ -692,8 +700,8 @@ ui <- fluidPage(
         # cpa.sw.normal input start
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Normal' & input.meth == 'Analytic'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpaswnormal", "Number of Clusters", value = 5),
+          numericInput("nsubjectscpaswnormal", "Number of Observations (per cluster)", value = 12),
           numericInput(
             "ntimescpaswnormal",
             "Number of measurement time points",
@@ -701,25 +709,33 @@ ui <- fluidPage(
             min = 0,
             step = 1
           ),
-          numericInput("dcpaswnormal", "Means difference", value = 1),
+          numericInput("dcpaswnormal", "Means difference", value = 1.5),
+          numericInput(
+            "ICCcpaswnormal",
+            "Intracluster correlation coefficient (ICC)",
+            value = 0.05,
+            step = 0.01,
+            min = 0,
+            max = 1
+          ),
           numericInput(
             "rho_ccpaswnormal",
             "Baseline and post-test cluster-level correlation",
-            value = 0
+            value = 0.8
           ),
           numericInput(
             "rho_scpaswnormal",
             "Baseline and post-test subject-level correlation",
             value = 0
           ),
-          numericInput("vartcpaswnormal", "Total variation of the outcome", value = NA)
+          numericInput("vartcpaswnormal", "Total variation of the outcome", value = 16)
         ),
         
         # cps.sw.normal input start
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Normal' & input.meth == 'Simulation'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpsswnormal", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpsswnormal", "Number of Observations (per cluster)", value = 20),
           numericInput(
             "nsimcpsswnormal",
             "Number of simulations",
@@ -749,8 +765,8 @@ ui <- fluidPage(
         # cpa.sw.binary input start
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Binary' & input.meth == 'Analytic'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpaswbinary", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpaswbinary", "Number of Observations (per cluster)", value = 20),
           numericInput("stepscpaswbinary", "Number of crossover steps", value = 3),
           numericInput("dcpaswbinary", "Means difference", value = 1),
           numericInput("mu0cpaswbinary", "Baseline (arm 1) effect", value = 0.1),
@@ -768,8 +784,8 @@ ui <- fluidPage(
         # cps.sw.binary input start
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Binary' & input.meth == 'Simulation'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpsswbinary", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpsswbinary", "Number of Observations (per cluster)", value = 20),
           numericInput(
             "nsimcpsswbinary",
             "Number of simulations",
@@ -807,8 +823,8 @@ ui <- fluidPage(
         # cpa.sw.count input start
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Count' & input.meth == 'Analytic'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpaswcount", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpaswcount", "Number of Observations (per cluster)", value = 20),
           numericInput("stepscpaswcount", "Number of crossover steps", value = 3),
           numericInput(
             "ICCcpaswcount",
@@ -865,16 +881,16 @@ ui <- fluidPage(
         # cpa.irgtt.normal input start
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Analytic'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
-          numericInput("dcpairgttnormal", "Means difference", value = 1),
+          numericInput("nclusterscpairgttnormal", "Number of clusters in the clustered arm", value = 10),
+          numericInput("nsubjectscpairgttnormal", "Number of observations per cluster in the clustered arm", value = 20),
           numericInput(
             "ncontrolscpairgttnormal",
-            "Number of control subjects",
-            value = 10,
+            "Number of subjects in the unclustered arm",
+            value = 200,
             step = 1,
             min = 0
           ),
+          numericInput("dcpairgttnormal", "Means difference", value = 1),
           numericInput(
             "vareicpairgttnormal",
             "Intervention arm subject random error variance",
@@ -901,8 +917,9 @@ ui <- fluidPage(
         # cps.irgtt.normal input start
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Simulation'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpsirgttnormal", "Number of Clusters (in the clustered arm)", value = 10),
+          numericInput("nsubjectscpsirgttnormal", "Number of Observations (per cluster)", value = 20),
+          numericInput("nsubjects2cpsirgttnormal", "Number of Observations (in unclustered arm)", value = 200),
           numericInput(
             "nsimcpsirgttnormal",
             "Number of simulations",
@@ -953,8 +970,15 @@ ui <- fluidPage(
         # cpa.irgtt.binary input start
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Binary' & input.meth == 'Analytic'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpairgttbinary", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpairgttbinary", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "ncontrolscpairgttbinary",
+            "Number of control subjects",
+            value = 200,
+            step = 1,
+            min = 0
+          ),
           numericInput(
             "p1cpairgttbinary",
             "Outcome proportion (Arm 1)",
@@ -970,13 +994,6 @@ ui <- fluidPage(
             step = 0.001,
             min = 0,
             max = 1
-          ),
-          numericInput(
-            "ncontrolscpairgttbinary",
-            "Number of control subjects",
-            value = 10,
-            step = 1,
-            min = 0
           ),
           numericInput(
             "ICCcpairgttbinary",
@@ -996,8 +1013,9 @@ ui <- fluidPage(
         # cps.irgtt.binary input start
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Binary' & input.meth == 'Simulation'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpsirgttbinary", "Number of Clusters (in clustered arm)", value = 10),
+          numericInput("nsubjectscpsirgttbinary", "Number of Observations (per cluster)", value = 20),
+          numericInput("nsubjects2cpsirgttnormal", "Number of Observations (in unclustered arm)", value = 200),
           numericInput(
             "nsimcpsirgttbinary",
             "Number of simulations",
@@ -1046,8 +1064,9 @@ ui <- fluidPage(
         # cps.irgtt.count input start
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Count' & input.meth == 'Simulation'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpsirgttcount", "Number of Clusters (in clustered arm)", value = 10),
+          numericInput("nsubjectscpsirgttcount", "Number of Observations (per cluster)", value = 20),
+          numericInput("nsubjects2cpsirgttnormal", "Number of Observations (in unclustered arm)", value = 200),
           numericInput(
             "nsimcpsirgttcount",
             "Number of simulations",
@@ -1459,8 +1478,8 @@ server <- function(input, output, session) {
         cpa.normal(
           alpha = input$alpha,
           power = input$power,
-          nclusters = input$nclusters,
-          nsubjects = input$nsubjects,
+          nclusters = input$nclusterscpanormal,
+          nsubjects = input$nsubjectscpanormal,
           sigma_sq = input$sigma_sqcpanormal,
           sigma_b_sq = input$sigma_b_sqcpanormal,
           CV = input$CVcpanormal,
@@ -1475,8 +1494,8 @@ server <- function(input, output, session) {
       print(summary(
         cps.normal(
           nsim = input$nsimcpsnormal,
-          nclusters = input$nclusters,
-          nsubjects = input$nsubjects,
+          nclusters = input$nclusterscpsnormal,
+          nsubjects = input$nsubjectscpsnormal,
           mu = input$mucpsnormal,
           mu2 = input$mu2cpsnormal,
           ICC = input$ICCcpsnormal,
@@ -1499,8 +1518,8 @@ server <- function(input, output, session) {
         cpa.binary(
           alpha = input$alpha,
           power = input$power,
-          nclusters = input$nclusters,
-          nsubjects = input$nsubjects,
+          nclusters = input$nclusterscpabinary,
+          nsubjects = input$nsubjectscpabinary,
           CV = input$CVcpabinary,
           p1 = input$p1cpabinary,
           p2 = input$p2cpabinary,
@@ -1516,8 +1535,8 @@ server <- function(input, output, session) {
       print(summary(
         cps.binary(
           nsim = input$nsimcpsbinary,
-          nsubjects = input$nsubjects,
-          nclusters = input$nclusters,
+          nsubjects = input$nsubjectscpsbinary,
+          nclusters = input$nclusterscpsbinary,
           p1 = input$p1cpsbinary,
           p2 = input$p2cpsbinary,
           sigma_b_sq = input$sigma_b_sqcpsbinary,
@@ -1611,9 +1630,9 @@ server <- function(input, output, session) {
       print(
         cps.ma.binary(
           nsim = input$nsimcpsmabinary,
-          nsubjects = input$nsubjects,
+          nsubjects = input$nsubjectscpsmabinary,
           narms = input$narmscpsmabinary,
-          nclusters = input$nclusters,
+          nclusters = input$nclusterscpsmabinary,
           probs = input$probscpsmabinary,
           sigma_b_sq = input$sigma_b_sqcpsmabinary,
           alpha = input$alpha,
@@ -1635,9 +1654,9 @@ server <- function(input, output, session) {
       print(
         cps.ma.count(
           nsim = input$nsimcpsmacount,
-          nsubjects = input$nsubjects,
+          nsubjects = input$nsubjectscpsmacount,
           narms = input$narmscpsmacount,
-          nclusters = input$nclusters,
+          nclusters = input$nclusterscpsmacount,
           counts = input$countscpsmacount,
           sigma_b_sq = input$sigma_b_sqcpsmacount,
           alpha = input$alpha,
@@ -1657,8 +1676,8 @@ server <- function(input, output, session) {
         cpa.did.normal(
           alpha = input$alpha,
           power = input$power,
-          nclusters = input$nclusters,
-          nsubjects = input$nsubjects,
+          nclusters = input$nclusterscpadidnormal,
+          nsubjects = input$nsubjectscpadidnormal,
           d = input$dcpadidnormal,
           ICC = input$ICCcpadidnormal,
           rho_c = input$rho_ccpadidnormal,
@@ -1672,8 +1691,8 @@ server <- function(input, output, session) {
       print(summary(
         cps.did.normal(
           nsim = input$nsimcpsdidnormal,
-          nsubjects = input$nsubjects,
-          nclusters = input$nclusters,
+          nsubjects = input$nsubjectscpsdidnormal,
+          nclusters = input$nclusterscpsdidnormal,
           mu = input$mucpsdidnormal,
           mu2 = input$mu2cpsdidnormal,
           sigma_sq = input$sigma_sqcpsdidnormal,
@@ -1693,8 +1712,8 @@ server <- function(input, output, session) {
         cpa.did.binary(
           alpha = input$alpha,
           power = input$power,
-          nclusters = input$nclusters,
-          nsubjects = input$nsubjects,
+          nclusters = input$nclusterscpadidbinary,
+          nsubjects = input$nsubjectscpadidbinary,
           p = input$pcpadidbinary,
           d = input$dcpadidbinary,
           ICC = input$ICCcpadidbinary,
@@ -1708,8 +1727,8 @@ server <- function(input, output, session) {
       print(summary(
         cps.did.binary(
           nsim = input$nsimcpsdidbinary,
-          nsubjects = input$nsubjects,
-          nclusters = input$nclusters,
+          nsubjects = input$nsubjectscpsdidbinary,
+          nclusters = input$nclusterscpsdidbinary,
           p1 = input$p1cpsdidbinary,
           p2 = input$p2cpsdidbinary,
           sigma_b_sq0 = input$sigma_b_sq0cpsdidbinary,
@@ -1731,8 +1750,8 @@ server <- function(input, output, session) {
       print(summary(
         cps.did.count(
           nsim = input$nsimcpsdidcount,
-          nsubjects = input$nsubjects,
-          nclusters = input$nclusters,
+          nsubjects = input$nsubjectscpsdidcount,
+          nclusters = input$nclusterscpsdidcount,
           c1 = input$c1cpsdidcount,
           c2 = input$c2cpsdidcount,
           sigma_b_sq0 = input$sigma_b_sq0cpsdidcount,
@@ -1751,8 +1770,8 @@ server <- function(input, output, session) {
         cpa.sw.normal(
           alpha = input$alpha,
           power = input$power,
-          nclusters = input$nclusters,
-          nsubjects = input$nsubjects,
+          nclusters = input$nclusterscpaswnormal,
+          nsubjects = input$nsubjectscpaswnormal,
           ntimes = input$ntimescpaswnormal,
           d = input$dcpaswnormal,
           ICC = input$ICCcpaswnormal,
@@ -1768,8 +1787,8 @@ server <- function(input, output, session) {
         cps.sw.normal(
           alpha = input$alpha,
           power = input$power,
-          nclusters = input$nclusters,
-          nsubjects = input$nsubjects,
+          nclusters = input$nclusterscpaswnormal,
+          nsubjects = input$nsubjectscpaswnormal,
           ntimes = input$ntimescpaswnormal,
           d = input$dcpaswnormal,
           ICC = input$ICCcpaswnormal,
@@ -1783,9 +1802,9 @@ server <- function(input, output, session) {
         input$dist == 'Binary' && input$meth == 'Analytic') {
       print(
         cpa.sw.binary(
-          nclusters = input$nclusters,
+          nclusters = input$nclusterscpaswbinary,
           steps = input$stepscpaswbinary,
-          nsubjects = input$nsubjects,
+          nsubjects = input$nsubjectscpaswbinary,
           d = input$dcpaswbinary,
           ICC = input$ICCcpaswbinary,
           beta = input$betacpaswbinary,
@@ -1798,8 +1817,8 @@ server <- function(input, output, session) {
       print(summary(
         cps.sw.binary(
           nsim = input$nsimcpsswbinary,
-          nsubjects = input$nsubjects,
-          nclusters = input$nclusters,
+          nsubjects = input$nsubjectscpsswbinary,
+          nclusters = input$nclusterscpsswbinary,
           p1 = input$p1cpsswbinary,
           p2 = input$p2cpsswbinary,
           steps = input$stepscpsswbinary,
@@ -1818,9 +1837,9 @@ server <- function(input, output, session) {
         cpa.sw.count(
           lambda1 = input$lambda1cpaswcount,
           RR = input$RRcpaswcount,
-          nclusters = input$nclusters,
+          nclusters = input$nclusterscpaswcount,
           steps = input$stepscpaswcount,
-          nsubjects = input$nsubjects,
+          nsubjects = input$nsubjectscpaswcount,
           ICC = input$ICCcpaswcount,
           alpha = input$alpha
         )
@@ -1831,8 +1850,8 @@ server <- function(input, output, session) {
       print(summary(
         cps.sw.count(
           nsim = input$nsimcpsswcount,
-          nsubjects = input$nsubjects,
-          nclusters = input$nclusters,
+          nsubjects = input$nsubjectscpsswcount,
+          nclusters = input$nclusterscpsswcount,
           c1 = input$c1cpsswcount,
           c2 = input$c2cpsswcount,
           steps = input$stepscpsswcount,
@@ -1851,8 +1870,8 @@ server <- function(input, output, session) {
         cpa.irgtt.normal(
           alpha = input$alpha,
           power = input$power,
-          nclusters = input$nclusters,
-          nsubjects = input$nsubjects,
+          nclusters = input$nclusterscpairgttnormal,
+          nsubjects = input$nsubjectscpairgttnormal,
           ncontrols = input$ncontrolscpairgttnormal,
           d = input$dcpairgttnormal,
           varu = input$varucpairgttnormal,
@@ -1866,8 +1885,8 @@ server <- function(input, output, session) {
       print(summary(
         cps.irgtt.normal(
           nsim = input$nsimcpsirgttnormal,
-          nsubjects = input$nsubjects,
-          nclusters = input$nclusters,
+          nsubjects = input$nsubjectscpsirgttnormal,
+          nclusters = input$nclusterscpsirgttnormal,
           mu = input$mucpsirgttnormal,
           mu2 = input$mu2cpsirgttnormal,
           ICC = input$ICCcpsirgttnormal,
@@ -1890,8 +1909,8 @@ server <- function(input, output, session) {
         cpa.irgtt.binary(
           alpha = input$alpha,
           power = input$power,
-          nclusters = input$nclusters,
-          nsubjects = input$nsubjects,
+          nclusters = input$nclusterscpairgttbinary,
+          nsubjects = input$nsubjectscpairgttbinary,
           ncontrols = input$ncontrolscpairgttbinary,
           ICC = input$ICCcpairgttbinary,
           p2 = input$p2cpairgttbinary,
@@ -1905,8 +1924,8 @@ server <- function(input, output, session) {
       print(summary(
         cps.irgtt.binary(
           nsim = input$nsimcpsirgttbinary,
-          nsubjects = input$nsubjects,
-          nclusters = input$nclusters,
+          nsubjects = input$nsubjectscpsirgttbinary,
+          nclusters = input$nclusterscpsirgttbinary,
           p1 = input$p1cpsirgttbinary,
           p2 = input$p2cpsirgttbinary,
           sigma_b_sq = input$sigma_b_sqcpsirgttbinary,
@@ -1928,8 +1947,8 @@ server <- function(input, output, session) {
       print(summary(
         cps.irgtt.count(
           nsim = input$nsimcpsirgttcount,
-          nsubjects = input$nsubjects,
-          nclusters = input$nclusters,
+          nsubjects = input$nsubjectscpsirgttcount,
+          nclusters = input$nclusterscpsirgttcount,
           c1 = input$c1cpsirgttcount,
           c2 = input$c2cpsirgttcount,
           sigma_b_sq = input$sigma_b_sqcpsirgttcount,
