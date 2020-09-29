@@ -10,6 +10,9 @@
 library(shinythemes)
 library(shiny)
 library(shinyBS)
+library(promises)
+library(future)
+plan(multiprocess)
 
 get_vignette_link <- function(...) {
   x <- vignette(...)
@@ -1511,7 +1514,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      print(summary(
+      val <- print(summary(
         cps.normal(
           nsim = input$nsimcpsnormal,
           nclusters = input$nclusterscpsnormal,
@@ -1531,6 +1534,9 @@ server <- function(input, output, session) {
           lowPowerOverride = input$lowPowerOverride
         )
       ))
+      future({
+        val 
+      })
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
@@ -1552,7 +1558,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
-      print(summary(
+      val <- print(summary(
         cps.binary(
           nsim = input$nsimcpsbinary,
           nsubjects = input$nsubjectscpsbinary,
@@ -1568,6 +1574,9 @@ server <- function(input, output, session) {
           timelimitOverride = input$timelimitOverride
         )
       ))
+      future({
+        val 
+      })
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
@@ -1586,7 +1595,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      print(summary(
+      val <- print(summary(
         cps.count(
           nsim = input$nsimcpscount,
           nsubjects = input$nsubjectscpscount,
@@ -1602,6 +1611,9 @@ server <- function(input, output, session) {
           timelimitOverride = input$timelimitOverride
         )
       ))
+      future({
+        val 
+      })
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
@@ -1620,7 +1632,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      print(
+      val <- print(
         cps.ma.normal(
           nsim = input$nsimcpsmanormal,
           nsubjects = textToNum(input$nsubjectscpsmanormal),
@@ -1640,6 +1652,9 @@ server <- function(input, output, session) {
           timelimitOverride = input$timelimitOverride
         )
       )
+      future({
+        val 
+      })
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
@@ -1647,7 +1662,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
-      print(
+      val <- print(
         cps.ma.binary(
           nsim = input$nsimcpsmabinary,
           nsubjects = input$nsubjectscpsmabinary,
@@ -1664,6 +1679,9 @@ server <- function(input, output, session) {
           timelimitOverride = input$timelimitOverride
         )
       )
+      future({
+        val 
+      })
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
@@ -1671,7 +1689,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      print(
+      val <- print(
         cps.ma.count(
           nsim = input$nsimcpsmacount,
           nsubjects = input$nsubjectscpsmacount,
@@ -1688,6 +1706,9 @@ server <- function(input, output, session) {
           timelimitOverride = input$timelimitOverride
         )
       )
+      future({
+        val 
+      })
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
@@ -1707,7 +1728,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      print(summary(
+      val <- print(summary(
         cps.did.normal(
           nsim = input$nsimcpsdidnormal,
           nsubjects = input$nsubjectscpsdidnormal,
@@ -1724,6 +1745,9 @@ server <- function(input, output, session) {
           seed = input$seed
         )
       ))
+      future({
+        val 
+      })
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
@@ -1743,7 +1767,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
-      print(summary(
+      val <- print(summary(
         cps.did.binary(
           nsim = input$nsimcpsdidbinary,
           nsubjects = input$nsubjectscpsdidbinary,
@@ -1759,6 +1783,9 @@ server <- function(input, output, session) {
           seed = input$seed
         )
       ))
+      future({
+        val 
+      })
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
@@ -1766,7 +1793,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      print(summary(
+      val <- print(summary(
         cps.did.count(
           nsim = input$nsimcpsdidcount,
           nsubjects = input$nsubjectscpsdidcount,
@@ -1782,6 +1809,9 @@ server <- function(input, output, session) {
           seed = input$seed
         )
       ))
+      future({
+        val 
+      })
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
@@ -1802,7 +1832,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      print(summary(
+      val <- print(summary(
         cps.sw.normal(
           alpha = input$alpha,
           power = input$power,
@@ -1816,6 +1846,9 @@ server <- function(input, output, session) {
           vart = input$vartcpaswnormal
         )
       ))
+      future({
+        val 
+      })
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
@@ -1834,7 +1867,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
-      print(summary(
+      val <- print(summary(
         cps.sw.binary(
           nsim = input$nsimcpsswbinary,
           nsubjects = input$nsubjectscpsswbinary,
@@ -1850,6 +1883,9 @@ server <- function(input, output, session) {
           seed = input$seed
         )
       ))
+      future({
+        val 
+      })
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
@@ -1867,7 +1903,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      print(summary(
+      val <- print(summary(
         cps.sw.count(
           nsim = input$nsimcpsswcount,
           nsubjects = input$nsubjectscpsswcount,
@@ -1883,6 +1919,9 @@ server <- function(input, output, session) {
           seed = input$seed
         )
       ))
+      future({
+        val 
+      })
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
@@ -1902,7 +1941,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      print(summary(
+      val <- print(summary(
         cps.irgtt.normal(
           nsim = input$nsimcpsirgttnormal,
           nsubjects = c(input$nsubjectscpsirgttnormal, input$nsubjects2cpsirgttnormal),
@@ -1922,10 +1961,13 @@ server <- function(input, output, session) {
           timelimitOverride = input$timelimitOverride
         )
       ))
+      future({
+        val 
+      })
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
-      print(
+      val <- print(
         cpa.irgtt.binary(
           alpha = input$alpha,
           power = input$power,
@@ -1938,10 +1980,13 @@ server <- function(input, output, session) {
           decrease = input$decreasecpairgttbinary
         )
       )
+      future({
+        val 
+      })
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
-      print(summary(
+      val <- print(summary(
         cps.irgtt.binary(
           nsim = input$nsimcpsirgttbinary,
           nsubjects = c(input$nsubjectscpsirgttbinary, input$nsubjects2cpsirgttbinary),
@@ -1957,6 +2002,9 @@ server <- function(input, output, session) {
           seed = input$seed
         )
       ))
+      future({
+        val 
+      })
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
@@ -1964,7 +2012,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      print(summary(
+      val <- print(summary(
         cps.irgtt.count(
           nsim = input$nsimcpsirgttcount,
           nsubjects = c(input$nsubjectscpsirgttcount, input$nsubjects2cpsirgttcount),
@@ -1980,6 +2028,9 @@ server <- function(input, output, session) {
           seed = input$seed
         )
       ))
+      future({
+        val 
+      })
     }
   }) # end call the clusterPower functions
   ##################
