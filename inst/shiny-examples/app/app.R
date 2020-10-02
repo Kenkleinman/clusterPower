@@ -12,7 +12,11 @@ library(shiny)
 library(shinyBS)
 library(promises)
 library(future)
-plan(multiprocess)
+library(future.callr)
+library(shinyjs)
+library(V8)
+
+plan(callr)
 
 get_vignette_link <- function(...) {
   x <- vignette(...)
@@ -71,7 +75,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Analytic'",
           numericInput("nclusterscpanormal", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpanormal", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpanormal",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput("CVcpanormal", "Coefficient of variation (CV)", value = 0),
           numericInput("dcpanormal", "Means difference", value = 0.43),
           numericInput(
@@ -103,7 +111,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Normal' & input.meth == 'Simulation'",
           numericInput("nclusterscpsnormal", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpsnormal", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpsnormal",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput(
             "nsimcpsnormal",
             "Number of simulations",
@@ -163,7 +175,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Binary' & input.meth == 'Analytic'",
           numericInput("nclusterscpabinary", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpabinary", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpabinary",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput("CVcpabinary", "Coefficient of variation (CV)", value = 0),
           numericInput(
             "ICCcpabinary",
@@ -198,7 +214,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Binary' & input.meth == 'Simulation'",
           numericInput("nclusterscpsbinary", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpsbinary", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpsbinary",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput(
             "nsimcpsbinary",
             "Number of simulations",
@@ -242,7 +262,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Count' & input.meth == 'Analytic'",
           numericInput("nclusterscpacount", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpacount", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpacount",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput(
             "CVBcpacount",
             "Between-cluster coefficient of variation (CV)",
@@ -261,7 +285,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Parallel' & input.dist == 'Count' & input.meth == 'Simulation'",
           numericInput("nclusterscpscount", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpscount", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpscount",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput(
             "nsimcpscount",
             "Number of simulations",
@@ -417,7 +445,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Multi-Arm' & input.dist == 'Binary' & input.meth == 'Simulation'",
           numericInput("nclusterscpsmabinary", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpsmabinary", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpsmabinary",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput(
             "nsimcpsmabinary",
             "Number of simulations",
@@ -472,7 +504,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Multi-Arm' & input.dist == 'Count' & input.meth == 'Simulation'",
           numericInput("nclusterscpsmacount", "Number of Clusters", value = 25),
-          numericInput("nsubjectscpsmacount", "Number of Observations (per cluster)", value = 100),
+          numericInput(
+            "nsubjectscpsmacount",
+            "Number of Observations (per cluster)",
+            value = 100
+          ),
           numericInput(
             "nsimcpsmacount",
             "Number of simulations",
@@ -521,7 +557,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Normal' & input.meth == 'Analytic'",
           numericInput("nclusterscpadidnormal", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpadidnormal", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpadidnormal",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput("dcpadidnormal", "Means difference", value = 1.02),
           numericInput(
             "ICCcpadidnormal",
@@ -548,7 +588,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Normal' & input.meth == 'Simulation'",
           numericInput("nclusterscpsdidnormal", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpsdidnormal", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpsdidnormal",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput(
             "nsimcpsdidnormal",
             "Number of simulations",
@@ -585,7 +629,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Binary' & input.meth == 'Analytic'",
           numericInput("nclusterscpadidbinary", "Number of Clusters", value = 33),
-          numericInput("nsubjectscpadidbinary", "Number of Observations (per cluster)", value = 50),
+          numericInput(
+            "nsubjectscpadidbinary",
+            "Number of Observations (per cluster)",
+            value = 50
+          ),
           numericInput("dcpadidbinary", "Means difference", value = 0.1),
           numericInput("pcpadidbinary", "Mean post-test expected proportion", value = 0.5),
           numericInput(
@@ -612,7 +660,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Binary' & input.meth == 'Simulation'",
           numericInput("nclusterscpsdidbinary", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpsdidbinary", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpsdidbinary",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput(
             "nsimcpsdidbinary",
             "Number of simulations",
@@ -662,7 +714,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Difference-in-Difference' & input.dist == 'Count' & input.meth == 'Simulation'",
           numericInput("nclusterscpsdidcount", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpsdidcount", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpsdidcount",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput(
             "nsimcpsdidcount",
             "Number of simulations",
@@ -704,7 +760,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Normal' & input.meth == 'Analytic'",
           numericInput("nclusterscpaswnormal", "Number of Clusters", value = 5),
-          numericInput("nsubjectscpaswnormal", "Number of Observations (per cluster)", value = 12),
+          numericInput(
+            "nsubjectscpaswnormal",
+            "Number of Observations (per cluster)",
+            value = 12
+          ),
           numericInput(
             "ntimescpaswnormal",
             "Number of measurement time points",
@@ -738,7 +798,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Normal' & input.meth == 'Simulation'",
           numericInput("nclusterscpsswnormal", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpsswnormal", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpsswnormal",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput(
             "nsimcpsswnormal",
             "Number of simulations",
@@ -769,7 +833,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Binary' & input.meth == 'Analytic'",
           numericInput("nclusterscpaswbinary", "Number of Clusters", value = 50),
-          numericInput("nsubjectscpaswbinary", "Number of Observations (per cluster)", value = 100),
+          numericInput(
+            "nsubjectscpaswbinary",
+            "Number of Observations (per cluster)",
+            value = 100
+          ),
           numericInput("stepscpaswbinary", "Number of crossover steps", value = 2),
           numericInput("dcpaswbinary", "Means difference", value = -0.75),
           numericInput("mu0cpaswbinary", "Baseline (arm 1) effect", value = 0.2),
@@ -788,7 +856,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Binary' & input.meth == 'Simulation'",
           numericInput("nclusterscpsswbinary", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpsswbinary", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpsswbinary",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput(
             "nsimcpsswbinary",
             "Number of simulations",
@@ -827,7 +899,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Stepped Wedge' & input.dist == 'Count' & input.meth == 'Analytic'",
           numericInput("nclusterscpaswcount", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpaswcount", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpaswcount",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput("stepscpaswcount", "Number of crossover steps", value = 3),
           numericInput(
             "ICCcpaswcount",
@@ -884,8 +960,16 @@ ui <- fluidPage(
         # cpa.irgtt.normal input start
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Analytic'",
-          numericInput("nclusterscpairgttnormal", "Number of clusters in the clustered arm", value = 8),
-          numericInput("nsubjectscpairgttnormal", "Number of observations per cluster in the clustered arm", value = 15),
+          numericInput(
+            "nclusterscpairgttnormal",
+            "Number of clusters in the clustered arm",
+            value = 8
+          ),
+          numericInput(
+            "nsubjectscpairgttnormal",
+            "Number of observations per cluster in the clustered arm",
+            value = 15
+          ),
           numericInput(
             "ncontrolscpairgttnormal",
             "Number of subjects in the unclustered arm",
@@ -920,9 +1004,21 @@ ui <- fluidPage(
         # cps.irgtt.normal input start
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Normal' & input.meth == 'Simulation'",
-          numericInput("nclusterscpsirgttnormal", "Number of Clusters (in the clustered arm)", value = 10),
-          numericInput("nsubjectscpsirgttnormal", "Number of Observations (per cluster)", value = 20),
-          numericInput("nsubjects2cpsirgttnormal", "Number of Observations (in unclustered arm)", value = 200),
+          numericInput(
+            "nclusterscpsirgttnormal",
+            "Number of Clusters (in the clustered arm)",
+            value = 10
+          ),
+          numericInput(
+            "nsubjectscpsirgttnormal",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
+          numericInput(
+            "nsubjects2cpsirgttnormal",
+            "Number of Observations (in unclustered arm)",
+            value = 200
+          ),
           numericInput(
             "nsimcpsirgttnormal",
             "Number of simulations",
@@ -974,7 +1070,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Binary' & input.meth == 'Analytic'",
           numericInput("nclusterscpairgttbinary", "Number of Clusters", value = 10),
-          numericInput("nsubjectscpairgttbinary", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpairgttbinary",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput(
             "ncontrolscpairgttbinary",
             "Number of control subjects",
@@ -1016,9 +1116,21 @@ ui <- fluidPage(
         # cps.irgtt.binary input start
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Binary' & input.meth == 'Simulation'",
-          numericInput("nclusterscpsirgttbinary", "Number of Clusters (in clustered arm)", value = 10),
-          numericInput("nsubjectscpsirgttbinary", "Number of Observations (per cluster)", value = 20),
-          numericInput("nsubjects2cpsirgttnormal", "Number of Observations (in unclustered arm)", value = 200),
+          numericInput(
+            "nclusterscpsirgttbinary",
+            "Number of Clusters (in clustered arm)",
+            value = 10
+          ),
+          numericInput(
+            "nsubjectscpsirgttbinary",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
+          numericInput(
+            "nsubjects2cpsirgttnormal",
+            "Number of Observations (in unclustered arm)",
+            value = 200
+          ),
           numericInput(
             "nsimcpsirgttbinary",
             "Number of simulations",
@@ -1067,9 +1179,21 @@ ui <- fluidPage(
         # cps.irgtt.count input start
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' & input.dist == 'Count' & input.meth == 'Simulation'",
-          numericInput("nclusterscpsirgttcount", "Number of Clusters (in clustered arm)", value = 10),
-          numericInput("nsubjectscpsirgttcount", "Number of Observations (per cluster)", value = 20),
-          numericInput("nsubjects2cpsirgttnormal", "Number of Observations (in unclustered arm)", value = 200),
+          numericInput(
+            "nclusterscpsirgttcount",
+            "Number of Clusters (in clustered arm)",
+            value = 10
+          ),
+          numericInput(
+            "nsubjectscpsirgttcount",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
+          numericInput(
+            "nsubjects2cpsirgttnormal",
+            "Number of Observations (in unclustered arm)",
+            value = 200
+          ),
           numericInput(
             "nsimcpsirgttcount",
             "Number of simulations",
@@ -1129,7 +1253,9 @@ ui <- fluidPage(
           min = 0.01,
           max = 0.1,
           step = 0.02
-        )
+        ),
+        checkboxInput("verbose", "Show verbose results", value = FALSE),
+        checkboxInput("debug", "Show debug/diagnostics tab (advanced)", value = FALSE),
       ),
       conditionalPanel(
         "input.more == true & input.meth == 'Simulation'",
@@ -1163,39 +1289,36 @@ ui <- fluidPage(
     # Tabs start
     ########################
     mainPanel(tabsetPanel(
-      ####  DEBUG ACCESS PANEL START #####
-      
-      tabPanel(
-        "DEBUG",
-        actionButton("browser", "browser"),
-        tableOutput("show_inputs"),
-      ),
-      
-      #### DEBUG ACCESS PANEL END #####
-      
       tabPanel(
         "Results",
-        conditionalPanel(
-          "input.meth == 'Simulation'",
-        wellPanel(
-          HTML(
-            "<p>Note: If the estimated calculation time is longer than 3 minutes,
-            the process will not run unless you override the time limit 
+        conditionalPanel("input.meth == 'Simulation'",
+                         wellPanel(
+                           HTML(
+                             "<p>Note: If the estimated calculation time is longer than 3 minutes,
+            the process will not run unless you override the time limit
             under advanced options.</p>"
-          )
-        )
-        ),
+                           )
+                         )),
         conditionalPanel(
-          "input.type == 'Stepped Wedge' & input.dist == 'Binary' & 
+          "input.type == 'Stepped Wedge' & input.dist == 'Binary' &
           input.meth == 'Analytic' & input.stepscpaswbinary > 3",
           wellPanel(
             HTML(
-              "<p>Note: Crossover steps > 3 will substantially increase 
+              "<p>Note: Crossover steps > 3 will substantially increase
               calculation time. </p>"
             )
           )
         ),
-        shinycssloaders::withSpinner(verbatimTextOutput("CRTpower", placeholder = TRUE))
+        verbatimTextOutput("CRTpower", placeholder = TRUE),
+        
+        ####  DEBUG ACCESS PANEL START #####
+        conditionalPanel(
+          "input.debug == true",
+          actionButton("browser", "browser"),
+          tableOutput("show_inputs"),
+        )
+        
+        #### DEBUG ACCESS PANEL END #####
       ),
       tabPanel(
         "Parameters",
@@ -1310,6 +1433,9 @@ ui <- fluidPage(
 
 ######################################
 server <- function(input, output, session) {
+  disable("cancel")
+  out1 <- reactiveValues(power = NULL)
+  
   # Reload the app
   observeEvent(input$reload, {
     session$reload()
@@ -1346,7 +1472,7 @@ server <- function(input, output, session) {
                          names(formals(fxnName))))
     arghelper <- function(argname) {
       x <- paste0("input$", argname)
-    #  x <- eval(parse(text = x))
+      #  x <- eval(parse(text = x))
       return(x)
     }
     holder <- list()
@@ -1494,547 +1620,638 @@ server <- function(input, output, session) {
   }) # end update help documentation and params table when function is selected
   
   # call the clusterPower functions
-  answer <- eventReactive(input$button, {
+  observeEvent(input$button, {
+    disable("button")
+    enable("cancel")
+    
+    prog <- Progress$new(session)
+    prog$set(message = "Analysis in progress",
+             detail = "This may take a while...",
+             value = NULL)
+    
+    isolate({
+      q <- reactiveValuesToList(input)
+    })
+    
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
-      print(
-        cpa.normal(
-          alpha = input$alpha,
-          power = input$power,
-          nclusters = input$nclusterscpanormal,
-          nsubjects = input$nsubjectscpanormal,
-          sigma_sq = input$sigma_sqcpanormal,
-          sigma_b_sq = input$sigma_b_sqcpanormal,
-          CV = input$CVcpanormal,
-          d = input$dcpanormal,
-          ICC = input$ICCcpanormal,
-          vart = input$vartcpanormal
+      answer <<- future({
+        val <- print(
+          cpa.normal(
+            alpha = q$alpha,
+            power = q$power,
+            nclusters = q$nclusterscpanormal,
+            nsubjects = q$nsubjectscpanormal,
+            sigma_sq = q$sigma_sqcpanormal,
+            sigma_b_sq = q$sigma_b_sqcpanormal,
+            CV = q$CVcpanormal,
+            d = q$dcpanormal,
+            ICC = q$ICCcpanormal,
+            vart = q$vartcpanormal
+          )
         )
-      )
+        return(val)
+      })
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      val <- print(summary(
-        cps.normal(
-          nsim = input$nsimcpsnormal,
-          nclusters = input$nclusterscpsnormal,
-          nsubjects = input$nsubjectscpsnormal,
-          mu = input$mucpsnormal,
-          mu2 = input$mu2cpsnormal,
-          ICC = input$ICCcpsnormal,
-          sigma_sq = input$sigma_sqcpsnormal,
-          sigma_b_sq = input$sigma_b_sqcpsnormal,
-          ICC2 = input$ICC2cpsnormal,
-          sigma_sq2 = input$sigma_sq2cpsnormal,
-          sigma_b_sq2 = input$sigma_b_sq2cpsnormal,
-          alpha = input$alpha,
-          seed = input$seed,
-          poorFitOverride = input$poorFitOverride,
-          timelimitOverride = input$timelimitOverride,
-          lowPowerOverride = input$lowPowerOverride
+      answer <<- future({
+        val <- print(
+          cps.normal(
+            nsim = q$nsimcpsnormal,
+            nclusters = q$nclusterscpsnormal,
+            nsubjects = q$nsubjectscpsnormal,
+            mu = q$mucpsnormal,
+            mu2 = q$mu2cpsnormal,
+            ICC = q$ICCcpsnormal,
+            sigma_sq = q$sigma_sqcpsnormal,
+            sigma_b_sq = q$sigma_b_sqcpsnormal,
+            ICC2 = q$ICC2cpsnormal,
+            sigma_sq2 = q$sigma_sq2cpsnormal,
+            sigma_b_sq2 = q$sigma_b_sq2cpsnormal,
+            alpha = q$alpha,
+            seed = q$seed,
+            poorFitOverride = q$poorFitOverride,
+            timelimitOverride = q$timelimitOverride,
+            lowPowerOverride = q$lowPowerOverride
+          )
         )
-      ))
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
-      print(
-        cpa.binary(
-          alpha = input$alpha,
-          power = input$power,
-          nclusters = input$nclusterscpabinary,
-          nsubjects = input$nsubjectscpabinary,
-          CV = input$CVcpabinary,
-          p1 = input$p1cpabinary,
-          p2 = input$p2cpabinary,
-          ICC = input$ICCcpabinary,
-          pooled = input$pooledcpabinary,
-          p1inc = input$p1inccpabinary,
-          tdist = input$tdistcpabinary
+      answer <<- future({
+        val <- print(
+          cpa.binary(
+            alpha = q$alpha,
+            power = q$power,
+            nclusters = q$nclusterscpabinary,
+            nsubjects = q$nsubjectscpabinary,
+            CV = q$CVcpabinary,
+            p1 = q$p1cpabinary,
+            p2 = q$p2cpabinary,
+            ICC = q$ICCcpabinary,
+            pooled = q$pooledcpabinary,
+            p1inc = q$p1inccpabinary,
+            tdist = q$tdistcpabinary
+          )
         )
-      )
-    }
-    if (input$type == 'Parallel' &&
-        input$dist == 'Binary' && input$meth == 'Simulation') {
-      val <- print(summary(
-        cps.binary(
-          nsim = input$nsimcpsbinary,
-          nsubjects = input$nsubjectscpsbinary,
-          nclusters = input$nclusterscpsbinary,
-          p1 = input$p1cpsbinary,
-          p2 = input$p2cpsbinary,
-          sigma_b_sq = input$sigma_b_sqcpsbinary,
-          sigma_b_sq2 = input$sigma_b_sq2cpsbinary,
-          alpha = input$alpha,
-          seed = input$seed,
-          poorFitOverride = input$poorFitOverride,
-          lowPowerOverride = input$lowPowerOverride,
-          timelimitOverride = input$timelimitOverride
-        )
-      ))
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Parallel' &&
-        input$dist == 'Count' && input$meth == 'Analytic') {
-      print(
-        cpa.count(
-          alpha = input$alpha,
-          power = input$power,
-          nclusters = input$nclusterscpacount,
-          nsubjects = input$nsubjectscpacount,
-          r1 = input$r1cpacount,
-          r2 = input$r2cpacount,
-          CVB = input$CVBcpacount,
-          r1inc = input$r1inccpacount
+        input$dist == 'Binary' && input$meth == 'Simulation') {
+      answer <<- future({
+        val <- print(
+          cps.binary(
+            nsim = q$nsimcpsbinary,
+            nsubjects = q$nsubjectscpsbinary,
+            nclusters = q$nclusterscpsbinary,
+            p1 = q$p1cpsbinary,
+            p2 = q$p2cpsbinary,
+            sigma_b_sq = q$sigma_b_sqcpsbinary,
+            sigma_b_sq2 = q$sigma_b_sq2cpsbinary,
+            alpha = q$alpha,
+            seed = q$seed,
+            poorFitOverride = q$poorFitOverride,
+            lowPowerOverride = q$lowPowerOverride,
+            timelimitOverride = q$timelimitOverride
+          )
         )
-      )
+        return(val)
+      })
+    }
+    if (input$type == 'Parallel' &&
+        input$dist == 'Count' && input$meth == 'Analytic') {
+      answer <<- future({
+        val <- print(
+          cpa.count(
+            alpha = q$alpha,
+            power = q$power,
+            nclusters = q$nclusterscpacount,
+            nsubjects = q$nsubjectscpacount,
+            r1 = q$r1cpacount,
+            r2 = q$r2cpacount,
+            CVB = q$CVBcpacount,
+            r1inc = q$r1inccpacount
+          )
+        )
+        return(val)
+      })
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      val <- print(summary(
-        cps.count(
-          nsim = input$nsimcpscount,
-          nsubjects = input$nsubjectscpscount,
-          nclusters = input$nclusterscpscount,
-          c1 = input$c1cpscount,
-          c2 = input$c2cpscount,
-          sigma_b_sq = input$sigma_b_sqcpscount,
-          sigma_b_sq2 = input$sigma_b_sq2cpscount,
-          alpha = input$alpha,
-          seed = input$seed,
-          poorFitOverride = input$poorFitOverride,
-          lowPowerOverride = input$lowPowerOverride,
-          timelimitOverride = input$timelimitOverride
+      answer <<- future({
+        val <- print(
+          cps.count(
+            nsim = q$nsimcpscount,
+            nsubjects = q$nsubjectscpscount,
+            nclusters = q$nclusterscpscount,
+            c1 = q$c1cpscount,
+            c2 = q$c2cpscount,
+            sigma_b_sq = q$sigma_b_sqcpscount,
+            sigma_b_sq2 = q$sigma_b_sq2cpscount,
+            alpha = q$alpha,
+            seed = q$seed,
+            poorFitOverride = q$poorFitOverride,
+            lowPowerOverride = q$lowPowerOverride,
+            timelimitOverride = q$timelimitOverride
+          )
         )
-      ))
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
-      print(
-        cpa.ma.normal(
-          alpha = input$alpha,
-          power = input$power,
-          narms = input$narmscpamanormal,
-          nclusters = input$nclusterscpamanormal,
-          nsubjects = input$nsubjectscpamanormal,
-          vara = input$varacpamanormal,
-          varc = input$varccpamanormal,
-          vare = input$varecpamanormal
+      answer <<- future({
+        val <- print(
+          cpa.ma.normal(
+            alpha = q$alpha,
+            power = q$power,
+            narms = q$narmscpamanormal,
+            nclusters = q$nclusterscpamanormal,
+            nsubjects = q$nsubjectscpamanormal,
+            vara = q$varacpamanormal,
+            varc = q$varccpamanormal,
+            vare = q$varecpamanormal
+          )
         )
-      )
+        return(val)
+      })
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      val <- print(
-        cps.ma.normal(
-          nsim = input$nsimcpsmanormal,
-          nsubjects = textToNum(input$nsubjectscpsmanormal),
-          narms = input$narmscpsmanormal,
-          nclusters = textToNum(input$nclusterscpsmanormal),
-          means = textToNum(input$meanscpsmanormal),
-          sigma_sq = textToNum(input$sigma_sqcpsmanormal),
-          sigma_b_sq = textToNum(input$sigma_b_sqcpsmanormal),
-          alpha = input$alpha,
-          ICC = textToNum(input$ICCcpsmanormal),
-          multi_p_method = input$multi_p_methodcpsmanormal,
-          seed = input$seed,
-          poorFitOverride = input$poorFitOverride,
-          lowPowerOverride = input$lowPowerOverride,
-          tdist = input$tdistcpsmanormal,
-          optmethod = input$optmethod,
-          timelimitOverride = input$timelimitOverride
+      answer <<- future({
+        val <- print(
+          cps.ma.normal(
+            nsim = q$nsimcpsmanormal,
+            nsubjects = textToNum(q$nsubjectscpsmanormal),
+            narms = q$narmscpsmanormal,
+            nclusters = textToNum(q$nclusterscpsmanormal),
+            means = textToNum(q$meanscpsmanormal),
+            sigma_sq = textToNum(q$sigma_sqcpsmanormal),
+            sigma_b_sq = textToNum(q$sigma_b_sqcpsmanormal),
+            alpha = q$alpha,
+            ICC = textToNum(q$ICCcpsmanormal),
+            multi_p_method = q$multi_p_methodcpsmanormal,
+            seed = q$seed,
+            poorFitOverride = q$poorFitOverride,
+            lowPowerOverride = q$lowPowerOverride,
+            tdist = q$tdistcpsmanormal,
+            optmethod = q$optmethod,
+            timelimitOverride = q$timelimitOverride
+          )
         )
-      )
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
-      print(cpa.ma.binary())
+      answer <<- future({
+        val <- print(cpa.ma.binary())
+        return(val)
+      })
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
-      val <- print(
-        cps.ma.binary(
-          nsim = input$nsimcpsmabinary,
-          nsubjects = input$nsubjectscpsmabinary,
-          narms = input$narmscpsmabinary,
-          nclusters = input$nclusterscpsmabinary,
-          probs = input$probscpsmabinary,
-          sigma_b_sq = input$sigma_b_sqcpsmabinary,
-          alpha = input$alpha,
-          multi_p_method = input$multi_p_methodcpsmabinary,
-          seed = input$seed,
-          tdist = input$tdistcpsmabinary,
-          poorFitOverride = input$poorFitOverride,
-          lowPowerOverride = input$lowPowerOverride,
-          timelimitOverride = input$timelimitOverride
+      answer <<- future({
+        val <- print(
+          cps.ma.binary(
+            nsim = q$nsimcpsmabinary,
+            nsubjects = q$nsubjectscpsmabinary,
+            narms = q$narmscpsmabinary,
+            nclusters = q$nclusterscpsmabinary,
+            probs = q$probscpsmabinary,
+            sigma_b_sq = q$sigma_b_sqcpsmabinary,
+            alpha = q$alpha,
+            multi_p_method = q$multi_p_methodcpsmabinary,
+            seed = q$seed,
+            tdist = q$tdistcpsmabinary,
+            poorFitOverride = q$poorFitOverride,
+            lowPowerOverride = q$lowPowerOverride,
+            timelimitOverride = q$timelimitOverride
+          )
         )
-      )
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
-      print(cpa.ma.count())
+      answer <<- future({
+        val <- print(cpa.ma.count())
+        return(val)
+      })
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      val <- print(
-        cps.ma.count(
-          nsim = input$nsimcpsmacount,
-          nsubjects = input$nsubjectscpsmacount,
-          narms = input$narmscpsmacount,
-          nclusters = input$nclusterscpsmacount,
-          counts = input$countscpsmacount,
-          sigma_b_sq = input$sigma_b_sqcpsmacount,
-          alpha = input$alpha,
-          multi_p_method = input$multi_p_methodcpsmacount,
-          seed = input$seed,
-          tdist = input$tdistcpsmacount,
-          poorFitOverride = input$poorFitOverride,
-          lowPowerOverride = input$lowPowerOverride,
-          timelimitOverride = input$timelimitOverride
+      answer <<- future({
+        val <- print(
+          cps.ma.count(
+            nsim = q$nsimcpsmacount,
+            nsubjects = q$nsubjectscpsmacount,
+            narms = q$narmscpsmacount,
+            nclusters = q$nclusterscpsmacount,
+            counts = q$countscpsmacount,
+            sigma_b_sq = q$sigma_b_sqcpsmacount,
+            alpha = q$alpha,
+            multi_p_method = q$multi_p_methodcpsmacount,
+            seed = q$seed,
+            tdist = q$tdistcpsmacount,
+            poorFitOverride = q$poorFitOverride,
+            lowPowerOverride = q$lowPowerOverride,
+            timelimitOverride = q$timelimitOverride
+          )
         )
-      )
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
-      print(
-        cpa.did.normal(
-          alpha = input$alpha,
-          power = input$power,
-          nclusters = input$nclusterscpadidnormal,
-          nsubjects = input$nsubjectscpadidnormal,
-          d = input$dcpadidnormal,
-          ICC = input$ICCcpadidnormal,
-          rho_c = input$rho_ccpadidnormal,
-          rho_s = input$rho_scpadidnormal,
-          vart = input$vartcpadidnormal
+      answer <<- future({
+        val <- print(
+          cpa.did.normal(
+            alpha = q$alpha,
+            power = q$power,
+            nclusters = q$nclusterscpadidnormal,
+            nsubjects = q$nsubjectscpadidnormal,
+            d = q$dcpadidnormal,
+            ICC = q$ICCcpadidnormal,
+            rho_c = q$rho_ccpadidnormal,
+            rho_s = q$rho_scpadidnormal,
+            vart = q$vartcpadidnormal
+          )
         )
-      )
+        return(val)
+      })
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      val <- print(summary(
-        cps.did.normal(
-          nsim = input$nsimcpsdidnormal,
-          nsubjects = input$nsubjectscpsdidnormal,
-          nclusters = input$nclusterscpsdidnormal,
-          mu = input$mucpsdidnormal,
-          mu2 = input$mu2cpsdidnormal,
-          sigma_sq = input$sigma_sqcpsdidnormal,
-          sigma_b_sq0 = input$sigma_b_sq0cpsdidnormal,
-          sigma_b_sq1 = input$sigma_b_sq1cpsdidnormal,
-          alpha = input$alpha,
-          poorFitOverride = input$poorFitOverride,
-          lowPowerOverride = input$lowPowerOverride,
-          timelimitOverride = input$timelimitOverride,
-          seed = input$seed
+      answer <<- future({
+        val <- print(
+          cps.did.normal(
+            nsim = q$nsimcpsdidnormal,
+            nsubjects = q$nsubjectscpsdidnormal,
+            nclusters = q$nclusterscpsdidnormal,
+            mu = q$mucpsdidnormal,
+            mu2 = q$mu2cpsdidnormal,
+            sigma_sq = q$sigma_sqcpsdidnormal,
+            sigma_b_sq0 = q$sigma_b_sq0cpsdidnormal,
+            sigma_b_sq1 = q$sigma_b_sq1cpsdidnormal,
+            alpha = q$alpha,
+            poorFitOverride = q$poorFitOverride,
+            lowPowerOverride = q$lowPowerOverride,
+            timelimitOverride = q$timelimitOverride,
+            seed = q$seed
+          )
         )
-      ))
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
-      print(
-        cpa.did.binary(
-          alpha = input$alpha,
-          power = input$power,
-          nclusters = input$nclusterscpadidbinary,
-          nsubjects = input$nsubjectscpadidbinary,
-          p = input$pcpadidbinary,
-          d = input$dcpadidbinary,
-          ICC = input$ICCcpadidbinary,
-          rho_c = input$rho_ccpadidbinary,
-          rho_s = input$rho_scpadidbinary
+      answer <<- future({
+        val <- print(
+          cpa.did.binary(
+            alpha = q$alpha,
+            power = q$power,
+            nclusters = q$nclusterscpadidbinary,
+            nsubjects = q$nsubjectscpadidbinary,
+            p = q$pcpadidbinary,
+            d = q$dcpadidbinary,
+            ICC = q$ICCcpadidbinary,
+            rho_c = q$rho_ccpadidbinary,
+            rho_s = q$rho_scpadidbinary
+          )
         )
-      )
+        return(val)
+      })
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
-      val <- print(summary(
-        cps.did.binary(
-          nsim = input$nsimcpsdidbinary,
-          nsubjects = input$nsubjectscpsdidbinary,
-          nclusters = input$nclusterscpsdidbinary,
-          p1 = input$p1cpsdidbinary,
-          p2 = input$p2cpsdidbinary,
-          sigma_b_sq0 = input$sigma_b_sq0cpsdidbinary,
-          sigma_b_sq1 = input$sigma_b_sq1cpsdidbinary,
-          alpha = input$alpha,
-          poorFitOverride = input$poorFitOverride,
-          lowPowerOverride = input$lowPowerOverride,
-          timelimitOverride = input$timelimitOverride,
-          seed = input$seed
+      answer <<- future({
+        val <- print(
+          cps.did.binary(
+            nsim = q$nsimcpsdidbinary,
+            nsubjects = q$nsubjectscpsdidbinary,
+            nclusters = q$nclusterscpsdidbinary,
+            p1 = q$p1cpsdidbinary,
+            p2 = q$p2cpsdidbinary,
+            sigma_b_sq0 = q$sigma_b_sq0cpsdidbinary,
+            sigma_b_sq1 = q$sigma_b_sq1cpsdidbinary,
+            alpha = q$alpha,
+            poorFitOverride = q$poorFitOverride,
+            lowPowerOverride = q$lowPowerOverride,
+            timelimitOverride = q$timelimitOverride,
+            seed = q$seed
+          )
         )
-      ))
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
-      print(cpa.did.count())
+      answer <<- future({
+        val <- print(cpa.did.count())
+        return(val)
+      })
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      val <- print(summary(
-        cps.did.count(
-          nsim = input$nsimcpsdidcount,
-          nsubjects = input$nsubjectscpsdidcount,
-          nclusters = input$nclusterscpsdidcount,
-          c1 = input$c1cpsdidcount,
-          c2 = input$c2cpsdidcount,
-          sigma_b_sq0 = input$sigma_b_sq0cpsdidcount,
-          sigma_b_sq1 = input$sigma_b_sq1cpsdidcount,
-          alpha = input$alpha,
-          poorFitOverride = input$poorFitOverride,
-          lowPowerOverride = input$lowPowerOverride,
-          timelimitOverride = input$timelimitOverride,
-          seed = input$seed
+      answer <<- future({
+        val <- print(
+          cps.did.count(
+            nsim = q$nsimcpsdidcount,
+            nsubjects = q$nsubjectscpsdidcount,
+            nclusters = q$nclusterscpsdidcount,
+            c1 = q$c1cpsdidcount,
+            c2 = q$c2cpsdidcount,
+            sigma_b_sq0 = q$sigma_b_sq0cpsdidcount,
+            sigma_b_sq1 = q$sigma_b_sq1cpsdidcount,
+            alpha = q$alpha,
+            poorFitOverride = q$poorFitOverride,
+            lowPowerOverride = q$lowPowerOverride,
+            timelimitOverride = q$timelimitOverride,
+            seed = q$seed
+          )
         )
-      ))
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
-      print(
-        cpa.sw.normal(
-          alpha = input$alpha,
-          power = input$power,
-          nclusters = input$nclusterscpaswnormal,
-          nsubjects = input$nsubjectscpaswnormal,
-          ntimes = input$ntimescpaswnormal,
-          d = input$dcpaswnormal,
-          ICC = input$ICCcpaswnormal,
-          rho_c = input$rho_ccpaswnormal,
-          rho_s = input$rho_scpaswnormal,
-          vart = input$vartcpaswnormal
+      answer <<- future({
+        val <- print(
+          cpa.sw.normal(
+            alpha = q$alpha,
+            power = q$power,
+            nclusters = q$nclusterscpaswnormal,
+            nsubjects = q$nsubjectscpaswnormal,
+            ntimes = q$ntimescpaswnormal,
+            d = q$dcpaswnormal,
+            ICC = q$ICCcpaswnormal,
+            rho_c = q$rho_ccpaswnormal,
+            rho_s = q$rho_scpaswnormal,
+            vart = q$vartcpaswnormal
+          )
         )
-      )
+        return(val)
+      })
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      val <- print(summary(
-        cps.sw.normal(
-          alpha = input$alpha,
-          power = input$power,
-          nclusters = input$nclusterscpaswnormal,
-          nsubjects = input$nsubjectscpaswnormal,
-          ntimes = input$ntimescpaswnormal,
-          d = input$dcpaswnormal,
-          ICC = input$ICCcpaswnormal,
-          rho_c = input$rho_ccpaswnormal,
-          rho_s = input$rho_scpaswnormal,
-          vart = input$vartcpaswnormal
+      answer <<- future({
+        val <- print(
+          cps.sw.normal(
+            alpha = q$alpha,
+            power = q$power,
+            nclusters = q$nclusterscpaswnormal,
+            nsubjects = q$nsubjectscpaswnormal,
+            ntimes = q$ntimescpaswnormal,
+            d = q$dcpaswnormal,
+            ICC = q$ICCcpaswnormal,
+            rho_c = q$rho_ccpaswnormal,
+            rho_s = q$rho_scpaswnormal,
+            vart = q$vartcpaswnormal
+          )
         )
-      ))
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
-      print(
-        cpa.sw.binary(
-          alpha = input$alpha,
-          nclusters = input$nclusterscpaswbinary,
-          steps = input$stepscpaswbinary,
-          nsubjects = input$nsubjectscpaswbinary,
-          d = input$dcpaswbinary,
-          ICC = input$ICCcpaswbinary,
-          beta = input$betacpaswbinary,
-          mu0 = input$mu0cpaswbinary
+      answer <<- future({
+        val <- print(
+          cpa.sw.binary(
+            alpha = q$alpha,
+            nclusters = q$nclusterscpaswbinary,
+            steps = q$stepscpaswbinary,
+            nsubjects = q$nsubjectscpaswbinary,
+            d = q$dcpaswbinary,
+            ICC = q$ICCcpaswbinary,
+            beta = q$betacpaswbinary,
+            mu0 = q$mu0cpaswbinary
+          )
         )
-      )
+        return(val)
+      })
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
-      val <- print(summary(
-        cps.sw.binary(
-          nsim = input$nsimcpsswbinary,
-          nsubjects = input$nsubjectscpsswbinary,
-          nclusters = input$nclusterscpsswbinary,
-          p1 = input$p1cpsswbinary,
-          p2 = input$p2cpsswbinary,
-          steps = input$stepscpsswbinary,
-          sigma_b_sq = input$sigma_b_sqcpsswbinary,
-          alpha = input$alpha,
-          poorFitOverride = input$poorFitOverride,
-          lowPowerOverride = input$lowPowerOverride,
-          timelimitOverride = input$timelimitOverride,
-          seed = input$seed
+      answer <<- future({
+        val <- print(
+          cps.sw.binary(
+            nsim = q$nsimcpsswbinary,
+            nsubjects = q$nsubjectscpsswbinary,
+            nclusters = q$nclusterscpsswbinary,
+            p1 = q$p1cpsswbinary,
+            p2 = q$p2cpsswbinary,
+            steps = q$stepscpsswbinary,
+            sigma_b_sq = q$sigma_b_sqcpsswbinary,
+            alpha = q$alpha,
+            poorFitOverride = q$poorFitOverride,
+            lowPowerOverride = q$lowPowerOverride,
+            timelimitOverride = q$timelimitOverride,
+            seed = q$seed
+          )
         )
-      ))
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
-      print(
-        cpa.sw.count(
-          lambda1 = input$lambda1cpaswcount,
-          RR = input$RRcpaswcount,
-          nclusters = input$nclusterscpaswcount,
-          steps = input$stepscpaswcount,
-          nsubjects = input$nsubjectscpaswcount,
-          ICC = input$ICCcpaswcount,
-          alpha = input$alpha
+      answer <<- future({
+        val <- print(
+          cpa.sw.count(
+            lambda1 = q$lambda1cpaswcount,
+            RR = q$RRcpaswcount,
+            nclusters = q$nclusterscpaswcount,
+            steps = q$stepscpaswcount,
+            nsubjects = q$nsubjectscpaswcount,
+            ICC = q$ICCcpaswcount,
+            alpha = q$alpha
+          )
         )
-      )
+        return(val)
+      })
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      val <- print(summary(
-        cps.sw.count(
-          nsim = input$nsimcpsswcount,
-          nsubjects = input$nsubjectscpsswcount,
-          nclusters = input$nclusterscpsswcount,
-          c1 = input$c1cpsswcount,
-          c2 = input$c2cpsswcount,
-          steps = input$stepscpsswcount,
-          sigma_b_sq = input$sigma_b_sqcpsswcount,
-          alpha = input$alpha,
-          poorFitOverride = input$poorFitOverride,
-          lowPowerOverride = input$lowPowerOverride,
-          timelimitOverride = input$timelimitOverride,
-          seed = input$seed
+      answer <<- future({
+        val <- print(
+          cps.sw.count(
+            nsim = q$nsimcpsswcount,
+            nsubjects = q$nsubjectscpsswcount,
+            nclusters = q$nclusterscpsswcount,
+            c1 = q$c1cpsswcount,
+            c2 = q$c2cpsswcount,
+            steps = q$stepscpsswcount,
+            sigma_b_sq = q$sigma_b_sqcpsswcount,
+            alpha = q$alpha,
+            poorFitOverride = q$poorFitOverride,
+            lowPowerOverride = q$lowPowerOverride,
+            timelimitOverride = q$timelimitOverride,
+            seed = q$seed
+          )
         )
-      ))
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
-      print(
-        cpa.irgtt.normal(
-          alpha = input$alpha,
-          power = input$power,
-          nclusters = input$nclusterscpairgttnormal,
-          nsubjects = input$nsubjectscpairgttnormal,
-          ncontrols = input$ncontrolscpairgttnormal,
-          d = input$dcpairgttnormal,
-          varu = input$varucpairgttnormal,
-          varei = input$vareicpairgttnormal,
-          varr = input$varrcpairgttnormal
+      answer <<- future({
+        val <- print(
+          cpa.irgtt.normal(
+            alpha = q$alpha,
+            power = q$power,
+            nclusters = q$nclusterscpairgttnormal,
+            nsubjects = q$nsubjectscpairgttnormal,
+            ncontrols = q$ncontrolscpairgttnormal,
+            d = q$dcpairgttnormal,
+            varu = q$varucpairgttnormal,
+            varei = q$vareicpairgttnormal,
+            varr = q$varrcpairgttnormal
+          )
         )
-      )
+        return(val)
+      })
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
-      val <- print(summary(
-        cps.irgtt.normal(
-          nsim = input$nsimcpsirgttnormal,
-          nsubjects = c(input$nsubjectscpsirgttnormal, input$nsubjects2cpsirgttnormal),
-          nclusters = input$nclusterscpsirgttnormal,
-          mu = input$mucpsirgttnormal,
-          mu2 = input$mu2cpsirgttnormal,
-          ICC = input$ICCcpsirgttnormal,
-          sigma_sq = input$sigma_sqcpsirgttnormal,
-          sigma_b_sq = input$sigma_b_sqcpsirgttnormal,
-          ICC2 = input$ICC2cpsirgttnormal,
-          sigma_sq2 = input$sigma_sq2cpsirgttnormal,
-          sigma_b_sq2 = input$sigma_b_sq2cpsirgttnormal,
-          alpha = input$alpha,
-          seed = input$seed,
-          poorFitOverride = input$poorFitOverride,
-          lowPowerOverride = input$lowPowerOverride,
-          timelimitOverride = input$timelimitOverride
+      answer <<- future({
+        val <- print(
+          cps.irgtt.normal(
+            nsim = q$nsimcpsirgttnormal,
+            nsubjects = c(
+              q$nsubjectscpsirgttnormal,
+              q$nsubjects2cpsirgttnormal
+            ),
+            nclusters = q$nclusterscpsirgttnormal,
+            mu = q$mucpsirgttnormal,
+            mu2 = q$mu2cpsirgttnormal,
+            ICC = q$ICCcpsirgttnormal,
+            sigma_sq = q$sigma_sqcpsirgttnormal,
+            sigma_b_sq = q$sigma_b_sqcpsirgttnormal,
+            ICC2 = q$ICC2cpsirgttnormal,
+            sigma_sq2 = q$sigma_sq2cpsirgttnormal,
+            sigma_b_sq2 = q$sigma_b_sq2cpsirgttnormal,
+            alpha = q$alpha,
+            seed = q$seed,
+            poorFitOverride = q$poorFitOverride,
+            lowPowerOverride = q$lowPowerOverride,
+            timelimitOverride = q$timelimitOverride
+          )
         )
-      ))
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
-      val <- print(
-        cpa.irgtt.binary(
-          alpha = input$alpha,
-          power = input$power,
-          nclusters = input$nclusterscpairgttbinary,
-          nsubjects = input$nsubjectscpairgttbinary,
-          ncontrols = input$ncontrolscpairgttbinary,
-          ICC = input$ICCcpairgttbinary,
-          p2 = input$p2cpairgttbinary,
-          p1 = input$p1cpairgttbinary,
-          decrease = input$decreasecpairgttbinary
+      answer <<- future({
+        val <- print(
+          cpa.irgtt.binary(
+            alpha = q$alpha,
+            power = q$power,
+            nclusters = q$nclusterscpairgttbinary,
+            nsubjects = q$nsubjectscpairgttbinary,
+            ncontrols = q$ncontrolscpairgttbinary,
+            ICC = q$ICCcpairgttbinary,
+            p2 = q$p2cpairgttbinary,
+            p1 = q$p1cpairgttbinary,
+            decrease = q$decreasecpairgttbinary
+          )
         )
-      )
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
-      val <- print(summary(
-        cps.irgtt.binary(
-          nsim = input$nsimcpsirgttbinary,
-          nsubjects = c(input$nsubjectscpsirgttbinary, input$nsubjects2cpsirgttbinary),
-          nclusters = input$nclusterscpsirgttbinary,
-          p1 = input$p1cpsirgttbinary,
-          p2 = input$p2cpsirgttbinary,
-          sigma_b_sq = input$sigma_b_sqcpsirgttbinary,
-          sigma_b_sq2 = input$sigma_b_sq2cpsirgttbinary,
-          alpha = input$alpha,
-          poorFitOverride = input$poorFitOverride,
-          lowPowerOverride = input$lowPowerOverride,
-          timelimitOverride = input$timelimitOverride,
-          seed = input$seed
+      answer <<- future({
+        val <- print(
+          cps.irgtt.binary(
+            nsim = q$nsimcpsirgttbinary,
+            nsubjects = c(
+              q$nsubjectscpsirgttbinary,
+              q$nsubjects2cpsirgttbinary
+            ),
+            nclusters = q$nclusterscpsirgttbinary,
+            p1 = q$p1cpsirgttbinary,
+            p2 = q$p2cpsirgttbinary,
+            sigma_b_sq = q$sigma_b_sqcpsirgttbinary,
+            sigma_b_sq2 = q$sigma_b_sq2cpsirgttbinary,
+            alpha = q$alpha,
+            poorFitOverride = q$poorFitOverride,
+            lowPowerOverride = q$lowPowerOverride,
+            timelimitOverride = q$timelimitOverride,
+            seed = q$seed
+          )
         )
-      ))
-      future({
-        val 
+        return(val)
       })
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
-      print(cpa.irgtt.count())
+      answer <<- future({
+        val <- print(cpa.irgtt.count())
+        return(val)
+      })
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
-      val <- print(summary(
-        cps.irgtt.count(
-          nsim = input$nsimcpsirgttcount,
-          nsubjects = c(input$nsubjectscpsirgttcount, input$nsubjects2cpsirgttcount),
-          nclusters = input$nclusterscpsirgttcount,
-          c1 = input$c1cpsirgttcount,
-          c2 = input$c2cpsirgttcount,
-          sigma_b_sq = input$sigma_b_sqcpsirgttcount,
-          sigma_b_sq2 = input$sigma_b_sq2cpsirgttcount,
-          alpha = input$alpha,
-          poorFitOverride = input$poorFitOverride,
-          lowPowerOverride = input$lowPowerOverride,
-          timelimitOverride = input$timelimitOverride,
-          seed = input$seed
+      answer <<- future({
+        val <- print(
+          cps.irgtt.count(
+            nsim = q$nsimcpsirgttcount,
+            nsubjects = c(q$nsubjectscpsirgttcount, q$nsubjects2cpsirgttcount),
+            nclusters = q$nclusterscpsirgttcount,
+            c1 = q$c1cpsirgttcount,
+            c2 = q$c2cpsirgttcount,
+            sigma_b_sq = q$sigma_b_sqcpsirgttcount,
+            sigma_b_sq2 = q$sigma_b_sq2cpsirgttcount,
+            alpha = q$alpha,
+            poorFitOverride = q$poorFitOverride,
+            lowPowerOverride = q$lowPowerOverride,
+            timelimitOverride = q$timelimitOverride,
+            seed = q$seed
+          )
         )
-      ))
-      future({
-        val 
+        return(val)
       })
     }
-  }) # end call the clusterPower functions
+    
+    then(
+      answer,
+      onFulfilled = function(value) {
+        for (i in names(value)) {
+          out1[[i]] <- value[[i]]
+        }
+        out1 <<- out1
+      },
+      onRejected = function(error) {
+        out1$power <- paste0("ERROR: ", error$message)
+      }
+    )
+    
+    
+    finally(answer, function() {
+      prog$close()
+      disable("cancel")
+      enable("button")
+    })
+    
+    return(NULL)
+  }, ignoreInit = TRUE) # end call the clusterPower functions
   ##################
+  # cancel button
   
+  observeEvent(input$cancel, {
+    async_pid <- answer$process$get_pid()
+    print(paste("Killing PID:", async_pid))
+    answer$process$kill()
+    out1 <- NULL
+    disable("cancel")
+    enable("run1")
+  }, ignoreInit = TRUE)
   
   #########################################
   #### DEBUG ACCESS PANEL #####
@@ -2085,8 +2302,12 @@ server <- function(input, output, session) {
                                        ))
   # end create reactive input data table
   
-  output$CRTpower <- renderPrint({
-    answer()
+  # present the output verbose/not verbose
+  observeEvent(req(out1$power), {
+    output$CRTpower <- renderPrint(if (input$verbose == FALSE)
+      return(out1$power)
+      else
+        return(reactiveValuesToList(out1)))
   })
   
 } #end of server fxn

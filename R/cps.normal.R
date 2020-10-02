@@ -215,7 +215,7 @@
 #' 
 #' \dontrun{
 #' 
-#' normal.sim2 = cps.normal(nsim = 100, nclusters = c(3,10), 
+#' normal.sim2 <- cps.normal(nsim = 100, nclusters = c(3,10), 
 #'   nsubjects = c(25, 35, 45, rep(5, times = 10)),
 #'   mu = 1, mu2 = 4.75, sigma_sq = 20, sigma_b_sq = 8.8571429,
 #'   sigma_sq2 = 9, sigma_b_sq2 = 1, method = "glmm")
@@ -518,7 +518,7 @@ cps.normal = function(nsim = NA,
               control = nlme::lmeControl(opt = 'optim')
             ),
             silent = TRUE)
-
+          
           pval.vector[i] = glmm.values['as.factor(trt2)2', 'p-value']
           est.vector[i] = glmm.values['as.factor(trt2)2', 'Value']
           se.vector[i] = glmm.values['as.factor(trt2)2', 'Std.Error']
@@ -587,10 +587,10 @@ cps.normal = function(nsim = NA,
               ),
               silent = TRUE)
             options(warn = oldw)
-            pval.vector[i] = glmm.values['as.factor(trt2)1', 'p-value']
-            est.vector[i] = glmm.values['as.factor(trt2)1', 'Value']
-            se.vector[i] = glmm.values['as.factor(trt2)1', 'Std.Error']
-            stat.vector[i] = glmm.values['as.factor(trt2)1', 't-value']
+            pval.vector[i] = glmm.values['as.factor(trt2)2', 'p-value']
+            est.vector[i] = glmm.values['as.factor(trt2)2', 'Value']
+            se.vector[i] = glmm.values['as.factor(trt2)2', 'Std.Error']
+            stat.vector[i] = glmm.values['as.factor(trt2)2', 't-value']
           }
           converge.vector[i] <-
             ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE)
@@ -652,10 +652,10 @@ cps.normal = function(nsim = NA,
             ),
             silent = TRUE)
           options(warn = oldw)
-          pval.vector[i] = glmm.values['as.factor(trt2)1', 'p-value']
-          est.vector[i] = glmm.values['as.factor(trt2)1', 'Value']
-          se.vector[i] = glmm.values['as.factor(trt2)1', 'Std.Error']
-          stat.vector[i] = glmm.values['as.factor(trt2)1', 't-value']
+          pval.vector[i] = glmm.values['as.factor(trt2)2', 'p-value']
+          est.vector[i] = glmm.values['as.factor(trt2)2', 'Value']
+          se.vector[i] = glmm.values['as.factor(trt2)2', 'Std.Error']
+          stat.vector[i] = glmm.values['as.factor(trt2)2', 't-value']
           converge.vector[i] <-
             ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE)
         }
