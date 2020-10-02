@@ -22,6 +22,8 @@
 #' 
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
 #' 
+#' @param alpha Significance level (default=0.05).
+#' 
 #' @param steps Number of crossover steps; Accepts positive scalar indicating the total
 #' number of steps (required).
 #' 
@@ -79,6 +81,7 @@
 cpa.sw.binary <- function(nclusters = NA,
                           steps = NA,
                           nsubjects = NA,
+                          alpha = 0.05,
                           d = NA,
                           ICC = NA,
                           beta = NA,
@@ -445,8 +448,9 @@ cpa.sw.binary <- function(nclusters = NA,
       byrow = FALSE
     )
     sebeta <- sqrt(Var[2, 2] / DD)
-    power <- pnorm(beta / sebeta - 1.959964, lower.tail = TRUE) +
-      pnorm(-beta / sebeta - 1.959964, lower.tail = TRUE)
+    z_half_alpha <- qnorm(1 − alpha / 2) 
+    power <- pnorm(beta / sebeta - z_half_alpha, lower.tail = TRUE) +
+      pnorm(-beta / sebeta - z_half_alpha, lower.tail = TRUE)
     
   } else {
     if (beta > 0) {

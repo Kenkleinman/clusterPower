@@ -196,7 +196,7 @@ cps.ma.normal <- function(nsim = 1000,
                           quiet = FALSE,
                           ICC = NULL,
                           method = 'glmm',
-                          multi.p.method = "bonferroni",
+                          multi_p_method = "bonferroni",
                           allSimData = FALSE,
                           seed = NA,
                           cores = NULL,
@@ -207,17 +207,6 @@ cps.ma.normal <- function(nsim = 1000,
                           optmethod = "nlminb",
                           nofit = FALSE,
                           timelimitOverride = TRUE) {
-  
-  # allow some arguments to be entered as text for Shiny app
-  if (!is.numeric(means)) {
-    means <- as.numeric(unlist(strsplit(means, split = ", ")))
-  }
-  if (!is.numeric(sigma_b_sq)) {
-    sigma_b_sq <- as.numeric(unlist(strsplit(sigma_b_sq, split = ", ")))
-  }
-  if (!is.numeric(sigma_sq)) {
-    sigma_sq <- as.numeric(unlist(strsplit(sigma_sq, split = ", ")))
-  }
   
   # create narms and nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
@@ -236,7 +225,8 @@ cps.ma.normal <- function(nsim = 1000,
     narms <- length(nclusters)
   }
   
-  # input validation steps
+   # input validation steps
+
   if (!is.wholenumber(nsim) || nsim < 1 || length(nsim) > 1) {
     stop("nsim must be a positive integer of length 1.")
   }
@@ -268,15 +258,16 @@ cps.ma.normal <- function(nsim = 1000,
   )
   
   # nclusters must be positive whole numbers
+
   if (sum(is.wholenumber(nclusters) == FALSE) != 0 ||
       sum(unlist(nclusters) < 1) != 0) {
     stop("nclusters must be postive integer values.")
   }
-  
+
   # nsubjects must be positive whole numbers
   if (sum(is.wholenumber(unlist(nsubjects)) == FALSE) != 0 ||
       sum(unlist(nsubjects) < 1) != 0) {
-    stop("nsubjects must be positive integer values.")
+   stop("nsubjects must be positive integer values.")
   }
   # Create nsubjects structure from narms and nclusters when nsubjects is scalar
   if (length(nsubjects) == 1) {
@@ -576,7 +567,7 @@ cps.ma.normal <- function(nsim = 1000,
       std.error[i,] <- models[[i]]$coefficients[, 2]
       Wald[i,] <- models[[i]]$coefficients[, 3]
       Pr[i,] <-
-        p.adjust(models[[i]]$coefficients[, 4], method = multi.p.method)
+        p.adjust(models[[i]]$coefficients[, 4], method = multi_p_method)
     }
     
     # Organize the row/col names for the output

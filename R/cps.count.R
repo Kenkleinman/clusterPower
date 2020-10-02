@@ -648,7 +648,7 @@ cps.count = function(nsim = NULL,
     }
     
     # option to stop the function early if fits are singular
-    if (poorFitOverride == FALSE && converge.vector[i] == FALSE) {
+    if (poorFitOverride == FALSE && converge.vector[i] == FALSE && i > 12) {
       if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
         stop(
           "more than 25% of simulations are singular fit: check model specifications"

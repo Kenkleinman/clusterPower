@@ -24,8 +24,6 @@
 #' At least 2 of the following 3 arguments must be specified:
 #' @param c1 Expected outcome count in arm 1
 #' @param c2 Expected outcome count in arm 2
-#' @param c.diff Expected difference in outcome count between groups, defined as 
-#' c.diff = c1 - c2
 #' @param sigma_b_sq Between-cluster variance; defaults to 0. Accepts numeric.
 #' If between cluster variances differ between arms, the following must 
 #' also be specified:
@@ -114,7 +112,6 @@ cps.irgtt.count <-
            nclusters = NULL,
            c1 = NULL,
            c2 = NULL,
-           c.diff = NULL,
            sigma_b_sq = 0,
            sigma_b_sq2 = 0,
            family = 'poisson',
@@ -153,7 +150,6 @@ cps.irgtt.count <-
         nclusters = nclusters,
         c1 = c1,
         c2 = c2,
-        c.diff = c.diff,
         sigma_b_sq = sigma_b_sq,
         sigma_b_sq2 = sigma_b_sq2,
         family = family,

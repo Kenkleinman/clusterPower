@@ -4,7 +4,7 @@
 #' or determine parameters to obtain a target power.
 #'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-#'   \code{ntimes}, \code{d}, \code{icc}, \code{rho_c}, \code{rho_s}, and \code{vart}
+#'   \code{ntimes}, \code{d}, \code{ICC}, \code{rho_c}, \code{rho_s}, and \code{vart}
 #'   must be passed as \code{NA}. Note that \code{alpha} and\code{power}
 #'   have non-\code{NA} defaults, so if those are the parameters of 
 #'   interest they must be explicitly passed as \code{NA}.
@@ -61,7 +61,7 @@
 #' @param nsubjects The number of subjects in each cluster.
 #' @param ntimes The number of time points in the trial (not including baseline).
 #' @param d The expected treatment effect.
-#' @param icc The intra-cluster correlation, the correlation in outcome measurements between
+#' @param ICC The intra-cluster correlation, the correlation in outcome measurements between
 #'   two individuals from the same cluster.
 #' @param rho_c The cluster autocorrelation, the correlation between two population means
 #'   from the same cluster at different times. This value can be used in both cross-sectional and cohort
@@ -77,13 +77,13 @@
 #' @return The computed argument.
 #' @examples 
 #' # Find the required number of clusters switching to intervention at each time point for a trial 
-#' # with alpha = 0.05, power = 0.80, nsubjects = 50, ntimes = 5, d = 1.5 units, icc = 0.2,
+#' # with alpha = 0.05, power = 0.80, nsubjects = 50, ntimes = 5, d = 1.5 units, ICC = 0.2,
 #' # rho_c = 0.80, rho_s = 0, and vart = 16 square-units. Note that because rho_s = 0, this is a 
 #' # cross-sectional design.
-#' cpa.sw.normal(nsubjects = 50, ntimes = 5, d = 1.5, icc = 0.2, rho_c = 0.80, rho_s = 0, vart = 16)
+#' cpa.sw.normal(nsubjects = 50, ntimes = 5, d = 1.5, ICC = 0.2, rho_c = 0.80, rho_s = 0, vart = 16)
 #' # 
 #' # The result, nclusters = 1.288772, suggests 2 clusters switching per time point should be used. This
-#' # means that the total number of clusters in the study is nclusters*ntimes = 2*5 = 10.
+#' # means that the total number of clusters in the study is nclusters * ntimes = 2 * 5 = 10.
 #' 
 #' @references Hooper, R., Teerenstra, S., Hoop, E., and Eldridge, S. (2016)
 #'   Sample size calculation for stepped wedge and other longitudinal cluster
@@ -95,20 +95,20 @@
 #' @export
 
 cpa.sw.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
-                          nsubjects = NA, ntimes = NA, d = NA, icc = NA,
+                          nsubjects = NA, ntimes = NA, d = NA, ICC = NA,
                           rho_c = NA, rho_s = NA,
                           vart = NA,
                           tol = .Machine$double.eps^0.25){
   
   # list of needed inputs
-  needlist <- list(alpha, power, nclusters, nsubjects, ntimes, d, icc, rho_c, rho_s, vart)
-  neednames <- c("alpha", "power", "nclusters", "nsubjects", "ntimes", "d", "icc",
+  needlist <- list(alpha, power, nclusters, nsubjects, ntimes, d, ICC, rho_c, rho_s, vart)
+  neednames <- c("alpha", "power", "nclusters", "nsubjects", "ntimes", "d", "ICC",
                  "rho_c", "rho_s", "vart")
   needind <- which(unlist(lapply(needlist, is.na)))
   # check to see that exactly one needed param is NA
   
   if (length(needind) != 1) {
-    neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'ntimes', 'd', 'icc', 'rho_c', 'rho_s', and 'vart' must be NA."
+    neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'ntimes', 'd', 'ICC', 'rho_c', 'rho_s', and 'vart' must be NA."
     stop(neederror)
   } 
   
@@ -119,9 +119,9 @@ cpa.sw.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
     
     # variance inflation
     # DEFFc is design effect due to clustering
-    DEFFc <- 1 + (nsubjects - 1)*icc 
+    DEFFc <- 1 + (nsubjects - 1)*ICC 
     
-    r <- (nsubjects*icc*rho_c + (1 - icc)*rho_s)/DEFFc
+    r <- (nsubjects*ICC*rho_c + (1 - ICC)*rho_s)/DEFFc
     
     # DEFFr is design effect due to repeated assessment
     DEFFr <- 3*ntimes*(1 - r)*(1 + ntimes*r)/( (ntimes^2 - 1)*(2 + ntimes*r) )
@@ -180,9 +180,9 @@ cpa.sw.normal <- function(alpha = 0.05, power = 0.80, nclusters = NA,
                         tol = tol, extendInt = "upX")$root
   }
   
-  # calculate icc
-  if (is.na(icc)){
-    icc <- stats::uniroot(function(icc) eval(pwr) - power,
+  # calculate ICC
+  if (is.na(ICC)){
+    ICC <- stats::uniroot(function(ICC) eval(pwr) - power,
                           interval = c(1e-07, 1 - 1e-07),
                           tol = tol)$root
   }
