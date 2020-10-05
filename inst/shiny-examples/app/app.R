@@ -1322,7 +1322,6 @@ ui <- fluidPage(
       ),
       tabPanel(
         "Parameters",
-        dataTableOutput("tbl"),
         shinyjs::hidden(
           textInput("fxnName", "clusterPower function name", value = "cpa.normal")
         ),
@@ -1335,7 +1334,8 @@ ui <- fluidPage(
           HTML(
             "<p>Note: for more advanced features, see the clusterPower R package.</p>"
           )
-        )
+        ),
+        tableOutput("tbl")
       ),
       tabPanel(
         "Help",
@@ -2291,15 +2291,31 @@ server <- function(input, output, session) {
   
   # create reactive input data table
   args <- reactive({
-    t(data.frame(unlist(updateArgs(input$fxnName))))
+    x <- reactiveValuesToList(input)
+    holder <- data.frame(
+      argument = names(x),
+      values = unlist(x, use.names = FALSE)
+    )
+    specialnames <- dplyr::filter(holder, grepl(gsub("\\.", "", input$fxnName), argument))
+    specialnames$argument <- gsub(gsub("\\.", "", input$fxnName), "", specialnames$argument)
+    specialnames <- dplyr::arrange(specialnames, argument)
+    return(specialnames)
   })
-  observe(args())
-  output$tbl <- shiny::renderDataTable(args(),
-                                       options = list(
-                                         lengthChange = FALSE,
-                                         searching = FALSE,
-                                         paging = FALSE
-                                       ))
+  
+  output$tbl <- renderTable({
+    args()
+  })
+
+  #  args <- reactive({
+  #  t(data.frame(unlist(updateArgs(input$fxnName))))
+  #})
+  #observe(args())
+  #output$tbl <- shiny::renderDataTable(args(),
+  #                                     options = list(
+  #                                       lengthChange = FALSE,
+  #                                       searching = FALSE,
+  #                                       paging = FALSE
+  #                                     ))
   # end create reactive input data table
   
   # present the output verbose/not verbose
