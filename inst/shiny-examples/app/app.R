@@ -1315,10 +1315,16 @@ ui <- fluidPage(
         conditionalPanel(
           "input.debug == true",
           actionButton("browser", "browser"),
-          tableOutput("show_inputs"),
+          tableOutput("show_inputs")
         )
         
         #### DEBUG ACCESS PANEL END #####
+      ),
+      tabPanel(
+        "Graphs",
+        plotOutput("graphic"),
+        tableOutput("tracker"),
+        actionButton("cleargraph", "Clear Data", icon = icon("trash-alt"))
       ),
       tabPanel(
         "Parameters",
@@ -1342,7 +1348,8 @@ ui <- fluidPage(
         HTML(
           "<p>To use the calculator, select the trial type, outcome distribution, and calculation method.
         Then enter values for the quantities that appear below. When complete, select the ESTIMATE POWER button.</p>
-          <p>Please contact ken.kleinman@gmail.com with any feedback.</p>"
+          <p>App created by Alexandria Sakrejda, Jon Moyer, and Ken Kleinman; support from NIGMS grant R01GM121370.
+          Please contact ken.kleinman@gmail.com with any feedback.</p>"
         ),
         HTML("<h3>Getting started</h3>"),
         HTML(
@@ -1435,6 +1442,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   disable("cancel")
   out1 <- reactiveValues(power = NULL)
+  logargs <- reactiveValues(tab = NULL)
   
   # Reload the app
   observeEvent(input$reload, {
@@ -2292,30 +2300,84 @@ server <- function(input, output, session) {
   # create reactive input data table
   args <- reactive({
     x <- reactiveValuesToList(input)
-    holder <- data.frame(
-      argument = names(x),
-      values = unlist(x, use.names = FALSE)
-    )
-    specialnames <- dplyr::filter(holder, grepl(gsub("\\.", "", input$fxnName), argument))
-    specialnames$argument <- gsub(gsub("\\.", "", input$fxnName), "", specialnames$argument)
+    holder <- data.frame(argument = names(x),
+                         values = unlist(x, use.names = FALSE))
+    specialnames <-
+      dplyr::filter(holder, grepl(gsub("\\.", "", input$fxnName), argument))
+    specialnames$argument <-
+      gsub(gsub("\\.", "", input$fxnName), "", specialnames$argument)
     specialnames <- dplyr::arrange(specialnames, argument)
     return(specialnames)
   })
   
+  #create the graphing table
+  observeEvent(req(out1$power), {
+    x <- reactiveValuesToList(input)
+    holder <- data.frame(argument = names(isolate(x)),
+                         values = unlist(isolate(x), use.names = FALSE))
+    specialnames <-
+      dplyr::filter(holder, grepl(gsub("\\.", "", input$fxnName), argument))
+    specialnames$argument <-
+      gsub(gsub("\\.", "", input$fxnName), "", specialnames$argument)
+    specialnames <- dplyr::arrange(specialnames, argument)
+    tab <- rbind(specialnames, c("power", round(out1$power, 3)))
+    
+    if (is.null(logargs$tab)) {
+      logargs$tab <<- tab
+    } else {
+      tab <- dplyr::select(tab, values)
+      logargs$tab <<- cbind.data.frame(logargs$tab, tab)
+    }
+  })   # END create the graphing table
+  
+  #clear the data log under certain circumstances
+  observeEvent(input$cleargraph, {
+    logargs$tab <- NULL
+  })
+  
+  observeEvent(input$type, {
+    logargs$tab <- NULL
+  })
+  
+  observeEvent(input$dist, {
+    logargs$tab <- NULL
+  })
+  
+  observeEvent(input$meth, {
+    logargs$tab <- NULL
+  })
+  # END clear the data log under certain circumstances
+  
+  plot_this <- eventReactive(req(logargs$tab), {
+    datnames <- logargs$tab$argument
+    data <- data.frame(logargs$tab, check.names = TRUE)
+    data <- dplyr::select(data, -argument)
+    data <- t(data)
+    colnames(data) <- datnames
+    data <- as.numeric(data)
+    print(logargs$tab)
+    print(data)
+    data <- dplyr::filter(data, value == "power" || value=="nclusters")
+    return(data)
+  })
+  
+  
+  output$graphic <- renderPlot({
+    plot(plot_this())
+  })
+  
+  
+  
+  
+  
+  
+  
+  output$tracker <-
+    renderTable(logargs$tab)
+  
   output$tbl <- renderTable({
     args()
   })
-
-  #  args <- reactive({
-  #  t(data.frame(unlist(updateArgs(input$fxnName))))
-  #})
-  #observe(args())
-  #output$tbl <- shiny::renderDataTable(args(),
-  #                                     options = list(
-  #                                       lengthChange = FALSE,
-  #                                       searching = FALSE,
-  #                                       paging = FALSE
-  #                                     ))
   # end create reactive input data table
   
   # present the output verbose/not verbose
