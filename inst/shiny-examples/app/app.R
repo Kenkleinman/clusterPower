@@ -7,6 +7,7 @@
 #    http://shiny.rstudio.com/
 #
 
+library(clusterPower)
 library(shinythemes)
 library(shiny)
 library(shinyBS)
@@ -15,6 +16,7 @@ library(future)
 library(future.callr)
 library(shinyjs)
 library(V8)
+library(ggplot2)
 
 plan(callr)
 
@@ -1322,6 +1324,8 @@ ui <- fluidPage(
       ),
       tabPanel(
         "Graphs",
+        selectInput("axisname", "Plot axis name",
+                    choices = c("nclusters", "nsubjects")),
         plotOutput("graphic"),
         tableOutput("tracker"),
         actionButton("cleargraph", "Clear Data", icon = icon("trash-alt"))
@@ -2320,13 +2324,14 @@ server <- function(input, output, session) {
     specialnames$argument <-
       gsub(gsub("\\.", "", input$fxnName), "", specialnames$argument)
     specialnames <- dplyr::arrange(specialnames, argument)
-    tab <- rbind(specialnames, c("power", round(out1$power, 3)))
+    tab <- rbind(specialnames, c("power", round(out1$power, 3)), c("alpha", input$alpha))
     
     if (is.null(logargs$tab)) {
       logargs$tab <<- tab
     } else {
       tab <- dplyr::select(tab, values)
-      logargs$tab <<- cbind.data.frame(logargs$tab, tab)
+      tab <- cbind.data.frame(logargs$tab, tab)
+      logargs$tab <<- data.frame(tab, check.names=TRUE)
     }
   })   # END create the graphing table
   
@@ -2335,41 +2340,47 @@ server <- function(input, output, session) {
     logargs$tab <- NULL
   })
   
-  observeEvent(input$type, {
-    logargs$tab <- NULL
+  newSelection <- reactive({
+    list(input$type, input$dist, input$meth)
   })
   
-  observeEvent(input$dist, {
-    logargs$tab <- NULL
-  })
-  
-  observeEvent(input$meth, {
+  observeEvent(newSelection(), {
     logargs$tab <- NULL
   })
   # END clear the data log under certain circumstances
   
-  plot_this <- eventReactive(req(logargs$tab), {
-    datnames <- logargs$tab$argument
-    data <- data.frame(logargs$tab, check.names = TRUE)
-    data <- dplyr::select(data, -argument)
+  #START make the graph
+  #update the axis choices
+  observeEvent(newSelection(), {
+    x <- reactiveValuesToList(input)
+    holder <- names(isolate(x))
+    specialnames <-
+      grep(gsub("\\.", "", input$fxnName), holder, value = TRUE)
+    specialnames <-
+      gsub(gsub("\\.", "", input$fxnName), "", specialnames)
+    args_ <- c(specialnames, "alpha")
+    updateSelectInput(session, "axisname",
+                      choices = args_)
+  })
+  
+  plot_this <- eventReactive(
+    list(input$axisname, input$button, req(logargs$tab)), {
+    data <- data.frame(isolate(logargs$tab), check.names = TRUE)
+    data <- dplyr::filter(data, argument == input$axisname | argument == "power")
+    data <- dplyr::filter(data, !is.na(values))
     data <- t(data)
-    colnames(data) <- datnames
-    data <- as.numeric(data)
-    print(logargs$tab)
+    colnames(data) <- data[1,]
+    data <- data[2:nrow(data),]
+    data <- as.data.frame(data)
     print(data)
-    data <- dplyr::filter(data, value == "power" || value=="nclusters")
     return(data)
   })
   
   
   output$graphic <- renderPlot({
-    plot(plot_this())
-  })
-  
-  
-  
-  
-  
+    graph <- plot_this()
+    ggplot(graph, aes(power, input$axisname)) + geom_point()
+  }, res = 96)
   
   
   output$tracker <-
