@@ -1324,8 +1324,11 @@ ui <- fluidPage(
       ),
       tabPanel(
         "Graphs",
-        selectInput("axisname", "Plot axis name",
-                    choices = c("nclusters", "nsubjects")),
+        selectInput(
+          "axisname",
+          "Plot axis name",
+          choices = c("nclusters", "nsubjects")
+        ),
         plotOutput("graphic"),
         tableOutput("tracker"),
         actionButton("cleargraph", "Clear Data", icon = icon("trash-alt"))
@@ -2324,14 +2327,15 @@ server <- function(input, output, session) {
     specialnames$argument <-
       gsub(gsub("\\.", "", input$fxnName), "", specialnames$argument)
     specialnames <- dplyr::arrange(specialnames, argument)
-    tab <- rbind(specialnames, c("power", round(out1$power, 3)), c("alpha", input$alpha))
+    tab <-
+      rbind(specialnames, c("power", round(out1$power, 3)), c("alpha", input$alpha))
     
     if (is.null(logargs$tab)) {
       logargs$tab <<- tab
     } else {
       tab <- dplyr::select(tab, values)
       tab <- cbind.data.frame(logargs$tab, tab)
-      logargs$tab <<- data.frame(tab, check.names=TRUE)
+      logargs$tab <<- data.frame(tab, check.names = TRUE)
     }
   })   # END create the graphing table
   
@@ -2363,24 +2367,30 @@ server <- function(input, output, session) {
                       choices = args_)
   })
   
-  plot_this <- eventReactive(
-    list(input$axisname, input$button, req(logargs$tab)), {
+  plot_this <- eventReactive(list(input$axisname, req(logargs$tab)), {
     data <- data.frame(isolate(logargs$tab), check.names = TRUE)
-    data <- dplyr::filter(data, argument == input$axisname | argument == "power")
-    data <- dplyr::filter(data, !is.na(values))
-    data <- t(data)
-    colnames(data) <- data[1,]
-    data <- data[2:nrow(data),]
-    data <- as.data.frame(data)
-    print(data)
-    return(data)
+    data$values <- as.numeric(data$values)
+    data$argument <- as.factor(data$argument)
+    var <- input$axisname
+    data <-
+      dplyr::filter(data, argument == !!var |
+                      argument == "power")
+    # first remember the names
+    n <- data$argument
+    # transpose all but the first column (name)
+    data <- data.frame(t(data[,-1]))
+    colnames(data) <- n
+    data[ , 1:2] <- apply(data[ , 1:2], 2,      
+                        function(x) as.numeric(as.character(x)))
+    
+      var <- enquo(var)
+     power_plot <- ggplot(data, aes(power)) + geom_point(aes(y=as.name(var)))
+    return(power_plot)
   })
   
   
   output$graphic <- renderPlot({
-    graph <- plot_this()
-    ggplot(graph, aes(power, input$axisname)) + geom_point()
-  }, res = 96)
+    plot_this()}, res = 96)
   
   
   output$tracker <-
