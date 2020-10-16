@@ -1329,7 +1329,8 @@ ui <- fluidPage(
           "Plot axis name",
           choices = c("nclusters", "nsubjects")
         ),
-        plotOutput("graphic"),
+        tableOutput("dp"),
+        plotOutput("graphic", click = "click"),
         tableOutput("tracker"),
         actionButton("cleargraph", "Clear Data", icon = icon("trash-alt"))
       ),
@@ -2320,6 +2321,7 @@ server <- function(input, output, session) {
   #create the graphing table
   observeEvent(req(out1$power), {
     x <- reactiveValuesToList(input)
+    holder <- NULL
     holder <- data.frame(argument = names(isolate(x)),
                          values = unlist(isolate(x), use.names = FALSE))
     specialnames <-
@@ -2367,31 +2369,48 @@ server <- function(input, output, session) {
                       choices = args_)
   })
   
-  plot_this <- eventReactive(list(input$axisname, req(logargs$tab)), {
-    data <- data.frame(isolate(logargs$tab), check.names = TRUE)
-    data$values <- as.numeric(data$values)
-    data$argument <- as.factor(data$argument)
-    var <- input$axisname
-    data <-
-      dplyr::filter(data, argument == !!var |
-                      argument == "power")
-    # first remember the names
-    n <- data$argument
-    # transpose all but the first column (name)
-    data <- data.frame(t(data[,-1]))
-    colnames(data) <- n
-    data[ , 1:2] <- apply(data[ , 1:2], 2,      
-                        function(x) as.numeric(as.character(x)))
-    
-      var <- enquo(var)
-     power_plot <- ggplot(data, aes(power)) + geom_point(aes(y=as.name(var)))
-    return(power_plot)
-  })
+  plot_this <-
+    eventReactive(list(input$axisname, req(logargs$tab)), {
+      data <- data.frame(isolate(logargs$tab), check.names = TRUE)
+      data$values <- as.numeric(data$values)
+      data$argument <- as.factor(data$argument)
+      var <- input$axisname
+      data <-
+        dplyr::filter(data, argument == !!var |
+                        argument == "power")
+      # first remember the names
+      n <- data$argument
+      # transpose all but the first column (name)
+      data <- data.frame(t(data[, -1]))
+      colnames(data) <- n
+      data[, 1:2] <- apply(data[, 1:2], 2,
+                           function(x)
+                             as.numeric(as.character(x)))
+      return(data)
+    })
+  
+    dpfun <- function(x) {
+      var <- input$axisname
+      data <- plot_this()
+      fun <- function(x){
+        x <- enquo(x)
+        sol <- ggplot(data, aes(power, y = !!x)) + geom_point() + geom_line() +
+          theme_minimal()
+        return(sol)
+    }
+      power_plot <- fun(get(var))
+      return(power_plot + ylab(var))
+    }
   
   
   output$graphic <- renderPlot({
-    plot_this()}, res = 96)
+    dpfun()
+  }, res = 96)
   
+  output$dp <- renderTable({
+    q <- plot_this()
+    nearPoints(q, input$click, yvar = input$axisname)
+  })
   
   output$tracker <-
     renderTable(logargs$tab)
