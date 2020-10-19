@@ -1293,7 +1293,8 @@ ui <- fluidPage(
     mainPanel(tabsetPanel(
       tabPanel(
         "Results",
-        conditionalPanel("input.meth == 'Simulation'",
+        conditionalPanel(
+          "input.meth == 'Simulation' & input.more == false",
                          wellPanel(
                            HTML(
                              "<p>Note: If the estimated calculation time is longer than 3 minutes,
@@ -1311,6 +1312,7 @@ ui <- fluidPage(
             )
           )
         ),
+       # verbatimTextOutput("CRTerror"),
         verbatimTextOutput("CRTpower", placeholder = TRUE),
         
         ####  DEBUG ACCESS PANEL START #####
@@ -1324,6 +1326,14 @@ ui <- fluidPage(
       ),
       tabPanel(
         "Graphs",
+        conditionalPanel("input.meth == 'Simulation' & input.more == false",
+                         wellPanel(
+                           HTML(
+                             "<p>Note: If the estimated calculation time is longer than 3 minutes,
+            the process will not run unless you override the time limit
+            under advanced options.</p>"
+                           )
+                         )),
         selectInput(
           "axisname",
           "Plot axis name",
@@ -2320,8 +2330,12 @@ server <- function(input, output, session) {
   
   #create the graphing table
   observeEvent(req(out1$power), {
+    if (is.character(out1$power)==FALSE){
     x <- reactiveValuesToList(input)
     holder <- NULL
+    if (sum(grepl("click", names(x))) == 1) {
+      x$click <- NULL
+    }
     holder <- data.frame(argument = names(isolate(x)),
                          values = unlist(isolate(x), use.names = FALSE))
     specialnames <-
@@ -2329,15 +2343,35 @@ server <- function(input, output, session) {
     specialnames$argument <-
       gsub(gsub("\\.", "", input$fxnName), "", specialnames$argument)
     specialnames <- dplyr::arrange(specialnames, argument)
-    tab <-
-      rbind(specialnames, c("power", round(out1$power, 3)), c("alpha", input$alpha))
-    
+    if (x$meth == "Analytic") {
+      tab <-
+        rbind(specialnames,
+              c("power", round(out1$power, 3)),
+              c("alpha", input$alpha))
+    }
+    if (x$meth == "Simulation") {
+      print(out1$power)
+      tab <-
+          rbind(
+            specialnames,
+            c("power", round(out1$power$Power, 3)),
+            c("alpha", input$alpha)
+          )
+    }
     if (is.null(logargs$tab)) {
       logargs$tab <<- tab
     } else {
       tab <- dplyr::select(tab, values)
       tab <- cbind.data.frame(logargs$tab, tab)
       logargs$tab <<- data.frame(tab, check.names = TRUE)
+    }
+    } else {
+      if (is.null(logargs$tab)) {
+        logargs$tab <<- NULL
+      } else {
+        tab <- cbind.data.frame(logargs$tab)
+        logargs$tab <<- data.frame(tab, check.names = TRUE)
+      }
     }
   })   # END create the graphing table
   
@@ -2389,28 +2423,29 @@ server <- function(input, output, session) {
       return(data)
     })
   
-    dpfun <- function(x) {
-      var <- input$axisname
-      data <- plot_this()
-      fun <- function(x){
-        x <- enquo(x)
-        sol <- ggplot(data, aes(power, y = !!x)) + geom_point() + geom_line() +
-          theme_minimal()
-        return(sol)
+  dpfun <- function(x) {
+    var <- input$axisname
+    data <- plot_this()
+    fun <- function(x) {
+      x <- enquo(x)
+      sol <-
+        ggplot(data, aes(power, y = !!x)) + geom_point(aes(colour = "2e6da4")) + geom_line() +
+        theme_minimal() + theme(legend.position = "none")
+      return(sol)
     }
-      power_plot <- fun(get(var))
-      return(power_plot + ylab(var))
-    }
+    power_plot <- fun(get(var))
+    return(power_plot + ylab(var))
+  }
   
   
   output$graphic <- renderPlot({
     dpfun()
   }, res = 96)
   
-  output$dp <- renderTable({
-    q <- plot_this()
-    nearPoints(q, input$click, yvar = input$axisname)
-  })
+  #output$dp <- renderTable({
+  #  q <- plot_this()
+  #  nearPoints(q, input$click, yvar = input$axisname)
+  #})
   
   output$tracker <-
     renderTable(logargs$tab)
@@ -2427,6 +2462,10 @@ server <- function(input, output, session) {
       else
         return(reactiveValuesToList(out1)))
   })
+  
+ # observeEvent(req(out1$error), {
+ #   output$CRTerror <- renderPrint(out1$error)
+ # })
   
 } #end of server fxn
 
