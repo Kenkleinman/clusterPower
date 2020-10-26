@@ -91,7 +91,7 @@
 #'   p1 = 0.1, p2 = NA, ICC = 0.1, p1inc = FALSE)
 #' }
 #' # The result shows that p2 greater than 0.198922 can be detected with at 
-#' least 80% power.
+#' # least 80% power.
 #' 
 #' @references Donner A, Klar N. Design and Analysis of Cluster Randomization
 #' Trials in Health Research. London; Arnold; 2000.

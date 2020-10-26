@@ -100,8 +100,9 @@
 #' 
 #' @examples 
 #' 
-#' # Estimate power for a trial with 3 steps and 12 clusters in arm 1 (often the standard-of-care or 'control' 
-#' # arm) at the initiation of the study. Those clusters have 15 subjects each, with sigma_b_sq = 1. 
+#' # Estimate power for a trial with 3 steps and 12 clusters in arm 1 
+#' # (often the standard-of-care or 'control' arm) at the initiation 
+#' #of the study. Those clusters have 15 subjects each, with sigma_b_sq = 1. 
 #' # We have estimated arm outcome counts of 4 and 5 in the first and second arms, 
 #' # respectively, and 100 simulated data sets analyzed by the GLMM method. Using seed = 123, 
 #' # the resulting power should be 0.85.

@@ -1,8 +1,8 @@
 #' Power calculations for  difference-in-difference cluster randomized trials, dichotomous outcome
 #'
-#' Compute the power of a difference-in-difference cluster randomized trial design with a 
+#' Compute the power of a difference-in-difference cluster randomized trial design with a
 #' binary outcome, or determine parameters to obtain a target power.
-#' 
+#'
 #' Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
 #'   \code{p}, \code{d}, \code{ICC}, \code{rho_c}, and \code{rho_s} must be passed as \code{NA}.
 #'   Note that \code{alpha} and \code{power} have non-\code{NA}
@@ -11,14 +11,14 @@
 #'
 #' @section Authors:
 #' Jonathan Moyer (\email{jon.moyer@@gmail.com}), Ken Kleinman (\email{ken.kleinman@@gmail.com})
-#' 
+#'
 #' @section Note:
 #'   This function was inspired by work from Stephane Champely (pwr.t.test) and
 #'   Peter Dalgaard (power.t.test). As with those functions, 'uniroot' is used to
 #'   solve power equation for unknowns, so you may see
 #'   errors from it, notably about inability to bracket the root when
 #'   invalid arguments are given.
-#'   
+#'
 #' @param alpha The level of significance of the test, the probability of a
 #'   Type I error.
 #' @param power The power of the test, 1 minus the probability of a Type II
@@ -38,19 +38,19 @@
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
 #' @return The computed argument.
-#' @examples 
-#' # Find the number of clusters per condition needed for a trial with alpha = .05, 
+#' @examples
+#' # Find the number of clusters per condition needed for a trial with alpha = .05,
 #' # power = 0.8, 50 observations per cluster, expected mean post-test proportion of .50,
-#' # expected difference of .1, ICC = 0.05, cluster level correlation of 0.3, and subject level 
+#' # expected difference of .1, ICC = 0.05, cluster level correlation of 0.3, and subject level
 #' # correlation of 0.7.
 #' cpa.did.binary(nsubjects=50 ,p=.5, d=.1, ICC=.05, rho_c=.3, rho_s=.7)
-#' # 
-#' # The result, showimg nclusters of greater than 32, suggests 33 clusters per 
+#' #
+#' # The result, showimg nclusters of greater than 32, suggests 33 clusters per
 #' # condition should be used.
-#' 
+#'
 #' @references Murray D. Design and Analysis of Group-Randomized Trials. New York, NY: Oxford
 #' University Press; 1998.
-#' 
+#'
 #' @export
 
 

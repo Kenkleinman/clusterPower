@@ -74,6 +74,7 @@ binCalcICC <-
            sim.min = 1,
            sim.max = (length(data$sim.data) - 2),
            nsim = 1000) {
+    clust <- NULL
     #First, here's Akhtar Hossain's and Hirshikesh Chakraborty's iccbin function definition
     iccbin <-
       function(cid = cid,

@@ -133,9 +133,9 @@ cps.ma.count.internal <-
            nofit = FALSE,
            opt = opt) {
     # Create vectors to collect iteration-specific values
-    simulated.datasets = list()
+    simulated.datasets <- list()
     goodopt <- opt
-    require("nloptr")
+    converge <- NULL
     
     # Create NCLUSTERS, NARMS, from str.nsubjects
     narms = length(str.nsubjects)
@@ -259,7 +259,6 @@ cps.ma.count.internal <-
       return(sim.dat)
     }
     
-    require(foreach)
     `%fun%` <- `%dopar%`
     if (is.na(cores)) {
       `%fun%` <- `%do%`
@@ -333,8 +332,6 @@ cps.ma.count.internal <-
     
     if (method == "glmm") {
       # Fit the models
-      require(doParallel)
-      require(foreach)
       
       if (!is.na(cores) & quiet == FALSE) {
         message("Fitting models")
@@ -587,7 +584,6 @@ cps.ma.count.internal <-
           prog.bar$tick(0)
         }
       }
-      require(foreach)
       if (!is.na(cores) & quiet == FALSE) {
         message("Fitting models")
       }

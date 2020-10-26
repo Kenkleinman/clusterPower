@@ -181,10 +181,6 @@
 #' @export
 #'
 
-
-
-
-
 cps.ma.normal <- function(nsim = 1000,
                           nsubjects = NULL,
                           narms = NULL,

@@ -213,17 +213,18 @@ cps.binary = function(nsim = NULL,
   }
   
   # Create objects to collect iteration-specific values
-  est.vector = NULL
-  se.vector = NULL
-  stat.vector = NULL
-  pval.vector = NULL
-  converge.ind = NULL
-  converge.vector = NULL
-  icc2.vector = NULL
-  lmer.icc.vector = NULL
-  converge.vector = NULL
-  simulated.datasets = list()
-  warning.list = list()
+  est.vector <- NULL
+  se.vector <- NULL
+  stat.vector <- NULL
+  pval.vector <- NULL
+  converge.ind <- NULL
+  converge.vector <- NULL
+  icc2.vector <- NULL
+  lmer.icc.vector <- NULL
+  converge.vector <- NULL
+  simulated.datasets <- list()
+  warning.list <- list()
+  converge <- NULL
   
   # Create progress bar
   prog.bar =  progress::progress_bar$new(

@@ -103,8 +103,8 @@ cps.ma.binary.internal <-
            optmethod = optmethod,
            return.all.models = FALSE) {
     # Create vectors to collect iteration-specific values
-    simulated.datasets = list()
-    
+    simulated.datasets <- list()
+    converge <- NULL
     # Create NCLUSTERS, NARMS, from str.nsubjects
     narms = length(str.nsubjects)
     nclusters = sapply(str.nsubjects, length)
@@ -225,7 +225,6 @@ cps.ma.binary.internal <-
       return(sim.dat)
     }
     
-    require(foreach)
     `%fun%` <- `%dopar%`
     if (is.na(cores)) {
       `%fun%` <- `%do%`
@@ -301,8 +300,6 @@ cps.ma.binary.internal <-
         Sys.sleep(1 / 100)
       }
       # Create simulation loop
-      require(doParallel)
-      require(foreach)
       if (!is.na(cores) & quiet == FALSE) {
         message("Fitting models")
       }
@@ -468,7 +465,6 @@ cps.ma.binary.internal <-
           prog.bar$tick(0)
         }
       }
-      require(foreach)
       if (!is.na(cores) & quiet == FALSE) {
         message("Fitting models")
       }

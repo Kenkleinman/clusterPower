@@ -1,3 +1,7 @@
+#'
+#' 
+#'   @export
+
 print.crtpwr = function (x, ...) {
   cat(paste0("\n", x[['overview']], "\n"))
   cat(paste0("\nPower Estimate (alpha = ", x[['alpha']], "):\n"))

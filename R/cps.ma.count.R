@@ -680,8 +680,7 @@ cps.ma.count <- function(nsim = 1000,
     LRT.holder.abbrev <- sum(sig.LRT) / nsim
     
     # Calculate and store power estimate & confidence intervals
-    power.parms <- confint.calc(nsim = nsim,
-                                alpha = alpha,
+    power.parms <- confintCalc(alpha = alpha,
                                 p.val = Pr[, 2:narms])
     
     

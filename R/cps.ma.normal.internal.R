@@ -96,8 +96,6 @@
 #'                               }
 #' @export
 
-
-
 cps.ma.normal.internal <-
   function(nsim = 1000,
            str.nsubjects = NULL,
@@ -118,7 +116,8 @@ cps.ma.normal.internal <-
            return.all.models = FALSE,
            timelimitOverride = TRUE) {
     # Create vectors to collect iteration-specific values
-    simulated.datasets = list()
+    simulated.datasets <- list()
+    converge <- NULL
     
     # Create NCLUSTERS, NARMS, from str.nsubjects
     narms = length(str.nsubjects)
@@ -178,8 +177,6 @@ cps.ma.normal.internal <-
     }
     
     # Create simulation loop
-    #   require(foreach)
-    #   foreach::foreach(i = 1:nsim, .packages = c("optimx")) %do% {
     for (i in 1:nsim) {
       sim.dat[[i]] = data.frame(y = NA,
                                 trt = as.factor(unlist(trt)),
@@ -302,7 +299,6 @@ cps.ma.normal.internal <-
                              REML = FALSE,
                              data = sim.dat[[1]])
             if (optmethod == "auto") {
-              require("optimx")
               goodopt <- optimizerSearch(my.mod)
               
             } else {
@@ -384,7 +380,6 @@ cps.ma.normal.internal <-
             my.mod <- lmerTest::lmer(y ~ trt + (1 | clust), REML = FALSE,
                                      data = sim.dat[[1]])
             if (optmethod == "auto") {
-              require("optimx")
               goodopt <- optimizerSearch(my.mod)
             } else {
               goodopt <- optmethod

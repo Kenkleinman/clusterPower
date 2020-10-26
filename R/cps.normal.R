@@ -255,6 +255,7 @@ cps.normal = function(nsim = NA,
                       lowPowerOverride = FALSE,
                       irgtt = FALSE,
                       nofit = FALSE) {
+  converge <- NULL
   # option for reproducibility
   if (!is.na(seed)) {
     set.seed(seed = seed)
