@@ -95,6 +95,10 @@
 #' @param optimizer Option to fit with a different optimizer from the package
 #' \code{optimx}. Defaults to L-BFGS-B. See optimx package documentation for all options.
 #' 
+#' @param irgtt Logical. Default = FALSE. Is the experimental design an 
+#' individually randomized group treatment trial? For details, 
+#' see ?cps.irgtt.count.
+#' 
 #'
 #'
 #'

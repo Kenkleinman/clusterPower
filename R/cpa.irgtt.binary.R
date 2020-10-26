@@ -40,7 +40,8 @@
 #' # Find the required number of subjects per intervention cluster an IRGTT with alpha = 0.05,
 #' # power = 0.80, nclusters = 23, ncontrols = 146, ICC = 0.05, p2 = 0.397, and p1 = 0.243.
 #' 
-#' cpa.irgtt.binary(nclusters=23, ncontrols = 146, ICC = 0.05, p2 = 0.397, p1 = 0.243, decrease = FALSE)
+#' cpa.irgtt.binary(nclusters=23, ncontrols = 146, 
+#'   ICC = 0.05, p2 = 0.397, p1 = 0.243, decrease = FALSE)
 #' 
 #' # 
 #' # The result, nsubjects = 7.96624, suggests 8 subjects per cluster 

@@ -448,7 +448,7 @@ cpa.sw.binary <- function(nclusters = NA,
       byrow = FALSE
     )
     sebeta <- sqrt(Var[2, 2] / DD)
-    z_half_alpha <- qnorm(1 − alpha / 2) 
+    z_half_alpha <- qnorm(1 - alpha / 2) 
     power <- pnorm(beta / sebeta - z_half_alpha, lower.tail = TRUE) +
       pnorm(-beta / sebeta - z_half_alpha, lower.tail = TRUE)
     

@@ -1,4 +1,4 @@
-#' @title Package-wide roxygen2 comments
+#' @name Package-wide roxygen2 comments
 #'
 #' @useDynLib clusterPower
 NULL

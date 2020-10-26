@@ -4,6 +4,10 @@
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' 
+#' @param ... Any argument passed to the function.
+#' 
+#' @return A helpful suggestion to use cps.ma.binary() instead.
+#' 
 #' @export
 cpa.ma.binary <- function(...) {
   return("No method exists for cpa.ma.binary. Use cps.ma.binary instead.")

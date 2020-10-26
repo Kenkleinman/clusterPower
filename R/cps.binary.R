@@ -62,6 +62,9 @@
 #' calculated power is returned regardless of value.
 #' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
 #' is more than 2 minutes. Defaults to TRUE.
+#' @param irgtt Logical. Default = FALSE. Is the experimental design an 
+#' individually randomized group treatment trial? For details, 
+#' see ?cps.irgtt.binary. 
 #'  
 #' @return If \code{nofit = F}, a list with the following components:
 #' \itemize{
@@ -142,9 +145,12 @@
 #' (\email{acbro0@@umass.edu}), and Ken Kleinman 
 #' (\email{ken.kleinman@@gmail.com})
 #' #' 
-#' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation Coefficient in Cluster Randomized Trials: 
-#' A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. doi: 10.1111/j.1751-5823.2009.00092.x
-#' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and Advanced Multilevel Modelling. London, 1999: Sage.
+#' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation 
+#' Coefficient in Cluster Randomized Trials: 
+#' A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. 
+#' doi: 10.1111/j.1751-5823.2009.00092.x
+#' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and 
+#' Advanced Multilevel Modelling. London, 1999: Sage.
 #' @references Wu S, Crespi CM, Wong WK. Comparison of Methods for Estimating Intraclass
 #' Correlation Coefficient for Binary Responses in Cancer Prevention Cluster Randomized
 #' Trials. Contemp Clin Trials. 2012; 33(5): 869-880. doi:10.1016/j.cct.2012.05.004 
@@ -158,9 +164,11 @@
 #' # the second arm.
 #' 
 #' \dontrun{
-#' binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.8,
-#'                         p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
-#'                         method = 'glmm', allSimData = FALSE)
+#' binary.sim = cps.binary(nsim = 100, nsubjects = 20, 
+#'   nclusters = 10, p1 = 0.8,
+#'   p2 = 0.5, sigma_b_sq = 1, 
+#'   sigma_b_sq2 = 1.2, alpha = 0.05, 
+#'   method = 'glmm', allSimData = FALSE)
 #' }
 #'
 #' # Estimate power for a trial just as above, except that in the first arm,
@@ -168,9 +176,12 @@
 #' # cluster, while in the second arm all clusters have 20 subjects.
 #' 
 #' \dontrun{
-#' binary.sim2 = cps.binary(nsim = 100, nsubjects = c(c(rep(10,9),100),rep(20,10)), nclusters = 10, p1 = 0.8,
-#'                         p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
-#'                         method = 'gee', allSimData = FALSE)
+#' binary.sim2 = cps.binary(nsim = 100, 
+#'   nsubjects = c(c(rep(10,9),100), rep(20,10)), 
+#'   nclusters = 10, p1 = 0.8,
+#'   p2 = 0.5, sigma_b_sq = 1, 
+#'   sigma_b_sq2 = 1.2, alpha = 0.05, 
+#'   method = 'gee', allSimData = FALSE)
 #' }
 #'
 #'

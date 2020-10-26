@@ -36,7 +36,8 @@
 #' @examples 
 #' # Find the required number of control subjects for an IRGTT with alpha = 0.05, power = 0.80,
 #' # nclusters = 10, nsubjects = 10, d = 0.5 units, varu = 0.1, varei = 0.9, varr = 1.
-#' cpa.irgtt.normal(nclusters=10, nsubjects = 10, d = 0.5, varu = 0.1, varei = 0.9, varr = 1)
+#' cpa.irgtt.normal(nclusters=10, nsubjects = 10, 
+#'   d = 0.5, varu = 0.1, varei = 0.9, varr = 1)
 #' # 
 #' # The result, ncontrols = 77.81084, suggests 78 subjects in the control arm should be recruited.
 #' # This means that the total number of subjects in the study is nclusters*nsubjects + ncontrols = 10*10 + 78 = 178.
