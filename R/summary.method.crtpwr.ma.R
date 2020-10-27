@@ -1,4 +1,8 @@
+#'
+#' 
+#'  
 #' @export
+#' 
 
 setMethod(
   "summary",
@@ -21,4 +25,4 @@ setMethod(
     print(table(object[['convergence']]))
   }
 )
-#setClass('crtpwr')
+

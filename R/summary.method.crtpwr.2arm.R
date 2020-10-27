@@ -1,3 +1,5 @@
+#' 
+#' 
 #' @export
 
 setMethod(
@@ -19,4 +21,3 @@ setMethod(
     print(table(object[['convergence']]))
   }
 )
-#setClass('crtpwr')
