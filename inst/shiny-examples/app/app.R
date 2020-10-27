@@ -2405,16 +2405,16 @@ server <- function(input, output, session) {
     fun <- function(x) {
       x <- enquo(x)
       sol <-
-        ggplot(data, aes(power, y = !!x)) +
+        ggplot(data, aes(x=!!x, y = power)) +
         geom_point(aes(colour = "fff"), size = 2.5) +
         theme_minimal() + theme(legend.position = "none")
       return(sol)
     }
     power_plot <- suppressWarnings(fun(get(var)))
     if (nrow(data) > 1) {
-      power_plot <- power_plot + geom_line(aes(colour = "fff"), size = 1.25) + ylab(var)
+      power_plot <- power_plot + geom_line(aes(colour = "fff"), size = 1.25) + xlab(var)
     } else {
-      power_plot <- power_plot + ylab(var)
+      power_plot <- power_plot + xlab(var)
     }
     return(power_plot)
   }
@@ -2426,7 +2426,7 @@ server <- function(input, output, session) {
   
   output$dp <- renderTable({
     q <- plot_this()
-    nearPoints(q, input$click, yvar = input$axisname)
+    nearPoints(q, input$click, xvar = input$axisname)
   })
   
   # create reactive input data table
