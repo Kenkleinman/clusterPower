@@ -277,6 +277,7 @@ cps.ma.count <- function(nsim = 1000,
                          return.all.models = FALSE,
                          nofit = FALSE,
                          opt = "NLOPT_LN_BOBYQA") {
+  converge <- NULL
   # use this later to determine total elapsed time
   start.time <- Sys.time()
   
@@ -493,17 +494,17 @@ cps.ma.count <- function(nsim = 1000,
     sig.val <-  ifelse(p.val < alpha, 1, 0)
     pval.power <- apply(sig.val, 2, sum)
     
-    converged <- as.vector(rep(NA, times = nsim))
+    converge <- as.vector(rep(NA, times = nsim))
     for (i in 1:nsim) {
-      converged[i] <-
+      converge[i] <-
         ifelse(is.null(count.ma.rct[[1]][[i]]$optinfo$conv$lme4$messages),
                TRUE,
                FALSE)
     }
-    cps.model.temp <- data.frame(converged, p.val)
-    colnames(cps.model.temp)[1] <- "converged"
+    cps.model.temp <- data.frame(converge, p.val)
+    colnames(cps.model.temp)[1] <- "converge"
     cps.model.temp2 <-
-      dplyr::filter(cps.model.temp, converged == TRUE)
+      dplyr::filter(cps.model.temp, converge == TRUE)
     if (isTRUE(nrow(cps.model.temp2) < (.25 * nsim))) {
       warning(paste0(
         nrow(cps.model.temp2),

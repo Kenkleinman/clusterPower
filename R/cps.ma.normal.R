@@ -203,7 +203,7 @@ cps.ma.normal <- function(nsim = 1000,
                           optmethod = "nlminb",
                           nofit = FALSE,
                           timelimitOverride = TRUE) {
-  
+  converge <- NULL
   # create narms and nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
     # create narms and nclusters if not supplied by the user

@@ -19,16 +19,16 @@ Imports: lme4 (>= 1.0),
     car (>= 3.0-4),
     lmerTest (>= 3.1-2),
     nlme (>= 3.1-149),
+    foreach (>= 1.5.0),
+    shiny (>= 1.0.5),
     methods (>= 4.0.0)
-Description: Calculate power for cluster randomized trials (CRTs) that compare two means, two proportions, or two counts using closed-form solutions. In addition, calculate power for cluster randomized  crossover trials using Monte Carlo methods. For more information, see Reich et al. (2012) <doi:10.1371/journal.pone.0035564>.
+Description: Calculate power for cluster randomized trials (CRTs) that compare two means, two proportions, or two counts using closed-form solutions. In addition, calculate power for cluster randomized crossover trials (including multi-arm designs) using Monte Carlo methods. For more information, see Reich et al. (2012) <doi:10.1371/journal.pone.0035564>.
 Suggests: 
     geepack(>= 1.2),
     nloptr (>= 1.2.2.2),
     optimx (>= 2020-4.2),
     doSNOW (>= 1.0.18),
     doParallel (>= 1.0.15),
-    foreach (>= 1.5.0),
-    shiny (>= 1.0.5),
     shinyBS (>= 0.61),
     tidyverse (>= 1.1.1),
     DT (>= 0.2),

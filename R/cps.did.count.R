@@ -156,7 +156,7 @@ cps.did.count = function(nsim = NULL,
                          poorFitOverride = FALSE,
                          lowPowerOverride = FALSE, 
                          timelimitOverride = TRUE,
-                         seed = NULL,
+                         seed = NA,
                          nofit = FALSE) {
   if (!is.na(seed)) {
     set.seed(seed = seed)

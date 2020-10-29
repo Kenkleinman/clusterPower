@@ -170,6 +170,7 @@ cps.ma.binary <- function(nsim = 1000,
                           opt = "bobyqa",
                           optmethod = "Nelder-Mead",
                           return.all.models = FALSE) {
+  converge <- NULL
   # use this later to determine total elapsed time
   start.time <- Sys.time()
   

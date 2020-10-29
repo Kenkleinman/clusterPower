@@ -53,7 +53,7 @@
 #' @param nofit Option to skip model fitting and analysis and return the simulated data.
 #' Defaults to \code{FALSE}.
 #' @param seed Option to set seed. Default is NA.
-#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). 
+#' @param optimizer Option to fit with a different optimizer (using the package \code{optimx}). 
 #' Defaults to L-BFGS-B.
 #' 
 #' @return A list with the following components
@@ -125,7 +125,7 @@ cps.irgtt.count <-
            timelimitOverride = TRUE,
            nofit = FALSE,
            seed = NA,
-           opt = "L-BFGS-B") {
+           optimizer = "L-BFGS-B") {
     if (sigma_b_sq == 0 & sigma_b_sq2 == 0) {
       warning(
         "sigma_b_sq in both arms is 0. This is equivalent to a t-test. Did you mean to
@@ -165,7 +165,7 @@ cps.irgtt.count <-
         nofit = nofit,
         seed = seed,
         irgtt = TRUE,
-        opt = opt
+        optimizer = optimizer
       )
     return(sim)
   }

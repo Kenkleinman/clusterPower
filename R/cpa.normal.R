@@ -131,27 +131,13 @@ cpa.normal <- function(alpha = 0.05,
                        tol = .Machine$double.eps ^ 0.25) {
   method <- match.arg(method)
 
-  if (length(nsubjects == 1)) {
-    nsubjects <- rep(nsubjects, times = nclusters)
-  }
-  if (nclusters != length(nsubjects)) {
-    errorCondition("The length of nsubjects must equal nclusters.")
+  if (length(nsubjects == 1) & is.na(CV)) {
+    stop(message = "When nsubjects is a scalar (not a vector), CV must be provided by the user.")
   }
   
   # if nsubjects is a vector,
-  if (length(nsubjects) > 1) {
-    if (!is.na(CV) || !is.na(nclusters)) {
-    warningCondition("When nsubjects is a vector, user-entered CV and nclusters is ignored.")
-    }
-    nvec <- nsubjects
-    nsubjects <- mean(nvec)
-    nsd <- stats::sd(nvec)
-    CV <- nsd / nsubjects
-    nclusters <- length(nvec)
-  }
-  
-  if (!is.na(nclusters) && nclusters <= 1) {
-    stop("'nclusters' must be greater than 1.")
+  if (length(nsubjects) > 1 & is.na(CV) & is.na(sigma_b_sq)) {
+    CV <- stats::sd(nsubjects) / nsubjects
   }
   
   # check for sufficient variance parameters
@@ -186,20 +172,19 @@ cpa.normal <- function(alpha = 0.05,
   
   # list of needed inputs
   needlist <-
-    list(alpha, power, nclusters, nsubjects, CV, d)
+    list(alpha, power, nclusters, nsubjects, d)
   neednames <-
     c("alpha",
       "power",
       "nclusters",
       "nsubjects",
-      "CV",
       "d"
       )
   needind <- which(unlist(lapply(needlist, is.na)))
   # check to see that exactly one needed param is NA
   
   if (length(needind) != 1) {
-    neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'CV', and 'd' must be NA."
+    neederror = "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'd' must be NA."
     stop(neederror)
   }
   
@@ -235,7 +220,7 @@ cpa.normal <- function(alpha = 0.05,
     ncp <-
       sqrt(nclusters * nsubjects / (2 * VIF)) * abs(d) / sqrt(vart)
     
-    pt(tcrit, 2 * (nclusters - 1), ncp, lower.tail = FALSE) #+ pt(-tcrit, 2*(nclusters - 1), ncp, lower.tail = TRUE)
+    pt(tcrit, 2 * (nclusters - 1), ncp, lower.tail = FALSE) 
   })
   
   # calculate alpha
@@ -244,6 +229,7 @@ cpa.normal <- function(alpha = 0.05,
       eval(pwr) - power,
       interval = c(1e-10, 1 - 1e-10),
       tol = tol)$root
+
   }
   
   # calculate power
@@ -270,17 +256,6 @@ cpa.normal <- function(alpha = 0.05,
       interval = c(2 + 1e-10, 1e+07),
       tol = tol,
       extendInt = "upX", maxiter = 2000
-    )$root
-  }
-  
-  # calculate CV
-  if (is.na(CV)) {
-    CV <- stats::uniroot(
-      function(CV)
-        eval(pwr) - power,
-      interval = c(1e-10, 1e+07),
-      tol = tol,
-      extendInt = "downX", maxiter = 2000
     )$root
   }
   
@@ -314,5 +289,5 @@ cpa.normal <- function(alpha = 0.05,
     )$root
   }
   
-  structure(get(target), names = target)
+  return(structure(get(target), names = target))
 }

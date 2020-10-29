@@ -503,9 +503,7 @@ cps.count = function(nsim = NULL,
     
     # Fit GLMM (lmer)
     if (method == 'glmm') {
-      require("lme4")
       if (i == 1) {
-        require("optimx")
         if (isTRUE(optimizer == "auto")) {
           if (irgtt == FALSE) {
             if (analysis == 'poisson') {

@@ -1,4 +1,8 @@
+#' A summary method for 2-arm simulation crtpwr objects (crtpwr)
 #' 
+#' @param object A crtpwr object
+#' @param ... other arguments passed to the summary method
+#'  
 #' 
 #' @export
 
