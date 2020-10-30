@@ -136,8 +136,7 @@
 #' Defaults to \code{FALSE}.
 #'
 #' @param opt Optimizer for model fitting, from the package \code{optimx} or \code{nloptwrap}.
-#' Default is 'NLOPT_LN_BOBYQA'. XX KK JN Note: This needs to be discussed more with Lexi in
-#' conjuction with other optimization/singularity/convergence problems.
+#' Default is 'NLOPT_LN_BOBYQA'. 
 #'
 #'
 #'

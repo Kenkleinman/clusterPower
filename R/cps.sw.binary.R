@@ -38,7 +38,8 @@
 #' @param alpha Significance level. Default = 0.05.
 #' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
+#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; 
+#' default is FALSE.
 #' @param allSimData Option to output list of all simulated datasets; default = FALSE.
 #' @param poorFitOverride Option to override \code{stop()} if more than 25\%
 #' of fits fail to converge; default = FALSE.
@@ -49,7 +50,8 @@
 #' calculated power is returned regardless of value.
 #' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
 #' is more than 2 minutes. Defaults to TRUE.
-#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'L-BFGS-B'.
+#' @param optmethod Option to fit with a different optimizer method (using the package \code{optimx}). 
+#' Default is 'L-BFGS-B'.
 #' @param seed Option to set.seed. Default is NULL.
 #'
 #' @return A list with the following components
@@ -124,7 +126,7 @@ cps.sw.binary = function(nsim = NULL,
                          poorFitOverride = FALSE,
                          lowPowerOverride = FALSE,
                          timelimitOverride = TRUE,
-                         opt = 'L-BFGS-B',
+                        optmethod= 'L-BFGS-B',
                          seed = NULL) {
   if (!is.na(seed)) {
     set.seed(seed = seed)
@@ -273,7 +275,7 @@ cps.sw.binary = function(nsim = NULL,
       "allSimData must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
     )
   }
-  
+  browser()
   # Calculate ICC1 (sigma_b_sq / (sigma_b_sq + pi^2/3))
   icc1 = mean(sapply(1:2, function(x)
     sigma_b_sq[x] / (sigma_b_sq[x] + pi ^ 2 / 3)))
@@ -354,8 +356,23 @@ cps.sw.binary = function(nsim = NULL,
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
     
+    sim.dat$period <- as.factor(sim.dat$period)
+    sim.dat$clust <- as.factor(sim.dat$clust)
+    sim.dat$time.point <- as.factor(sim.dat$time.point)
+    sim.dat$trt <- as.factor(sim.dat$trt)
+    sim.dat$y <- as.factor(sim.dat$y)
+    
     # Fit GLMM (lmer)
     if (method == 'glmm') {
+      # Option to use optimizerSearch
+      if (i == 1 & optmethod == "auto") {
+        my.mod = lme4::glmer(
+          y ~ trt + time.point + (1 | clust),
+          data = sim.dat,
+          family = stats::binomial(link = 'logit')
+          )
+        optmethod <- optimizerSearch(my.mod)
+      } 
       my.mod = lme4::glmer(
         y ~ trt + time.point + (1 | clust),
         data = sim.dat,
@@ -364,7 +381,7 @@ cps.sw.binary = function(nsim = NULL,
           optimizer = "optimx",
           calc.derivs = TRUE,
           optCtrl = list(
-            method = opt,
+            method = optmethod,
             starttests = FALSE,
             kkt = FALSE
           )
@@ -395,9 +412,10 @@ cps.sw.binary = function(nsim = NULL,
       pval.vector[i] = gee.values['trt', 'Pr(>|W|)']
       converge[i] = ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
     }
-
+    
     # option to stop the function early if fits are singular
-    if (poorFitOverride == FALSE && converge[i] == FALSE && i > 50) {
+    if (poorFitOverride == FALSE &&
+        converge[i] == FALSE && i > 50) {
       if (sum(converge == FALSE, na.rm = TRUE) > (nsim * .25)) {
         stop("more than 25% of simulations are singular fit: check model specifications")
       }
@@ -448,29 +466,29 @@ cps.sw.binary = function(nsim = NULL,
           )
         )
       }
-      # Iterate progress bar
-      prog.bar$update(i / nsim)
-      Sys.sleep(1 / 100)
-      
-      if (i == nsim) {
-        total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-        hr.est = total.est %/% 3600
-        min.est = total.est %/% 60
-        sec.est = round(total.est %% 60, 0)
-        message(
-          paste0(
-            "Simulations Complete! Time Completed: ",
-            Sys.time(),
-            "\nTotal Runtime: ",
-            hr.est,
-            'Hr:',
-            min.est,
-            'Min:',
-            sec.est,
-            'Sec'
-          )
+    }
+    # Iterate progress bar
+    prog.bar$update(i / nsim)
+    Sys.sleep(1 / 100)
+    
+    if (i == nsim) {
+      total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+      hr.est = total.est %/% 3600
+      min.est = total.est %/% 60
+      sec.est = round(total.est %% 60, 0)
+      message(
+        paste0(
+          "Simulations Complete! Time Completed: ",
+          Sys.time(),
+          "\nTotal Runtime: ",
+          hr.est,
+          'Hr:',
+          min.est,
+          'Min:',
+          sec.est,
+          'Sec'
         )
-      }
+      )
     }
   }
   

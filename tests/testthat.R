@@ -705,9 +705,9 @@ test_that("analytic binary irgtt power is within simulated method binary irgtt C
               nclusters = 10,
               nsubjects = 30,
               ncontrols = 30,
-              icc = 0.25,
-              p.e = 0.5,
-              p.c = 0.2,
+              ICC = 0.25,
+              p2 = 0.5,
+              p1 = 0.2,
               power = NA
             )
             expect_equal(
@@ -746,9 +746,9 @@ test_that("analytic binary irgtt case matches a constant: power", {
       nclusters = 120,
       nsubjects = 12,
       ncontrols = 300,
-      icc = 0.4,
-      p.e = 0.2,
-      p.c = 0.3,
+      ICC = 0.4,
+      p2 = 0.2,
+      p1 = 0.3,
       power = NA
     ),
     2
@@ -762,9 +762,9 @@ test_that("analytic binary irgtt case matches a constant: icc calc", {
       nclusters = 120,
       nsubjects = 12,
       ncontrols = 300,
-      icc = NA,
-      p.e = 0.2,
-      p.c = 0.3,
+      ICC = NA,
+      p2 = 0.2,
+      p1 = 0.3,
       power = 0.79
     ),
     2
@@ -778,9 +778,9 @@ test_that("analytic binary irgtt case matches a constant: nsubjects", {
       nclusters = 120,
       nsubjects = NA,
       ncontrols = 300,
-      icc = 0.4054797,
-      p.e = 0.2,
-      p.c = 0.3,
+      ICC = 0.4054797,
+      p2 = 0.2,
+      p1 = 0.3,
       power = 0.79
     ),
     2
@@ -794,9 +794,9 @@ test_that("analytic binary irgtt case matches a constant: nclusters", {
       nclusters = NA,
       nsubjects = 12,
       ncontrols = 300,
-      icc = 0.4054797,
-      p.e = 0.2,
-      p.c = 0.3,
+      ICC = 0.4054797,
+      p2 = 0.2,
+      p1 = 0.3,
       power = 0.79
     ),
     2
@@ -804,15 +804,15 @@ test_that("analytic binary irgtt case matches a constant: nclusters", {
   120)
 })
 
-test_that("analytic binary irgtt case matches a constant: p.c", {
+test_that("analytic binary irgtt case matches a constant: p1", {
   expect_equal(as.numeric(signif(
     cpa.irgtt.binary(
       nclusters = 120,
       nsubjects = 12,
       ncontrols = 300,
-      icc = 0.4054797,
-      p.e = 0.2,
-      p.c = NA,
+      ICC = 0.4054797,
+      p2 = 0.2,
+      p1 = NA,
       power = 0.79
     ),
     2
@@ -820,15 +820,15 @@ test_that("analytic binary irgtt case matches a constant: p.c", {
   0.3)
 })
 
-test_that("analytic binary irgtt case matches a constant: p.e", {
+test_that("analytic binary irgtt case matches a constant: p2", {
   expect_equal(as.numeric(signif(
     cpa.irgtt.binary(
       nclusters = 120,
       nsubjects = 12,
       ncontrols = 300,
-      icc = 0.4054797,
-      p.e = NA,
-      p.c = 0.3,
+      ICC = 0.4054797,
+      p2 = NA,
+      p1 = 0.3,
       power = 0.79
     ),
     2
@@ -871,9 +871,9 @@ test_that("analytic irgtt power is within simulated method count irgtt CI", {
     nclusters = 10,
     nsubjects = 30,
     ncontrols = 30,
-    icc = 0.25,
-    p.e = 0.5,
-    p.c = 0.2,
+    ICC = 0.25,
+    p2 = 0.5,
+    p1 = 0.2,
     power = NA
   )
   expect_equal(
@@ -916,7 +916,7 @@ test_that("analytic normal SW outcome is within estimated CI of simulated SW met
               nclusters = 300,
               ntimes = 5,
               d = 1.75,
-              icc = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
+              ICC = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
               rho_c = 0.5,
               rho_s = 0.25,
               vart = 2322.988,
@@ -960,7 +960,7 @@ test_that("analytic normal SW case matches a constant", {
       nclusters = 300,
       ntimes = 5,
       d = 1.75,
-      icc = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
+      ICC = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
       rho_c = 0.5,
       rho_s = 0.25,
       vart = 2322.988,
@@ -978,7 +978,7 @@ test_that("analytic normal SW case matches a constant: vart", {
       nclusters = 300,
       ntimes = 5,
       d = 1.75,
-      icc = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
+      ICC = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
       rho_c = 0.5,
       rho_s = 0.25,
       vart = NA,
@@ -995,7 +995,7 @@ test_that("analytic normal SW case matches a constant: nsubjects", {
       nclusters = 300,
       ntimes = 5,
       d = 1.75,
-      icc = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
+      ICC = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
       rho_c = 0.5,
       rho_s = 0.25,
       vart = 2322.988,
@@ -1012,7 +1012,7 @@ test_that("analytic normal SW case matches a constant: nclusters", {
       nclusters = NA,
       ntimes = 5,
       d = 1.75,
-      icc = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
+      ICC = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
       rho_c = 0.5,
       rho_s = 0.25,
       vart = 2322.988,
@@ -1029,7 +1029,7 @@ test_that("analytic normal SW case matches a constant: ntimes", {
       nclusters = 300,
       ntimes = NA,
       d = 1.75,
-      icc = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
+      ICC = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
       rho_c = 0.5,
       rho_s = 0.25,
       vart = 2322.988,
@@ -1046,7 +1046,7 @@ test_that("analytic normal SW case matches a constant: d", {
       nclusters = 300,
       ntimes = 5,
       d = NA,
-      icc = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
+      ICC = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
       rho_c = 0.5,
       rho_s = 0.25,
       vart = 2322.988,
@@ -1056,14 +1056,14 @@ test_that("analytic normal SW case matches a constant: d", {
   1.75)
 })
 
-test_that("analytic normal SW case matches a constant: icc", {
+test_that("analytic normal SW case matches a constant: ICC", {
   expect_equal(signif(as.numeric(
     cpa.sw.normal(
       nsubjects = 50.00003,
       nclusters = 300,
       ntimes = 5,
       d = 1.75,
-      icc = NA,
+      ICC = NA,
       rho_c = 0.5,
       rho_s = 0.25,
       vart = 2322.988,
@@ -1084,7 +1084,7 @@ test_that("analytic normal SW case matches a constant: rho_c", {
       nclusters = 300,
       ntimes = 5,
       d = 1.75,
-      icc = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
+      ICC = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
       rho_c = NA,
       rho_s = 0.25,
       vart = 2322.988,
@@ -1101,7 +1101,7 @@ test_that("analytic normal SW case matches a constant: rho_s", {
       nclusters = 300,
       ntimes = 5,
       d = 1.75,
-      icc = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
+      ICC = clusterPower::createMissingVarianceParam(sigma_sq = c(100), sigma_b_sq = c(30)),
       rho_c = 0.4999818,
       rho_s = NA,
       vart = 2322.988,
@@ -1121,7 +1121,7 @@ test_that("analytic normal SW case matches a function from SWSamp pkg", {
       nsubjects = 20,
       ntimes = 4,
       d = 5,
-      icc = 0.05,
+      ICC = 0.05,
       rho_c = 1,
       rho_s = 0,
       vart = 400
@@ -1165,8 +1165,8 @@ test_that("binary multi-arm case matches 2-arm binary case (simulated method)",
                 quiet = FALSE,
                 method = 'glmm',
                 allSimData = FALSE,
-                multi.p.method = "none",
-                poor.fit.override = TRUE,
+                multi_p_method = "none",
+                poorFitOverride = TRUE,
                 seed = 123,
                 cores = "all"
               )[[1]][1]
@@ -1286,7 +1286,7 @@ test_that("continuous simulation method matches a reference (previous value)",
                 allSimData = FALSE,
                 seed = 123,
                 cores = "all",
-                poor.fit.override = FALSE,
+                poorFitOverride = FALSE,
                 opt = "nlminb"
               )
             prev.value <- t(data.frame(0.34, 0.45))
@@ -1320,7 +1320,7 @@ test_that("normal vs t-dist comparison", {
       quiet = FALSE,
       method = 'glmm',
       allSimData = FALSE,
-      poor.fit.override = TRUE,
+      poorFitOverride = TRUE,
       cores = "all"
     )
     multi.cps.tdist <- cps.ma.normal(
@@ -1336,7 +1336,7 @@ test_that("normal vs t-dist comparison", {
       quiet = FALSE,
       method = 'glmm',
       allSimData = FALSE,
-      poor.fit.override = TRUE,
+      poorFitOverride = TRUE,
       cores = "all"
     )
     if (round(multi.cps.normal[['power']]['Power'], 2) == round(multi.cps.tdist[['power']]['Power'], 2)) {
@@ -1371,7 +1371,7 @@ test_that("continuous simulation method matches the analytic method", {
         quiet = FALSE,
         method = 'glmm',
         allSimData = FALSE,
-        poor.fit.override = TRUE,
+        poorFitOverride = TRUE,
         low.power.override = TRUE,
         cores = NULL,
         optmethod = "NLOPT_LN_NELDERMEAD"
@@ -1456,9 +1456,9 @@ test_that("continuous simulation method matches the 2-arm simulation method",
                 sigma_b_sq = sig[i], alpha = 0.05,
                 quiet = FALSE, method = 'glmm', 
                 allSimData = FALSE, 
-                multi.p.method = "none",
+                multi_p_method = "none",
                 seed = 123, cores = "all", 
-                poor.fit.override = TRUE  
+                poorFitOverride = TRUE  
               )
               twoarm.mean <-
                 cps.normal(
@@ -1507,8 +1507,8 @@ test_that("count simulation method matches the 2-arm simulation method", {
       quiet = TRUE,
       method = 'glmm',
       allSimData = FALSE,
-      multi.p.method = "none",
-      poor.fit.override = TRUE
+      multi_p_method = "none",
+      poorFitOverride = TRUE
     )
     count.sim = cps.count(
       nsim = 100,
@@ -1613,7 +1613,6 @@ test_that("type1ErrTest matches a reference", {
 context("optimizerSearch")
 
 test_that("optimizerSearch matches a reference", {
-  library(lattice)
   gm1 <-
     glmer(
       cbind(incidence, size - incidence) ~ period + (1 | herd),
