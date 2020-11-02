@@ -324,12 +324,21 @@ cps.ma.count <- function(nsim = 1000,
     stop("nsubjects must be positive integer values.")
   }
   
+  # Generate nclusters vector when a scalar is provided but nsubjects is a vector
+  if (length(nclusters) == 1 & length(nsubjects) > 1) {
+    nclusters <- rep(nclusters, length(nsubjects))
+  }
   # Create nsubjects structure from narms and nclusters when nsubjects is scalar
   if (length(nsubjects) == 1) {
     str.nsubjects <- lapply(nclusters, function(x)
       rep(nsubjects, x))
   } else {
-    str.nsubjects <- nsubjects
+    str.nsubjects <- list()
+    for (i in 1:length(nsubjects)) {
+      for (j in nclusters) {
+        str.nsubjects[[i]] <- rep(nsubjects[i], times = j)
+      }
+    }
   }
   
   # allow entries to be entered as text for Shiny app
@@ -364,13 +373,6 @@ cps.ma.count <- function(nsim = 1000,
   if (narms < 3) {
     message("Warning: LRT significance not calculable when narms<3. Use cps.count() instead.")
   }
-  
-  # validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma=NA,
-  #                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA,
-  #                   sigma_b2=NA, method=method, quiet=quiet,
-  #                   all.sim.data=allSimData,
-  #                   poor.fit.override=poorFitOverride,
-  #                   cores=cores)
   
   # Set warnings to OFF
   # Note: Warnings will still be stored in 'warning.list'

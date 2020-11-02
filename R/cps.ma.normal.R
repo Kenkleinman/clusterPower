@@ -221,8 +221,8 @@ cps.ma.normal <- function(nsim = 1000,
     narms <- length(nclusters)
   }
   
-   # input validation steps
-
+  # input validation steps
+  
   if (!is.wholenumber(nsim) || nsim < 1 || length(nsim) > 1) {
     stop("nsim must be a positive integer of length 1.")
   }
@@ -254,23 +254,33 @@ cps.ma.normal <- function(nsim = 1000,
   )
   
   # nclusters must be positive whole numbers
-
+  
   if (sum(is.wholenumber(nclusters) == FALSE) != 0 ||
       sum(unlist(nclusters) < 1) != 0) {
     stop("nclusters must be postive integer values.")
   }
-
+  
   # nsubjects must be positive whole numbers
   if (sum(is.wholenumber(unlist(nsubjects)) == FALSE) != 0 ||
       sum(unlist(nsubjects) < 1) != 0) {
-   stop("nsubjects must be positive integer values.")
+    stop("nsubjects must be positive integer values.")
+  }
+  
+  # Generate nclusters vector when a scalar is provided but nsubjects is a vector
+  if (length(nclusters) == 1 & length(nsubjects) > 1) {
+    nclusters <- rep(nclusters, length(nsubjects))
   }
   # Create nsubjects structure from narms and nclusters when nsubjects is scalar
   if (length(nsubjects) == 1) {
     str.nsubjects <- lapply(nclusters, function(x)
       rep(nsubjects, x))
   } else {
-    str.nsubjects <- nsubjects
+    str.nsubjects <- list()
+    for (i in 1:length(nsubjects)) {
+      for (j in nclusters) {
+        str.nsubjects[[i]] <- rep(nsubjects[i], times = j)
+      }
+    }
   }
   
   # allows for means, sigma_sq, sigma_b_sq, and ICC to be entered as scalar
@@ -310,7 +320,7 @@ cps.ma.normal <- function(nsim = 1000,
   type1ErrTest(sigma_sq_ = sigma_sq,
                sigma_b_sq_ = sigma_b_sq,
                nsubjects_ = nsubjects)
-  
+
   # run the simulations
   normal.ma.rct <- cps.ma.normal.internal(
     nsim = nsim,
@@ -377,18 +387,18 @@ cps.ma.normal <- function(nsim = 1000,
     
     if (max(sigma_sq) != min(sigma_sq)) {
       for (i in 1:nsim) {
-        Estimates[i,] <- models[[i]][20][[1]][, 1]
-        std.error[i,] <- models[[i]][20][[1]][, 2]
-        t.val[i,] <- models[[i]][20][[1]][, 4]
-        p.val[i,] <- models[[i]][20][[1]][, 5]
+        Estimates[i, ] <- models[[i]][20][[1]][, 1]
+        std.error[i, ] <- models[[i]][20][[1]][, 2]
+        t.val[i, ] <- models[[i]][20][[1]][, 4]
+        p.val[i, ] <- models[[i]][20][[1]][, 5]
       }
       keep.names <- rownames(models[[1]][20][[1]])
     } else {
       for (i in 1:nsim) {
-        Estimates[i,] <- models[[i]][[10]][, 1]
-        std.error[i,] <- models[[i]][[10]][, 2]
-        t.val[i,] <- models[[i]][[10]][, 4]
-        p.val[i,] <- models[[i]][[10]][, 5]
+        Estimates[i, ] <- models[[i]][[10]][, 1]
+        std.error[i, ] <- models[[i]][[10]][, 2]
+        t.val[i, ] <- models[[i]][[10]][, 4]
+        p.val[i, ] <- models[[i]][[10]][, 5]
       }
       keep.names <- rownames(models[[1]][[10]])
     }
@@ -559,10 +569,10 @@ cps.ma.normal <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]]$coefficients[, 1]
-      std.error[i,] <- models[[i]]$coefficients[, 2]
-      Wald[i,] <- models[[i]]$coefficients[, 3]
-      Pr[i,] <-
+      Estimates[i, ] <- models[[i]]$coefficients[, 1]
+      std.error[i, ] <- models[[i]]$coefficients[, 2]
+      Wald[i, ] <- models[[i]]$coefficients[, 3]
+      Pr[i, ] <-
         p.adjust(models[[i]]$coefficients[, 4], method = multi_p_method)
     }
     

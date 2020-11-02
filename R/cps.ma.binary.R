@@ -226,12 +226,21 @@ cps.ma.binary <- function(nsim = 1000,
     stop("nsubjects must be positive integer values.")
   }
   
+  # Generate nclusters vector when a scalar is provided but nsubjects is a vector
+  if (length(nclusters) == 1 & length(nsubjects) > 1) {
+    nclusters <- rep(nclusters, length(nsubjects))
+  }
   # Create nsubjects structure from narms and nclusters when nsubjects is scalar
   if (length(nsubjects) == 1) {
     str.nsubjects <- lapply(nclusters, function(x)
       rep(nsubjects, x))
   } else {
-    str.nsubjects <- nsubjects
+    str.nsubjects <- list()
+    for (i in 1:length(nsubjects)) {
+      for (j in nclusters) {
+        str.nsubjects[[i]] <- rep(nsubjects[i], times = j)
+      }
+    }
   }
   
   # allows for probs, sigma_b_sq to be entered as scalar

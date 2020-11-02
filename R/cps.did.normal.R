@@ -1,38 +1,38 @@
 #' Power simulations for cluster-randomized trials: Difference in Difference Design, Continuous Outcome.
 #'
-#' This set of functions utilize iterative simulations to determine 
-#' approximate power for difference in difference cluster-randomized controlled trials. Users 
+#' This set of functions utilize iterative simulations to determine
+#' approximate power for difference in difference cluster-randomized controlled trials. Users
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
-#' 
+#'
 #' Runs the power simulation for difference in difference (DID) cluster-randomized controlled trial.
-#' 
-#' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per arm, expected absolute difference 
-#' between arms, two of the following: ICC, within-cluster variance, or 
-#' between-cluster variance; significance level, analytic method, progress updates, 
+#'
+#' Users must specify the desired number of simulations, number of subjects per
+#' cluster, number of clusters per arm, expected absolute difference
+#' between arms, two of the following: ICC, within-cluster variance, or
+#' between-cluster variance; significance level, analytic method, progress updates,
 #' and simulated data set output may also be specified.
-#' 
-#' 
+#'
+#'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per arm; accepts either a scalar (equal cluster sizes, both groups), 
-#' a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
+#' @param nsubjects Number of subjects per arm; accepts either a scalar (equal cluster sizes, both groups),
+#' a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)}
 #' (unequal cluster sizes within groups) (required).
-#' @param nclusters Number of clusters per group; accepts integer scalar or vector of length 2 for unequal number 
+#' @param nclusters Number of clusters per group; accepts integer scalar or vector of length 2 for unequal number
 #' of clusters per arm (required)
 #' @param mu Expected mean of arm 1; accepts numeric (required).
 #' @param mu2 Expected mean of arm 2; accepts numeric (required).
-#' @param sigma_sq Within-cluster variance; accepts numeric scalar (indicating equal within-cluster variances for both 
+#' @param sigma_sq Within-cluster variance; accepts numeric scalar (indicating equal within-cluster variances for both
 #' arms at both time points) or vector of length 4 specifying within-cluster variance for each arm at each time point.
-#' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
-#' between-cluster variances for both arms) or a vector of length 2 specifying treatment-specific 
+#' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal
+#' between-cluster variances for both arms) or a vector of length 2 specifying treatment-specific
 #' between-cluster variances
-#' @param sigma_b_sq1 Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
-#' between-cluster variances for both arm) or a vector of length 2 specifying treatment-specific 
-#' between-cluster variances. For data simulation, sigma_b_sq1 is added to sigma_b_sq0, such that if sigma_b_sq0 = 5 
+#' @param sigma_b_sq1 Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal
+#' between-cluster variances for both arm) or a vector of length 2 specifying treatment-specific
+#' between-cluster variances. For data simulation, sigma_b_sq1 is added to sigma_b_sq0, such that if sigma_b_sq0 = 5
 #' and sigma_b_sq1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.
 #' @param alpha Significance level. Default = 0.05.
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
 #' @param poorFitOverride Option to override \code{stop()} if more than 25\%
 #' of fits fail to converge; default = FALSE.
@@ -48,13 +48,13 @@
 #' @param nofit Option to skip model fitting and analysis and only return the simulated data.
 #' Default = \code{FALSE}.
 #' @param seed Option to set the seed. Default is NA.
-#' 
+#'
 #' @return A list with the following components:
 #' \itemize{
 #'   \item Character string indicating total number of simulations and simulation type
 #'   \item Number of simulations
-#'   \item Data frame with columns "Power" (Estimated statistical power), 
-#'                "lower.95.ci" (Lower 95% confidence interval bound), 
+#'   \item Data frame with columns "Power" (Estimated statistical power),
+#'                "lower.95.ci" (Lower 95% confidence interval bound),
 #'                "upper.95.ci" (Upper 95% confidence interval bound)
 #'   \item Analytic method used for power estimation
 #'   \item Significance level
@@ -63,45 +63,45 @@
 #'   \item Data frame reporting ICC, within & between cluster variances
 #'   for both arms at each time point
 #'   \item Vector containing expected difference between groups based on user inputs
-#'   \item Data frame with columns: 
-#'                   "Period" (Pre/Post-treatment indicator), 
-#'                   "Arm.2" (arm indicator), 
+#'   \item Data frame with columns:
+#'                   "Period" (Pre/Post-treatment indicator),
+#'                   "Arm.2" (arm indicator),
 #'                   "Value" (Mean response value)
-#'   \item Data frame with columns: 
-#'                   "Estimate" (Estimate of treatment effect for a given simulation), 
-#'                   "Std.err" (Standard error for treatment effect estimate), 
-#'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
-#'                   "p.value", 
+#'   \item Data frame with columns:
+#'                   "Estimate" (Estimate of treatment effect for a given simulation),
+#'                   "Std.err" (Standard error for treatment effect estimate),
+#'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)),
+#'                   "p.value",
 #'                   "sig.val" (Is p-value less than alpha?)
-#'   \item If \code{allSimData = TRUE}, a list of data frames, each containing: 
-#'                   "y" (Simulated response value), 
-#'                   "trt" (Indicator for arm), 
-#'                   "clust" (Indicator for cluster), 
+#'   \item If \code{allSimData = TRUE}, a list of data frames, each containing:
+#'                   "y" (Simulated response value),
+#'                   "trt" (Indicator for arm),
+#'                   "clust" (Indicator for cluster),
 #'                   "period" (Indicator for time point)
 #' }
 #' If \code{nofit = T}, a data frame of the simulated data sets, containing:
-#' 
+#'
 #' \itemize{
 #'   \item "arm" (Indicator for treatment arm)
 #'   \item "cluster" (Indicator for cluster)
 #'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
 #'   }
-#' 
-#' @examples 
-#' 
-#' # Estimate power for a trial with 6 clusters in arm 1 and 6 clusters in arm 2, 
-#' # those clusters having 120 subjects each, with sigma_sq = 1. Estimated 
-#' # arm means are 1 and 0.48 in the first and second arms, respectively, and we use 
-#' # 100 simulated data sets analyzed by the GLMM method. The resulting estimated 
+#'
+#' @examples
+#'
+#' # Estimate power for a trial with 6 clusters in arm 1 and 6 clusters in arm 2,
+#' # those clusters having 120 subjects each, with sigma_sq = 1. Estimated
+#' # arm means are 1 and 0.48 in the first and second arms, respectively, and we use
+#' # 100 simulated data sets analyzed by the GLMM method. The resulting estimated
 #' # power (for seed = 123) should be 0.81.
-#' 
+#'
 #' \dontrun{
-#' normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 120, nclusters = 6, 
-#'                                 mu = 1, mu2 = 0.48, sigma_sq = 1, alpha = 0.05, 
+#' normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 120, nclusters = 6,
+#'                                 mu = 1, mu2 = 0.48, sigma_sq = 1, alpha = 0.05,
 #'                                 sigma_b_sq0 = 0.1, method = 'glmm', seed = 123)
 #' }
-#' 
-#' @author Alexander R. Bogdan 
+#'
+#' @author Alexander R. Bogdan
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
@@ -120,7 +120,7 @@ cps.did.normal = function(nsim = NULL,
                           alpha = 0.05,
                           method = 'glmm',
                           poorFitOverride = FALSE,
-                          lowPowerOverride = FALSE, 
+                          lowPowerOverride = FALSE,
                           timelimitOverride = TRUE,
                           quiet = FALSE,
                           allSimData = FALSE,
@@ -393,16 +393,14 @@ cps.did.normal = function(nsim = NULL,
     }
     
     # option to stop the function early if fits are singular
-    if (poorFitOverride == FALSE && converge[i] == FALSE) {
+    if (poorFitOverride == FALSE & converge[i] == FALSE & i > 50) {
       if (sum(converge == FALSE, na.rm = TRUE) > (nsim * .25)) {
-        stop(
-          "more than 25% of simulations are singular fit: check model specifications"
-        )
+        stop("more than 25% of simulations are singular fit: check model specifications")
       }
     }
     
     # stop the loop if power is <0.5
-    if (lowPowerOverride == FALSE && i > 50 && (i %% 10 == 0)) {
+    if (lowPowerOverride == FALSE & i > 50 & (i %% 10 == 0)) {
       sig.val.temp <-
         ifelse(pval.vector < alpha, 1, 0)
       pval.power.temp <- sum(sig.val.temp, na.rm = TRUE) / i
@@ -419,20 +417,21 @@ cps.did.normal = function(nsim = NULL,
     }
     
     # Update progress information
-      if (i == 1) {
-        avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-        time.est = avg.iter.time * (nsim - 1) / 60
-        hr.est = time.est %/% 60
-        min.est = round(time.est %% 60, 0)
-        if (min.est > 2 && timelimitOverride == FALSE){
-          stop(paste0("Estimated completion time: ",
-                      hr.est,
-                      'Hr:',
-                      min.est,
-                      'Min'
-          ))
-        }
-        if (quiet == FALSE) {
+    if (i == 1) {
+      avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+      time.est = avg.iter.time * (nsim - 1) / 60
+      hr.est = time.est %/% 60
+      min.est = round(time.est %% 60, 0)
+      if (min.est > 2 && timelimitOverride == FALSE) {
+        stop(paste0(
+          "Estimated completion time: ",
+          hr.est,
+          'Hr:',
+          min.est,
+          'Min'
+        ))
+      }
+      if (quiet == FALSE) {
         message(
           paste0(
             'Begin simulations :: Start Time: ',
@@ -445,29 +444,29 @@ cps.did.normal = function(nsim = NULL,
           )
         )
       }
-      # Iterate progress bar
-      prog.bar$update(i / nsim)
-      Sys.sleep(1 / 100)
-      
-      if (i == nsim) {
-        total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-        hr.est = total.est %/% 3600
-        min.est = total.est %/% 60
-        sec.est = round(total.est %% 60, 0)
-        message(
-          paste0(
-            "Simulations Complete! Time Completed: ",
-            Sys.time(),
-            "\nTotal Runtime: ",
-            hr.est,
-            'Hr:',
-            min.est,
-            'Min:',
-            sec.est,
-            'Sec'
-          )
+    }
+    # Iterate progress bar
+    prog.bar$update(i / nsim)
+    Sys.sleep(1 / 100)
+    
+    if (i == nsim) {
+      total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+      hr.est = total.est %/% 3600
+      min.est = total.est %/% 60
+      sec.est = round(total.est %% 60, 0)
+      message(
+        paste0(
+          "Simulations Complete! Time Completed: ",
+          Sys.time(),
+          "\nTotal Runtime: ",
+          hr.est,
+          'Hr:',
+          min.est,
+          'Min:',
+          sec.est,
+          'Sec'
         )
-      }
+      )
     }
   }
   

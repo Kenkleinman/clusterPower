@@ -416,7 +416,7 @@ ui <- fluidPage(
           textInput(
             "sigma_b_sqcpsmanormal",
             "Between-cluster variance (comma delimited)",
-            value = "0.01, 0.01, 0.01"
+            value = "0.1, 0.1, 0.1"
           ),
           selectInput(
             "multi_p_methodcpsmanormal",
@@ -589,11 +589,11 @@ ui <- fluidPage(
         # cps.did.normal input start
         conditionalPanel(
           "input.type == 'Difference-in-Difference' && input.dist == 'Normal' && input.meth == 'Simulation'",
-          numericInput("nclusterscpsdidnormal", "Number of Clusters", value = 10),
+          numericInput("nclusterscpsdidnormal", "Number of Clusters", value = 6),
           numericInput(
             "nsubjectscpsdidnormal",
             "Number of Observations (per cluster)",
-            value = 20
+            value = 120
           ),
           numericInput(
             "nsimcpsdidnormal",
@@ -602,26 +602,26 @@ ui <- fluidPage(
             max = 500000,
             min = 0
           ),
-          numericInput("mucpsdidnormal", "Mean in arm 1", value = 1.4),
-          numericInput("mu2cpsdidnormal", "Mean in arm 2", value = 3.2),
+          numericInput("mucpsdidnormal", "Mean in arm 1", value = 1),
+          numericInput("mu2cpsdidnormal", "Mean in arm 2", value = 0.48),
           numericInput(
-            "sigma_sq",
+            "sigma_sqcpsdidnormal",
             "Within-cluster variance (Arm 1)",
             step = 0.001,
-            value = 0.01,
+            value = 1,
             min = 0
           ),
           numericInput(
             "sigma_b_sq0cpsdidnormal",
             "Pre-treatment between-cluster variance",
-            value = 0,
+            value = 0.1,
             step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sq1cpsdidnormal",
             "Post-treatment between-cluster variance",
-            value = 0,
+            value = 0.1,
             step = 0.001,
             min = 0
           )
@@ -677,7 +677,7 @@ ui <- fluidPage(
           numericInput(
             "p1cpsdidbinary",
             "Outcome proportion (Arm 1)",
-            value = 0.1,
+            value = 0.2,
             step = 0.001,
             min = 0,
             max = 1
@@ -685,7 +685,7 @@ ui <- fluidPage(
           numericInput(
             "p2cpsdidbinary",
             "Outcome proportion (Arm 2)",
-            value = 0.5,
+            value = 0.45,
             step = 0.001,
             min = 0,
             max = 1
@@ -693,7 +693,7 @@ ui <- fluidPage(
           numericInput(
             "sigma_b_sq0cpsdidbinary",
             "Pre-treatment between-cluster variance",
-            value = 0,
+            value = 1,
             step = 0.001,
             min = 0
           ),
@@ -715,11 +715,11 @@ ui <- fluidPage(
         # cps.did.count input start
         conditionalPanel(
           "input.type == 'Difference-in-Difference' && input.dist == 'Count' && input.meth == 'Simulation'",
-          numericInput("nclusterscpsdidcount", "Number of Clusters", value = 10),
+          numericInput("nclusterscpsdidcount", "Number of Clusters", value = 7),
           numericInput(
             "nsubjectscpsdidcount",
             "Number of Observations (per cluster)",
-            value = 20
+            value = 9
           ),
           numericInput(
             "nsimcpsdidcount",
@@ -738,21 +738,21 @@ ui <- fluidPage(
           numericInput(
             "c2cpsdidcount",
             "Expected outcome count (Arm 2)",
-            value = 7,
+            value = 3,
             step = 1,
             min = 0
           ),
           numericInput(
             "sigma_b_sq0cpsdidcount",
             "Pre-treatment between-cluster variance",
-            value = 0,
+            value = 0.5,
             step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sq1cpsdidcount",
             "Post-treatment between-cluster variance",
-            value = 0,
+            value = 0.5,
             step = 0.001,
             min = 0
           )
@@ -1201,13 +1201,6 @@ ui <- fluidPage(
             "Number of simulations",
             value = 100,
             max = 500000,
-            min = 0
-          ),
-          numericInput(
-            "sigma_b_sqcpsirgttcount",
-            "Between-cluster variance (Arm 1)",
-            value = 0.1,
-            step = 0.001,
             min = 0
           ),
           numericInput(
@@ -1706,7 +1699,7 @@ server <- function(input, output, session) {
             vart = q$vartcpanormal
           )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
@@ -1730,7 +1723,7 @@ server <- function(input, output, session) {
           lowPowerOverride = q$lowPowerOverride
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
@@ -1749,7 +1742,7 @@ server <- function(input, output, session) {
           tdist = q$tdistcpabinary
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
@@ -1769,7 +1762,7 @@ server <- function(input, output, session) {
           timelimitOverride = q$timelimitOverride
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
@@ -1785,7 +1778,7 @@ server <- function(input, output, session) {
           r1inc = q$r1inccpacount
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
@@ -1805,7 +1798,7 @@ server <- function(input, output, session) {
           timelimitOverride = q$timelimitOverride
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
@@ -1821,7 +1814,7 @@ server <- function(input, output, session) {
           vare = q$varecpamanormal
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
@@ -1845,14 +1838,14 @@ server <- function(input, output, session) {
           timelimitOverride = q$timelimitOverride
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
       answer <<- future({
         val <- cpa.ma.binary()
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
@@ -1873,14 +1866,14 @@ server <- function(input, output, session) {
           timelimitOverride = q$timelimitOverride
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
       answer <<- future({
         val <- cpa.ma.count()
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
@@ -1901,7 +1894,7 @@ server <- function(input, output, session) {
           timelimitOverride = q$timelimitOverride
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
@@ -1918,7 +1911,7 @@ server <- function(input, output, session) {
           vart = q$vartcpadidnormal
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
@@ -1939,7 +1932,7 @@ server <- function(input, output, session) {
           seed = q$seed
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
@@ -1956,7 +1949,7 @@ server <- function(input, output, session) {
           rho_s = q$rho_scpadidbinary
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
@@ -1976,14 +1969,14 @@ server <- function(input, output, session) {
           seed = q$seed
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
       answer <<- future({
         val <- cpa.did.count()
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
@@ -2003,7 +1996,7 @@ server <- function(input, output, session) {
           seed = q$seed
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
@@ -2021,7 +2014,7 @@ server <- function(input, output, session) {
           vart = q$vartcpaswnormal
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
@@ -2039,7 +2032,7 @@ server <- function(input, output, session) {
           vart = q$vartcpaswnormal
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
@@ -2055,7 +2048,7 @@ server <- function(input, output, session) {
           mu0 = q$mu0cpaswbinary
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
@@ -2075,7 +2068,7 @@ server <- function(input, output, session) {
           seed = q$seed
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
@@ -2090,7 +2083,7 @@ server <- function(input, output, session) {
           alpha = q$alpha
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
@@ -2110,7 +2103,7 @@ server <- function(input, output, session) {
           seed = q$seed
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
@@ -2127,7 +2120,7 @@ server <- function(input, output, session) {
           varr = q$varrcpairgttnormal
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
@@ -2154,7 +2147,7 @@ server <- function(input, output, session) {
           timelimitOverride = q$timelimitOverride
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
@@ -2171,7 +2164,7 @@ server <- function(input, output, session) {
           decrease = q$decreasecpairgttbinary
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
@@ -2194,14 +2187,14 @@ server <- function(input, output, session) {
           seed = q$seed
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
       answer <<- future({
         val <- cpa.irgtt.count()
         return(val)
-      })
+      }, seed = TRUE)
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
@@ -2221,7 +2214,7 @@ server <- function(input, output, session) {
           seed = q$seed
         )
         return(val)
-      })
+      }, seed = TRUE)
     }
     
     then(
