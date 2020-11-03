@@ -446,11 +446,15 @@ ui <- fluidPage(
         # cps.ma.binary input start
         conditionalPanel(
           "input.type == 'Multi-Arm' && input.dist == 'Binary' && input.meth == 'Simulation'",
-          numericInput("nclusterscpsmabinary", "Number of Clusters", value = 10),
-          numericInput(
+          textInput(
+            "nclusterscpsmabinary",
+            "Number of Clusters (comma delimited)",
+            value = "10, 10, 10"
+          ),
+          textInput(
             "nsubjectscpsmabinary",
-            "Number of Observations (per cluster)",
-            value = 20
+            "Number of Observations (per cluster, comma delimited)",
+            value = "20, 20, 20"
           ),
           numericInput(
             "nsimcpsmabinary",
@@ -475,7 +479,7 @@ ui <- fluidPage(
           textInput(
             "sigma_b_sqcpsmabinary",
             "Between-cluster variance (comma delimited)",
-            value = "0.01, 0.01, 0.01"
+            value = "0.1, 0.1, 0.1"
           ),
           selectInput(
             "multi_p_methodcpsmabinary",
@@ -505,11 +509,15 @@ ui <- fluidPage(
         # cps.ma.count input start
         conditionalPanel(
           "input.type == 'Multi-Arm' && input.dist == 'Count' && input.meth == 'Simulation'",
-          numericInput("nclusterscpsmacount", "Number of Clusters", value = 25),
-          numericInput(
+          textInput(
+            "nclusterscpsmacount",
+            "Number of Clusters (comma delimited)",
+            value = "10, 10, 10"
+          ),
+          textInput(
             "nsubjectscpsmacount",
-            "Number of Observations (per cluster)",
-            value = 100
+            "Number of Observations (per cluster, comma delimited)",
+            value = "20, 20, 20"
           ),
           numericInput(
             "nsimcpsmacount",
@@ -926,32 +934,32 @@ ui <- fluidPage(
         # cps.sw.count input start
         conditionalPanel(
           "input.type == 'Stepped Wedge' && input.dist == 'Count' && input.meth == 'Simulation'",
-          numericInput("nclusters", "Number of Clusters", value = 10),
-          numericInput("nsubjects", "Number of Observations (per cluster)", value = 20),
+          numericInput("nclusterscpsswcount", "Number of Clusters", value = 10),
+          numericInput("nsubjectscpsswcount", "Number of Observations (per cluster)", value = 20),
           numericInput(
-            "nsimcpsmacount",
+            "nsimcpsswcount",
             "Number of simulations",
             value = 100,
             max = 500000,
             min = 0
           ),
-          numericInput("stepscpsswnormal", "Number of crossover steps", value = 3),
+          numericInput("stepscpsswcount", "Number of crossover steps", value = 3),
           numericInput(
-            "c1cpsdidcount",
+            "c1cpsswcount",
             "Expected outcome count (Arm 1)",
             value = 5,
             step = 1,
             min = 0
           ),
           numericInput(
-            "c2cpsdidcount",
+            "c2cpsswcount",
             "Expected outcome count (Arm 2)",
             value = 7,
             step = 1,
             min = 0
           ),
           numericInput(
-            "sigma_b_sqcpsdidcount",
+            "sigma_b_sqcpsswcount",
             "Between-cluster variance (Arm 1)",
             value = 0.1,
             step = 0.001,
@@ -1544,7 +1552,6 @@ server <- function(input, output, session) {
   }) # end of which events to observe
   
   # update help documentation and params table when function is selected
-  #observeEvent(watchfor(), {
   observe({
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
@@ -1852,11 +1859,11 @@ server <- function(input, output, session) {
       answer <<- future({
         val <- cps.ma.binary(
           nsim = q$nsimcpsmabinary,
-          nsubjects = q$nsubjectscpsmabinary,
+          nsubjects = textToNum(q$nsubjectscpsmabinary),
           narms = q$narmscpsmabinary,
-          nclusters = q$nclusterscpsmabinary,
-          probs = q$probscpsmabinary,
-          sigma_b_sq = q$sigma_b_sqcpsmabinary,
+          nclusters = textToNum(q$nclusterscpsmabinary),
+          probs = textToNum(q$probscpsmabinary),
+          sigma_b_sq = textToNum(q$sigma_b_sqcpsmabinary),
           alpha = q$alpha,
           multi_p_method = q$multi_p_methodcpsmabinary,
           seed = q$seed,
@@ -1880,11 +1887,11 @@ server <- function(input, output, session) {
       answer <<- future({
         val <- cps.ma.count(
           nsim = q$nsimcpsmacount,
-          nsubjects = q$nsubjectscpsmacount,
+          nsubjects = textToNum(q$nsubjectscpsmacount),
           narms = q$narmscpsmacount,
-          nclusters = q$nclusterscpsmacount,
-          counts = q$countscpsmacount,
-          sigma_b_sq = q$sigma_b_sqcpsmacount,
+          nclusters = textToNum(q$nclusterscpsmacount),
+          counts = textToNum(q$countscpsmacount),
+          sigma_b_sq = textToNum(q$sigma_b_sqcpsmacount),
           alpha = q$alpha,
           multi_p_method = q$multi_p_methodcpsmacount,
           seed = q$seed,
@@ -2354,7 +2361,13 @@ server <- function(input, output, session) {
     logargs$tab <- NULL
     out1$power <- NULL
   })
-  # END clear the data log under certain circumstances
+    # END clear the data log under certain circumstances
+  
+  # START clear the output console when the estimate power button is clicked
+  observeEvent(input$button, {
+    out1$power <- NULL
+  })
+  # END clear the output console when the estimate power button is clicked
   
   # make the graph
   #update the axis choices
@@ -2412,7 +2425,6 @@ server <- function(input, output, session) {
     return(power_plot)
   }
   
-  
   output$graphic <- renderPlot({
     dpfun()
   }, res = 96)
@@ -2433,6 +2445,10 @@ server <- function(input, output, session) {
       else
         return(reactiveValuesToList(out1)))
   })
+
+ # observeEvent(watchfor(), {
+#    out1 <- NULL
+#  })
   
 } #end of server fxn
 

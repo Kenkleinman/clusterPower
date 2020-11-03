@@ -140,12 +140,12 @@
 #' bin.ma.rct.bal <- cps.ma.binary(nsim = 100, nsubjects = 250, narms=3,
 #'                             nclusters=10,
 #'                             probs = c(0.30, 0.5, 0.7),
-#'                             sigma_b_sq = 0.01, alpha = 0.05,
+#'                             sigma_b_sq = 0.1, alpha = 0.05,
 #'                             quiet = FALSE, method = 'glmm',
 #'                             allSimData = FALSE,
 #'                             multi_p_method="none",
 #'                             seed = 123, cores="all",
-#'                             poorFitOverride = TRUE)
+#'                             poorFitOverride = FALSE)
 #'}
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export

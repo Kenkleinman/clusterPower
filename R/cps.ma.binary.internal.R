@@ -156,6 +156,7 @@ cps.ma.binary.internal <-
       stop("trt and clust are not the same length, see line 134")
     }
     sim.dat <- matrix(nrow = length(clust), ncol = nsim)
+    
     # function to produce the simulated data
     make.sim.dat <- function(tdist = tdist,
                              logit.p = logit.p,
@@ -202,26 +203,32 @@ cps.ma.binary.internal <-
       y <-
         sapply(unlist(y.intercept), function(x)
           stats::rbinom(1, 1, x))
+      y <- as.factor(y)
       return(y)
-    }
+    } #end make.sim.dat function definition
+    
     sim.dat <-
-      replicate(
-        nsim,
-        make.sim.dat(
-          tdist = tdist,
-          logit.p = logit.p,
-          nclusters = nclusters,
-          sigma_b_sq = sigma_b_sq,
-          str.nsubjects = str.nsubjects
-        )
+      data.frame(
+        as.factor(trt),
+        as.factor(clust),
+        replicate(
+          nsim,
+          make.sim.dat(
+            tdist = tdist,
+            logit.p = logit.p,
+            nclusters = nclusters,
+            sigma_b_sq = sigma_b_sq,
+            str.nsubjects = str.nsubjects
+          )
+        ),
+        stringsAsFactors = TRUE
       )
+    sim.num <- 1:nsim
+    temp <- paste0("y", sim.num)
+    colnames(sim.dat) <- c("arm", "cluster", temp)
     
     #option to return simulated data only
     if (nofit == TRUE) {
-      sim.dat <- data.frame(trt, clust, sim.dat)
-      sim.num <- 1:nsim
-      temp <- paste0("y", sim.num)
-      colnames(sim.dat) <- c("arm", "cluster", temp)
       return(sim.dat)
     }
     
@@ -252,7 +259,7 @@ cps.ma.binary.internal <-
     if (method == "glmm") {
       # Update simulation progress information
       sim.start <- Sys.time()
-      lme4::glmer(sim.dat[, 1] ~ trt + (1 |
+      lme4::glmer(sim.dat[, 3] ~ trt + (1 |
                                           clust),
                   family = stats::binomial(link = 'logit'))
       avg.iter.time = as.numeric(difftime(Sys.time(), sim.start, units = 'secs'))
@@ -311,7 +318,7 @@ cps.ma.binary.internal <-
         .inorder = FALSE
       ) %fun% {
         lme4::glmer(
-          sim.dat[, i] ~ trt + (1 | clust),
+          sim.dat[, i + 2] ~ trt + (1 | clust),
           family = stats::binomial(link = 'logit'),
           control = lme4::glmerControl(
             optimizer = opt,
@@ -349,7 +356,8 @@ cps.ma.binary.internal <-
       # stop the loop if power is <0.5
       if (narms > 2) {
         if (low.power.override == FALSE &&
-            i > 50 && (i %% 10 == 0) && length(model.compare) != 0) {
+            i > 50 &&
+            (i %% 10 == 0) && length(model.compare) != 0) {
           temp.power.checker <-
             try(matrix(
               unlist(model.compare[1:i]),
@@ -424,7 +432,7 @@ cps.ma.binary.internal <-
     if (method == 'gee') {
       sim.start <- Sys.time()
       geepack::geeglm(
-        sim.dat[, 1] ~ trt,
+        sim.dat[, 3] ~ trt,
         family = stats::binomial(link = 'logit'),
         id = clust,
         corstr = "exchangeable"
@@ -482,7 +490,7 @@ cps.ma.binary.internal <-
         .inorder = FALSE
       ) %fun% {
         geepack::geeglm(
-          sim.dat[, i] ~ trt,
+          sim.dat[, i + 2] ~ trt,
           family = stats::binomial(link = 'logit'),
           id = clust,
           corstr = "exchangeable"

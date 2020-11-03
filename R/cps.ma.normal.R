@@ -166,7 +166,7 @@
 #'                                    optmethod = "nlminb")
 #'
 #' multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
-#'                                   nclusters = 10, nsubjects = 25,
+#'                                   nclusters = 5, nsubjects = 25,
 #'                                   means = c(22.0, 21.0, 22.5),
 #'                                   sigma_sq = 0.1,
 #'                                   sigma_b_sq = 0.1, alpha = 0.05,
