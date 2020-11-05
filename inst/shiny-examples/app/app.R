@@ -474,7 +474,7 @@ ui <- fluidPage(
           textInput(
             "probscpsmabinary",
             "Treatment effect probabilities for each arm (comma delimited)",
-            "0.15, 0.23, 0.22"
+            "0.30, 0.4, 0.5"
           ),
           textInput(
             "sigma_b_sqcpsmabinary",
@@ -529,7 +529,7 @@ ui <- fluidPage(
           sliderInput(
             "narmscpsmacount",
             "Number of arms",
-            value = 4,
+            value = 3,
             min = 2,
             max = 10,
             step = 1
@@ -537,12 +537,12 @@ ui <- fluidPage(
           textInput(
             "countscpsmacount",
             "Mean event per unit time for each arm (comma delimited)",
-            "30, 35, 70, 40"
+            "30, 35, 70"
           ),
           textInput(
             "sigma_b_sqcpsmacount",
             "Between-cluster variance (comma delimited)",
-            value = "1, 1.2, 1, 0.9"
+            value = "1, 1.2, 1.9"
           ),
           selectInput(
             "multi_p_methodcpsmacount",

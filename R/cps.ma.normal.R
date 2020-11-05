@@ -270,15 +270,19 @@ cps.ma.normal <- function(nsim = 1000,
   if (length(nclusters) == 1 & length(nsubjects) > 1) {
     nclusters <- rep(nclusters, length(nsubjects))
   }
-  # Create nsubjects structure from narms and nclusters when nsubjects is scalar
-  if (length(nsubjects) == 1) {
-    str.nsubjects <- lapply(nclusters, function(x)
-      rep(nsubjects, x))
+  # Create nsubjects structure from narms and nclusters when nsubjects is scalar or a list
+  if (mode(nsubjects) == "list") {
+    str.nsubjects <- nsubjects
   } else {
-    str.nsubjects <- list()
-    for (i in 1:length(nsubjects)) {
-      for (j in nclusters) {
-        str.nsubjects[[i]] <- rep(nsubjects[i], times = j)
+    if (length(nsubjects) == 1) {
+      str.nsubjects <- lapply(nclusters, function(x)
+        rep(nsubjects, x))
+    } else {
+      str.nsubjects <- list()
+      for (i in 1:length(nsubjects)) {
+        for (j in nclusters) {
+          str.nsubjects[[i]] <- rep(nsubjects[i], times = j)
+        }
       }
     }
   }
@@ -320,7 +324,7 @@ cps.ma.normal <- function(nsim = 1000,
   type1ErrTest(sigma_sq_ = sigma_sq,
                sigma_b_sq_ = sigma_b_sq,
                nsubjects_ = nsubjects)
-
+  
   # run the simulations
   normal.ma.rct <- cps.ma.normal.internal(
     nsim = nsim,
@@ -387,18 +391,18 @@ cps.ma.normal <- function(nsim = 1000,
     
     if (max(sigma_sq) != min(sigma_sq)) {
       for (i in 1:nsim) {
-        Estimates[i, ] <- models[[i]][20][[1]][, 1]
-        std.error[i, ] <- models[[i]][20][[1]][, 2]
-        t.val[i, ] <- models[[i]][20][[1]][, 4]
-        p.val[i, ] <- models[[i]][20][[1]][, 5]
+        Estimates[i,] <- models[[i]][20][[1]][, 1]
+        std.error[i,] <- models[[i]][20][[1]][, 2]
+        t.val[i,] <- models[[i]][20][[1]][, 4]
+        p.val[i,] <- models[[i]][20][[1]][, 5]
       }
       keep.names <- rownames(models[[1]][20][[1]])
     } else {
       for (i in 1:nsim) {
-        Estimates[i, ] <- models[[i]][[10]][, 1]
-        std.error[i, ] <- models[[i]][[10]][, 2]
-        t.val[i, ] <- models[[i]][[10]][, 4]
-        p.val[i, ] <- models[[i]][[10]][, 5]
+        Estimates[i,] <- models[[i]][[10]][, 1]
+        std.error[i,] <- models[[i]][[10]][, 2]
+        t.val[i,] <- models[[i]][[10]][, 4]
+        p.val[i,] <- models[[i]][[10]][, 5]
       }
       keep.names <- rownames(models[[1]][[10]])
     }
@@ -569,10 +573,10 @@ cps.ma.normal <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i, ] <- models[[i]]$coefficients[, 1]
-      std.error[i, ] <- models[[i]]$coefficients[, 2]
-      Wald[i, ] <- models[[i]]$coefficients[, 3]
-      Pr[i, ] <-
+      Estimates[i,] <- models[[i]]$coefficients[, 1]
+      std.error[i,] <- models[[i]]$coefficients[, 2]
+      Wald[i,] <- models[[i]]$coefficients[, 3]
+      Pr[i,] <-
         p.adjust(models[[i]]$coefficients[, 4], method = multi_p_method)
     }
     

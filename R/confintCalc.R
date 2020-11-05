@@ -42,6 +42,7 @@ confintCalc <- function(alpha = alpha,
   Alpha <- vector(length = length(pval.power))
   Beta <- vector(length = length(pval.power))
   Names <- vector(length = length(pval.power))
+  
   for (o in 1:length(pval.power)) {
     Power[o] = power.parms[[o]]$estimate
     Lower.95.CI[o] = power.parms[[o]]$conf.int[1]

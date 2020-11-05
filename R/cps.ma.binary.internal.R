@@ -45,8 +45,8 @@
 #' When this option is set to NA, no parallel computing is used.
 #' @param nofit Option to skip model fitting and analysis and return the simulated data.
 #' Defaults to \code{FALSE}.
-#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
-#' @param optmethod User-specified optimizer methods available for the optimizer specified in \code{opt} option.
+#' @param optmethod User-specified optimizer method. Accepts \code{bobyqa}, 
+#' \code{Nelder_Mead}, and optimizers wrapped in the \code{optimx} package.
 #' @param return.all.models Logical; Returns all of the fitted models and the simulated data.
 #' Defaults to FALSE.
 #'
@@ -76,7 +76,6 @@
 #'                             alpha = 0.05, all.sim.data = FALSE,
 #'                             poor.fit.override = TRUE,
 #'                             seed = 123, cores="all",
-#'                             opt = "bobyqa",
 #'                             optmethod = "Nelder-Mead")
 #' }
 #'
@@ -99,7 +98,6 @@ cps.ma.binary.internal <-
            tdist = FALSE,
            cores = cores,
            nofit = FALSE,
-           opt = opt,
            optmethod = optmethod,
            return.all.models = FALSE) {
     # Create vectors to collect iteration-specific values
@@ -124,18 +122,16 @@ cps.ma.binary.internal <-
     
     # Create indicators for treatment group & cluster for the sim.data output
     trt1 = list()
+    clust1 = list()
+    index <- 0
     for (arm in 1:length(str.nsubjects)) {
       trt1[[arm]] = list()
+      clust1[[arm]] =  list()
       for (cluster in 1:length(str.nsubjects[[arm]])) {
-        trt1[[arm]][[cluster]] = rep(arm, str.nsubjects[[arm]][[cluster]])
+        index <- index + 1
+        trt1[[arm]][[cluster]] = rep(arm, sum(str.nsubjects[[arm]][[cluster]]))
+        clust1[[arm]][[cluster]] = rep(index, sum(str.nsubjects[[arm]][[cluster]]))
       }
-    }
-    clust1 = list()
-    for (i in 1:sum(nclusters)) {
-      clust1[[i]] <- lapply(seq(1, sum(nclusters))[i],
-                            function (x) {
-                              rep.int(x, unlist(str.nsubjects)[i])
-                            })
     }
     
     # Calculate log odds for each group
@@ -232,11 +228,6 @@ cps.ma.binary.internal <-
       return(sim.dat)
     }
     
-    `%fun%` <- `%dopar%`
-    if (is.na(cores)) {
-      `%fun%` <- `%do%`
-    }
-    
     #setup for parallel computing
     ## Do computations with multiple processors:
     ## Number of cores:
@@ -255,7 +246,7 @@ cps.ma.binary.internal <-
     progress <- function(n)
       setTxtProgressBar(pb, n)
     opts <- list(progress = progress)
-    
+
     if (method == "glmm") {
       # Update simulation progress information
       sim.start <- Sys.time()
@@ -263,9 +254,9 @@ cps.ma.binary.internal <-
                                           clust),
                   family = stats::binomial(link = 'logit'))
       avg.iter.time = as.numeric(difftime(Sys.time(), sim.start, units = 'secs'))
-      time.est = avg.iter.time * (nsim - 1) / 60
+      time.est = avg.iter.time * (nsim) / 60
       hr.est = time.est %/% 60
-      min.est = round(time.est %% 60, 0)
+      min.est = round(time.est %% 60, 3)
       
       #time limit override (for Shiny)
       if (min.est > 2 && timelimitOverride == FALSE) {
@@ -311,6 +302,11 @@ cps.ma.binary.internal <-
         message("Fitting models")
       }
       
+      `%fun%` <- foreach::`%dopar%`
+      if (is.na(cores)) {
+        `%fun%` <- foreach::`%do%`
+      }
+      
       my.mod <- foreach::foreach(
         i = 1:nsim,
         .options.snow = opts,
@@ -321,7 +317,6 @@ cps.ma.binary.internal <-
           sim.dat[, i + 2] ~ trt + (1 | clust),
           family = stats::binomial(link = 'logit'),
           control = lme4::glmerControl(
-            optimizer = opt,
             calc.derivs = TRUE,
             optCtrl = list(
               maxfun = 2e4,

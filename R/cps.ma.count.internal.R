@@ -156,18 +156,16 @@ cps.ma.count.internal <-
     
     # Create indicators for treatment group & cluster for the sim.data output
     trt1 = list()
+    clust1 = list()
+    index <- 0
     for (arm in 1:length(str.nsubjects)) {
       trt1[[arm]] = list()
+      clust1[[arm]] =  list()
       for (cluster in 1:length(str.nsubjects[[arm]])) {
-        trt1[[arm]][[cluster]] = rep(arm, str.nsubjects[[arm]][[cluster]])
+        index <- index + 1
+        trt1[[arm]][[cluster]] = rep(arm, sum(str.nsubjects[[arm]][[cluster]]))
+        clust1[[arm]][[cluster]] = rep(index, sum(str.nsubjects[[arm]][[cluster]]))
       }
-    }
-    clust1 = list()
-    for (i in 1:sum(nclusters)) {
-      clust1[[i]] <- lapply(seq(1, sum(nclusters))[i],
-                            function(x) {
-                              rep.int(x, unlist(str.nsubjects)[i])
-                            })
     }
     
     #Alert the user if using t-distribution
@@ -259,9 +257,9 @@ cps.ma.count.internal <-
       return(sim.dat)
     }
     
-    `%fun%` <- `%dopar%`
+    `%fun%` <- foreach::`%dopar%`
     if (is.na(cores)) {
-      `%fun%` <- `%do%`
+      `%fun%` <- foreach::`%do%`
     }
     
     #setup for parallel computing
