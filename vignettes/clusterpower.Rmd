@@ -1,11 +1,11 @@
 ---
-title: "clusterPower"
-author: "Alexandria C. Brown, Jon Moyer, Ken Kleinman"
+title: "Power Estimation for Randomized Controlled Trials: clusterPower"
+author: "Alexandria C. Sakrejda, Jon Moyer, Ken Kleinman"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 bibliography: bibliography.bib
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Power Estimation for Randomized Controlled Trials: clusterPower}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

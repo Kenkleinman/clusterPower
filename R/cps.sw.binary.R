@@ -1,44 +1,45 @@
 #' Power simulations for cluster-randomized trials: Stepped Wedge Design, Binary Outcome
 #'
-#' This set of functions utilize iterative simulations to determine 
-#' approximate power for stepped wedge cluster-randomized controlled trials. Users 
+#' This set of functions utilize iterative simulations to determine
+#' approximate power for stepped wedge cluster-randomized controlled trials. Users
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
-#' 
-#' Runs power simulations for stepped wedge cluster-randomized controlled trials 
+#'
+#' Runs power simulations for stepped wedge cluster-randomized controlled trials
 #' with a binary outcome. The stepped wedge trial design is a type of cross-over
-#' design in which clusters change treatments in waves. Initially all the 
+#' design in which clusters change treatments in waves. Initially all the
 #' clusters recieve the same standard treatment, and at the end of the trial all
-#' of the clusters will be recieving the treatment of interest. More than one 
-#' cluster can change treatments in a wave, but the order in which clusters 
-#' change treatments is randomly determined. The outcome of interest is assessed 
+#' of the clusters will be recieving the treatment of interest. More than one
+#' cluster can change treatments in a wave, but the order in which clusters
+#' change treatments is randomly determined. The outcome of interest is assessed
 #' in each cluster during each wave.
-#' 
-#' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per arm, expected absolute difference 
-#' between arms, within-cluster variance, between-cluster variance, 
-#' significance level, analytic method, progress updates, and simulated data 
+#'
+#' Users must specify the desired number of simulations, number of subjects per
+#' cluster, number of clusters per arm, expected absolute difference
+#' between arms, within-cluster variance, between-cluster variance,
+#' significance level, analytic method, progress updates, and simulated data
 #' set output may also be specified.
-#' 
-#' 
+#'
+#'
 #' @param nsim Number of datasets to simulate; accepts integer (required).
-#' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
+#' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes)
 #' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
 #' @param p1 Expected probability of outcome in arm 1. Accepts scalar between 0 - 1 (required).
 #' @param p2 Expected probability of outcome in arm 2. Accepts scalar between 0 - 1 (required).
-#' @param steps Number of crossover steps; a baseline step (all clusters in arm 1) is assumed. 
-#' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 
-#' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
-#' of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the cumulative 
+#' @param steps Number of crossover steps; a baseline step (all clusters in arm 1) is assumed.
+#' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by
+#' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number
+#' of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the cumulative
 #' number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).
-#' @param sigma_b_sq Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
-#' between-cluster variances for both arms) or a vector of length 2 specifying treatment-specific 
+#' @param sigma_b_sq Between-cluster variance; accepts non-negative numeric scalar (indicating equal
+#' between-cluster variances for both arms) or a vector of length 2 specifying treatment-specific
 #' between-cluster variances (required).
 #' @param alpha Significance level. Default = 0.05.
-#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
+#' @param method Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or
 #' Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.
+#' @param quiet When set to FALSE, displays simulation progress and estimated completion time; 
+#' default is FALSE.
 #' @param allSimData Option to output list of all simulated datasets; default = FALSE.
 #' @param poorFitOverride Option to override \code{stop()} if more than 25\%
 #' of fits fail to converge; default = FALSE.
@@ -49,15 +50,16 @@
 #' calculated power is returned regardless of value.
 #' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
 #' is more than 2 minutes. Defaults to TRUE.
-#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'L-BFGS-B'.
+#' @param optmethod Option to fit with a different optimizer method (using the package \code{optimx}). 
+#' Default is 'L-BFGS-B'.
 #' @param seed Option to set.seed. Default is NULL.
-#' 
+#'
 #' @return A list with the following components
 #' \itemize{
 #'   \item Character string indicating total number of simulations and simulation type
 #'   \item Number of simulations
-#'   \item Data frame with columns "Power" (Estimated statistical power), 
-#'                "lower.95.ci" (Lower 95% confidence interval bound), 
+#'   \item Data frame with columns "Power" (Estimated statistical power),
+#'                "lower.95.ci" (Lower 95% confidence interval bound),
 #'                "upper.95.ci" (Upper 95% confidence interval bound)
 #'   \item Analytic method used for power estimation
 #'   \item Significance level
@@ -67,17 +69,17 @@
 #'   \item Vector containing expected difference between groups based on user inputs
 #'   \item Data frame containing mean response values for each arm at each time point
 #'   \item Matrix showing cluster crossover at each time point
-#'   \item Data frame with columns: 
-#'                   "Estimate" (Estimate of treatment effect for a given simulation), 
-#'                   "Std.err" (Standard error for treatment effect estimate), 
-#'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
-#'                   "p.value", 
+#'   \item Data frame with columns:
+#'                   "Estimate" (Estimate of treatment effect for a given simulation),
+#'                   "Std.err" (Standard error for treatment effect estimate),
+#'                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)),
+#'                   "p.value",
 #'                   "sig.val" (Is p-value less than alpha?)
-#'   \item If \code{allSimData = TRUE}, a list of data frames, each containing: 
-#'                   "y" (Simulated response value), 
+#'   \item If \code{allSimData = TRUE}, a list of data frames, each containing:
+#'                   "y" (Simulated response value),
 #'                   "trt" (Indicator for arm),
-#'                   "time.point" (Indicator for step; "t1" = time point 0) 
-#'                   "clust" (Indicator for cluster), 
+#'                   "time.point" (Indicator for step; "t1" = time point 0)
+#'                   "clust" (Indicator for cluster),
 #'                   "period" (Indicator for at which step a cluster crosses over)
 #' }
 #'  If \code{nofit = T}, a data frame of the simulated data sets, containing:
@@ -86,23 +88,24 @@
 #'   \item "clust" (Indicator for cluster)
 #'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
 #'   }
-#' 
-#' @examples 
-#' 
-#' # Estimate power for a trial with 3 steps and 12 clusters in arm 1 (often the standard-of-care or 'control' 
-#' # arm) at the initiation of the study. Those clusters have 50 subjects each, with sigma_b_sq = 1. 
-#' # We have estimated arm outcome proportions of 0.1 and 0.2 in the first and second arms, 
-#' # respectively, and 100 simulated data sets analyzed by the GLMM method. Using seed = 123, 
+#'
+#' @examples
+#'
+#' # Estimate power for a trial with 3 steps and 12 clusters in arm 1
+#' # (often the standard-of-care or 'control' arm) at the initiation of the study.
+#' # Those clusters have 50 subjects each, with sigma_b_sq = 1.
+#' # We have estimated arm outcome proportions of 0.1 and 0.2 in the first and second arms,
+#' # respectively, and 100 simulated data sets analyzed by the GLMM method. Using seed = 123,
 #' # the resulting power should be 0.8.
-#' 
+#'
 #' \dontrun{
-#' binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 50, nclusters = 12, 
-#'                               p1 = 0.1, p2 = 0.2, steps = 3, 
-#'                               sigma_b_sq = 1, alpha = 0.05, method = 'glmm', 
+#' binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 50, nclusters = 12,
+#'                               p1 = 0.1, p2 = 0.2, steps = 3,
+#'                               sigma_b_sq = 1, alpha = 0.05, method = 'glmm',
 #'                               quiet = FALSE, allSimData = FALSE, seed = 123)
 #' }
 #'
-#' @author Alexander R. Bogdan 
+#' @author Alexander R. Bogdan
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
@@ -121,21 +124,21 @@ cps.sw.binary = function(nsim = NULL,
                          quiet = FALSE,
                          allSimData = FALSE,
                          poorFitOverride = FALSE,
-                         lowPowerOverride = FALSE, 
+                         lowPowerOverride = FALSE,
                          timelimitOverride = TRUE,
-                         opt = 'L-BFGS-B',
+                        optmethod= 'L-BFGS-B',
                          seed = NULL) {
   if (!is.na(seed)) {
     set.seed(seed = seed)
   }
-  
+
   # Create vectors to collect iteration-specific values
   est.vector = vector("numeric", length = nsim)
   se.vector = vector("numeric", length = nsim)
   stat.vector = vector("numeric", length = nsim)
   pval.vector = vector("numeric", length = nsim)
   lmer.icc.vector = vector("numeric", length = nsim)
-  converge = vector("logical", length = nsim)
+  converge = rep(NA, times=nsim)
   simulated.datasets = list()
   
   # Set start.time for progress iterator & initialize progress bar
@@ -272,7 +275,7 @@ cps.sw.binary = function(nsim = NULL,
       "allSimData must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
     )
   }
-  
+  browser()
   # Calculate ICC1 (sigma_b_sq / (sigma_b_sq + pi^2/3))
   icc1 = mean(sapply(1:2, function(x)
     sigma_b_sq[x] / (sigma_b_sq[x] + pi ^ 2 / 3)))
@@ -301,10 +304,6 @@ cps.sw.binary = function(nsim = NULL,
   logit.p1 = log(p1 / (1 - p1))
   logit.p2 = log(p2 / (1 - p2))
   
-  if (method == 'glmm') {
-    require("optimx")
-  }
-  
   ## Create simulation & analysis loop
   for (i in 1:nsim) {
     # Create vectors of cluster effects
@@ -319,12 +318,12 @@ cps.sw.binary = function(nsim = NULL,
                             stats::rbinom(
                               sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0),
                               1,
-                              expit(
-                                logit.p1 +
-                                  ntrt.cluster.effects[j] +
-                                  stats::rnorm(sum(sim.dat[, 'clust'] == j &
-                                                     sim.dat[, 'trt'] == 0))
-                              )
+                              expit(logit.p1 +
+                                      ntrt.cluster.effects[j] +
+                                      stats::rnorm(sum(
+                                        sim.dat[, 'clust'] == j &
+                                          sim.dat[, 'trt'] == 0
+                                      )))
                             ),
                             sim.dat[, 'y'])
       # Assign arm 2 subject & cluster effects
@@ -357,8 +356,23 @@ cps.sw.binary = function(nsim = NULL,
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
     
+    sim.dat$period <- as.factor(sim.dat$period)
+    sim.dat$clust <- as.factor(sim.dat$clust)
+    sim.dat$time.point <- as.factor(sim.dat$time.point)
+    sim.dat$trt <- as.factor(sim.dat$trt)
+    sim.dat$y <- as.factor(sim.dat$y)
+    
     # Fit GLMM (lmer)
     if (method == 'glmm') {
+      # Option to use optimizerSearch
+      if (i == 1 & optmethod == "auto") {
+        my.mod = lme4::glmer(
+          y ~ trt + time.point + (1 | clust),
+          data = sim.dat,
+          family = stats::binomial(link = 'logit')
+          )
+        optmethod <- optimizerSearch(my.mod)
+      } 
       my.mod = lme4::glmer(
         y ~ trt + time.point + (1 | clust),
         data = sim.dat,
@@ -367,7 +381,7 @@ cps.sw.binary = function(nsim = NULL,
           optimizer = "optimx",
           calc.derivs = TRUE,
           optCtrl = list(
-            method = opt,
+            method = optmethod,
             starttests = FALSE,
             kkt = FALSE
           )
@@ -400,11 +414,10 @@ cps.sw.binary = function(nsim = NULL,
     }
     
     # option to stop the function early if fits are singular
-    if (poorFitOverride == FALSE && converge[i] == FALSE) {
+    if (poorFitOverride == FALSE &&
+        converge[i] == FALSE && i > 50) {
       if (sum(converge == FALSE, na.rm = TRUE) > (nsim * .25)) {
-        stop(
-          "more than 25% of simulations are singular fit: check model specifications"
-        )
+        stop("more than 25% of simulations are singular fit: check model specifications")
       }
     }
     
@@ -426,20 +439,21 @@ cps.sw.binary = function(nsim = NULL,
     }
     
     # Update progress information
-      if (i == 1) {
-        avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-        time.est = avg.iter.time * (nsim - 1) / 60
-        hr.est = time.est %/% 60
-        min.est = round(time.est %% 60, 0)
-        if (min.est > 2 && timelimitOverride == FALSE){
-          stop(paste0("Estimated completion time: ",
-                      hr.est,
-                      'Hr:',
-                      min.est,
-                      'Min'
-          ))
-        }
-        if (quiet == FALSE) {
+    if (i == 1) {
+      avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+      time.est = avg.iter.time * (nsim - 1) / 60
+      hr.est = time.est %/% 60
+      min.est = round(time.est %% 60, 0)
+      if (min.est > 2 && timelimitOverride == FALSE) {
+        stop(paste0(
+          "Estimated completion time: ",
+          hr.est,
+          'Hr:',
+          min.est,
+          'Min'
+        ))
+      }
+      if (quiet == FALSE) {
         message(
           paste0(
             'Begin simulations :: Start Time: ',
@@ -452,29 +466,29 @@ cps.sw.binary = function(nsim = NULL,
           )
         )
       }
-      # Iterate progress bar
-      prog.bar$update(i / nsim)
-      Sys.sleep(1 / 100)
-      
-      if (i == nsim) {
-        total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-        hr.est = total.est %/% 3600
-        min.est = total.est %/% 60
-        sec.est = round(total.est %% 60, 0)
-        message(
-          paste0(
-            "Simulations Complete! Time Completed: ",
-            Sys.time(),
-            "\nTotal Runtime: ",
-            hr.est,
-            'Hr:',
-            min.est,
-            'Min:',
-            sec.est,
-            'Sec'
-          )
+    }
+    # Iterate progress bar
+    prog.bar$update(i / nsim)
+    Sys.sleep(1 / 100)
+    
+    if (i == nsim) {
+      total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+      hr.est = total.est %/% 3600
+      min.est = total.est %/% 60
+      sec.est = round(total.est %% 60, 0)
+      message(
+        paste0(
+          "Simulations Complete! Time Completed: ",
+          Sys.time(),
+          "\nTotal Runtime: ",
+          hr.est,
+          'Hr:',
+          min.est,
+          'Min:',
+          sec.est,
+          'Sec'
         )
-      }
+      )
     }
   }
   

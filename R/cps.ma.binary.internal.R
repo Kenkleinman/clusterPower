@@ -45,8 +45,8 @@
 #' When this option is set to NA, no parallel computing is used.
 #' @param nofit Option to skip model fitting and analysis and return the simulated data.
 #' Defaults to \code{FALSE}.
-#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
-#' @param optmethod User-specified optimizer methods available for the optimizer specified in \code{opt} option.
+#' @param optmethod User-specified optimizer method. Accepts \code{bobyqa}, 
+#' \code{Nelder_Mead}, and optimizers wrapped in the \code{optimx} package.
 #' @param return.all.models Logical; Returns all of the fitted models and the simulated data.
 #' Defaults to FALSE.
 #'
@@ -76,7 +76,6 @@
 #'                             alpha = 0.05, all.sim.data = FALSE,
 #'                             poor.fit.override = TRUE,
 #'                             seed = 123, cores="all",
-#'                             opt = "bobyqa",
 #'                             optmethod = "Nelder-Mead")
 #' }
 #'
@@ -99,12 +98,11 @@ cps.ma.binary.internal <-
            tdist = FALSE,
            cores = cores,
            nofit = FALSE,
-           opt = opt,
            optmethod = optmethod,
            return.all.models = FALSE) {
     # Create vectors to collect iteration-specific values
-    simulated.datasets = list()
-    
+    simulated.datasets <- list()
+    converge <- NULL
     # Create NCLUSTERS, NARMS, from str.nsubjects
     narms = length(str.nsubjects)
     nclusters = sapply(str.nsubjects, length)
@@ -124,18 +122,16 @@ cps.ma.binary.internal <-
     
     # Create indicators for treatment group & cluster for the sim.data output
     trt1 = list()
+    clust1 = list()
+    index <- 0
     for (arm in 1:length(str.nsubjects)) {
       trt1[[arm]] = list()
+      clust1[[arm]] =  list()
       for (cluster in 1:length(str.nsubjects[[arm]])) {
-        trt1[[arm]][[cluster]] = rep(arm, str.nsubjects[[arm]][[cluster]])
+        index <- index + 1
+        trt1[[arm]][[cluster]] = rep(arm, sum(str.nsubjects[[arm]][[cluster]]))
+        clust1[[arm]][[cluster]] = rep(index, sum(str.nsubjects[[arm]][[cluster]]))
       }
-    }
-    clust1 = list()
-    for (i in 1:sum(nclusters)) {
-      clust1[[i]] <- lapply(seq(1, sum(nclusters))[i],
-                            function (x) {
-                              rep.int(x, unlist(str.nsubjects)[i])
-                            })
     }
     
     # Calculate log odds for each group
@@ -156,6 +152,7 @@ cps.ma.binary.internal <-
       stop("trt and clust are not the same length, see line 134")
     }
     sim.dat <- matrix(nrow = length(clust), ncol = nsim)
+    
     # function to produce the simulated data
     make.sim.dat <- function(tdist = tdist,
                              logit.p = logit.p,
@@ -202,33 +199,33 @@ cps.ma.binary.internal <-
       y <-
         sapply(unlist(y.intercept), function(x)
           stats::rbinom(1, 1, x))
+      y <- as.factor(y)
       return(y)
-    }
+    } #end make.sim.dat function definition
+    
     sim.dat <-
-      replicate(
-        nsim,
-        make.sim.dat(
-          tdist = tdist,
-          logit.p = logit.p,
-          nclusters = nclusters,
-          sigma_b_sq = sigma_b_sq,
-          str.nsubjects = str.nsubjects
-        )
+      data.frame(
+        as.factor(trt),
+        as.factor(clust),
+        replicate(
+          nsim,
+          make.sim.dat(
+            tdist = tdist,
+            logit.p = logit.p,
+            nclusters = nclusters,
+            sigma_b_sq = sigma_b_sq,
+            str.nsubjects = str.nsubjects
+          )
+        ),
+        stringsAsFactors = TRUE
       )
+    sim.num <- 1:nsim
+    temp <- paste0("y", sim.num)
+    colnames(sim.dat) <- c("arm", "cluster", temp)
     
     #option to return simulated data only
     if (nofit == TRUE) {
-      sim.dat <- data.frame(trt, clust, sim.dat)
-      sim.num <- 1:nsim
-      temp <- paste0("y", sim.num)
-      colnames(sim.dat) <- c("arm", "cluster", temp)
       return(sim.dat)
-    }
-    
-    require(foreach)
-    `%fun%` <- `%dopar%`
-    if (is.na(cores)) {
-      `%fun%` <- `%do%`
     }
     
     #setup for parallel computing
@@ -249,17 +246,17 @@ cps.ma.binary.internal <-
     progress <- function(n)
       setTxtProgressBar(pb, n)
     opts <- list(progress = progress)
-    
+
     if (method == "glmm") {
       # Update simulation progress information
       sim.start <- Sys.time()
-      lme4::glmer(sim.dat[, 1] ~ trt + (1 |
+      lme4::glmer(sim.dat[, 3] ~ trt + (1 |
                                           clust),
                   family = stats::binomial(link = 'logit'))
       avg.iter.time = as.numeric(difftime(Sys.time(), sim.start, units = 'secs'))
-      time.est = avg.iter.time * (nsim - 1) / 60
+      time.est = avg.iter.time * (nsim) / 60
       hr.est = time.est %/% 60
-      min.est = round(time.est %% 60, 0)
+      min.est = round(time.est %% 60, 3)
       
       #time limit override (for Shiny)
       if (min.est > 2 && timelimitOverride == FALSE) {
@@ -301,10 +298,13 @@ cps.ma.binary.internal <-
         Sys.sleep(1 / 100)
       }
       # Create simulation loop
-      require(doParallel)
-      require(foreach)
       if (!is.na(cores) & quiet == FALSE) {
         message("Fitting models")
+      }
+      
+      `%fun%` <- foreach::`%dopar%`
+      if (is.na(cores)) {
+        `%fun%` <- foreach::`%do%`
       }
       
       my.mod <- foreach::foreach(
@@ -314,10 +314,9 @@ cps.ma.binary.internal <-
         .inorder = FALSE
       ) %fun% {
         lme4::glmer(
-          sim.dat[, i] ~ trt + (1 | clust),
+          sim.dat[, i + 2] ~ trt + (1 | clust),
           family = stats::binomial(link = 'logit'),
           control = lme4::glmerControl(
-            optimizer = opt,
             calc.derivs = TRUE,
             optCtrl = list(
               maxfun = 2e4,
@@ -352,7 +351,8 @@ cps.ma.binary.internal <-
       # stop the loop if power is <0.5
       if (narms > 2) {
         if (low.power.override == FALSE &&
-            i > 50 && (i %% 10 == 0) && length(model.compare) != 0) {
+            i > 50 &&
+            (i %% 10 == 0) && length(model.compare) != 0) {
           temp.power.checker <-
             try(matrix(
               unlist(model.compare[1:i]),
@@ -427,7 +427,7 @@ cps.ma.binary.internal <-
     if (method == 'gee') {
       sim.start <- Sys.time()
       geepack::geeglm(
-        sim.dat[, 1] ~ trt,
+        sim.dat[, 3] ~ trt,
         family = stats::binomial(link = 'logit'),
         id = clust,
         corstr = "exchangeable"
@@ -468,7 +468,6 @@ cps.ma.binary.internal <-
           prog.bar$tick(0)
         }
       }
-      require(foreach)
       if (!is.na(cores) & quiet == FALSE) {
         message("Fitting models")
       }
@@ -486,7 +485,7 @@ cps.ma.binary.internal <-
         .inorder = FALSE
       ) %fun% {
         geepack::geeglm(
-          sim.dat[, i] ~ trt,
+          sim.dat[, i + 2] ~ trt,
           family = stats::binomial(link = 'logit'),
           id = clust,
           corstr = "exchangeable"

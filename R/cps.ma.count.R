@@ -136,8 +136,7 @@
 #' Defaults to \code{FALSE}.
 #'
 #' @param opt Optimizer for model fitting, from the package \code{optimx} or \code{nloptwrap}.
-#' Default is 'NLOPT_LN_BOBYQA'. XX KK JN Note: This needs to be discussed more with Lexi in
-#' conjuction with other optimization/singularity/convergence problems.
+#' Default is 'NLOPT_LN_BOBYQA'.
 #'
 #'
 #'
@@ -277,6 +276,7 @@ cps.ma.count <- function(nsim = 1000,
                          return.all.models = FALSE,
                          nofit = FALSE,
                          opt = "NLOPT_LN_BOBYQA") {
+  converge <- NULL
   # use this later to determine total elapsed time
   start.time <- Sys.time()
   
@@ -324,12 +324,25 @@ cps.ma.count <- function(nsim = 1000,
     stop("nsubjects must be positive integer values.")
   }
   
-  # Create nsubjects structure from narms and nclusters when nsubjects is scalar
-  if (length(nsubjects) == 1) {
-    str.nsubjects <- lapply(nclusters, function(x)
-      rep(nsubjects, x))
-  } else {
+  # Generate nclusters vector when a scalar is provided but nsubjects is a vector
+  if (length(nclusters) == 1 & length(nsubjects) > 1) {
+    nclusters <- rep(nclusters, length(nsubjects))
+  }
+  # Create nsubjects structure from narms and nclusters when nsubjects is scalar or a list
+  if (mode(nsubjects) == "list") {
     str.nsubjects <- nsubjects
+  } else {
+    if (length(nsubjects) == 1) {
+      str.nsubjects <- lapply(nclusters, function(x)
+        rep(nsubjects, x))
+    } else {
+      str.nsubjects <- list()
+      for (i in 1:length(nsubjects)) {
+        for (j in nclusters) {
+          str.nsubjects[[i]] <- rep(nsubjects[i], times = j)
+        }
+      }
+    }
   }
   
   # allow entries to be entered as text for Shiny app
@@ -364,13 +377,6 @@ cps.ma.count <- function(nsim = 1000,
   if (narms < 3) {
     message("Warning: LRT significance not calculable when narms<3. Use cps.count() instead.")
   }
-  
-  # validateVariance(dist="bin", alpha=alpha, ICC=NA, sigma=NA,
-  #                   sigma_b=sigma_b_sq, ICC2=NA, sigma2=NA,
-  #                   sigma_b2=NA, method=method, quiet=quiet,
-  #                   all.sim.data=allSimData,
-  #                   poor.fit.override=poorFitOverride,
-  #                   cores=cores)
   
   # Set warnings to OFF
   # Note: Warnings will still be stored in 'warning.list'
@@ -444,10 +450,10 @@ cps.ma.count <- function(nsim = 1000,
     p.val = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i, ] <- models[[i]][[10]][, 1]
-      std.error[i, ] <- models[[i]][[10]][, 2]
-      z.val[i, ] <- models[[i]][[10]][, 3]
-      p.val[i, ] <-
+      Estimates[i,] <- models[[i]][[10]][, 1]
+      std.error[i,] <- models[[i]][[10]][, 2]
+      z.val[i,] <- models[[i]][[10]][, 3]
+      p.val[i,] <-
         p.adjust(models[[i]][[10]][, 4], method = multi_p_method)
     }
     
@@ -493,17 +499,17 @@ cps.ma.count <- function(nsim = 1000,
     sig.val <-  ifelse(p.val < alpha, 1, 0)
     pval.power <- apply(sig.val, 2, sum)
     
-    converged <- as.vector(rep(NA, times = nsim))
+    converge <- as.vector(rep(NA, times = nsim))
     for (i in 1:nsim) {
-      converged[i] <-
+      converge[i] <-
         ifelse(is.null(count.ma.rct[[1]][[i]]$optinfo$conv$lme4$messages),
                TRUE,
                FALSE)
     }
-    cps.model.temp <- data.frame(converged, p.val)
-    colnames(cps.model.temp)[1] <- "converged"
+    cps.model.temp <- data.frame(converge, p.val)
+    colnames(cps.model.temp)[1] <- "converge"
     cps.model.temp2 <-
-      dplyr::filter(cps.model.temp, converged == TRUE)
+      dplyr::filter(cps.model.temp, converge == TRUE)
     if (isTRUE(nrow(cps.model.temp2) < (.25 * nsim))) {
       warning(paste0(
         nrow(cps.model.temp2),
@@ -637,10 +643,10 @@ cps.ma.count <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i, ] <- models[[i]]$coefficients[, 1]
-      std.error[i, ] <- models[[i]]$coefficients[, 2]
-      Wald[i, ] <- models[[i]]$coefficients[, 3]
-      Pr[i, ] <- models[[i]]$coefficients[, 4]
+      Estimates[i,] <- models[[i]]$coefficients[, 1]
+      std.error[i,] <- models[[i]]$coefficients[, 2]
+      Wald[i,] <- models[[i]]$coefficients[, 3]
+      Pr[i,] <- models[[i]]$coefficients[, 4]
     }
     
     # Organize the row/col names for the output
@@ -680,9 +686,8 @@ cps.ma.count <- function(nsim = 1000,
     LRT.holder.abbrev <- sum(sig.LRT) / nsim
     
     # Calculate and store power estimate & confidence intervals
-    power.parms <- confint.calc(nsim = nsim,
-                                alpha = alpha,
-                                p.val = Pr[, 2:narms])
+    power.parms <- confintCalc(alpha = alpha,
+                               p.val = Pr[, 2:narms])
     
     
     # Store GEE simulation output in data frame

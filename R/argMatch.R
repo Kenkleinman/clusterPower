@@ -10,10 +10,7 @@
 #' @return List of numericInput expressions.
 #' @export
 
-
-
 argMatch <- function(fxnName, justNames = FALSE) {
-  require("clusterPower")
   
   # The arguments from which to choose
   nsim <-

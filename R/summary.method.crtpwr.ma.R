@@ -1,4 +1,10 @@
+#' A summary method for multi-arm crtpwr objects (crtpwr.ma)
+#' 
+#' @param object A crtpwr.ma object
+#' @param ... other arguments passed to the summary method
+#'  
 #' @export
+#' 
 
 setMethod(
   "summary",
@@ -21,4 +27,4 @@ setMethod(
     print(table(object[['convergence']]))
   }
 )
-#setClass('crtpwr')
+

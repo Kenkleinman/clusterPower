@@ -95,6 +95,10 @@
 #' @param optimizer Option to fit with a different optimizer from the package
 #' \code{optimx}. Defaults to L-BFGS-B. See optimx package documentation for all options.
 #' 
+#' @param irgtt Logical. Default = FALSE. Is the experimental design an 
+#' individually randomized group treatment trial? For details, 
+#' see ?cps.irgtt.count.
+#' 
 #'
 #'
 #'
@@ -266,12 +270,13 @@ cps.count = function(nsim = NULL,
     set.seed(seed = seed)
   }
   # Create vectors to collect iteration-specific values
-  est.vector = NULL
-  se.vector = NULL
-  stat.vector = NULL
-  pval.vector = NULL
-  converge.vector = NULL
-  simulated.datasets = list()
+  est.vector <- NULL
+  se.vector <- NULL
+  stat.vector <- NULL
+  pval.vector <- NULL
+  converge.vector <- NULL
+  simulated.datasets <- list()
+  converge <- NULL
   
   # Create progress bar
   prog.bar =  progress::progress_bar$new(
@@ -498,9 +503,7 @@ cps.count = function(nsim = NULL,
     
     # Fit GLMM (lmer)
     if (method == 'glmm') {
-      require("lme4")
       if (i == 1) {
-        require("optimx")
         if (isTRUE(optimizer == "auto")) {
           if (irgtt == FALSE) {
             if (analysis == 'poisson') {

@@ -96,8 +96,6 @@
 #'                               }
 #' @export
 
-
-
 cps.ma.normal.internal <-
   function(nsim = 1000,
            str.nsubjects = NULL,
@@ -118,7 +116,8 @@ cps.ma.normal.internal <-
            return.all.models = FALSE,
            timelimitOverride = TRUE) {
     # Create vectors to collect iteration-specific values
-    simulated.datasets = list()
+    simulated.datasets <- list()
+    converge <- NULL
     
     # Create NCLUSTERS, NARMS, from str.nsubjects
     narms = length(str.nsubjects)
@@ -146,20 +145,19 @@ cps.ma.normal.internal <-
     }
     
     # Create indicators for treatment group & cluster for the sim.data output
-    trt = list()
+    trt1 = list()
+    clust1 = list()
+    index <- 0
     for (arm in 1:length(str.nsubjects)) {
-      trt[[arm]] = list()
+      trt1[[arm]] = list()
+      clust1[[arm]] =  list()
       for (cluster in 1:length(str.nsubjects[[arm]])) {
-        trt[[arm]][[cluster]] = rep(arm, str.nsubjects[[arm]][[cluster]])
+        index <- index + 1
+        trt1[[arm]][[cluster]] = rep(arm, sum(str.nsubjects[[arm]][[cluster]]))
+        clust1[[arm]][[cluster]] = rep(index, sum(str.nsubjects[[arm]][[cluster]]))
       }
     }
-    clust = list()
-    for (i in 1:sum(nclusters)) {
-      clust[[i]] <- lapply(seq(1, sum(nclusters))[i],
-                           function(x) {
-                             rep.int(x, unlist(str.nsubjects)[i])
-                           })
-    }
+    
     #Alert the user if using t-distribution
     if (tdist == TRUE) {
       print("using t-distribution because tdist = TRUE")
@@ -178,8 +176,6 @@ cps.ma.normal.internal <-
     }
     
     # Create simulation loop
-    #   require(foreach)
-    #   foreach::foreach(i = 1:nsim, .packages = c("optimx")) %do% {
     for (i in 1:nsim) {
       sim.dat[[i]] = data.frame(y = NA,
                                 trt = as.factor(unlist(trt)),
@@ -229,7 +225,7 @@ cps.ma.normal.internal <-
     
     # status message
     if (quiet == FALSE && i == 1) {
-        message(paste0('Begin simulations :: Start Time: ', Sys.time()))
+      message(paste0('Begin simulations :: Start Time: ', Sys.time()))
     }
     
     for (i in 1:nsim) {
@@ -242,8 +238,8 @@ cps.ma.normal.internal <-
       prog.bar$update(i / nsim)
       Sys.sleep(1 / 100)
       
-      if (i == 1){
-      start.time = Sys.time()
+      if (i == 1) {
+        start.time = Sys.time()
       }
       
       # trt and clust are re-coded as trt2 and clust2 to work nicely with lme. This can be changed later.
@@ -302,7 +298,6 @@ cps.ma.normal.internal <-
                              REML = FALSE,
                              data = sim.dat[[1]])
             if (optmethod == "auto") {
-              require("optimx")
               goodopt <- optimizerSearch(my.mod)
               
             } else {
@@ -384,7 +379,6 @@ cps.ma.normal.internal <-
             my.mod <- lmerTest::lmer(y ~ trt + (1 | clust), REML = FALSE,
                                      data = sim.dat[[1]])
             if (optmethod == "auto") {
-              require("optimx")
               goodopt <- optimizerSearch(my.mod)
             } else {
               goodopt <- optmethod
@@ -416,7 +410,7 @@ cps.ma.normal.internal <-
         #time limit override (for Shiny)
         if (i == 10) {
           avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-          time.est = (avg.iter.time/10) * (nsim - 10) / 60
+          time.est = (avg.iter.time / 10) * (nsim - 10) / 60
           hr.est = time.est %/% 60
           min.est = round(time.est %% 60, 0)
           if (min.est > 2 && timelimitOverride == FALSE) {

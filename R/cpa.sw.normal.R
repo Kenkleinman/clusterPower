@@ -82,8 +82,9 @@
 #' # cross-sectional design.
 #' cpa.sw.normal(nsubjects = 50, ntimes = 5, d = 1.5, ICC = 0.2, rho_c = 0.80, rho_s = 0, vart = 16)
 #' # 
-#' # The result, nclusters = 1.288772, suggests 2 clusters switching per time point should be used. This
-#' # means that the total number of clusters in the study is nclusters * ntimes = 2 * 5 = 10.
+#' # The result, nclusters = 1.288772, suggests 2 clusters switching per time point 
+#' # should be used. This means that the total number of clusters in the study is 
+#' # nclusters * ntimes = 2 * 5 = 10.
 #' 
 #' @references Hooper, R., Teerenstra, S., Hoop, E., and Eldridge, S. (2016)
 #'   Sample size calculation for stepped wedge and other longitudinal cluster

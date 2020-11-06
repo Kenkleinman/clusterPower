@@ -73,7 +73,7 @@
 #' 
 #' @param seed Option to set the seed. Default, NA, selects a seed based on the system clock.
 #' 
-#' @param irgtt Logical. Is the experimental design an individually randomized 
+#' @param irgtt Logical. Default = FALSE. Is the experimental design an individually randomized 
 #' group treatment trial? For details, see ?cps.irgtt.normal.
 #' 
 #' @param poorFitOverride Option to override \code{stop()} if more than 25\% 
@@ -207,8 +207,9 @@
 #' 
 #' # The resulting estimated power (if you set seed = 1) should be about 0.76.
 #' 
-#' # Estimate power for a trial with 3 clusters in one arm, those clusters having 25, 35, and 45 subjects 
-#' # each, and 10 clusters in the other arm, those clusters having 5 subjects each, the first arm
+#' # Estimate power for a trial with 3 clusters in one arm, 
+#' # those clusters having 25, 35, and 45 subjects each, and 10 clusters 
+#' # in the other arm, those clusters having 5 subjects each, the first arm
 #' # having a sigma squared of 20 and sigma_b squared of 8.57143, and the second a sigma squared
 #' # of 9 and a sigma_b squared of 1, with estimated arm means of 1 and 4.75 in the first and 
 #' # second groups, respectively, using 100 simulated data sets analyzed by the GLMM method.
@@ -254,6 +255,7 @@ cps.normal = function(nsim = NA,
                       lowPowerOverride = FALSE,
                       irgtt = FALSE,
                       nofit = FALSE) {
+  converge <- NULL
   # option for reproducibility
   if (!is.na(seed)) {
     set.seed(seed = seed)

@@ -80,11 +80,13 @@
 #' @param tdist Logical value indicating whether simulated data should be
 #' drawn from a t-distribution rather than the normal distribution.
 #' Default = FALSE.
-#' @param nofit Option to skip model fitting and analysis and return the simulated data.
+#' @param nofit Option to skip model fitting and analysis and return the 
+#' simulated data.
 #' Defaults to \code{FALSE}.
-#' @param opt Option to fit with a different optimizer (using the package \code{optimx}). Default is 'optim'.
-#' @param optmethod User-specified optimizer methods available for the optimizer specified in \code{opt} option.
-#' @param return.all.models Logical; Returns all of the fitted models and the simulated data.
+#' @param optmethod User-specified optimizer method. Accepts \code{bobyqa}, 
+#' \code{Nelder_Mead} (default), and optimizers wrapped in the \code{optimx} package.
+#' @param return.all.models Logical; Returns all of the fitted models and the 
+#' simulated data.
 #' Defaults to FALSE.
 #' @return A list with the following components:
 #' \describe{
@@ -127,9 +129,9 @@
 #' @examples
 #' \dontrun{
 #' bin.ma.rct.unbal <- cps.ma.binary(nsim = 12,
-#'                             nsubjects = list(rep(200, times=15),
-#'                             rep(150, times=15),
-#'                             rep(170, times=15)),
+#'                             nsubjects = list(rep(20, times=15),
+#'                             rep(15, times=15),
+#'                             rep(17, times=15)),
 #'                             narms = 3,
 #'                             nclusters = 15,
 #'                             probs = c(0.15, 0.23, 0.22),
@@ -137,15 +139,15 @@
 #'                             alpha = 0.05, allSimData = TRUE,
 #'                             seed = 123, cores="all")
 #'
-#' bin.ma.rct.bal <- cps.ma.binary(nsim = 100, nsubjects = 250, narms=3,
-#'                             nclusters=10,
-#'                             probs = c(0.30, 0.5, 0.7),
-#'                             sigma_b_sq = 0.01, alpha = 0.05,
+#' bin.ma.rct.bal <- cps.ma.binary(nsim = 100, nsubjects = 50, narms=3,
+#'                             nclusters=8,
+#'                             probs = c(0.30, 0.4, 0.5),
+#'                             sigma_b_sq = 0.1, alpha = 0.05,
 #'                             quiet = FALSE, method = 'glmm',
 #'                             allSimData = FALSE,
 #'                             multi_p_method="none",
 #'                             seed = 123, cores="all",
-#'                             poorFitOverride = TRUE)
+#'                             poorFitOverride = FALSE)
 #'}
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
@@ -167,9 +169,9 @@ cps.ma.binary <- function(nsim = 1000,
                           lowPowerOverride = FALSE,
                           timelimitOverride = TRUE,
                           nofit = FALSE,
-                          opt = "bobyqa",
                           optmethod = "Nelder-Mead",
                           return.all.models = FALSE) {
+  converge <- NULL
   # use this later to determine total elapsed time
   start.time <- Sys.time()
   
@@ -225,12 +227,26 @@ cps.ma.binary <- function(nsim = 1000,
     stop("nsubjects must be positive integer values.")
   }
   
-  # Create nsubjects structure from narms and nclusters when nsubjects is scalar
-  if (length(nsubjects) == 1) {
-    str.nsubjects <- lapply(nclusters, function(x)
-      rep(nsubjects, x))
-  } else {
+  # Generate nclusters vector when a scalar is provided but nsubjects is a vector
+  if (length(nclusters) == 1 & length(nsubjects) > 1) {
+    nclusters <- rep(nclusters, length(nsubjects))
+  }
+  
+  # Create nsubjects structure from narms and nclusters when nsubjects is scalar or a list
+  if (mode(nsubjects) == "list") {
     str.nsubjects <- nsubjects
+  } else {
+    if (length(nsubjects) == 1) {
+      str.nsubjects <- lapply(nclusters, function(x)
+        rep(nsubjects, x))
+    } else {
+      str.nsubjects <- list()
+      for (i in 1:length(nsubjects)) {
+        for (j in nclusters) {
+          str.nsubjects[[i]] <- rep(nsubjects[i], times = j)
+        }
+      }
+    }
   }
   
   # allows for probs, sigma_b_sq to be entered as scalar
@@ -292,7 +308,6 @@ cps.ma.binary <- function(nsim = 1000,
     tdist = tdist,
     cores = cores,
     nofit = nofit,
-    opt = opt,
     optmethod = optmethod,
     return.all.models = return.all.models
   )
@@ -340,10 +355,10 @@ cps.ma.binary <- function(nsim = 1000,
     p.val = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i, ] <- models[[i]][[10]][, 1]
-      std.error[i, ] <- models[[i]][[10]][, 2]
-      z.val[i, ] <- models[[i]][[10]][, 3]
-      p.val[i, ] <-
+      Estimates[i,] <- models[[i]][[10]][, 1]
+      std.error[i,] <- models[[i]][[10]][, 2]
+      z.val[i,] <- models[[i]][[10]][, 3]
+      p.val[i,] <-
         p.adjust(models[[i]][[10]][, 4], method = multi_p_method)
     }
     
@@ -391,7 +406,7 @@ cps.ma.binary <- function(nsim = 1000,
     colnames(cps.model.temp)[1] <- "converge"
     cps.model.temp2 <-
       dplyr::filter(cps.model.temp, converge == TRUE)
-    if (isTRUE(nrow(cps.model.temp2) < (.25 * nsim))) {
+    if (nrow(cps.model.temp2) < (.25 * nsim)) {
       warning(paste0(
         nrow(cps.model.temp2),
         " models converged. Check model parameters."
@@ -526,10 +541,10 @@ cps.ma.binary <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i, ] <- models[[i]]$coefficients[, 1]
-      std.error[i, ] <- models[[i]]$coefficients[, 2]
-      Wald[i, ] <- models[[i]]$coefficients[, 3]
-      Pr[i, ] <- models[[i]]$coefficients[, 4]
+      Estimates[i,] <- models[[i]]$coefficients[, 1]
+      std.error[i,] <- models[[i]]$coefficients[, 2]
+      Wald[i,] <- models[[i]]$coefficients[, 3]
+      Pr[i,] <- models[[i]]$coefficients[, 4]
     }
     
     # Organize the row/col names for the output

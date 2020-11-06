@@ -166,7 +166,7 @@
 #'                                    optmethod = "nlminb")
 #'
 #' multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
-#'                                   nclusters = 10, nsubjects = 25,
+#'                                   nclusters = 5, nsubjects = 25,
 #'                                   means = c(22.0, 21.0, 22.5),
 #'                                   sigma_sq = 0.1,
 #'                                   sigma_b_sq = 0.1, alpha = 0.05,
@@ -180,10 +180,6 @@
 #'
 #' @export
 #'
-
-
-
-
 
 cps.ma.normal <- function(nsim = 1000,
                           nsubjects = NULL,
@@ -207,7 +203,7 @@ cps.ma.normal <- function(nsim = 1000,
                           optmethod = "nlminb",
                           nofit = FALSE,
                           timelimitOverride = TRUE) {
-  
+  converge <- NULL
   # create narms and nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
     # create narms and nclusters if not supplied by the user
@@ -225,8 +221,8 @@ cps.ma.normal <- function(nsim = 1000,
     narms <- length(nclusters)
   }
   
-   # input validation steps
-
+  # input validation steps
+  
   if (!is.wholenumber(nsim) || nsim < 1 || length(nsim) > 1) {
     stop("nsim must be a positive integer of length 1.")
   }
@@ -258,23 +254,37 @@ cps.ma.normal <- function(nsim = 1000,
   )
   
   # nclusters must be positive whole numbers
-
+  
   if (sum(is.wholenumber(nclusters) == FALSE) != 0 ||
       sum(unlist(nclusters) < 1) != 0) {
     stop("nclusters must be postive integer values.")
   }
-
+  
   # nsubjects must be positive whole numbers
   if (sum(is.wholenumber(unlist(nsubjects)) == FALSE) != 0 ||
       sum(unlist(nsubjects) < 1) != 0) {
-   stop("nsubjects must be positive integer values.")
+    stop("nsubjects must be positive integer values.")
   }
-  # Create nsubjects structure from narms and nclusters when nsubjects is scalar
-  if (length(nsubjects) == 1) {
-    str.nsubjects <- lapply(nclusters, function(x)
-      rep(nsubjects, x))
-  } else {
+  
+  # Generate nclusters vector when a scalar is provided but nsubjects is a vector
+  if (length(nclusters) == 1 & length(nsubjects) > 1) {
+    nclusters <- rep(nclusters, length(nsubjects))
+  }
+  # Create nsubjects structure from narms and nclusters when nsubjects is scalar or a list
+  if (mode(nsubjects) == "list") {
     str.nsubjects <- nsubjects
+  } else {
+    if (length(nsubjects) == 1) {
+      str.nsubjects <- lapply(nclusters, function(x)
+        rep(nsubjects, x))
+    } else {
+      str.nsubjects <- list()
+      for (i in 1:length(nsubjects)) {
+        for (j in nclusters) {
+          str.nsubjects[[i]] <- rep(nsubjects[i], times = j)
+        }
+      }
+    }
   }
   
   # allows for means, sigma_sq, sigma_b_sq, and ICC to be entered as scalar
