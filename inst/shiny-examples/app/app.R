@@ -620,15 +620,29 @@ ui <- fluidPage(
             min = 0
           ),
           numericInput(
-            "sigma_b_sq0cpsdidnormal",
-            "Pre-treatment between-cluster variance",
+            "sigma_b_sq01cpsdidnormal",
+            "Pre-treatment between-cluster variance (Arm 1)",
             value = 0.1,
             step = 0.001,
             min = 0
           ),
           numericInput(
-            "sigma_b_sq1cpsdidnormal",
-            "Post-treatment between-cluster variance",
+            "sigma_b_sq02cpsdidnormal",
+            "Pre-treatment between-cluster variance (Arm 2)",
+            value = 0.1,
+            step = 0.001,
+            min = 0
+          ),
+          numericInput(
+            "sigma_b_sq11cpsdidnormal",
+            "Post-treatment between-cluster variance (Arm 1)",
+            value = 0.1,
+            step = 0.001,
+            min = 0
+          ),
+          numericInput(
+            "sigma_b_sq12cpsdidnormal",
+            "Post-treatment between-cluster variance (Arm 2)",
             value = 0.1,
             step = 0.001,
             min = 0
@@ -699,15 +713,29 @@ ui <- fluidPage(
             max = 1
           ),
           numericInput(
-            "sigma_b_sq0cpsdidbinary",
-            "Pre-treatment between-cluster variance",
+            "sigma_b_sq01cpsdidbinary",
+            "Pre-treatment between-cluster variance (Arm 1)",
             value = 1,
             step = 0.001,
             min = 0
           ),
           numericInput(
-            "sigma_b_sq1cpsdidbinary",
-            "Post-treatment between-cluster variance",
+            "sigma_b_sq02cpsdidbinary",
+            "Pre-treatment between-cluster variance (Arm 2)",
+            value = 1,
+            step = 0.001,
+            min = 0
+          ),
+          numericInput(
+            "sigma_b_sq11cpsdidbinary",
+            "Post-treatment between-cluster variance (Arm 1)",
+            value = 0,
+            step = 0.001,
+            min = 0
+          ),
+          numericInput(
+            "sigma_b_sq12cpsdidbinary",
+            "Post-treatment between-cluster variance (Arm 2)",
             value = 0,
             step = 0.001,
             min = 0
@@ -751,15 +779,29 @@ ui <- fluidPage(
             min = 0
           ),
           numericInput(
-            "sigma_b_sq0cpsdidcount",
-            "Pre-treatment between-cluster variance",
+            "sigma_b_sq01cpsdidcount",
+            "Pre-treatment between-cluster variance (Arm 1)",
             value = 0.5,
             step = 0.001,
             min = 0
           ),
           numericInput(
-            "sigma_b_sq1cpsdidcount",
-            "Post-treatment between-cluster variance",
+            "sigma_b_sq02cpsdidcount",
+            "Pre-treatment between-cluster variance (Arm 2)",
+            value = 0.5,
+            step = 0.001,
+            min = 0
+          ),
+          numericInput(
+            "sigma_b_sq11cpsdidcount",
+            "Post-treatment between-cluster variance (Arm 1)",
+            value = 0.5,
+            step = 0.001,
+            min = 0
+          ),
+          numericInput(
+            "sigma_b_sq12cpsdidcount",
+            "Post-treatment between-cluster variance (Arm 2)",
             value = 0.5,
             step = 0.001,
             min = 0
@@ -1930,8 +1972,8 @@ server <- function(input, output, session) {
           mu = q$mucpsdidnormal,
           mu2 = q$mu2cpsdidnormal,
           sigma_sq = q$sigma_sqcpsdidnormal,
-          sigma_b_sq0 = q$sigma_b_sq0cpsdidnormal,
-          sigma_b_sq1 = q$sigma_b_sq1cpsdidnormal,
+          sigma_b_sq0 = c(q$sigma_b_sq01cpsdidnormal,q$sigma_b_sq02cpsdidnormal),
+          sigma_b_sq1 = c(q$sigma_b_sq11cpsdidnormal, q$sigma_b_sq12cpsdidnormal),
           alpha = q$alpha,
           poorFitOverride = q$poorFitOverride,
           lowPowerOverride = q$lowPowerOverride,
@@ -1967,8 +2009,8 @@ server <- function(input, output, session) {
           nclusters = q$nclusterscpsdidbinary,
           p1 = q$p1cpsdidbinary,
           p2 = q$p2cpsdidbinary,
-          sigma_b_sq0 = q$sigma_b_sq0cpsdidbinary,
-          sigma_b_sq1 = q$sigma_b_sq1cpsdidbinary,
+          sigma_b_sq0 = c(q$sigma_b_sq01cpsdidbinary, q$sigma_b_sq02cpsdidbinary),
+          sigma_b_sq1 = c(q$sigma_b_sq11cpsdidbinary, q$sigma_b_sq12cpsdidbinary),
           alpha = q$alpha,
           poorFitOverride = q$poorFitOverride,
           lowPowerOverride = q$lowPowerOverride,
@@ -1994,8 +2036,8 @@ server <- function(input, output, session) {
           nclusters = q$nclusterscpsdidcount,
           c1 = q$c1cpsdidcount,
           c2 = q$c2cpsdidcount,
-          sigma_b_sq0 = q$sigma_b_sq0cpsdidcount,
-          sigma_b_sq1 = q$sigma_b_sq1cpsdidcount,
+          sigma_b_sq0 = c(q$sigma_b_sq01cpsdidcount, q$sigma_b_sq02cpsdidcount),
+          sigma_b_sq1 = c(q$sigma_b_sq11cpsdidcount, q$sigma_b_sq12cpsdidcount),
           alpha = q$alpha,
           poorFitOverride = q$poorFitOverride,
           lowPowerOverride = q$lowPowerOverride,
@@ -2365,7 +2407,7 @@ server <- function(input, output, session) {
   
   # START clear the output console when the estimate power button is clicked
   observeEvent(input$button, {
-    out1$power <- NULL
+    out1$power <- "Calculating..."
   })
   # END clear the output console when the estimate power button is clicked
   
