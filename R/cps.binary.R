@@ -348,8 +348,10 @@ cps.binary = function(nsim = NULL,
   # Create indicators for arm & cluster
   trt = c(rep(1, length.out = sum(nsubjects[1:nclusters[1]])),
           rep(2, length.out = sum(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])))
+  trt <- as.factor(trt)
   clust = unlist(lapply(1:sum(nclusters), function(x)
     rep(x, length.out = nsubjects[x])))
+  clust <- as.factor(clust)
   
   # Calculate log odds for each group
   logit.p1 = log(p1 / (1 - p1))
@@ -458,14 +460,14 @@ cps.binary = function(nsim = NULL,
     options(warn = -1)
     
     start.time = Sys.time()
-    
+
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       if (irgtt == TRUE) {
-        my.mod <- lme4::glmer(
+        my.mod <- try(lme4::glmer(
           y ~ trt + (0 + trt | clust),
           data = sim.dat,
-          family = stats::binomial(link = 'logit')
+          family = stats::binomial(link = 'logit'))
         )
       } else {
         my.mod = try(lme4::glmer(
@@ -474,6 +476,7 @@ cps.binary = function(nsim = NULL,
           family = stats::binomial(link = 'logit')
         ))
       }
+
       model.converge = try(my.mod)
       converge.ind = is.null(model.converge@optinfo$conv$lme4$messages)
       converge.vector = append(converge.vector, converge.ind)
@@ -487,10 +490,10 @@ cps.binary = function(nsim = NULL,
         pval.vector = append(pval.vector, NA)
       } else {
         glmm.values = summary(my.mod)$coefficient
-        est.vector = append(est.vector, glmm.values['trt', 'Estimate'])
-        se.vector = append(se.vector, glmm.values['trt', 'Std. Error'])
-        stat.vector = append(stat.vector, glmm.values['trt', 'z value'])
-        pval.vector = append(pval.vector, glmm.values['trt', 'Pr(>|z|)'])
+        est.vector = append(est.vector, glmm.values['trt2', 'Estimate'])
+        se.vector = append(se.vector, glmm.values['trt2', 'Std. Error'])
+        stat.vector = append(stat.vector, glmm.values['trt2', 'z value'])
+        pval.vector = append(pval.vector, glmm.values['trt2', 'Pr(>|z|)'])
       }
       if (poorFitOverride == FALSE && length(converge.vector) > 10 && sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * 0.25)) {
         stop("more than 25% of simulations are singular fit: check model specifications")
@@ -511,11 +514,12 @@ cps.binary = function(nsim = NULL,
         id = clust,
         corstr = "exchangeable"
       )
+
       gee.values = summary(my.mod)$coefficients
-      est.vector = append(est.vector, gee.values['trt', 'Estimate'])
-      se.vector = append(se.vector, gee.values['trt', 'Std.err'])
-      stat.vector = append(stat.vector, gee.values['trt', 'Wald'])
-      pval.vector = append(pval.vector, gee.values['trt', 'Pr(>|W|)'])
+      est.vector = append(est.vector, gee.values['trt2', 'Estimate'])
+      se.vector = append(se.vector, gee.values['trt2', 'Std.err'])
+      stat.vector = append(stat.vector, gee.values['trt2', 'Wald'])
+      pval.vector = append(pval.vector, gee.values['trt2', 'Pr(>|W|)'])
       converge.vector = append(converge.vector, ifelse(summary(my.mod)$error == 0, TRUE, FALSE))
     }
     

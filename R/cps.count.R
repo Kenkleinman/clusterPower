@@ -92,8 +92,7 @@
 #' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
 #' is more than 2 minutes. Defaults to TRUE.
 #' 
-#' @param optimizer Option to fit with a different optimizer from the package
-#' \code{optimx}. Defaults to L-BFGS-B. See optimx package documentation for all options.
+#' @param optmethod Option to fit with a different optimizer. Defaults to \code{Nelder_Mead}. 
 #' 
 #' @param irgtt Logical. Default = FALSE. Is the experimental design an 
 #' individually randomized group treatment trial? For details, 
@@ -235,7 +234,7 @@
 #'                       sigma_b_sq = 0.1, sigma_b_sq2 = 0.05,
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
-#'                       allSimData = FALSE, seed = 123, optimizer = "L-BFGS-B")
+#'                       allSimData = FALSE, seed = 123)
 #' }
 #' # The resulting estimated power (if you set seed = 123) should be about 0.75.
 #'
@@ -265,7 +264,7 @@ cps.count = function(nsim = NULL,
                      poorFitOverride = FALSE,
                      lowPowerOverride = FALSE,
                      timelimitOverride = TRUE,
-                     optimizer = "L-BFGS-B") {
+                     optmethod = "Nelder_Mead") {
   if (!is.na(seed)) {
     set.seed(seed = seed)
   }
@@ -504,7 +503,7 @@ cps.count = function(nsim = NULL,
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       if (i == 1) {
-        if (isTRUE(optimizer == "auto")) {
+        if (isTRUE(optmethod == "auto")) {
           if (irgtt == FALSE) {
             if (analysis == 'poisson') {
               my.mod = try(lme4::glmer(
@@ -532,10 +531,8 @@ cps.count = function(nsim = NULL,
                                                    clust), data = sim.dat))
             }
           }
-          goodopt <- optimizerSearch(my.mod)
-        } else {
-          goodopt <- optimizer
-        }
+          optmethod <- optimizerSearch(my.mod)
+        } 
       }
       if (irgtt == FALSE) {
         if (analysis == 'poisson') {
@@ -544,9 +541,8 @@ cps.count = function(nsim = NULL,
             data = sim.dat,
             family = stats::poisson(link = 'log'),
             control = lme4::glmerControl(
-              optimizer = "optimx",
+              optimizer = optmethod,
               optCtrl = list(
-                method = goodopt,
                 starttests = FALSE,
                 kkt = FALSE
               )
@@ -560,9 +556,8 @@ cps.count = function(nsim = NULL,
             y ~ trt + (1 | clust),
             data = sim.dat,
             control = lme4::glmerControl(
-              optimizer = "optimx",
+              optimizer = optmethod,
               optCtrl = list(
-                method = goodopt,
                 starttests = FALSE,
                 kkt = FALSE
               )
@@ -573,29 +568,36 @@ cps.count = function(nsim = NULL,
       }
       if (irgtt == TRUE) {
         if (analysis == 'poisson') {
-          my.mod <- try(lme4::glmer(
-            y ~ trt + (0 + trt | clust),
-            data = sim.dat,
-            family = stats::poisson(link = 'log'),
-            control = lme4::glmerControl(
-              optimizer = "optimx",
-              optCtrl = list(
-                method = goodopt,
-                starttests = FALSE,
-                kkt = FALSE
-              )
-            )
-          )
-          )
+          my.mod <- 
+            try(MASS::glmmPQL(
+              y ~ trt,
+              random =  ~ 0 + trt | clust,
+              weights = nlme::varIdent(trt, form =  ~ 1 | trt),
+              data = sim.dat,
+              family = stats::poisson(link = 'log')              
+            ))
+            #try(lme4::glmer(
+            #y ~ trt + (0 + trt | clust),
+            #data = sim.dat,
+            #family = stats::poisson(link = 'log'),
+            #control = lme4::glmerControl(
+            #  optimizer = optmethod,
+            #  optCtrl = list(
+            #    starttests = FALSE,
+            #    kkt = FALSE
+            #  )
+            #)
+          #)
+          #)
         }
+        browser()
         if (analysis == 'neg.binom') {
           my.mod = try(lme4::glmer.nb(
             y ~ trt + (0 + trt | clust),
             data = sim.dat,
             control = lme4::glmerControl(
-              optimizer = "optimx",
+              optimizer = optmethod,
               optCtrl = list(
-                method = goodopt,
                 starttests = FALSE,
                 kkt = FALSE
               )

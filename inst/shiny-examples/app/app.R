@@ -1103,13 +1103,6 @@ ui <- fluidPage(
             min = 0
           ),
           numericInput(
-            "sigma_b_sqcpsirgttnormal",
-            "Between-cluster variance (Arm 1)",
-            value = 0.1,
-            step = 0.001,
-            min = 0
-          ),
-          numericInput(
             "sigma_b_sq2cpsirgttnormal",
             "Between-cluster variance (Arm 2)",
             value = 0.1,
@@ -1205,13 +1198,6 @@ ui <- fluidPage(
             step = 0.001,
             min = 0,
             max = 1
-          ),
-          numericInput(
-            "sigma_b_sqcpsirgttbinary",
-            "Between-cluster variance (Arm 1)",
-            value = 0.1,
-            step = 0.001,
-            min = 0
           ),
           numericInput(
             "sigma_b_sq2cpsirgttbinary",
@@ -2185,7 +2171,6 @@ server <- function(input, output, session) {
           mu2 = q$mu2cpsirgttnormal,
           ICC = q$ICCcpsirgttnormal,
           sigma_sq = q$sigma_sqcpsirgttnormal,
-          sigma_b_sq = q$sigma_b_sqcpsirgttnormal,
           ICC2 = q$ICC2cpsirgttnormal,
           sigma_sq2 = q$sigma_sq2cpsirgttnormal,
           sigma_b_sq2 = q$sigma_b_sq2cpsirgttnormal,
@@ -2227,7 +2212,6 @@ server <- function(input, output, session) {
           nclusters = q$nclusterscpsirgttbinary,
           p1 = q$p1cpsirgttbinary,
           p2 = q$p2cpsirgttbinary,
-          sigma_b_sq = q$sigma_b_sqcpsirgttbinary,
           sigma_b_sq2 = q$sigma_b_sq2cpsirgttbinary,
           alpha = q$alpha,
           poorFitOverride = q$poorFitOverride,
@@ -2254,7 +2238,6 @@ server <- function(input, output, session) {
           nclusters = q$nclusterscpsirgttcount,
           c1 = q$c1cpsirgttcount,
           c2 = q$c2cpsirgttcount,
-          sigma_b_sq = q$sigma_b_sqcpsirgttcount,
           sigma_b_sq2 = q$sigma_b_sq2cpsirgttcount,
           alpha = q$alpha,
           poorFitOverride = q$poorFitOverride,
