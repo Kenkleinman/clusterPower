@@ -565,6 +565,13 @@ cps.count = function(nsim = NULL,
           )
           )
         }
+        glmm.values <- summary(my.mod)$coefficient
+        est.vector[i] <- glmm.values['trt2', 'Estimate']
+        se.vector[i] <- glmm.values['trt2', 'Std. Error']
+        stat.vector[i] <- glmm.values['trt2', 'z value']
+        pval.vector[i] <- glmm.values['trt2', 'Pr(>|z|)']
+        converge.vector[i] <- ifelse(
+          is.null(my.mod@optinfo$conv$lme4$messages), TRUE, FALSE)
       }
       if (irgtt == TRUE) {
         if (analysis == 'poisson') {
@@ -572,7 +579,7 @@ cps.count = function(nsim = NULL,
             try(MASS::glmmPQL(
               y ~ trt,
               random =  ~ 0 + trt | clust,
-              weights = nlme::varIdent(trt, form =  ~ 1 | trt),
+            #  weights = nlme::varIdent(trt, form =  ~ 1 | trt),
               data = sim.dat,
               family = stats::poisson(link = 'log')              
             ))
@@ -589,8 +596,14 @@ cps.count = function(nsim = NULL,
             #)
           #)
           #)
+          glmm.values <- summary(my.mod)$tTable
+          est.vector[i] <- glmm.values['trt2', 'Value']
+          se.vector[i] <- glmm.values['trt2', 'Std.Error']
+          stat.vector[i] <- glmm.values['trt2', 't-value']
+          pval.vector[i] <- glmm.values['trt2', 'p-value']
+          converge.vector[i] <- NA
         }
-        browser()
+
         if (analysis == 'neg.binom') {
           my.mod = try(lme4::glmer.nb(
             y ~ trt + (0 + trt | clust),
@@ -609,14 +622,8 @@ cps.count = function(nsim = NULL,
       if (class(my.mod) == "try-error") {
         next
       }
-      glmm.values <- summary(my.mod)$coefficient
-      est.vector[i] <- glmm.values['trt2', 'Estimate']
-      se.vector[i] <- glmm.values['trt2', 'Std. Error']
-      stat.vector[i] <- glmm.values['trt2', 'z value']
-      pval.vector[i] <- glmm.values['trt2', 'Pr(>|z|)']
-      converge.vector[i] <- ifelse(
-        is.null(my.mod@optinfo$conv$lme4$messages), TRUE, FALSE)
     }
+    
     # Fit GEE (geeglm)
     if (method == 'gee') {
       sim.dat = dplyr::arrange(sim.dat, clust)
@@ -741,7 +748,11 @@ cps.count = function(nsim = NULL,
   )
   
   # Calculate and store power estimate & confidence intervals
+  if(!is.na(any(cps.model.est$converge))){
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  } else {
+    cps.model.temp <- cps.model.est
+  }
 
   power.parms <- confintCalc(alpha = alpha,
                               p.val = cps.model.temp[, 'p.value'])
