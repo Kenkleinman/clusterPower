@@ -1,49 +1,49 @@
 #' Power simulations for cluster-randomized trials: Parallel Designs, Binary Outcome
 #'
-#' @description 
+#' @description
 #' \loadmathjax
 #'
 #'
-#' This function uses Monte Carlo methods (simulations) to estimate 
-#' power for cluster-randomized trials. Users 
+#' This function uses Monte Carlo methods (simulations) to estimate
+#' power for cluster-randomized trials. Users
 #' can modify a variety of parameters to suit the simulations to their
 #' desired experimental situation.
-#'  
-#' Users must specify the desired number of simulations, number of subjects per 
-#' cluster, number of clusters per arm, and two of the following three 
-#' parameters: expected probability of the outcome in one group, expected 
+#'
+#' Users must specify the desired number of simulations, number of subjects per
+#' cluster, number of clusters per arm, and two of the following three
+#' parameters: expected probability of the outcome in one group, expected
 #' probability of the outcome in the second group,
 #' and expected difference in probabilities between groups.
-#' Default values are provided for significance level, analytic method, 
+#' Default values are provided for significance level, analytic method,
 #' progress updates, and whether the simulated data sets are retained.
-#' 
-#' 
+#'
+#'
 #' @param nsim Number of datasets to simulate; accepts integer. Required.
-#' 
+#'
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar
 #' (implying equal cluster sizes for the two groups), a vector of length two
-#' (equal cluster sizes within arm), or a vector of length \code{sum(nclusters)} 
+#' (equal cluster sizes within arm), or a vector of length \code{sum(nclusters)}
 #' (unequal cluster sizes within arm). Required.
-#' 
+#'
 #' @param nclusters Number of clusters per treatment group; accepts a single integer
 #' (if there are the same number of clusters in each arm) or a vector of 2 integers
 #' (if nsubjects differs between arms). If a vector of cluster sizes >2 is provided in
 #' \code{nsubjects}, \code{sum(nclusters)} must match the \code{nsubjects} vector length.
 #' Required.
-#' 
+#'
 #' @param p1 Expected probability of outcome in first group.
 #' @param p2 Expected probability of outcome in second group.
-#' 
+#'
 #' @param sigma_b_sq Between-cluster variance; if sigma_b_sq2 is not specified,
 #' between-cluster variances are assumed to be equal in the two arms. Accepts numeric. Required.
-#' @param sigma_b_sq2 Between-cluster variance for clusters in second group. Only required if 
+#' @param sigma_b_sq2 Between-cluster variance for clusters in second group. Only required if
 #' between-cluster variances differ between treatment arms.
-#' 
-#' 
+#'
+#'
 #' @param alpha Significance level; default = 0.05.
-#' @param method Data analysis method, either generalized linear mixed effects model (GLMM) 
+#' @param method Data analysis method, either generalized linear mixed effects model (GLMM)
 #' or generalized estimating equations (GEE). Accepts c('glmm', 'gee'); default = 'glmm'. Required.
-#' @param quiet When set to FALSE, displays simulation progress and estimated completion 
+#' @param quiet When set to FALSE, displays simulation progress and estimated completion
 #' time, default = TRUE.
 #' @param allSimData Option to include a list of all simulated datasets in the output object.
 #' Default = \code{FALSE}.
@@ -53,7 +53,7 @@
 #' @param nofit Option to skip model fitting and analysis and only return the simulated data.
 #' Default = \code{FALSE}.
 #' @param seed Option to set the seed. Default is NA.
-#' @param poorFitOverride Option to override \code{stop()} if more than 25\% 
+#' @param poorFitOverride Option to override \code{stop()} if more than 25\%
 #' of fits fail to converge.
 #' @param lowPowerOverride Option to override \code{stop()} if the power
 #' is less than 0.5 after the first 50 simulations and every ten simulations
@@ -62,21 +62,21 @@
 #' calculated power is returned regardless of value.
 #' @param timelimitOverride Logical. When FALSE, stops execution if the estimated completion time
 #' is more than 2 minutes. Defaults to TRUE.
-#' @param irgtt Logical. Default = FALSE. Is the experimental design an 
-#' individually randomized group treatment trial? For details, 
-#' see ?cps.irgtt.binary. 
-#'  
+#' @param irgtt Logical. Default = FALSE. Is the experimental design an
+#' individually randomized group treatment trial? For details,
+#' see ?cps.irgtt.binary.
+#'
 #' @return If \code{nofit = F}, a list with the following components:
 #' \itemize{
-#'   \item Character string indicating total number of simulations, simulation type, 
+#'   \item Character string indicating total number of simulations, simulation type,
 #'   and number of convergent models
 #'   \item Number of simulations
-#'   \item Data frame with columns "Power" (estimated statistical power), 
-#'   "lower.95.ci" (lower 95% confidence interval bound), 
+#'   \item Data frame with columns "Power" (estimated statistical power),
+#'   "lower.95.ci" (lower 95% confidence interval bound),
 #'   "upper.95.ci" (upper 95% confidence interval bound),
 #'   "Alpha" (probability of committing a Type I error or rejecting a true null),
 #'   "Beta" (probability of committing a Type II error or failing to reject a false null).
-#'   Note that non-convergent models are returned for review, 
+#'   Note that non-convergent models are returned for review,
 #'   but not included in this calculation.
 #'   \item Analytic method used for power estimation
 #'   \item Significance level
@@ -85,102 +85,102 @@
 #'   \item Data frame reporting sigma_b_sq for each group
 #'   \item Vector containing user-supplied outcome probability and estimated odds ratio
 #'   \item Data frame containing three estimates of ICC
-#'   \item Data frame with columns: 
-#'   "Estimate" (Estimate of treatment effect for a given simulation), 
-#'   "Std.err" (Standard error for treatment effect estimate), 
-#'   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
-#'   "p.value", 
+#'   \item Data frame with columns:
+#'   "Estimate" (Estimate of treatment effect for a given simulation),
+#'   "Std.err" (Standard error for treatment effect estimate),
+#'   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)),
+#'   "p.value",
 #'   "converge" (Did simulated model converge?)
-#'   \item If allSimData = TRUE, list of data frames, each containing: "y" (Simulated response value), 
+#'   \item If allSimData = TRUE, list of data frames, each containing: "y" (Simulated response value),
 #'   "trt" (Indicator for treatment group), "clust" (Indicator for cluster)
-#'   \item List of warning messages produced by non-convergent models; 
+#'   \item List of warning messages produced by non-convergent models;
 #'   Includes model number for cross-referencing against \code{model.estimates}
 #'   \item Logical vector reporting whether models converged.
 #' }
-#' 
+#'
 #' If \code{nofit = T}, a data frame of the simulated data sets, containing:
-#' 
+#'
 #' \itemize{
 #'   \item "arm" (Indicator for treatment arm)
 #'   \item "cluster" (Indicator for cluster)
 #'   \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
 #'   }
-#'   
-#' 
-#' @details 
-#' 
+#'
+#'
+#' @details
+#'
 #' The data generating model for observation \mjseqn{j} in cluster \mjseqn{i} is:
 #' \mjsdeqn{y_{ij} \sim \text{Bernoulli}(\frac{e^{p_1 + b_i}}{1 + e^{p_1 + b_i} }) }
-#' for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)} 
-#' , while for the second group, 
-#'  
+#' for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)}
+#' , while for the second group,
+#'
 #' \mjsdeqn{y_{ij} \sim \text{Bernoulli}(\frac{e^{p_2 + b_i}}{1 + e^{p_2 + b_i} }) }
-#' where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if 
+#' where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if
 #' \mjseqn{\sigma_{b_2}^2} is not used, then the second group uses
 #' \mjseqn{b_i \sim N(0,\sigma_b^2)}.
-#' 
+#'
 #' All random terms are generated independent of one another.
-#' 
-#' 
-#' Non-convergent models are not included in the calculation of exact confidence 
+#'
+#'
+#' Non-convergent models are not included in the calculation of exact confidence
 #' intervals.
-#' 
-#' 
-#' @seealso 
-#' 
+#'
+#'
+#' @seealso
+#'
 #' An intracluster correlation coefficient (ICC) for binary outcome data is
 #' neither a natural parameter of the data generating model nor a function
 #' of its parameters.  Several methods for calculation have been suggested
 #' (Wu, Crespi, and Wong, 2012).  We provide several versions of ICCs for
 #' comparison.  These can be accessed in the \code{bincalcICC()} function.
-#' 
-#' 
-#' 
-#' @section Testing details:   
-#' This function has been verified against reference values from the NIH's GRT 
-#' Sample Size Calculator, PASS11, \code{CRTsize::n4prop}, and 
+#'
+#'
+#'
+#' @section Testing details:
+#' This function has been verified against reference values from the NIH's GRT
+#' Sample Size Calculator, PASS11, \code{CRTsize::n4prop}, and
 #' \code{clusterPower::cpa.binary}.
-#' 
-#' @author Alexander R. Bogdan, Alexandria C. Sakrejda 
-#' (\email{acbro0@@umass.edu}), and Ken Kleinman 
+#'
+#' @author Alexander R. Bogdan, Alexandria C. Sakrejda
+#' (\email{acbro0@@umass.edu}), and Ken Kleinman
 #' (\email{ken.kleinman@@gmail.com})
-#' #' 
-#' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation 
-#' Coefficient in Cluster Randomized Trials: 
-#' A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. 
+#' #'
+#' @references Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation
+#' Coefficient in Cluster Randomized Trials:
+#' A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394.
 #' doi: 10.1111/j.1751-5823.2009.00092.x
-#' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and 
+#' @references Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and
 #' Advanced Multilevel Modelling. London, 1999: Sage.
 #' @references Wu S, Crespi CM, Wong WK. Comparison of Methods for Estimating Intraclass
 #' Correlation Coefficient for Binary Responses in Cancer Prevention Cluster Randomized
-#' Trials. Contemp Clin Trials. 2012; 33(5): 869-880. doi:10.1016/j.cct.2012.05.004 
+#' Trials. Contemp Clin Trials. 2012; 33(5): 869-880. doi:10.1016/j.cct.2012.05.004
 #' London: Arnold; 2000.
-#' 
-#' @examples 
-#' 
-#' # Estimate power for a trial with 10 clusters in each arm, 20 subjects in 
-#' # each cluster, with a probability of 0.8 in the first arm and 0.5 in the 
-#' # second arm, with a sigma_b_sq = 1 in the first arm sigma_b_sq = 1.2 in 
+#'
+#' @examples
+#'
+#' # Estimate power for a trial with 10 clusters in each arm, 20 subjects in
+#' # each cluster, with a probability of 0.8 in the first arm and 0.5 in the
+#' # second arm, with a sigma_b_sq = 1 in the first arm sigma_b_sq = 1.2 in
 #' # the second arm.
-#' 
+#'
 #' \dontrun{
-#' binary.sim = cps.binary(nsim = 100, nsubjects = 20, 
+#' binary.sim = cps.binary(nsim = 100, nsubjects = 20,
 #'   nclusters = 10, p1 = 0.8,
-#'   p2 = 0.5, sigma_b_sq = 1, 
-#'   sigma_b_sq2 = 1.2, alpha = 0.05, 
+#'   p2 = 0.5, sigma_b_sq = 1,
+#'   sigma_b_sq2 = 1.2, alpha = 0.05,
 #'   method = 'glmm', allSimData = FALSE)
 #' }
 #'
 #' # Estimate power for a trial just as above, except that in the first arm,
 #' # the clusters have 10 subjects in 9 of the 10 clusters and 100 in the tenth
 #' # cluster, while in the second arm all clusters have 20 subjects.
-#' 
+#'
 #' \dontrun{
-#' binary.sim2 = cps.binary(nsim = 100, 
-#'   nsubjects = c(c(rep(10,9),100), rep(20,10)), 
+#' binary.sim2 = cps.binary(nsim = 100,
+#'   nsubjects = c(c(rep(10,9),100), rep(20,10)),
 #'   nclusters = 10, p1 = 0.8,
-#'   p2 = 0.5, sigma_b_sq = 1, 
-#'   sigma_b_sq2 = 1.2, alpha = 0.05, 
+#'   p2 = 0.5, sigma_b_sq = 1,
+#'   sigma_b_sq2 = 1.2, alpha = 0.05,
 #'   method = 'gee', allSimData = FALSE)
 #' }
 #'
@@ -207,7 +207,6 @@ cps.binary = function(nsim = NULL,
                       lowPowerOverride = FALSE,
                       timelimitOverride = TRUE,
                       irgtt = FALSE) {
-  
   if (!is.na(seed)) {
     set.seed(seed = seed)
   }
@@ -317,7 +316,7 @@ cps.binary = function(nsim = NULL,
   if (sum(parm1.args) > 1) {
     stop("Both terms must be specified: p1, p2")
   }
-
+  
   # Validate ALPHA, METHOD, QUIET, allSimData
   if (!is.numeric(alpha) || alpha < 0) {
     stop("ALPHA", min0.warning)
@@ -356,6 +355,9 @@ cps.binary = function(nsim = NULL,
   # Calculate log odds for each group
   logit.p1 = log(p1 / (1 - p1))
   logit.p2 = log(p2 / (1 - p2))
+  
+  # for irgtt option
+  index <- 1
   
   ### Create simulation loop
   while (sum(converge.vector == TRUE) != nsim) {
@@ -420,22 +422,22 @@ cps.binary = function(nsim = NULL,
     
     # option to return simulated data only
     if (nofit == TRUE) {
-        if (!exists("nofitop")) {
-          nofitop <- data.frame(trt = trt,
-                                clust = clust,
-                                y1 = y)
-        } else {
-          nofitop[, length(nofitop) + 1] <- y
-        }
-        if (length(nofitop) == (nsim + 2)) {
-          temp1 <- seq(1:nsim)
-          temp2 <- paste0("y", temp1)
-          colnames(nofitop) <- c("arm", "cluster", temp2)
-        }
-        if (length(nofitop) != (nsim + 2)) {
-          next()
-        }
-        return(nofitop)
+      if (!exists("nofitop")) {
+        nofitop <- data.frame(trt = trt,
+                              clust = clust,
+                              y1 = y)
+      } else {
+        nofitop[, length(nofitop) + 1] <- y
+      }
+      if (length(nofitop) == (nsim + 2)) {
+        temp1 <- seq(1:nsim)
+        temp2 <- paste0("y", temp1)
+        colnames(nofitop) <- c("arm", "cluster", temp2)
+      }
+      if (length(nofitop) != (nsim + 2)) {
+        next()
+      }
+      return(nofitop)
     }
     
     # Calculate ICC2 ([P(Yij = 1, Yih = 1)] - pij * pih) / sqrt(pij(1 - pij) * pih(1 - pih))
@@ -460,43 +462,62 @@ cps.binary = function(nsim = NULL,
     options(warn = -1)
     
     start.time = Sys.time()
-
+    
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       if (irgtt == TRUE) {
-        my.mod <- try(lme4::glmer(
-          y ~ trt + (0 + trt | clust),
-          data = sim.dat,
-          family = stats::binomial(link = 'logit'))
-        )
+        my.mod <-
+          try(MASS::glmmPQL(
+            y ~ trt,
+            random =  ~ 0 + trt | clust,
+            data = sim.dat,
+            family = stats::binomial(link = 'logit')
+          ))
+        if (class(my.mod) == "try-error"){
+          glmm.values <- NA
+          est.vector[index] <- NA
+          se.vector[index] <- NA
+          stat.vector[index] <- NA
+          pval.vector[index] <- NA
+          converge.vector[index] <- FALSE
+        } else {
+        glmm.values <- summary(my.mod)$tTable
+        est.vector[index] <- glmm.values['trt2', 'Value']
+        se.vector[index] <- glmm.values['trt2', 'Std.Error']
+        stat.vector[index] <- glmm.values['trt2', 't-value']
+        pval.vector[index] <- glmm.values['trt2', 'p-value']
+        converge.vector[index] <- TRUE
+        }
+        index <- index + 1
       } else {
         my.mod = try(lme4::glmer(
           y ~ trt + (1 | clust),
           data = sim.dat,
           family = stats::binomial(link = 'logit')
         ))
-      }
-
-      model.converge = try(my.mod)
-      converge.ind = is.null(model.converge@optinfo$conv$lme4$messages)
-      converge.vector = append(converge.vector, converge.ind)
-      if (!isTRUE(converge.ind)) {
-        model.id = paste0("Model ", length(converge.vector))
-        warning.list[model.id] = list(model.converge@optinfo$conv$lme4$messages)
-        glmm.values = NA
-        est.vector = append(est.vector, NA)
-        se.vector = append(se.vector, NA)
-        stat.vector = append(stat.vector, NA)
-        pval.vector = append(pval.vector, NA)
-      } else {
-        glmm.values = summary(my.mod)$coefficient
-        est.vector = append(est.vector, glmm.values['trt2', 'Estimate'])
-        se.vector = append(se.vector, glmm.values['trt2', 'Std. Error'])
-        stat.vector = append(stat.vector, glmm.values['trt2', 'z value'])
-        pval.vector = append(pval.vector, glmm.values['trt2', 'Pr(>|z|)'])
-      }
-      if (poorFitOverride == FALSE && length(converge.vector) > 10 && sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * 0.25)) {
-        stop("more than 25% of simulations are singular fit: check model specifications")
+        model.converge = try(my.mod)
+        converge.ind = is.null(model.converge@optinfo$conv$lme4$messages)
+        converge.vector = append(converge.vector, converge.ind)
+        if (!isTRUE(converge.ind)) {
+          model.id = paste0("Model ", length(converge.vector))
+          warning.list[model.id] = list(model.converge@optinfo$conv$lme4$messages)
+          glmm.values = NA
+          est.vector = append(est.vector, NA)
+          se.vector = append(se.vector, NA)
+          stat.vector = append(stat.vector, NA)
+          pval.vector = append(pval.vector, NA)
+        } else {
+          glmm.values = summary(my.mod)$coefficient
+          est.vector = append(est.vector, glmm.values['trt2', 'Estimate'])
+          se.vector = append(se.vector, glmm.values['trt2', 'Std. Error'])
+          stat.vector = append(stat.vector, glmm.values['trt2', 'z value'])
+          pval.vector = append(pval.vector, glmm.values['trt2', 'Pr(>|z|)'])
+        }
+        if (poorFitOverride == FALSE &&
+            length(converge.vector) > 10 &&
+            sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * 0.25)) {
+          stop("more than 25% of simulations are singular fit: check model specifications")
+        }
       }
     }
     
@@ -514,7 +535,7 @@ cps.binary = function(nsim = NULL,
         id = clust,
         corstr = "exchangeable"
       )
-
+      
       gee.values = summary(my.mod)$coefficients
       est.vector = append(est.vector, gee.values['trt2', 'Estimate'])
       se.vector = append(se.vector, gee.values['trt2', 'Std.err'])
@@ -523,14 +544,14 @@ cps.binary = function(nsim = NULL,
       converge.vector = append(converge.vector, ifelse(summary(my.mod)$error == 0, TRUE, FALSE))
     }
     
-      # Print simulation start message
-
-      if (length(est.vector) == 1) {
-        avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
-        time.est = avg.iter.time * (nsim - 1) / 60
-        hr.est = time.est %/% 60
-        min.est = round(time.est %% 60, 0)
-        if (quiet == FALSE) {
+    # Print simulation start message
+    
+    if (length(est.vector) == 1) {
+      avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
+      time.est = avg.iter.time * (nsim - 1) / 60
+      hr.est = time.est %/% 60
+      min.est = round(time.est %% 60, 0)
+      if (quiet == FALSE) {
         message(
           paste0(
             'Begin simulations :: Start Time: ',
@@ -542,18 +563,19 @@ cps.binary = function(nsim = NULL,
             'Min'
           )
         )
-        }
-        if (min.est > 2 && timelimitOverride == FALSE){
-          stop(paste0("Estimated completion time: ",
-                      hr.est,
-                      'Hr:',
-                      min.est,
-                      'Min'
-          ))
-        }
       }
+      if (min.est > 2 && timelimitOverride == FALSE) {
+        stop(paste0(
+          "Estimated completion time: ",
+          hr.est,
+          'Hr:',
+          min.est,
+          'Min'
+        ))
+      }
+    }
     # Update simulation progress information
-    if (quiet == FALSE){
+    if (quiet == FALSE) {
       prog.bar$update(sum(converge.vector == TRUE) / nsim)
       Sys.sleep(1 / 100)
     }
@@ -561,7 +583,8 @@ cps.binary = function(nsim = NULL,
     if (lowPowerOverride == FALSE && length(pval.vector) > 50) {
       sig.val.temp <-
         ifelse(pval.vector < alpha, 1, 0)
-      pval.power.temp <- sum(sig.val.temp, na.rm = TRUE) / length(pval.vector)
+      pval.power.temp <-
+        sum(sig.val.temp, na.rm = TRUE) / length(pval.vector)
       if (pval.power.temp < 0.5) {
         stop(
           paste(
@@ -575,18 +598,18 @@ cps.binary = function(nsim = NULL,
     }
   }
   # Print simulation complete message
-    if (quiet == FALSE && sum(converge.vector) == nsim) {
-        message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
-      }
-    # Governor to prevent infinite non-convergence loop
-    converge.ratio <-
-      sum(converge.vector == FALSE) / sum(converge.vector == TRUE)
-    if (converge.ratio > 4.0 && converge.ratio != Inf) {
-      stop(
-        "WARNING! The number of non-convergent models exceeds the number of convergent models by a factor of 4. Consider reducing sigma_b_sq"
-      )
-    }
-
+  if (quiet == FALSE && sum(converge.vector) == nsim) {
+    message(paste0("Simulations Complete! Time Completed: ", Sys.time()))
+  }
+  # Governor to prevent infinite non-convergence loop
+  converge.ratio <-
+    sum(converge.vector == FALSE) / sum(converge.vector == TRUE)
+  if (converge.ratio > 4.0 && converge.ratio != Inf) {
+    stop(
+      "WARNING! The number of non-convergent models exceeds the number of convergent models by a factor of 4. Consider reducing sigma_b_sq"
+    )
+  }
+  
   ## Output objects
   # Create object containing summary statement
   if (irgtt == FALSE) {
@@ -601,12 +624,10 @@ cps.binary = function(nsim = NULL,
     summary.message = paste0(
       "Monte Carlo Power Estimation based on ",
       nsim,
-      " Simulations: IRGTT Design, Binary Outcome. Note: ",
-      sum(converge.vector == FALSE),
-      " additional models were fitted to account for non-convergent simulations."
+      " Simulations: IRGTT Design, Binary Outcome. Note: Models fit using penalized quasi-likelihood."
     )
-    
   }
+  
   # Create method object
   long.method = switch(method, glmm = 'Generalized Linear Mixed Model',
                        gee = 'Generalized Estimating Equation')
@@ -621,9 +642,13 @@ cps.binary = function(nsim = NULL,
   )
   
   # Calculate and store power estimate & confidence intervals
-  cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  if (!is.na(any(cps.model.est$converge))) {
+    cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
+  } else {
+    cps.model.temp <- cps.model.est
+  }
   power.parms <- clusterPower::confintCalc(alpha = alpha,
-                              p.val = cps.model.temp[, 'p.value'])
+                                           p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs
   p1.p2.or = round(p1 / (1 - p1) / (p2 / (1 - p2)), 3)
@@ -663,13 +688,14 @@ cps.binary = function(nsim = NULL,
   ))
   
   # Check & governor for inclusion of simulated datasets
-  # Note: If number of non-convergent models exceeds 5% of NSIM, 
+  # Note: If number of non-convergent models exceeds 5% of NSIM,
   # override allSimData and output all simulated data sets
+
   if (allSimData == FALSE &&
       (sum(converge.vector == FALSE) < sum(converge.vector == TRUE) * 0.05)) {
     simulated.datasets = NULL
   }
-  
+
   # Create list containing all output (class 'crtpwr') and return
   if (irgtt == FALSE) {
     complete.output = structure(
@@ -707,7 +733,7 @@ cps.binary = function(nsim = NULL,
         "model.estimates" = cps.model.est,
         "sim.data" = simulated.datasets,
         "warning.list" = warning.list,
-        "convergence" = converge.vector
+        "convergence" = rep(NA, nsim)
       ),
       class = "crtpwr"
     )

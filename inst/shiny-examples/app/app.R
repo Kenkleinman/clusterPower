@@ -811,7 +811,7 @@ ui <- fluidPage(
         # cpa.sw.normal input start
         conditionalPanel(
           "input.type == 'Stepped Wedge' && input.dist == 'Normal' && input.meth == 'Analytic'",
-          numericInput("nclusterscpaswnormal", "Number of Clusters", value = 5),
+          numericInput("nclusterscpaswnormal", "Number of Clusters", value = 12),
           numericInput(
             "nsubjectscpaswnormal",
             "Number of Observations (per cluster)",
@@ -849,7 +849,7 @@ ui <- fluidPage(
         # cps.sw.normal input start
         conditionalPanel(
           "input.type == 'Stepped Wedge' && input.dist == 'Normal' && input.meth == 'Simulation'",
-          numericInput("nclusterscpsswnormal", "Number of Clusters", value = 10),
+          numericInput("nclusterscpsswnormal", "Number of Clusters", value = 12),
           numericInput(
             "nsubjectscpsswnormal",
             "Number of Observations (per cluster)",
@@ -907,7 +907,7 @@ ui <- fluidPage(
         # cps.sw.binary input start
         conditionalPanel(
           "input.type == 'Stepped Wedge' && input.dist == 'Binary' && input.meth == 'Simulation'",
-          numericInput("nclusterscpsswbinary", "Number of Clusters", value = 10),
+          numericInput("nclusterscpsswbinary", "Number of Clusters", value = 12),
           numericInput(
             "nsubjectscpsswbinary",
             "Number of Observations (per cluster)",
@@ -950,7 +950,7 @@ ui <- fluidPage(
         # cpa.sw.count input start
         conditionalPanel(
           "input.type == 'Stepped Wedge' && input.dist == 'Count' && input.meth == 'Analytic'",
-          numericInput("nclusterscpaswcount", "Number of Clusters", value = 10),
+          numericInput("nclusterscpaswcount", "Number of Clusters", value = 12),
           numericInput(
             "nsubjectscpaswcount",
             "Number of Observations (per cluster)",
@@ -976,7 +976,7 @@ ui <- fluidPage(
         # cps.sw.count input start
         conditionalPanel(
           "input.type == 'Stepped Wedge' && input.dist == 'Count' && input.meth == 'Simulation'",
-          numericInput("nclusterscpsswcount", "Number of Clusters", value = 10),
+          numericInput("nclusterscpsswcount", "Number of Clusters", value = 12),
           numericInput("nsubjectscpsswcount", "Number of Observations (per cluster)", value = 20),
           numericInput(
             "nsimcpsswcount",
@@ -2056,15 +2056,14 @@ server <- function(input, output, session) {
       answer <<- future({
         val <- cps.sw.normal(
           alpha = q$alpha,
-          power = q$power,
-          nclusters = q$nclusterscpaswnormal,
-          nsubjects = q$nsubjectscpaswnormal,
-          ntimes = q$ntimescpaswnormal,
-          d = q$dcpaswnormal,
-          ICC = q$ICCcpaswnormal,
-          rho_c = q$rho_ccpaswnormal,
-          rho_s = q$rho_scpaswnormal,
-          vart = q$vartcpaswnormal
+          nsim = q$nsimcpsswnormal,
+          nclusters = q$nclusterscpsswnormal,
+          nsubjects = q$nsubjectscpsswnormal,
+          steps = q$stepscpsswnormal,
+          mu = q$mucpsswnormal,
+          mu2 = q$mu2cpsswnormal,
+          sigma_sq = q$sigma_sqcpsswnormal,
+          sigma_b_sq = q$sigma_b_sqcpsswnormal
         )
         return(val)
       }, seed = TRUE)
