@@ -105,8 +105,8 @@
 #'                               quiet = FALSE, allSimData = FALSE, seed = 123)
 #' }
 #'
-#' @author Alexander R. Bogdan
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
+#' @author Alexander R. Bogdan
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @export

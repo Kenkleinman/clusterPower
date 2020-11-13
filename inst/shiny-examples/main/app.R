@@ -1059,17 +1059,17 @@ ui <- fluidPage(
           numericInput(
             "nclusterscpsirgttnormal",
             "Number of Clusters (in the clustered arm)",
+            value = 8
+          ),
+          numericInput(
+            "nsubjects2cpsirgttnormal",
+            "Number of Observations (per cluster)",
             value = 10
           ),
           numericInput(
             "nsubjectscpsirgttnormal",
-            "Number of Observations (per cluster)",
-            value = 20
-          ),
-          numericInput(
-            "nsubjects2cpsirgttnormal",
             "Number of Observations (in unclustered arm)",
-            value = 200
+            value = 100
           ),
           numericInput(
             "nsimcpsirgttnormal",
@@ -1078,10 +1078,10 @@ ui <- fluidPage(
             max = 500000,
             min = 0
           ),
-          numericInput("mucpsirgttnormal", "Mean in arm 1", value = 1.4),
-          numericInput("mu2cpsirgttnormal", "Mean in arm 2", value = 3.2),
+          numericInput("mucpsirgttnormal", "Mean in arm 1", value = 1.1),
+          numericInput("mu2cpsirgttnormal", "Mean in arm 2", value = 1.5),
           numericInput(
-            "ICCcpsirgttnormal",
+            "ICC2cpsirgttnormal",
             "Intracluster correlation coefficient (ICC)",
             value = NA,
             step = 0.01,
@@ -1091,14 +1091,14 @@ ui <- fluidPage(
           numericInput(
             "sigma_sqcpsirgttnormal",
             "Within-cluster variance (Arm 1)",
-            value = 0.01,
+            value = 0.1,
             step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_sq2cpsirgttnormal",
             "Within-cluster variance (Arm 2)",
-            value = 0.01,
+            value = 0.2,
             step = 0.001,
             min = 0
           ),
@@ -1138,7 +1138,7 @@ ui <- fluidPage(
           numericInput(
             "p2cpairgttbinary",
             "Outcome proportion (Arm 2)",
-            value = 0.5,
+            value = 0.2057,
             step = 0.001,
             min = 0,
             max = 1
@@ -1146,7 +1146,7 @@ ui <- fluidPage(
           numericInput(
             "ICCcpairgttbinary",
             "Intracluster correlation coefficient (ICC)",
-            value = NA,
+            value = 0.01,
             step = 0.01,
             min = 0,
             max = 1
@@ -1172,7 +1172,7 @@ ui <- fluidPage(
             value = 20
           ),
           numericInput(
-            "nsubjects2cpsirgttnormal",
+            "nsubjects2cpsirgttbinary",
             "Number of Observations (in unclustered arm)",
             value = 200
           ),
@@ -1228,7 +1228,7 @@ ui <- fluidPage(
             value = 20
           ),
           numericInput(
-            "nsubjects2cpsirgttnormal",
+            "nsubjects2cpsirgttcount",
             "Number of Observations (in unclustered arm)",
             value = 200
           ),
@@ -1510,12 +1510,10 @@ ui <- fluidPage(
 )
 )
 
-
 ######################################
-
 #       SERVER
-
 ######################################
+
 server <- function(input, output, session) {
   disable("cancel")
   out1 <- reactiveValues(power = NULL)
@@ -2168,7 +2166,6 @@ server <- function(input, output, session) {
           nclusters = q$nclusterscpsirgttnormal,
           mu = q$mucpsirgttnormal,
           mu2 = q$mu2cpsirgttnormal,
-          ICC = q$ICCcpsirgttnormal,
           sigma_sq = q$sigma_sqcpsirgttnormal,
           ICC2 = q$ICC2cpsirgttnormal,
           sigma_sq2 = q$sigma_sq2cpsirgttnormal,
