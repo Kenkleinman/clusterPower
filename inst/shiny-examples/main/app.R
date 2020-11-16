@@ -20,6 +20,8 @@ library(ggplot2)
 
 plan(callr)
 
+
+#returns the vignette for the current function
 get_vignette_link <- function(...) {
   x <- vignette(...)
   if (nzchar(out <- x$PDF)) {
@@ -73,17 +75,19 @@ ui <- fluidPage(
         id = "allValues",
         shinyjs::hidden(numericInput("power", "power", value = NA)),
         
-        #input for cpa.normal
+        #input for cpa.normal  -------------------------------------------------------------
         conditionalPanel(
           "input.type == 'Parallel' && input.dist == 'Normal' && input.meth == 'Analytic'",
-          numericInput("nclusterscpanormal", "Number of Clusters", value = 10),
+          numericInput("nclusterscpanormal", "Clusters per arm (nclusters)", value = 10),
           numericInput(
             "nsubjectscpanormal",
             "Number of Observations (per cluster)",
             value = 20
           ),
           numericInput("CVcpanormal", "Coefficient of variation (CV)", value = 0),
-          numericInput("dcpanormal", "Means difference", value = 0.43),
+          bsTooltip("CVcpanormal", "When CV equals 0, all clusters are the same size.",
+                    'right', options = list(container = "body")),
+          numericInput("dcpanormal", "Expected difference in arm means", value = 0.43),
           numericInput(
             "ICCcpanormal",
             "Intracluster correlation coefficient (ICC)",
@@ -94,25 +98,26 @@ ui <- fluidPage(
           ),
           numericInput(
             "sigma_sqcpanormal",
-            "Within-cluster variance (Arm 1)",
+            "Reference arm within-cluster variance (sigma_sq)",
             value = 0.01,
             step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sqcpanormal",
-            "Between-cluster variance (Arm 1)",
+            "Reference arm between-cluster variance (sigma_b_sq)",
             step = 0.001,
             value = 0.1,
             min = 0
           ),
-          numericInput("vartcpanormal", "Total variation of the outcome", value = NA)
+          numericInput("vartcpanormal", "Total variation of the outcome (vart)", value = NA)
         ),
         
         # input for cps.normal
         conditionalPanel(
           "input.type == 'Parallel' && input.dist == 'Normal' && input.meth == 'Simulation'",
-          numericInput("nclusterscpsnormal", "Number of Clusters", value = 10),
+          numericInput("nclusters1cpsnormal", "Clusters in reference arm (nclusters)", value = 10),
+          numericInput("nclusters2cpsnormal", "Clusters in treatment arm (nclusters)", value = 10),
           numericInput(
             "nsubjectscpsnormal",
             "Number of Observations (per cluster)",
@@ -1396,8 +1401,10 @@ ui <- fluidPage(
           )
         ),
         tableOutput("tracker"),
+        downloadButton("downloadData", "Download this table (.csv)", icon = icon("file-download"),
+                       style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
         actionButton("cleargraph2", "Clear Data", icon = icon("trash-alt")),
-        tags$style(type = 'text/css', "button#cleargraph2 { margin-top: 100px; }")
+        tags$style(type = 'text/css', "button#cleargraph2 { margin-left: 250px; }")
       ),
       tabPanel(
         "Help",
@@ -2341,14 +2348,16 @@ server <- function(input, output, session) {
       if (x$meth == "Analytic") {
         tab <-
           rbind(specialnames,
-                c("power", round(out1$power, 3)),
-                c("alpha", input$alpha))
+                c("alpha", input$alpha),
+                c("power", round(out1$power, 3)))
       }
       if (x$meth == "Simulation") {
         tab <-
           rbind(specialnames,
+                c("alpha", input$alpha),
+                c("upper CI", round(out1$power$Upper.95.CI, 3)),
                 c("power", round(out1$power$Power, 3)),
-                c("alpha", input$alpha))
+                c("lower CI", round(out1$power$Lower.95.CI, 3)))
       }
       if (is.null(logargs$tab)) {
         logargs$tab <- tab
@@ -2358,9 +2367,8 @@ server <- function(input, output, session) {
         logargs$tab <- data.frame(tab, check.names = TRUE)
       }
     } else {
-      if (is.null(logargs$tab)) {
-        logargs$tab <- NULL
-      } else {
+      # if logargs$tab is an error, ignore it
+      if (!is.null(logargs$tab)) {
         tab <- cbind.data.frame(logargs$tab)
         logargs$tab <- data.frame(tab, check.names = TRUE)
       }
@@ -2458,6 +2466,16 @@ server <- function(input, output, session) {
   # create reactive input data table
   output$tracker <-
     renderTable(logargs$tab)
+  
+  # Downloadable csv of reactive input data table
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("clusterPower_", input$fxnName, ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(logargs$tab, file, row.names = FALSE)
+    }
+  )
   
   # present the output verbose/not verbose
   observeEvent(req(out1$power), {

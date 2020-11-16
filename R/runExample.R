@@ -6,7 +6,7 @@
 #' @author Alexandria Sakrejda (\email{acbro0@@umass.edu})
 #' 
 #' @export
-runExample <- function(appname) {
+runExample <- function(appname = "main") {
   # find the examples
   validappnames <- list.files(system.file("shiny-examples", package = "clusterPower"))
   
@@ -17,13 +17,13 @@ runExample <- function(appname) {
       "'")
   
   # possible errors
-  if (missing(appname) || !nzchar(appname) ||
-      !appname %in% validappnames) {
-    stop(
-      'Please run `runExample()` with a valid example app as an argument.\n',
-      validappnamesMsg,
-      call. = FALSE)
-  }
+ # if (missing(appname) || !nzchar(appname) ||
+#      !appname %in% validappnames) {
+#    stop(
+#      'Please run `runExample()` with a valid example app as an argument.\n',
+#      validappnamesMsg,
+#      call. = FALSE)
+#  }
   
   # find and launch the app
   appDir <- system.file("shiny-examples", appname, package = "clusterPower")
