@@ -116,62 +116,92 @@ ui <- fluidPage(
         # input for cps.normal
         conditionalPanel(
           "input.type == 'Parallel' && input.dist == 'Normal' && input.meth == 'Simulation'",
-          numericInput("nclusters1cpsnormal", "Clusters in reference arm (nclusters)", value = 10),
-          numericInput("nclusters2cpsnormal", "Clusters in treatment arm (nclusters)", value = 10),
-          numericInput(
-            "nsubjectscpsnormal",
-            "Number of Observations (per cluster)",
-            value = 20
-          ),
+          
+          # nsim
           numericInput(
             "nsimcpsnormal",
-            "Number of simulations",
+            "Number of simulations (nsim)",
             value = 100,
             max = 500000,
             min = 0
           ),
+          
+          # nclusters
+          textInput(
+            "nclusterscpsnormal",
+            "Clusters per arm (nclusters)",
+            value = "10, 10"
+          ),
+          bsTooltip("nclusterscpsmanormal", "Note: comma delimited",
+                    'right', options = list(container = "body")),
+          
+          # nsubjects
+          textInput(
+            "nsubjectscpsnormal",
+            "Observations per cluster (nsubjects)",
+            value = "20, 20"
+          ),
+          bsTooltip("nsubjectscpsmanormal", "Note: comma delimited",
+                    'right', options = list(container = "body")),
+          
+          ## REFERENCE VALUES
+          # mu
+          numericInput("mucpsnormal", "Reference arm expected mean (mu)", value = 2.4),
+          
+          # variance params
           numericInput(
             "ICCcpsnormal",
-            "Intracluster correlation coefficient (ICC, Arm 1)",
+            "Reference arm ICC (ICC)",
             value = NA,
             step = 0.01,
             min = 0,
             max = 1
           ),
-          numericInput(
-            "ICC2cpsnormal",
-            "Intracluster correlation coefficient (ICC, Arm 2)",
-            value = NA,
-            step = 0.01,
-            min = 0,
-            max = 1
-          ),
-          numericInput("mucpsnormal", "Mean in arm 1", value = 2.4),
-          numericInput("mu2cpsnormal", "Mean in arm 2", value = 1.5),
+          bsTooltip("ICCcpsmanormal", "Intracluster correlation coefficient",
+                    'right', options = list(container = "body")),
+          
           numericInput(
             "sigma_sqcpsnormal",
-            "Within-cluster variance (Arm 1)",
-            value = 0.2,
-            step = 0.001,
-            min = 0
-          ),
-          numericInput(
-            "sigma_sq2cpsnormal",
-            "Within-cluster variance (Arm 2)",
+            "Reference arm within-cluster variance (sigma_sq)",
             value = 0.2,
             step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sqcpsnormal",
-            "Between-cluster variance (Arm 1)",
+            "Reference arm between-cluster variance (sigma_b_sq)",
             value = 0.5,
             step = 0.001,
             min = 0
           ),
+          
+          ### TREATMENT ARM
+          # mu 
+          numericInput("mu2cpsnormal", "Treatment arm expected mean (mu2)", value = 1.5),
+          
+          # variance params
+          numericInput(
+            "ICC2cpsnormal",
+            "Treatment arm ICC (ICC)",
+            value = NA,
+            step = 0.01,
+            min = 0,
+            max = 1
+          ),
+          bsTooltip("ICC2cpsmanormal", "Intracluster correlation coefficient",
+                    'right', options = list(container = "body")),
+
+          numericInput(
+            "sigma_sq2cpsnormal",
+            "Treatment arm within-cluster variance (sigma_sq)",
+            value = 0.2,
+            step = 0.001,
+            min = 0
+          ),
+
           numericInput(
             "sigma_b_sq2cpsnormal",
-            "Between-cluster variance (Arm 2)",
+            "Treatment arm between-cluster variance (sigma_b_sq)",
             value = 0.5,
             step = 0.001,
             min = 0
@@ -1746,8 +1776,8 @@ server <- function(input, output, session) {
       answer <<- future({
         val <- cps.normal(
           nsim = q$nsimcpsnormal,
-          nclusters = q$nclusterscpsnormal,
-          nsubjects = q$nsubjectscpsnormal,
+          nclusters = textToNum(q$nclusterscpsnormal),
+          nsubjects = textToNum(q$nsubjectscpsnormal),
           mu = q$mucpsnormal,
           mu2 = q$mu2cpsnormal,
           ICC = q$ICCcpsnormal,

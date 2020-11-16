@@ -16,15 +16,6 @@ runExample <- function(appname = "main") {
       paste(validappnames, collapse = "', '"),
       "'")
   
-  # possible errors
- # if (missing(appname) || !nzchar(appname) ||
-#      !appname %in% validappnames) {
-#    stop(
-#      'Please run `runExample()` with a valid example app as an argument.\n',
-#      validappnamesMsg,
-#      call. = FALSE)
-#  }
-  
   # find and launch the app
   appDir <- system.file("shiny-examples", appname, package = "clusterPower")
   shiny::runApp(appDir, display.mode = "normal")
