@@ -20,6 +20,22 @@ library(ggplot2)
 
 plan(callr)
 
+# labels for arguments 
+
+analyticnsubjectstext <- "Mean observations per cluster (nsubjects)"
+analyticnclusterstext <- "Mean clusters per arm (nclusters)"
+analyticICCtext <- "Intracluster correlation coefficient (ICC)"
+refsigma_sqtext <- "Reference arm within-cluster variance (sigma_sq)" 
+treatsigma_sqtext <- "Treatment arm within-cluster variance (sigma_sq)" 
+refsigma_b_sqtext <- "Reference arm between-cluster variance (sigma_b_sq)"
+treatsigma_b_sqtext <- "Treatment arm between-cluster variance (sigma_b_sq)"
+simnsimtext <- "Number of simulations (nsim)"
+simnsubjectstext <- "Observations per cluster (nsubjects)"
+simnclusterstext <- "Clusters per arm (nclusters)"
+refmutext <- "Reference arm expected mean (mu)"
+treatmutext <- "Treatment arm expected mean (mu2)"
+refICCtext <- "Reference arm ICC (ICC)"
+treatICCtext <- "Treatment arm ICC (ICC)"
 
 #returns the vignette for the current function
 get_vignette_link <- function(...) {
@@ -78,34 +94,46 @@ ui <- fluidPage(
         #input for cpa.normal  -------------------------------------------------------------
         conditionalPanel(
           "input.type == 'Parallel' && input.dist == 'Normal' && input.meth == 'Analytic'",
-          numericInput("nclusterscpanormal", "Clusters per arm (nclusters)", value = 10),
+          
+          # nclusters
+          numericInput("nclusterscpanormal", analyticnclusterstext, value = 10),
+          
+          #nsubjects
           numericInput(
             "nsubjectscpanormal",
-            "Number of Observations (per cluster)",
+            analyticnsubjectstext,
             value = 20
           ),
+          
+          # CV
           numericInput("CVcpanormal", "Coefficient of variation (CV)", value = 0),
           bsTooltip("CVcpanormal", "When CV equals 0, all clusters are the same size.",
                     'right', options = list(container = "body")),
-          numericInput("dcpanormal", "Expected difference in arm means", value = 0.43),
+          
+          # d
+          numericInput("dcpanormal", "Expected difference in arm means (d)", value = 0.43),
+          
+          # ICC
           numericInput(
             "ICCcpanormal",
-            "Intracluster correlation coefficient (ICC)",
+            analyticICCtext,
             value = NA,
             step = 0.01,
             min = 0,
             max = 1
           ),
+          
+          # variance params
           numericInput(
             "sigma_sqcpanormal",
-            "Reference arm within-cluster variance (sigma_sq)",
+            refsigma_sqtext,
             value = 0.01,
             step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sqcpanormal",
-            "Reference arm between-cluster variance (sigma_b_sq)",
+            refsigma_b_sqtext,
             step = 0.001,
             value = 0.1,
             min = 0
@@ -120,7 +148,7 @@ ui <- fluidPage(
           # nsim
           numericInput(
             "nsimcpsnormal",
-            "Number of simulations (nsim)",
+            simnsimtext,
             value = 100,
             max = 500000,
             min = 0
@@ -129,7 +157,7 @@ ui <- fluidPage(
           # nclusters
           textInput(
             "nclusterscpsnormal",
-            "Clusters per arm (nclusters)",
+            simnclusterstext,
             value = "10, 10"
           ),
           bsTooltip("nclusterscpsmanormal", "Note: comma delimited",
@@ -138,7 +166,7 @@ ui <- fluidPage(
           # nsubjects
           textInput(
             "nsubjectscpsnormal",
-            "Observations per cluster (nsubjects)",
+            simnsubjectstext,
             value = "20, 20"
           ),
           bsTooltip("nsubjectscpsmanormal", "Note: comma delimited",
@@ -162,14 +190,14 @@ ui <- fluidPage(
           
           numericInput(
             "sigma_sqcpsnormal",
-            "Reference arm within-cluster variance (sigma_sq)",
+            refsigma_sqtext,
             value = 0.2,
             step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sqcpsnormal",
-            "Reference arm between-cluster variance (sigma_b_sq)",
+            refsigma_b_sqtext,
             value = 0.5,
             step = 0.001,
             min = 0
@@ -177,12 +205,12 @@ ui <- fluidPage(
           
           ### TREATMENT ARM
           # mu 
-          numericInput("mu2cpsnormal", "Treatment arm expected mean (mu2)", value = 1.5),
+          numericInput("mu2cpsnormal", treatmutext, value = 1.5),
           
           # variance params
           numericInput(
             "ICC2cpsnormal",
-            "Treatment arm ICC (ICC)",
+            treatICCtext,
             value = NA,
             step = 0.01,
             min = 0,
@@ -193,7 +221,7 @@ ui <- fluidPage(
 
           numericInput(
             "sigma_sq2cpsnormal",
-            "Treatment arm within-cluster variance (sigma_sq)",
+            treatsigma_sqtext,
             value = 0.2,
             step = 0.001,
             min = 0
@@ -201,7 +229,7 @@ ui <- fluidPage(
 
           numericInput(
             "sigma_b_sq2cpsnormal",
-            "Treatment arm between-cluster variance (sigma_b_sq)",
+            treatsigma_b_sqtext,
             value = 0.5,
             step = 0.001,
             min = 0
