@@ -25,6 +25,9 @@ plan(callr)
 analyticnsubjectstext <- "Mean observations per cluster (nsubjects)"
 analyticnclusterstext <- "Mean clusters per arm (nclusters)"
 analyticICCtext <- "Intracluster correlation coefficient (ICC)"
+
+analyticsigma_sqtext <- "Within-cluster variance (sigma_sq)" 
+analyticsigma_b_sqtext <- "Between-cluster variance (sigma_b_sq)"
 refsigma_sqtext <- "Reference arm within-cluster variance (sigma_sq)" 
 treatsigma_sqtext <- "Treatment arm within-cluster variance (sigma_sq)" 
 refsigma_b_sqtext <- "Reference arm between-cluster variance (sigma_b_sq)"
@@ -126,14 +129,14 @@ ui <- fluidPage(
           # variance params
           numericInput(
             "sigma_sqcpanormal",
-            refsigma_sqtext,
+            analyticsigma_sqtext,
             value = 0.01,
             step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sqcpanormal",
-            refsigma_b_sqtext,
+            analyticsigma_b_sqtext,
             step = 0.001,
             value = 0.1,
             min = 0
