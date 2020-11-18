@@ -20,18 +20,22 @@ library(ggplot2)
 
 plan(callr)
 
-# labels for arguments 
+# labels for arguments
 
 analyticnsubjectstext <- "Mean observations per cluster (nsubjects)"
 analyticnclusterstext <- "Mean clusters per arm (nclusters)"
 analyticICCtext <- "Intracluster correlation coefficient (ICC)"
 
-analyticsigma_sqtext <- "Within-cluster variance (sigma_sq)" 
+analyticsigma_sqtext <- "Within-cluster variance (sigma_sq)"
 analyticsigma_b_sqtext <- "Between-cluster variance (sigma_b_sq)"
-refsigma_sqtext <- "Reference arm within-cluster variance (sigma_sq)" 
-treatsigma_sqtext <- "Treatment arm within-cluster variance (sigma_sq)" 
-refsigma_b_sqtext <- "Reference arm between-cluster variance (sigma_b_sq)"
-treatsigma_b_sqtext <- "Treatment arm between-cluster variance (sigma_b_sq)"
+refsigma_sqtext <-
+  "Reference arm within-cluster variance (sigma_sq)"
+treatsigma_sqtext <-
+  "Treatment arm within-cluster variance (sigma_sq)"
+refsigma_b_sqtext <-
+  "Reference arm between-cluster variance (sigma_b_sq)"
+treatsigma_b_sqtext <-
+  "Treatment arm between-cluster variance (sigma_b_sq)"
 simnsimtext <- "Number of simulations (nsim)"
 simnsubjectstext <- "Observations per cluster (nsubjects)"
 simnclusterstext <- "Clusters per arm (nclusters)"
@@ -40,7 +44,7 @@ treatmutext <- "Treatment arm expected mean (mu2)"
 refICCtext <- "Reference arm ICC (ICC)"
 treatICCtext <- "Treatment arm ICC (ICC)"
 
-#returns the vignette for the current function
+# returns the vignette for the help section link
 get_vignette_link <- function(...) {
   x <- vignette(...)
   if (nzchar(out <- x$PDF)) {
@@ -102,16 +106,18 @@ ui <- fluidPage(
           numericInput("nclusterscpanormal", analyticnclusterstext, value = 10),
           
           #nsubjects
-          numericInput(
-            "nsubjectscpanormal",
-            analyticnsubjectstext,
-            value = 20
-          ),
+          numericInput("nsubjectscpanormal",
+                       analyticnsubjectstext,
+                       value = 20),
           
           # CV
           numericInput("CVcpanormal", "Coefficient of variation (CV)", value = 0),
-          bsTooltip("CVcpanormal", "When CV equals 0, all clusters are the same size.",
-                    'right', options = list(container = "body")),
+          bsTooltip(
+            "CVcpanormal",
+            "When CV equals 0, all clusters are the same size.",
+            'right',
+            options = list(container = "body")
+          ),
           
           # d
           numericInput("dcpanormal", "Expected difference in arm means (d)", value = 0.43),
@@ -158,22 +164,26 @@ ui <- fluidPage(
           ),
           
           # nclusters
-          textInput(
-            "nclusterscpsnormal",
-            simnclusterstext,
-            value = "10, 10"
+          textInput("nclusterscpsnormal",
+                    simnclusterstext,
+                    value = "10, 10"),
+          bsTooltip(
+            "nclusterscpsmanormal",
+            "Note: comma delimited",
+            'right',
+            options = list(container = "body")
           ),
-          bsTooltip("nclusterscpsmanormal", "Note: comma delimited",
-                    'right', options = list(container = "body")),
           
           # nsubjects
-          textInput(
-            "nsubjectscpsnormal",
-            simnsubjectstext,
-            value = "20, 20"
+          textInput("nsubjectscpsnormal",
+                    simnsubjectstext,
+                    value = "20, 20"),
+          bsTooltip(
+            "nsubjectscpsmanormal",
+            "Note: comma delimited",
+            'right',
+            options = list(container = "body")
           ),
-          bsTooltip("nsubjectscpsmanormal", "Note: comma delimited",
-                    'right', options = list(container = "body")),
           
           ## REFERENCE VALUES
           # mu
@@ -188,8 +198,12 @@ ui <- fluidPage(
             min = 0,
             max = 1
           ),
-          bsTooltip("ICCcpsmanormal", "Intracluster correlation coefficient",
-                    'right', options = list(container = "body")),
+          bsTooltip(
+            "ICCcpsmanormal",
+            "Intracluster correlation coefficient",
+            'right',
+            options = list(container = "body")
+          ),
           
           numericInput(
             "sigma_sqcpsnormal",
@@ -207,7 +221,7 @@ ui <- fluidPage(
           ),
           
           ### TREATMENT ARM
-          # mu 
+          # mu
           numericInput("mu2cpsnormal", treatmutext, value = 1.5),
           
           # variance params
@@ -219,9 +233,13 @@ ui <- fluidPage(
             min = 0,
             max = 1
           ),
-          bsTooltip("ICC2cpsmanormal", "Intracluster correlation coefficient",
-                    'right', options = list(container = "body")),
-
+          bsTooltip(
+            "ICC2cpsmanormal",
+            "Intracluster correlation coefficient",
+            'right',
+            options = list(container = "body")
+          ),
+          
           numericInput(
             "sigma_sq2cpsnormal",
             treatsigma_sqtext,
@@ -229,7 +247,7 @@ ui <- fluidPage(
             step = 0.001,
             min = 0
           ),
-
+          
           numericInput(
             "sigma_b_sq2cpsnormal",
             treatsigma_b_sqtext,
@@ -1043,7 +1061,11 @@ ui <- fluidPage(
         conditionalPanel(
           "input.type == 'Stepped Wedge' && input.dist == 'Count' && input.meth == 'Simulation'",
           numericInput("nclusterscpsswcount", "Number of Clusters", value = 12),
-          numericInput("nsubjectscpsswcount", "Number of Observations (per cluster)", value = 20),
+          numericInput(
+            "nsubjectscpsswcount",
+            "Number of Observations (per cluster)",
+            value = 20
+          ),
           numericInput(
             "nsimcpsswcount",
             "Number of simulations",
@@ -1385,64 +1407,61 @@ ui <- fluidPage(
     ########################
     # Tabs start
     ########################
-    mainPanel(
-      tabsetPanel(
-        tabPanel(
-          "Results",
-          conditionalPanel(
-            "input.dismissMsg == false && input.dismissMsg2 == false && input.more == false",
-            wellPanel(
-              HTML(
-                "<p>Note: If the estimated calculation time is longer than 3 minutes,
+    mainPanel(tabsetPanel(
+      tabPanel(
+        "Results",
+        conditionalPanel(
+          "input.dismissMsg == false && input.dismissMsg2 == false && input.more == false",
+          wellPanel(
+            HTML(
+              "<p>Note: If the estimated calculation time is longer than 3 minutes,
             the process will not run unless you override the time limit
             under advanced options.</p>"
-              ),
-              checkboxInput("dismissMsg", "dismiss this message", value = FALSE)
-            )
-          ),
-          conditionalPanel(
-            "input.type == 'Stepped Wedge' && input.dist == 'Binary' &&
+            ),
+            checkboxInput("dismissMsg", "dismiss this message", value = FALSE)
+          )
+        ),
+        conditionalPanel(
+          "input.type == 'Stepped Wedge' && input.dist == 'Binary' &&
           input.meth == 'Analytic' && input.stepscpaswbinary > 3 &&
           input.dismissMsgCrossover == false",
-            wellPanel(
-              HTML(
-                "<p>Note: Crossover steps > 3 will substantially increase
+          wellPanel(
+            HTML(
+              "<p>Note: Crossover steps > 3 will substantially increase
               calculation time. </p>"
-              ),
-              checkboxInput("dismissMsgCrossover", "dismiss this message", value = FALSE)
-            )
-          ),
-          verbatimTextOutput("CRTpower", placeholder = TRUE),
-          
-          ####  DEBUG ACCESS PANEL START #####
-          conditionalPanel(
-            "input.debug == true",
-            actionButton("browser", "browser"),
-            tableOutput("show_inputs")
+            ),
+            checkboxInput("dismissMsgCrossover", "dismiss this message", value = FALSE)
           )
-          
-          #### DEBUG ACCESS PANEL END #####
         ),
-        tabPanel(
-          "Graphs",
-          conditionalPanel(
-            "input.dismissMsg == false && input.dismissMsg2 == false && input.more == false",
-            wellPanel(
-              HTML(
-                "<p>Note: If the estimated calculation time is longer than 3 minutes,
+        verbatimTextOutput("CRTpower", placeholder = TRUE),
+        
+        ####  DEBUG ACCESS PANEL START #####
+        conditionalPanel(
+          "input.debug == true",
+          actionButton("browser", "browser"),
+          tableOutput("show_inputs")
+        )
+        
+        #### DEBUG ACCESS PANEL END #####
+      ),
+      tabPanel(
+        "Graphs",
+        conditionalPanel(
+          "input.dismissMsg == false && input.dismissMsg2 == false && input.more == false",
+          wellPanel(
+            HTML(
+              "<p>Note: If the estimated calculation time is longer than 3 minutes,
             the process will not run unless you override the time limit
             under advanced options.</p>"
-              ),
-              checkboxInput("dismissMsg2", "dismiss this message", value = FALSE)
-            )
-          ),
-          selectInput(
-            "axisname",
-            "Y-axis name",
-            choices = c("nclusters", "nsubjects")
-          ),
-          plotOutput("graphic", click = "click"),
-          tableOutput("dp"),
+            ),
+            checkboxInput("dismissMsg2", "dismiss this message", value = FALSE)
+          )
+        ),
+        selectInput("axisname",
+                    "Y-axis name",
+                    choices = c("nclusters", "nsubjects")),
+        plotOutput("graphic", click = "click"),
+        tableOutput("dp"),
         actionButton("cleargraph", "Clear Data", icon = icon("trash-alt")),
         tags$style(type = 'text/css', "button#cleargraph { margin-top: 100px; }")
       ),
@@ -1454,19 +1473,24 @@ ui <- fluidPage(
         wellPanel(
           HTML(
             "<p>This table shows the values that the Shiny app passes
-                   to the R functions.</p>"
+                   to the R functions.</p>
+            <p>Note: for more advanced features, see the clusterPower R package.</p>"
           ),
-          uiOutput("helpdetails"),
-          HTML(
-            "<p>Note: for more advanced features, see the clusterPower R package.</p>"
-          )
+          checkboxInput("showHelp", "Show help documentation", value = FALSE)
         ),
-        tableOutput("tracker"),
-        downloadButton("downloadData", "Download this table (.csv)", icon = icon("file-download"),
-                       style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+        fluidRow(column(width = 6, tableOutput("tracker")),
+                 column(width = 6), 
+                 conditionalPanel("input.showHelp == true", htmlOutput("helpdetails"))),
+        downloadButton(
+          "downloadData",
+          "Download this table (.csv)",
+          icon = icon("file-download"),
+          style = "color: #fff; background-color: #337ab7; border-color: #2e6da4"
+        ),
         actionButton("cleargraph2", "Clear Data", icon = icon("trash-alt")),
         tags$style(type = 'text/css', "button#cleargraph2 { margin-left: 250px; }")
       ),
+      
       tabPanel(
         "Help",
         HTML(
@@ -1548,34 +1572,33 @@ ui <- fluidPage(
           <p>After selecting the desired parameters, submit the job by clicking the Estimate Power button
           near the bottom of the screen. When complete, results will appear on the Results tab. Please
           keep in mind that calculations may take up to 2 minutes to complete, unless the user has chosen
-          to override the time limit, in which case the wait time may be longer. Wait times vary depending 
-          on the CRT design and complexity of the resulting model, whether the method is analytic or 
+          to override the time limit, in which case the wait time may be longer. Wait times vary depending
+          on the CRT design and complexity of the resulting model, whether the method is analytic or
           simulation, and the amount of RAM available in the host computer. The Results tab shows the power
-          calculation resulting from the most recent clusterPower run, although consecutive runs are logged 
+          calculation resulting from the most recent clusterPower run, although consecutive runs are logged
           unless the cached data is manually cleared, or the CRT type, method, or distribution is
           changed by the user.</p>
           <h3>Graphics</h3>
-          <p> As mentioned in the previous section, consecutive runs are logged 
+          <p> As mentioned in the previous section, consecutive runs are logged
           unless the cached data is manually cleared, or the CRT type, method, or distribution is
-          changed by the user. On the Graphics tab, the user can graph any of the user-selected 
-          parameters against the resulting power estimate using the drop-down menu. Exact coordinates 
+          changed by the user. On the Graphics tab, the user can graph any of the user-selected
+          parameters against the resulting power estimate using the drop-down menu. Exact coordinates
           for each point can be obtained by clicking on the point of interest. If the user would like
-          to clear the graph manually, the Clear Data button at the bottom of the panel will clear the 
+          to clear the graph manually, the Clear Data button at the bottom of the panel will clear the
           Results and Parameters tabs to their original state.</p>
           <h3>Parameters</h3>
-          <p>On the parameters tab, consecutive clusterPower runs are logged until the data is cleared 
-          or the user selects a different CRT type, method, or distribution. Parameters are shown 
+          <p>On the parameters tab, consecutive clusterPower runs are logged until the data is cleared
+          or the user selects a different CRT type, method, or distribution. Parameters are shown
           according to their argument names when passed to the clusterPower function. To learn more
-          about each parameter, select the 'Tell Me More About This' link near the top of the panel 
+          about each parameter, select the 'Tell Me More About This' link near the top of the panel
           to open a pop-up window showing the documentation for the clusterPower function in use.</p>
           <h3>Note</h3>
           <p>App created by Alexandria Sakrejda, Jon Moyer, and Ken Kleinman; support from NIGMS grant R01GM121370.
           Please contact ken.kleinman@gmail.com with any feedback.</p>"
         )
       )
-    )
-  ) # Tabs end
-)
+    )) # Tabs end
+  )
 )
 
 ######################################
@@ -2024,8 +2047,14 @@ server <- function(input, output, session) {
           mu = q$mucpsdidnormal,
           mu2 = q$mu2cpsdidnormal,
           sigma_sq = q$sigma_sqcpsdidnormal,
-          sigma_b_sq0 = c(q$sigma_b_sq01cpsdidnormal,q$sigma_b_sq02cpsdidnormal),
-          sigma_b_sq1 = c(q$sigma_b_sq11cpsdidnormal, q$sigma_b_sq12cpsdidnormal),
+          sigma_b_sq0 = c(
+            q$sigma_b_sq01cpsdidnormal,
+            q$sigma_b_sq02cpsdidnormal
+          ),
+          sigma_b_sq1 = c(
+            q$sigma_b_sq11cpsdidnormal,
+            q$sigma_b_sq12cpsdidnormal
+          ),
           alpha = q$alpha,
           poorFitOverride = q$poorFitOverride,
           lowPowerOverride = q$lowPowerOverride,
@@ -2061,8 +2090,14 @@ server <- function(input, output, session) {
           nclusters = q$nclusterscpsdidbinary,
           p1 = q$p1cpsdidbinary,
           p2 = q$p2cpsdidbinary,
-          sigma_b_sq0 = c(q$sigma_b_sq01cpsdidbinary, q$sigma_b_sq02cpsdidbinary),
-          sigma_b_sq1 = c(q$sigma_b_sq11cpsdidbinary, q$sigma_b_sq12cpsdidbinary),
+          sigma_b_sq0 = c(
+            q$sigma_b_sq01cpsdidbinary,
+            q$sigma_b_sq02cpsdidbinary
+          ),
+          sigma_b_sq1 = c(
+            q$sigma_b_sq11cpsdidbinary,
+            q$sigma_b_sq12cpsdidbinary
+          ),
           alpha = q$alpha,
           poorFitOverride = q$poorFitOverride,
           lowPowerOverride = q$lowPowerOverride,
@@ -2088,8 +2123,14 @@ server <- function(input, output, session) {
           nclusters = q$nclusterscpsdidcount,
           c1 = q$c1cpsdidcount,
           c2 = q$c2cpsdidcount,
-          sigma_b_sq0 = c(q$sigma_b_sq01cpsdidcount, q$sigma_b_sq02cpsdidcount),
-          sigma_b_sq1 = c(q$sigma_b_sq11cpsdidcount, q$sigma_b_sq12cpsdidcount),
+          sigma_b_sq0 = c(
+            q$sigma_b_sq01cpsdidcount,
+            q$sigma_b_sq02cpsdidcount
+          ),
+          sigma_b_sq1 = c(
+            q$sigma_b_sq11cpsdidcount,
+            q$sigma_b_sq12cpsdidcount
+          ),
           alpha = q$alpha,
           poorFitOverride = q$poorFitOverride,
           lowPowerOverride = q$lowPowerOverride,
@@ -2335,9 +2376,10 @@ server <- function(input, output, session) {
     
     return(NULL)
   }, ignoreInit = TRUE) # end call the clusterPower functions
-  ##################
-  # cancel button
   
+  ##################
+  
+  # cancel button
   observeEvent(input$cancel, {
     async_pid <- answer$process$get_pid()
     print(paste("Killing PID:", async_pid))
@@ -2373,18 +2415,22 @@ server <- function(input, output, session) {
     browser()
   })
   
-  #########################################
+  ######################################### END DEBUG table
+  
+  #embedded documentation
+  
+  observe({
+    helplink <<- sprintf(
+      "http://127.0.0.1:%d/library/clusterPower/html/%s",
+      tools::startDynamicHelp(NA),
+      paste0(input$fxnName, ".html")
+    )
+  })
   
   output$helpdetails <- renderUI({
-    a(
-      "Tell me more about this.",
-      href = sprintf(
-        "http://127.0.0.1:%d/library/clusterPower/html/%s",
-        tools::startDynamicHelp(NA),
-        paste0(input$fxnName, ".html")
-      ),
-      target = "_blank"
-    )
+    tags$iframe(src = helplink,
+                           height = 600,
+                           width = 600)
   })
   
   #create the graphing table
@@ -2414,11 +2460,13 @@ server <- function(input, output, session) {
       }
       if (x$meth == "Simulation") {
         tab <-
-          rbind(specialnames,
-                c("alpha", input$alpha),
-                c("upper CI", round(out1$power$Upper.95.CI, 3)),
-                c("power", round(out1$power$Power, 3)),
-                c("lower CI", round(out1$power$Lower.95.CI, 3)))
+          rbind(
+            specialnames,
+            c("alpha", input$alpha),
+            c("upper CI", round(out1$power$Upper.95.CI, 3)),
+            c("power", round(out1$power$Power, 3)),
+            c("lower CI", round(out1$power$Lower.95.CI, 3))
+          )
       }
       if (is.null(logargs$tab)) {
         logargs$tab <- tab
@@ -2451,7 +2499,7 @@ server <- function(input, output, session) {
     logargs$tab <- NULL
     out1$power <- NULL
   })
-    # END clear the data log under certain circumstances
+  # END clear the data log under certain circumstances
   
   # START clear the output console when the estimate power button is clicked
   observeEvent(input$button, {
@@ -2501,14 +2549,15 @@ server <- function(input, output, session) {
     fun <- function(x) {
       x <- enquo(x)
       sol <-
-        ggplot(data, aes(x=!!x, y = power)) +
+        ggplot(data, aes(x = !!x, y = power)) +
         geom_point(aes(colour = "fff"), size = 2.5) +
         theme_minimal() + theme(legend.position = "none")
       return(sol)
     }
     power_plot <- suppressWarnings(fun(get(var)))
     if (nrow(data) > 1) {
-      power_plot <- power_plot + geom_line(aes(colour = "fff"), size = 1.25) + xlab(var)
+      power_plot <-
+        power_plot + geom_line(aes(colour = "fff"), size = 1.25) + xlab(var)
     } else {
       power_plot <- power_plot + xlab(var)
     }
@@ -2545,10 +2594,6 @@ server <- function(input, output, session) {
       else
         return(reactiveValuesToList(out1)))
   })
-
- # observeEvent(watchfor(), {
-#    out1 <- NULL
-#  })
   
 } #end of server fxn
 
