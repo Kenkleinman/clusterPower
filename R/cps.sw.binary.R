@@ -275,7 +275,7 @@ cps.sw.binary = function(nsim = NULL,
       "allSimData must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
     )
   }
-  browser()
+
   # Calculate ICC1 (sigma_b_sq / (sigma_b_sq + pi^2/3))
   icc1 = mean(sapply(1:2, function(x)
     sigma_b_sq[x] / (sigma_b_sq[x] + pi ^ 2 / 3)))
@@ -388,10 +388,10 @@ cps.sw.binary = function(nsim = NULL,
         )
       )
       glmm.values = summary(my.mod)$coefficient
-      est.vector[i] = glmm.values['trt', 'Estimate']
-      se.vector[i] = glmm.values['trt', 'Std. Error']
-      stat.vector[i] = glmm.values['trt', 'z value']
-      pval.vector[i] = glmm.values['trt', 'Pr(>|z|)']
+      est.vector[i] = glmm.values['trt1', 'Estimate']
+      se.vector[i] = glmm.values['trt1', 'Std. Error']
+      stat.vector[i] = glmm.values['trt1', 'z value']
+      pval.vector[i] = glmm.values['trt1', 'Pr(>|z|)']
       converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
     

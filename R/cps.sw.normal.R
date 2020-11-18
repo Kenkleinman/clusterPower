@@ -306,7 +306,7 @@ cps.sw.normal = function(nsim = NULL,
   
   sim.dat.holder <- list()
   
-  ## Craete simulation & analysis loop
+  ## Create simulation & analysis loop
   for (i in 1:nsim) {
     # Create vectors of cluster effects
     ntrt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b_sq[1]))
@@ -342,6 +342,12 @@ cps.sw.normal = function(nsim = NULL,
     iter.values = cbind(stats::aggregate(y ~ trt + time.point, data = sim.dat, mean)[, 3])
     values.vector = values.vector + iter.values
     
+    sim.dat$period <- as.factor(sim.dat$period)
+    sim.dat$clust <- as.factor(sim.dat$clust)
+    sim.dat$time.point <- as.factor(sim.dat$time.point)
+    sim.dat$trt <- as.factor(sim.dat$trt)
+    
+    
     sim.dat.holder[[i]] <- sim.dat
     
     # Store simulated data sets if allSimData == TRUE
@@ -363,10 +369,10 @@ cps.sw.normal = function(nsim = NULL,
                                                     clust), data = sim.dat.holder[[i]])
       models[[i]] = my.mod
       glmm.values <- summary(my.mod)$coefficients
-      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = nclusters - length(step.index) - 2)
-      est.vector[i] = glmm.values['trt', 'Estimate']
-      se.vector[i] = glmm.values['trt', 'Std. Error']
-      stat.vector[i] = glmm.values['trt', 't value']
+      p.val = 2 * stats::pt(-abs(glmm.values['trt1', 't value']), df = nclusters - length(step.index) - 2)
+      est.vector[i] = glmm.values['trt1', 'Estimate']
+      se.vector[i] = glmm.values['trt1', 'Std. Error']
+      stat.vector[i] = glmm.values['trt1', 't value']
       pval.vector[i] = p.val
       converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
