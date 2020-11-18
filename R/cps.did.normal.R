@@ -1,5 +1,8 @@
 #' Power simulations for cluster-randomized trials: Difference in Difference Design, Continuous Outcome.
 #'
+#' @description 
+#' \loadmathjax
+#'
 #' This set of functions utilize iterative simulations to determine
 #' approximate power for difference in difference cluster-randomized controlled trials. Users
 #' can modify a variety of parameters to suit the simulations to their
