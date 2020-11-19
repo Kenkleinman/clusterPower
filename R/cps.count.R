@@ -590,12 +590,17 @@ cps.count = function(nsim = NULL,
           #)
           #)
           #)
+          if (class(my.mod) == "try-error") {
+            converge.vector[i] <- FALSE
+            next
+          } else{
+            converge.vector[i] <- TRUE
+          }
           glmm.values <- summary(my.mod)$tTable
           est.vector[i] <- glmm.values['trt2', 'Value']
           se.vector[i] <- glmm.values['trt2', 'Std.Error']
           stat.vector[i] <- glmm.values['trt2', 't-value']
           pval.vector[i] <- glmm.values['trt2', 'p-value']
-          converge.vector[i] <- NA
         }
         
         if (analysis == 'neg.binom') {
@@ -609,9 +614,6 @@ cps.count = function(nsim = NULL,
             )
           ))
         }
-      }
-      if (class(my.mod) == "try-error") {
-        next
       }
     }
     

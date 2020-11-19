@@ -6,16 +6,16 @@
 \usage{
 cpa.binary(
   alpha = 0.05,
-  power = 0.8,
+  power = NA,
   nclusters = NA,
   nsubjects = NA,
-  cv = 0,
+  CV = 0,
   p1 = NA,
   p2 = NA,
-  ICC = NA,
+  ICC = 0.05,
   pooled = FALSE,
   p1inc = TRUE,
-  tdist = FALSE,
+  tdist = TRUE,
   tol = .Machine$double.eps^0.25
 )
 }
@@ -30,7 +30,7 @@ error.}
 
 \item{nsubjects}{The mean of the cluster sizes.}
 
-\item{cv}{The coefficient of variation of the cluster sizes. When \code{cv} = 0,
+\item{CV}{The coefficient of variation of the cluster sizes. When \code{CV} = 0,
 (default) the clusters all have the same size.}
 
 \item{p1}{The proportion with the outcome in one of the conditions, a numeric between 0-1.}
@@ -41,17 +41,20 @@ error.}
 
 \item{pooled}{Logical indicating if pooled standard error should be used.}
 
-\item{p1inc}{Logical indicating if p1 is expected to be greater than p2.  Only needed if \code{p1} or \code{p2} is \code{NA}.}
+\item{p1inc}{Logical indicating if p1 is expected to be greater than p2.
+Only needed if \code{p1} or \code{p2} is \code{NA}.}
 
-\item{tdist}{If \code{TRUE} use t distribution with df equal to the number of clusters - 2.  Otherwise use the normal distribution.}
+\item{tdist}{If \code{TRUE} use t distribution with df equal to (nclusters - 2).
+Otherwise use the normal distribution. Default is TRUE.}
 
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}
 }
 \value{
-The computed value of the NA parameter (among \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
+The computed value of the NA parameter (among \code{alpha}, \code{power}, 
+  \code{nclusters}, \code{nsubjects},
   \code{CV}, \code{p1}, \code{p2}, and \code{ICC}) needed to satisfy the power and 
-sample size equation.
+  sample size equation.
 }
 \description{
 Compute the power, number of clusters needed, number of subjects per cluster needed, 
@@ -85,7 +88,8 @@ This function implements the approach of Donner and Klar (2000). An estimate for
  this setting.
 
  Unlike in the case of normal distributed outcomes (cpa.normal), the ICC refers neither to 
- any natural parameter of a data generating model nor to any function of its parameters.   For this reason we do not offer the user a option to input
+ any natural parameter of a data generating model nor to any function of its parameters.   
+ For this reason we do not offer the user a option to input
  the variance between the clusters.  If you prefer to use that input, we suggest using the
  cps.binary function.
 
@@ -109,20 +113,22 @@ and \code{clusterPower::cps.binary}.
 # Find the number of clusters per condition needed for a trial with alpha = .05, 
 # power = 0.8, 10 observations per cluster, no variation in cluster size, probability
 # in condition 1 of .1 and condition 2 of .2, and ICC = 0.1.
-
-cpa.binary(nsubjects=10, p1=.1, p2=.2, ICC=.1)
-
+\dontrun{
+cpa.binary(power = 0.08, nsubjects = 10, p1 = 0.1, p2 = 0.2, ICC = 0.1)
+}
 # 
 # The result, showing nclusters of greater than 37, suggests 38 clusters per 
 # condition should be used.
 
 # Find the minimum detectable p2 > p1, given 38 clusters per condition, 10 
-# observations per cluster no variation in cluster size, ICC of 0.1, and probability of 
-# .1 in condition 2, with power of .8.
-
-cpa.binary(nsubjects=10, nclusters = 38, p1=.1, p2=NA, ICC=.1, p1inc = FALSE)
-
-# The result shows that p2 greater than 0.198922 can be detected with at least 80\% power.
+# observations per cluster no variation in cluster size, ICC of 0.1, and 
+# probability of .1 in condition 2, with power of .8.
+\dontrun{
+cpa.binary(power = 0.08, nsubjects = 10, nclusters = 38,
+  p1 = 0.1, p2 = NA, ICC = 0.1, p1inc = FALSE)
+}
+# The result shows that p2 greater than 0.198922 can be detected with at 
+# least 80\% power.
 
 }
 \references{

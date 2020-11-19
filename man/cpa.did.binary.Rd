@@ -11,7 +11,7 @@ cpa.did.binary(
   nsubjects = NA,
   p = NA,
   d = NA,
-  icc = NA,
+  ICC = NA,
   rho_c = NA,
   rho_s = NA,
   tol = .Machine$double.eps^0.25
@@ -28,11 +28,11 @@ error.}
 
 \item{nsubjects}{The mean of the cluster sizes.}
 
-\item{p}{The expected mean proportion at the post-test, averaged across treatment and control arms.}
+\item{p}{The expected mean proportion at the post-test, averaged across both arms.}
 
 \item{d}{The expected absolute difference.}
 
-\item{icc}{The intraclass correlation.}
+\item{ICC}{The intraclass correlation.}
 
 \item{rho_c}{The correlation between baseline and post-test outcomes at the
 cluster level. This value can be used in both cross-sectional and cohort
@@ -50,12 +50,12 @@ at least four significant digits.}
 The computed argument.
 }
 \description{
-Compute the power of a difference-in-difference cluster randomized trial design with a 
+Compute the power of a difference-in-difference cluster randomized trial design with a
 binary outcome, or determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-  \code{p}, \code{d}, \code{icc}, \code{rho_c}, and \code{rho_s} must be passed as \code{NA}.
+  \code{p}, \code{d}, \code{ICC}, \code{rho_c}, and \code{rho_s} must be passed as \code{NA}.
   Note that \code{alpha} and \code{power} have non-\code{NA}
   defaults, so if those are the parameters of interest they must be
   explicitly passed as \code{NA}.
@@ -75,13 +75,13 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 }
 
 \examples{
-# Find the number of clusters per condition needed for a trial with alpha = .05, 
+# Find the number of clusters per condition needed for a trial with alpha = .05,
 # power = 0.8, 50 observations per cluster, expected mean post-test proportion of .50,
-# expected difference of .1, icc = 0.05, cluster level correlation of 0.3, and subject level 
+# expected difference of .1, ICC = 0.05, cluster level correlation of 0.3, and subject level
 # correlation of 0.7.
-cpa.did.binary(nsubjects=50 ,p=.5, d=.1, icc=.05, rho_c=.3, rho_s=.7)
-# 
-# The result, showimg nclusters of greater than 32, suggests 33 clusters per 
+cpa.did.binary(nsubjects=50 ,p=.5, d=.1, ICC=.05, rho_c=.3, rho_s=.7)
+#
+# The result, showimg nclusters of greater than 32, suggests 33 clusters per
 # condition should be used.
 
 }

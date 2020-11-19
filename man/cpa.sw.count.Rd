@@ -11,7 +11,7 @@ cpa.sw.count(
   steps,
   nsubjects,
   ICC = 0.01,
-  sig.level = 0.05,
+  alpha = 0.05,
   which.var = "within",
   X = NULL,
   all.returned.objects = FALSE
@@ -30,7 +30,7 @@ cpa.sw.count(
 
 \item{ICC}{Intra-class correlation coefficient (default = 0.01)}
 
-\item{sig.level}{Significance level (default=0.05)}
+\item{alpha}{Significance level (default=0.05)}
 
 \item{which.var}{String character specifying which variance to report.
 Options are the default value \code{'within'} or \code{'total'}.}
@@ -46,6 +46,7 @@ returned.}
 }
 \value{
 \item{power}{ The resulting power } 
+
 When all.returned.objects = TRUE, returned items also include:
 \item{sigma.y}{The estimated total (marginal) sd for the outcome} 
 \item{sigma.e}{The estimated residual sd} 

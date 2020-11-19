@@ -12,7 +12,7 @@ cpa.irgtt.normal(
   ncontrols = NA,
   d = NA,
   varu = NA,
-  vare = NA,
+  varei = NA,
   varr = NA,
   tol = .Machine$double.eps^0.25
 )
@@ -34,7 +34,7 @@ error.}
 
 \item{varu}{The variance of the cluster level random effect for clusters in the intervention arm.}
 
-\item{vare}{The variance of the subject level random error for individuals in the intervention arm.}
+\item{varei}{The variance of the subject level random error for individuals in the intervention arm.}
 
 \item{varr}{The variance of the subject level random error for individuals in the control arm.}
 
@@ -50,7 +50,7 @@ or determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-  \code{ncontrols}, \code{d}, \code{varu}, \code{vare}, and \code{varr}
+  \code{ncontrols}, \code{d}, \code{varu}, \code{varei}, and \code{varr}
   must be passed as \code{NA}. Note that \code{alpha} and \code{power}
   have non-\code{NA} defaults, so if those are the parameters of 
   interest they must be explicitly passed as \code{NA}.
@@ -71,11 +71,14 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 
 \examples{
 # Find the required number of control subjects for an IRGTT with alpha = 0.05, power = 0.80,
-# nclusters = 10, nsubjects = 10, d = 0.5 units, varu = 0.1, vare = 0.9, varr = 1.
-cpa.irgtt.normal(nclusters=10, nsubjects = 10, d = 0.5, varu = 0.1, vare = 0.9, varr = 1)
+# nclusters = 10, nsubjects = 10, d = 0.5 units, 
+# varu = 0.1, varei = 0.9, varr = 1.
+cpa.irgtt.normal(nclusters=10, nsubjects = 10, 
+  d = 0.5, varu = 0.1, varei = 0.9, varr = 1)
 # 
 # The result, ncontrols = 77.81084, suggests 78 subjects in the control arm should be recruited.
-# This means that the total number of subjects in the study is nclusters*nsubjects + ncontrols = 10*10 + 78 = 178.
+# This means that the total number of subjects in the 
+# study is nclusters*nsubjects + ncontrols = 10*10 + 78 = 178.
 
 }
 \references{

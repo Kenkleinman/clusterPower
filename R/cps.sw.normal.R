@@ -425,7 +425,7 @@ cps.sw.normal = function(nsim = NULL,
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
-        min.est = round(time.est %% 60, 0)
+        min.est = round(time.est %% 60, 2)
         if (min.est > 2 && timelimitOverride == FALSE){
           stop(paste0("Estimated completion time: ",
                       hr.est,
@@ -446,6 +446,7 @@ cps.sw.normal = function(nsim = NULL,
             'Min'
           )
         )
+        }
       }
       # Iterate progress bar
       prog.bar$update(i / nsim)
@@ -470,7 +471,6 @@ cps.sw.normal = function(nsim = NULL,
           )
         )
       }
-    }
   }
   
   ## Output objects

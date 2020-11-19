@@ -2170,7 +2170,11 @@ server <- function(input, output, session) {
           mu = q$mucpsswnormal,
           mu2 = q$mu2cpsswnormal,
           sigma_sq = q$sigma_sqcpsswnormal,
-          sigma_b_sq = q$sigma_b_sqcpsswnormal
+          sigma_b_sq = q$sigma_b_sqcpsswnormal,
+          poorFitOverride = q$poorFitOverride,
+          lowPowerOverride = q$lowPowerOverride,
+          timelimitOverride = q$timelimitOverride,
+          seed = q$seed
         )
         return(val)
       }, seed = TRUE)
