@@ -47,6 +47,7 @@ treatICCtext <- "Treatment arm ICC (ICC)"
 # returns the vignette for the help section link
 get_vignette_link <- function(...) {
   x <- vignette(...)
+  
   if (nzchar(out <- x$PDF)) {
     ext <- tools::file_ext(out)
     port <- if (tolower(ext) == "html")
