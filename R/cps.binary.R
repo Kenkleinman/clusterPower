@@ -474,6 +474,7 @@ cps.binary = function(nsim = NULL,
             family = stats::binomial(link = 'logit')
           ))
         if (class(my.mod) == "try-error"){
+          browser()
           glmm.values <- NA
           est.vector[index] <- NA
           se.vector[index] <- NA

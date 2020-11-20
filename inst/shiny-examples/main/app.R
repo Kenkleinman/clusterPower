@@ -38,11 +38,15 @@ treatsigma_b_sqtext <-
   "Treatment arm between-cluster variance (sigma_b_sq)"
 simnsimtext <- "Number of simulations (nsim)"
 simnsubjectstext <- "Observations per cluster (nsubjects)"
-simnclusterstext <- "Clusters per arm (nclusters)"
+simnclusterstext <- "Number of clusters (nclusters)"
 refmutext <- "Reference arm expected mean (mu)"
 treatmutext <- "Treatment arm expected mean (mu2)"
 refICCtext <- "Reference arm ICC (ICC)"
 treatICCtext <- "Treatment arm ICC (ICC)"
+refp1text <- "Reference arm estimated proportion (p1)"
+treatp2text <- "Treatment arm estimated proportion (p2)"
+refc1text <- "Reference arm expected count (c1)"
+treatc2text <- "Treatment arm expected count (c2)"
 
 # returns the vignette for the help section link
 get_vignette_link <- function(...) {
@@ -164,43 +168,37 @@ ui <- fluidPage(
             min = 0
           ),
           
-          # nclusters
-          textInput("nclusterscpsnormal",
-                    simnclusterstext,
-                    value = "10, 10"),
-          bsTooltip(
-            "nclusterscpsmanormal",
-            "Note: comma delimited",
-            'right',
-            options = list(container = "body")
+          ## REFERENCE VALUES
+          h3(
+            id = "armHead",
+            "Reference Parameters"
           ),
+          tags$style(HTML("#armHead{color: #337ab7;}")),
+          
+          # nclusters
+          numericInput("nclusters1cpsnormal", simnclusterstext, value = 10),
           
           # nsubjects
-          textInput("nsubjectscpsnormal",
-                    simnsubjectstext,
-                    value = "20, 20"),
-          bsTooltip(
-            "nsubjectscpsmanormal",
-            "Note: comma delimited",
-            'right',
-            options = list(container = "body")
+          numericInput(
+            "nsubjects1cpsnormal",
+            simnsubjectstext,
+            value = 20
           ),
           
-          ## REFERENCE VALUES
           # mu
-          numericInput("mucpsnormal", "Reference arm expected mean (mu)", value = 2.4),
+          numericInput("mucpsnormal", refmutext, value = 2.4),
           
           # variance params
           numericInput(
             "ICCcpsnormal",
-            "Reference arm ICC (ICC)",
+            refICCtext,
             value = NA,
             step = 0.01,
             min = 0,
             max = 1
           ),
           bsTooltip(
-            "ICCcpsmanormal",
+            "ICCcpsnormal",
             "Intracluster correlation coefficient",
             'right',
             options = list(container = "body")
@@ -222,6 +220,21 @@ ui <- fluidPage(
           ),
           
           ### TREATMENT ARM
+          h3(
+            id = "armHead",
+            "Treatment Parameters"
+          ),
+          
+          # nclusters
+          numericInput("nclusters2cpsnormal", simnclusterstext, value = 10),
+          
+          # nsubjects
+          numericInput(
+            "nsubjects2cpsnormal",
+            simnsubjectstext,
+            value = 20
+          ),
+          
           # mu
           numericInput("mu2cpsnormal", treatmutext, value = 1.5),
           
@@ -235,7 +248,7 @@ ui <- fluidPage(
             max = 1
           ),
           bsTooltip(
-            "ICC2cpsmanormal",
+            "ICC2cpsnormal",
             "Intracluster correlation coefficient",
             'right',
             options = list(container = "body")
@@ -261,24 +274,34 @@ ui <- fluidPage(
         # cpa.binary inputs start
         conditionalPanel(
           "input.type == 'Parallel' && input.dist == 'Binary' && input.meth == 'Analytic'",
-          numericInput("nclusterscpabinary", "Number of Clusters", value = 10),
+          
+          # nuclusters
+          numericInput("nclusterscpabinary", analyticnclusterstext, value = 10),
+          
+          # nsubjects
           numericInput(
             "nsubjectscpabinary",
-            "Number of Observations (per cluster)",
+            analyticnsubjectstext,
             value = 20
           ),
+          
+          # CV
           numericInput("CVcpabinary", "Coefficient of variation (CV)", value = 0),
+          
+          # ICC
           numericInput(
             "ICCcpabinary",
-            "Intracluster correlation coefficient (ICC)",
+            analyticICCtext,
             value = 0.05,
             step = 0.01,
             min = 0,
             max = 1
           ),
+          
+          # p1 & p2
           numericInput(
             "p1cpabinary",
-            "Outcome proportion (Arm 1)",
+            refp1text,
             value = 0.1,
             step = 0.001,
             min = 0,
@@ -286,12 +309,14 @@ ui <- fluidPage(
           ),
           numericInput(
             "p2cpabinary",
-            "Outcome proportion (Arm 2)",
+            treatp2text,
             value = 0.24,
             step = 0.001,
             min = 0,
             max = 1
           ),
+          
+          # other selections 
           checkboxInput("pooledcpabinary", "Pooled standard error", value = FALSE),
           checkboxInput("p1inccpabinary", "p1 > p2", value = FALSE),
           checkboxInput("tdistcpabinary", "Use t-distribution", value = FALSE)
@@ -300,45 +325,81 @@ ui <- fluidPage(
         # cps.binary inputs start
         conditionalPanel(
           "input.type == 'Parallel' && input.dist == 'Binary' && input.meth == 'Simulation'",
-          numericInput("nclusterscpsbinary", "Number of Clusters", value = 10),
-          numericInput(
-            "nsubjectscpsbinary",
-            "Number of Observations (per cluster)",
-            value = 20
-          ),
+          
+          # nsim
           numericInput(
             "nsimcpsbinary",
-            "Number of simulations",
+            simnsimtext,
             value = 100,
             max = 500000,
             min = 0
           ),
+          
+          ## REFERENCE VALUES
+          h3(
+            id = "armHead",
+            "Reference Parameters"
+          ),
+          
+          # nclusters
+          numericInput("nclusters1cpsbinary", simnclusterstext, value = 10),
+          
+          # nsubjects
+          numericInput(
+            "nsubjects1cpsbinary",
+            simnsubjectstext,
+            value = 20
+          ),
+          
+          # p1
           numericInput(
             "p1cpsbinary",
-            "Outcome proportion (Arm 1)",
+            refp1text,
             value = 0.8,
             step = 0.001,
             min = 0,
             max = 1
           ),
+          
+          # variance param
+          numericInput(
+            "sigma_b_sqcpsbinary",
+            refsigma_b_sqtext,
+            value = 1,
+            step = 0.001,
+            min = 0
+          ),
+          
+          ## REFERENCE VALUES
+          h3(
+            id = "armHead",
+            "Treatment Parameters"
+          ),
+          
+          # nclusters
+          numericInput("nclusters2cpsbinary", simnclusterstext, value = 10),
+          
+          # nsubjects
+          numericInput(
+            "nsubjects2cpsbinary",
+            simnsubjectstext,
+            value = 20
+          ),
+          
+          # p2
           numericInput(
             "p2cpsbinary",
-            "Outcome proportion (Arm 2)",
+            treatp2text,
             value = 0.5,
             step = 0.001,
             min = 0,
             max = 1
           ),
-          numericInput(
-            "sigma_b_sqcpsbinary",
-            "Between-cluster variance (Arm 1)",
-            value = 1,
-            step = 0.001,
-            min = 0
-          ),
+          
+          #variance param
           numericInput(
             "sigma_b_sq2cpsbinary",
-            "Between-cluster variance (Arm 2)",
+            treatsigma_b_sqtext,
             value = 1,
             step = 0.001,
             min = 0
@@ -348,19 +409,29 @@ ui <- fluidPage(
         # cpa.count input starts
         conditionalPanel(
           "input.type == 'Parallel' && input.dist == 'Count' && input.meth == 'Analytic'",
-          numericInput("nclusterscpacount", "Number of Clusters", value = 10),
+          
+          # nclusters
+          numericInput("nclusterscpacount", analyticnclusterstext, value = 10),
+          
+          # nsubjects
           numericInput(
             "nsubjectscpacount",
-            "Number of Observations (per cluster)",
+            analyticnsubjectstext,
             value = 20
           ),
+          
+          # variance param
           numericInput(
             "CVBcpacount",
-            "Between-cluster coefficient of variation (CV)",
+            "Between-cluster coefficient of variation (CVB)",
             value = 0.01
           ),
-          numericInput("r1cpacount",  "Mean event rate (Arm 1)", value = 0.2),
-          numericInput("r2cpacount",  "Mean event rate (Arm 2)", value = 0.35),
+          
+          # expected outcome
+          numericInput("r1cpacount",  "Reference arm mean event rate", value = 0.2),
+          numericInput("r2cpacount",  "Treatment arm mean event rate", value = 0.35),
+          
+          # other params
           checkboxInput(
             "r1inccpacount",
             "Intervention probability < control probability",
@@ -1256,12 +1327,12 @@ ui <- fluidPage(
             value = 10
           ),
           numericInput(
-            "nsubjectscpsirgttbinary",
+            "nsubjects2cpsirgttbinary",
             "Number of Observations (per cluster)",
             value = 20
           ),
           numericInput(
-            "nsubjects2cpsirgttbinary",
+            "nsubjectscpsirgttbinary",
             "Number of Observations (in unclustered arm)",
             value = 200
           ),
@@ -1312,12 +1383,12 @@ ui <- fluidPage(
             value = 10
           ),
           numericInput(
-            "nsubjectscpsirgttcount",
+            "nsubjects2cpsirgttcount",
             "Number of Observations (per cluster)",
             value = 20
           ),
           numericInput(
-            "nsubjects2cpsirgttcount",
+            "nsubjectscpsirgttcount",
             "Number of Observations (in unclustered arm)",
             value = 200
           ),
@@ -1800,7 +1871,6 @@ server <- function(input, output, session) {
     
     prog <- Progress$new(session)
     prog$set(message = "Analysis in progress",
-             detail = "This may take a while...",
              value = NULL)
     
     isolate({
