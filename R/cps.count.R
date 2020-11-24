@@ -590,7 +590,7 @@ cps.count = function(nsim = NULL,
           #)
           #)
           #)
-          if (class(my.mod) == "try-error") {
+          if (length(my.mod)==1 & class(my.mod) == "try-error") {
             converge.vector[i] <- FALSE
             next
           } else{

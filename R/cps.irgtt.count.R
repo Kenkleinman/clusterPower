@@ -96,8 +96,8 @@
 #' 
 #' @examples 
 #' \dontrun{
-#' irgtt.count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(500, 10), nclusters = 500, 
-#'                              c1 = 85, c2 = 450, sigma_b_sq2 = 0.25, 
+#' irgtt.count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(200, 10), nclusters = 10, 
+#'                              c1 = 5, c2 = 7, sigma_b_sq2 = 0.1, 
 #'                              family = 'poisson', analysis = 'poisson',
 #'                              alpha = 0.05, quiet = FALSE, allSimData = FALSE)
 #' }

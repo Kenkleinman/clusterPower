@@ -25,8 +25,8 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
 #' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
-#' @param mu Mean in the first arm; accepts numeric, default 0.  Required..
-#' @param mu2 Mean in the second arm; accepts numeric.  Required.
+#' @param mu0 Expected baseline mean; accepts numeric, default 0.  Required..
+#' @param mu1 Expected post-treatment mean; accepts numeric.  Required.
 #' @param steps Number of crossover steps; a baseline step (all clusters in non-treatment group) is assumed. 
 #' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 
 #' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
@@ -104,7 +104,7 @@
 #' 
 #' \dontrun{
 #' normal.sw.rct = cps.sw.normal(nsim = 100, nsubjects = 14, nclusters = 9, 
-#'                               mu = 1, mu2 = 2.1, steps = 3, sigma_sq = 1, 
+#'                               mu0 = 1, mu1 = 2.1, steps = 3, sigma_sq = 1, 
 #'                               sigma_b_sq = 1, alpha = 0.05, method = 'glmm', 
 #'                               seed = 123)
 #' }
@@ -121,8 +121,8 @@
 cps.sw.normal = function(nsim = NULL,
                          nsubjects = NULL,
                          nclusters = NULL,
-                         mu = 0,
-                         mu2 = NULL,
+                         mu0 = 0,
+                         mu1 = NULL,
                          steps = NULL,
                          sigma_sq = NULL,
                          sigma_b_sq = NULL,
@@ -160,12 +160,12 @@ cps.sw.normal = function(nsim = NULL,
   is.wholenumber = function(x, tol = .Machine$double.eps ^ 0.5)
     abs(x - round(x)) < tol
   
-  # Validate NSIM, NSUBJECTS, NCLUSTERS, mu, mu2
-  sim.data.arg.list = list(nsim, nclusters, nsubjects, mu, mu2)
+  # Validate NSIM, NSUBJECTS, NCLUSTERS, mu0, mu1
+  sim.data.arg.list = list(nsim, nclusters, nsubjects, mu0, mu1)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if (sum(sim.data.args) > 0) {
     stop(
-      "nsim, nclusters, nsubjects, mu, and mu2 must all be specified. Please review your input values."
+      "nsim, nclusters, nsubjects, mu0, and mu1 must all be specified. Please review your input values."
     )
   }
   min1.warning = " must be an integer greater than or equal to 1"
@@ -318,7 +318,7 @@ cps.sw.normal = function(nsim = NULL,
       sim.dat['y'] = ifelse(
         sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0,
         stats::rnorm(sum(sim.dat[, 'clust'] == j &
-                           sim.dat[, 'trt'] == 0), mu, sqrt(sigma_sq[1])) +
+                           sim.dat[, 'trt'] == 0), mu0, sqrt(sigma_sq[1])) +
           ntrt.cluster.effects[j],
         sim.dat[, 'y']
       )
@@ -328,7 +328,7 @@ cps.sw.normal = function(nsim = NULL,
         stats::rnorm(
           sum(sim.dat[, 'clust'] == j &
                 sim.dat[, 'trt'] == 1),
-          mu2,
+          mu1,
           sqrt(sigma_sq[2])
         ) +
           trt.cluster.effects[j],
@@ -543,7 +543,7 @@ cps.sw.normal = function(nsim = NULL,
       "cluster.sizes" = cluster.sizes,
       "n.clusters" = n.clusters,
       "variance.parms" = var.parms,
-      "inputs" = c(mu, mu2),
+      "inputs" = c(mu0, mu1),
       "means" = group.means,
       "model.estimates" = cps.model.est,
       "sim.data" = simulated.datasets,
