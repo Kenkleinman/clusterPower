@@ -39,7 +39,8 @@ Suggests:
     testthat,
     knitr,
     rmarkdown,
-    mathjaxr
+    mathjaxr,
+    shinycssloaders
 RdMacros: mathjaxr
 VignetteBuilder: knitr
 Encoding: UTF-8

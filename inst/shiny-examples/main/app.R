@@ -67,6 +67,11 @@ c0text <- "Estimated baseline proportion (c0)"
 c1text <- "Estimated post-treatment effect (c1)"
 refsigma_sqtext <-
   "Reference arm within-cluster variance (sigma_sq)"
+nsubjectsirgttunclusttext <- "Observations in unclustered arm (nsubjects)"
+ncontrolsirgttunclusttext <- "Observations in unclustered arm (ncontrols)"
+
+
+
 
 # returns the vignette for the help section link
 get_vignette_link <- function(...) {
@@ -118,6 +123,7 @@ ui <- fluidPage(
       ),
       selectInput("meth", "Method",
                   choices = c("Analytic", "Simulation")),
+      
       # Below values can be reset to defaults using the restore defaults button
       div(
         id = "allValues",
@@ -1470,7 +1476,7 @@ ui <- fluidPage(
           # nsubjects
           numericInput(
             "ncontrolscpairgttnormal",
-            analyticnsubjectstext,
+            ncontrolsirgttunclusttext,
             value = 40,
             step = 1,
             min = 0
@@ -1536,7 +1542,7 @@ ui <- fluidPage(
           
           # nsubjects
           numericInput("nsubjectscpsirgttnormal",
-                       simnsubjectstext,
+                       nsubjectsirgttunclusttext,
                        value = 100),
           
           # mu
@@ -1601,7 +1607,7 @@ ui <- fluidPage(
           # ncontrols
           numericInput(
             "ncontrolscpairgttbinary",
-            "Number of control subjects (ncontrols)",
+            ncontrolsirgttunclusttext,
             value = 200,
             step = 1,
             min = 0
@@ -1679,7 +1685,7 @@ ui <- fluidPage(
           
           # nsubjects
           numericInput("nsubjectscpsirgttbinary",
-                       simnsubjectstext,
+                       nsubjectsirgttunclusttext,
                        value = 200),
           
           # p1
@@ -1751,7 +1757,7 @@ ui <- fluidPage(
           
           # nsubjects
           numericInput("nsubjectscpsirgttcount",
-                       simnsubjectstext,
+                       nsubjectsirgttunclusttext,
                        value = 200),
           
           # c1
