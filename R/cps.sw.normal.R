@@ -25,8 +25,8 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
 #' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
-#' @param mu Mean in the first arm; accepts numeric, default 0.  Required..
-#' @param mu2 Mean in the second arm; accepts numeric.  Required.
+#' @param mu0 Expected baseline mean; accepts numeric, default 0.  Required..
+#' @param mu1 Expected post-treatment mean; accepts numeric.  Required.
 #' @param steps Number of crossover steps; a baseline step (all clusters in non-treatment group) is assumed. 
 #' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 
 #' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
@@ -104,7 +104,7 @@
 #' 
 #' \dontrun{
 #' normal.sw.rct = cps.sw.normal(nsim = 100, nsubjects = 14, nclusters = 9, 
-#'                               mu = 1, mu2 = 2.1, steps = 3, sigma_sq = 1, 
+#'                               mu0 = 1, mu1 = 2.1, steps = 3, sigma_sq = 1, 
 #'                               sigma_b_sq = 1, alpha = 0.05, method = 'glmm', 
 #'                               seed = 123)
 #' }
@@ -121,8 +121,8 @@
 cps.sw.normal = function(nsim = NULL,
                          nsubjects = NULL,
                          nclusters = NULL,
-                         mu = 0,
-                         mu2 = NULL,
+                         mu0 = 0,
+                         mu1 = NULL,
                          steps = NULL,
                          sigma_sq = NULL,
                          sigma_b_sq = NULL,
@@ -160,12 +160,12 @@ cps.sw.normal = function(nsim = NULL,
   is.wholenumber = function(x, tol = .Machine$double.eps ^ 0.5)
     abs(x - round(x)) < tol
   
-  # Validate NSIM, NSUBJECTS, NCLUSTERS, mu, mu2
-  sim.data.arg.list = list(nsim, nclusters, nsubjects, mu, mu2)
+  # Validate NSIM, NSUBJECTS, NCLUSTERS, mu0, mu1
+  sim.data.arg.list = list(nsim, nclusters, nsubjects, mu0, mu1)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if (sum(sim.data.args) > 0) {
     stop(
-      "nsim, nclusters, nsubjects, mu, and mu2 must all be specified. Please review your input values."
+      "nsim, nclusters, nsubjects, mu0, and mu1 must all be specified. Please review your input values."
     )
   }
   min1.warning = " must be an integer greater than or equal to 1"
@@ -306,7 +306,7 @@ cps.sw.normal = function(nsim = NULL,
   
   sim.dat.holder <- list()
   
-  ## Craete simulation & analysis loop
+  ## Create simulation & analysis loop
   for (i in 1:nsim) {
     # Create vectors of cluster effects
     ntrt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b_sq[1]))
@@ -318,7 +318,7 @@ cps.sw.normal = function(nsim = NULL,
       sim.dat['y'] = ifelse(
         sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0,
         stats::rnorm(sum(sim.dat[, 'clust'] == j &
-                           sim.dat[, 'trt'] == 0), mu, sqrt(sigma_sq[1])) +
+                           sim.dat[, 'trt'] == 0), mu0, sqrt(sigma_sq[1])) +
           ntrt.cluster.effects[j],
         sim.dat[, 'y']
       )
@@ -328,7 +328,7 @@ cps.sw.normal = function(nsim = NULL,
         stats::rnorm(
           sum(sim.dat[, 'clust'] == j &
                 sim.dat[, 'trt'] == 1),
-          mu2,
+          mu1,
           sqrt(sigma_sq[2])
         ) +
           trt.cluster.effects[j],
@@ -341,6 +341,12 @@ cps.sw.normal = function(nsim = NULL,
     # Calculate mean values for each group at each time point, for a given simulation
     iter.values = cbind(stats::aggregate(y ~ trt + time.point, data = sim.dat, mean)[, 3])
     values.vector = values.vector + iter.values
+    
+    sim.dat$period <- as.factor(sim.dat$period)
+    sim.dat$clust <- as.factor(sim.dat$clust)
+    sim.dat$time.point <- as.factor(sim.dat$time.point)
+    sim.dat$trt <- as.factor(sim.dat$trt)
+    
     
     sim.dat.holder[[i]] <- sim.dat
     
@@ -363,10 +369,10 @@ cps.sw.normal = function(nsim = NULL,
                                                     clust), data = sim.dat.holder[[i]])
       models[[i]] = my.mod
       glmm.values <- summary(my.mod)$coefficients
-      p.val = 2 * stats::pt(-abs(glmm.values['trt', 't value']), df = nclusters - length(step.index) - 2)
-      est.vector[i] = glmm.values['trt', 'Estimate']
-      se.vector[i] = glmm.values['trt', 'Std. Error']
-      stat.vector[i] = glmm.values['trt', 't value']
+      p.val = 2 * stats::pt(-abs(glmm.values['trt1', 't value']), df = nclusters - length(step.index) - 2)
+      est.vector[i] = glmm.values['trt1', 'Estimate']
+      se.vector[i] = glmm.values['trt1', 'Std. Error']
+      stat.vector[i] = glmm.values['trt1', 't value']
       pval.vector[i] = p.val
       converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
@@ -419,7 +425,7 @@ cps.sw.normal = function(nsim = NULL,
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
-        min.est = round(time.est %% 60, 0)
+        min.est = round(time.est %% 60, 2)
         if (min.est > 2 && timelimitOverride == FALSE){
           stop(paste0("Estimated completion time: ",
                       hr.est,
@@ -440,6 +446,7 @@ cps.sw.normal = function(nsim = NULL,
             'Min'
           )
         )
+        }
       }
       # Iterate progress bar
       prog.bar$update(i / nsim)
@@ -464,7 +471,6 @@ cps.sw.normal = function(nsim = NULL,
           )
         )
       }
-    }
   }
   
   ## Output objects
@@ -537,7 +543,7 @@ cps.sw.normal = function(nsim = NULL,
       "cluster.sizes" = cluster.sizes,
       "n.clusters" = n.clusters,
       "variance.parms" = var.parms,
-      "inputs" = c(mu, mu2),
+      "inputs" = c(mu0, mu1),
       "means" = group.means,
       "model.estimates" = cps.model.est,
       "sim.data" = simulated.datasets,

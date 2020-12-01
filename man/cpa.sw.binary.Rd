@@ -8,10 +8,11 @@ cpa.sw.binary(
   nclusters = NA,
   steps = NA,
   nsubjects = NA,
+  alpha = 0.05,
   d = NA,
   ICC = NA,
   beta = NA,
-  mu = NA,
+  mu0 = NA,
   tol = 1e-05,
   GQ = 100,
   quiet = FALSE
@@ -26,15 +27,17 @@ number of steps (required).}
 \item{nsubjects}{Number of subjects per cluster; accepts a scalar. Equal cluster sizes
 are assumed (required).}
 
+\item{alpha}{Significance level (default=0.05).}
+
 \item{d}{Total change over the study period (assume that time effects are linear
 across time steps); accepts numeric (required).}
 
 \item{ICC}{Intracluster correlation coefficient as defined by Hussey and Hughes (2007) 
 for participants at first time step; accepts numeric (required).}
 
-\item{beta}{Estimated treatment effect; accepts numeric (required).}
+\item{beta}{Estimated treatment (arm 2) effect; accepts numeric (required).}
 
-\item{mu}{Estimated baseline effect; accepts numeric (required).}
+\item{mu0}{Estimated baseline (arm 1) effect; accepts numeric (required).}
 
 \item{tol}{Machine tolerance. Accepts numeric. Default is 1e-5.}
 
@@ -64,20 +67,28 @@ Users must specify the number of subjects per cluster, number of clusters,
 the number of time steps, the baseline effect, the expected treatment effect,
 expected absolute difference between treatment
 arms, ICC, and time effect.
-
-Fortran for this package was kindly provided by Dr. Zhou and others.
+}
+\note{
+Much of the FORTRAN code for this package was kindly provided by Dr. Zhou.
 }
 \examples{
+
+# Estimate power for a trial with 3 steps and 20 clusters in arm 1 (often the 
+# standard-of-care or 'control' arm) at the initiation of the study. Those 
+# clusters have 90 subjects each, with anticipated change of -0.75 from the 
+# beginning to the end of the study. We estimated arm outcome proportions of 
+# 0.2 and 0.4 in the first (usually baseline) and second (usually treatment) 
+# arms, respectively, and intracluster correlation coefficient (ICC) of 0.01. 
+# The resulting power should be 0.8170374.
+
 \dontrun{
-holder <- cpa.sw.binary(nclusters = 20,
-  steps = 3,
-  nsubjects = 90,
-  d = -0.05,
+sw.bin <- cpa.sw.binary(nclusters = 50,
+  steps = 2,
+  nsubjects = 100,
+  d = -0.75,
   ICC = 0.01,
-  beta = -0.05,
-  mu = 0.18,
-  tol = 1e-5,
-  GQ = 100)
+  beta = 0.4,
+  mu0 = 0.2)
 }
 
 }

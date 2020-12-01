@@ -1,5 +1,8 @@
 #' Power simulations for cluster-randomized trials: Difference in Difference, Binary Outcome.
 #'
+#' @description 
+#' \loadmathjax
+#'
 #' This function utilizes iterative simulations to determine 
 #' approximate power for cluster-randomized controlled trials. Users 
 #' can modify a variety of parameters to suit the simulations to their

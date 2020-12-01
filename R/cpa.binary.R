@@ -1,5 +1,8 @@
 #' Analytic power calculations for parallel arm cluster-randomized trials with binary outcomes
 #'
+#' @description 
+#' \loadmathjax
+#' 
 #' Compute the power, number of clusters needed, number of subjects per cluster needed, 
 #' or other key parameters for a parallel cluster randomized trial with a 
 #' binary outcome.

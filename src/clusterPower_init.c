@@ -2,10 +2,6 @@
 #include <stdlib.h> // for NULL
 #include <R_ext/Rdynload.h>
 
-/* FIXME: 
- Check these declarations against the C/Fortran source code.
- */
-
 /* .Fortran calls */
 extern void F77_NAME(computeparameter)(void *, void *, void *, void *, void *, void *, void *, void *);
 extern void F77_NAME(der_likelihood_time)(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);

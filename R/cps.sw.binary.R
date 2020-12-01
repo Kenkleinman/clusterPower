@@ -25,8 +25,8 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes)
 #' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
-#' @param p1 Expected probability of outcome in arm 1. Accepts scalar between 0 - 1 (required).
-#' @param p2 Expected probability of outcome in arm 2. Accepts scalar between 0 - 1 (required).
+#' @param p0 Expected probability of outcome in arm 1. Accepts scalar between 0 - 1 (required).
+#' @param p1 Expected probability of outcome in arm 2. Accepts scalar between 0 - 1 (required).
 #' @param steps Number of crossover steps; a baseline step (all clusters in arm 1) is assumed.
 #' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by
 #' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number
@@ -100,13 +100,13 @@
 #'
 #' \dontrun{
 #' binary.sw.rct = cps.sw.binary(nsim = 100, nsubjects = 50, nclusters = 12,
-#'                               p1 = 0.1, p2 = 0.2, steps = 3,
+#'                               p0 = 0.1, p1 = 0.2, steps = 3,
 #'                               sigma_b_sq = 1, alpha = 0.05, method = 'glmm',
 #'                               quiet = FALSE, allSimData = FALSE, seed = 123)
 #' }
 #'
-#' @author Alexander R. Bogdan
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
+#' @author Alexander R. Bogdan
 #' @author Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
 #' @export
@@ -115,8 +115,8 @@
 cps.sw.binary = function(nsim = NULL,
                          nsubjects = NULL,
                          nclusters = NULL,
+                         p0 = NULL,
                          p1 = NULL,
-                         p2 = NULL,
                          steps = NULL,
                          sigma_b_sq = NULL,
                          alpha = 0.05,
@@ -199,10 +199,10 @@ cps.sw.binary = function(nsim = NULL,
   
   # Validate P.NTRT & P.TRT
   min0.warning = " must be a numeric value between 0 - 1"
-  if (p1 < 0 || p1 > 1) {
+  if (p0 < 0 || p0 > 1) {
     stop("P.NTRT", min0.warning)
   }
-  if (p2 < 0 || p2 > 1) {
+  if (p1 < 0 || p1 > 1) {
     stop("P.TRT", min0.warning)
   }
   
@@ -275,7 +275,7 @@ cps.sw.binary = function(nsim = NULL,
       "allSimData must be either TRUE (Output all simulated data sets) or FALSE (No simulated data output"
     )
   }
-  browser()
+
   # Calculate ICC1 (sigma_b_sq / (sigma_b_sq + pi^2/3))
   icc1 = mean(sapply(1:2, function(x)
     sigma_b_sq[x] / (sigma_b_sq[x] + pi ^ 2 / 3)))
@@ -301,8 +301,8 @@ cps.sw.binary = function(nsim = NULL,
   sim.dat['y'] = 0
   
   # Calculate log odds for each group
+  logit.p0 = log(p0 / (1 - p0))
   logit.p1 = log(p1 / (1 - p1))
-  logit.p2 = log(p2 / (1 - p2))
   
   ## Create simulation & analysis loop
   for (i in 1:nsim) {
@@ -318,7 +318,7 @@ cps.sw.binary = function(nsim = NULL,
                             stats::rbinom(
                               sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 0),
                               1,
-                              expit(logit.p1 +
+                              expit(logit.p0 +
                                       ntrt.cluster.effects[j] +
                                       stats::rnorm(sum(
                                         sim.dat[, 'clust'] == j &
@@ -332,7 +332,7 @@ cps.sw.binary = function(nsim = NULL,
                             stats::rbinom(
                               sum(sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1),
                               1,
-                              expit(logit.p2 +
+                              expit(logit.p1 +
                                       trt.cluster.effects[j] +
                                       stats::rnorm(sum(
                                         sim.dat[, 'clust'] == j & sim.dat[, 'trt'] == 1
@@ -388,10 +388,10 @@ cps.sw.binary = function(nsim = NULL,
         )
       )
       glmm.values = summary(my.mod)$coefficient
-      est.vector[i] = glmm.values['trt', 'Estimate']
-      se.vector[i] = glmm.values['trt', 'Std. Error']
-      stat.vector[i] = glmm.values['trt', 'z value']
-      pval.vector[i] = glmm.values['trt', 'Pr(>|z|)']
+      est.vector[i] = glmm.values['trt1', 'Estimate']
+      se.vector[i] = glmm.values['trt1', 'Std. Error']
+      stat.vector[i] = glmm.values['trt1', 'z value']
+      pval.vector[i] = glmm.values['trt1', 'Pr(>|z|)']
       converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
     
@@ -532,7 +532,7 @@ cps.sw.binary = function(nsim = NULL,
   )
   
   # Create object containing expected arm 1 and arm 2 probabilities
-  group.probs = data.frame("Outcome.Probabilities" = c("Arm.1" = p1, "Arm.2" = p2))
+  group.probs = data.frame("Outcome.Probabilities" = c("Arm.1" = p0, "Arm.2" = p1))
   
   # Create object containing cluster sizes
   cluster.sizes = nsubjects

@@ -33,9 +33,9 @@
 #' @param ICC Intracluster correlation coefficient as defined by Hussey and Hughes (2007) 
 #' for participants at first time step; accepts numeric (required). 
 #' 
-#' @param beta Estimated treatment (arm 2) effect; accepts numeric (required).
+#' @param beta Estimated treatment effect; accepts numeric (required).
 #' 
-#' @param mu0 Estimated baseline (arm 1) effect; accepts numeric (required).
+#' @param mu0 Estimated baseline effect; accepts numeric (required).
 #' 
 #' @param tol Machine tolerance. Accepts numeric. Default is 1e-5.
 #' 

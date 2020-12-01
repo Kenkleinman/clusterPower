@@ -6,7 +6,7 @@
 \usage{
 cpa.normal(
   alpha = 0.05,
-  power = 0.8,
+  power = NA,
   nclusters = NA,
   nsubjects = NA,
   sigma_sq = NA,
@@ -24,11 +24,13 @@ cpa.normal(
 Type I error.}
 
 \item{power}{The power of the test, 1 minus the probability of a Type II
-error.}
+error. Defaults to NA.}
 
 \item{nclusters}{The number of clusters per condition. It must be greater than 1.}
 
-\item{nsubjects}{The mean of the cluster sizes, or a vector of cluster sizes for one arm.}
+\item{nsubjects}{The mean of the cluster sizes, or a vector of cluster sizes for one arm.
+When nsubjects is a vector, CV and nclusters are calculated from nsubjects and 
+user-entered CV and nclusters is ignored.}
 
 \item{sigma_sq}{Within-cluster (residual) variance, \mjseqn{\sigma^2}.}
 
@@ -106,43 +108,38 @@ and Ken Kleinman (\email{ken.kleinman@gmail.com})
 # Find the number of clusters per condition needed for a trial with alpha = .05, 
 # power = 0.8, 10 observations per cluster, no variation in cluster size, a difference 
 # of 1 unit,  ICC = 0.1 and a variance of five units:
-
+\dontrun{
 cpa.normal(nsubjects = 10, d = 1, ICC = .1, vart = 5)
- 
+ }
 # The result, showing nclusters of greater than 15, suggests 16 clusters per 
 # condition should be used.
 
 # Find the power achieved with 16 clusters, 10 subjects per cluster,
 # difference between condition of 1 unit, ICC = .1, and total variance
 # of 5 units:
-
+\dontrun{
 cpa.normal(power = NA, nclusters = 16, nsubjects = 10, d = 1,
            sigma_b_sq = .5, vart = 5)
-
+}
 # The result shows the power is 0.801766.
 
-XX JN: Can you be clearer about the N of clusters and cluster sizes?
-# Find the power achieved with with cluster sizes given in the nsubjects vector
-# and nclusters given by the length of the vector.
+# Find the power achieved when each trial arm has 5 clusters of
+# sizes 100, 50, 25, 100, and 100. When a vector of cluster sizes 
+# is provided (as in this example), the "ncluster" argument is ignored.
 
+\dontrun{
 cpa.normal(alpha = .05, power = NA, nsubjects = c(100, 50, 25, 100, 100),
            d = .2, ICC = .1, sigma_b_sq = .1)
-
+}
 # The result shows the power is 0.13315.
 
 # Find the power achieved with 20 clusters per arm, where
 # the cluster sizes vary but have a mean size of 100 and coefficient of variation of .5:
-
+\dontrun{
 cpa.normal(alpha = .05, power = NA, nclusters = 20, nsubjects = 100, CV = .5,
            d = .2, ICC = .1, sigma_b_sq = .1)
-
+}
 # The result shows the power is 0.4559881.
-
-# The code below generates an error because the uniroot function
-# cannot find a solution within its default settings.
-
-XX JN: Can you make this example a "don't run"?
-cpa.normal(power=.8, nclusters=40, nsubjects=NA, d=.2, ICC=.1, sigma_b_sq=.1)
 
 }
 \references{

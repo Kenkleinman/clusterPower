@@ -1,17 +1,25 @@
 #' Run a Shiny app for power analysis functions
 #'
-#' This function runs a Shiny app that employs the \code{crtpwr.2mean},
-#' \code{crtpwr.2prop}, and \code{crtpwr.2rate}. The app can do calculations
-#' for several sets of parameters and produces graphs.
+#' This function runs the clusterPower Shiny apps. 
 #' 
-#' @section Authors:
-#' Jonathan Moyer (\email{jon.moyer@@gmail.com})
-
+#' @param appname which app should be launched. Choices are either "main" or "analytic".
+#' Default is "main".
+#' 
+#' @author Jonathan Moyer (\email{jon.moyer@@gmail.com})
+#' @author Alexandria Sakrejda (\email{acbro0@@umass.edu})
+#' 
 #' @export
-runExample <- function(){
-  appDir <- system.file("shiny-examples", "app", package = "clusterPower")
-  if (appDir == "") {
-    stop("Could not find example directory. Try re-installing `mypackage`.", call. = FALSE)
-  }
+runExample <- function(appname = "main") {
+  # find the examples
+  validappnames <- list.files(system.file("shiny-examples", package = "clusterPower"))
+  
+  validappnamesMsg <-
+    paste0(
+      "Valid examples are: '",
+      paste(validappnames, collapse = "', '"),
+      "'")
+  
+  # find and launch the app
+  appDir <- system.file("shiny-examples", appname, package = "clusterPower")
   shiny::runApp(appDir, display.mode = "normal")
 }
