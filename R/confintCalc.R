@@ -30,7 +30,7 @@ confintCalc <- function(alpha = alpha,
   for (q in 1:length(unlist(pval.power))) {
     power.parms[[q]] <-
       binom.test(
-        p = 0.05,
+        p = alpha,
         n = length(unlist(p.val)),
         x = pval.power[q],
         alternative = "two.sided"

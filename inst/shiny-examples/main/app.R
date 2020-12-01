@@ -196,7 +196,7 @@ ui <- fluidPage(
           
           ## REFERENCE VALUES
           h3(id = "armHead",
-             "Reference Parameters"),
+             "Reference Arm Parameters"),
           tags$style(HTML("#armHead{color: #337ab7;}")),
           
           # nclusters
@@ -243,7 +243,7 @@ ui <- fluidPage(
           
           ### TREATMENT ARM
           h3(id = "armHead",
-             "Treatment Parameters"),
+             "Treatment Arm Parameters"),
           
           # nclusters
           numericInput("nclusters2cpsnormal", simnclusterstext, value = 10),
@@ -353,7 +353,7 @@ ui <- fluidPage(
           
           ## REFERENCE VALUES
           h3(id = "armHead",
-             "Reference Parameters"),
+             "Reference Arm Parameters"),
           
           # nclusters
           numericInput("nclusters1cpsbinary", simnclusterstext, value = 10),
@@ -384,7 +384,7 @@ ui <- fluidPage(
           
           ## TREATMENT VALUES
           h3(id = "armHead",
-             "Treatment Parameters"),
+             "Treatment Arm Parameters"),
           
           # nclusters
           numericInput("nclusters2cpsbinary", simnclusterstext, value = 10),
@@ -460,7 +460,7 @@ ui <- fluidPage(
           
           ## REFERENCE VALUES
           h3(id = "armHead",
-             "Reference Parameters"),
+             "Reference Arm Parameters"),
           
           # nclusters
           numericInput("nclusters1cpscount", simnclusterstext, value = 10),
@@ -490,7 +490,7 @@ ui <- fluidPage(
           
           ## Treatment VALUES
           h3(id = "armHead",
-             "Treatment Parameters"),
+             "Treatment Arm Parameters"),
           
           # nclusters
           numericInput("nclusters2cpscount", simnclusterstext, value = 10),
@@ -678,7 +678,8 @@ ui <- fluidPage(
         # cpa.ma.binary (no method)
         conditionalPanel(
           "input.type == 'Multi-Arm' && input.dist == 'Binary' && input.meth == 'Analytic'",
-          HTML("No method exists. Use the simulation option instead.")
+          h4(id = "noMethod", "No method exists.  Use the simulation option instead."),
+          tags$style(HTML("#noMethod{color: #d30000;}"))
         ),
         
         # cps.ma.binary input start
@@ -773,7 +774,7 @@ ui <- fluidPage(
         # cpa.ma.count (no method)
         conditionalPanel(
           "input.type == 'Multi-Arm' && input.dist == 'Count' && input.meth == 'Analytic'",
-          HTML("No method exists. Use the simulation option instead.")
+          h4(id = "noMethod", "No method exists.  Use the simulation option instead.")
         ),
         
         # cps.ma.count input start
@@ -915,7 +916,7 @@ ui <- fluidPage(
           
           ## REFERENCE VALUES
           h3(id = "armHead",
-             "Reference Parameters"),
+             "Reference Arm Parameters"),
           
           # nclusters
           numericInput("nclusters1cpsdidnormal", simnclusterstext, value = 10),
@@ -953,7 +954,7 @@ ui <- fluidPage(
           
           ### TREATMENT ARM
           h3(id = "armHead",
-             "Treatment Parameters"),
+             "Treatment Arm Parameters"),
           
           # nclusters
           numericInput("nclusters2cpsdidnormal", simnclusterstext, value = 10),
@@ -1044,7 +1045,7 @@ ui <- fluidPage(
           
           ## REFERENCE VALUES
           h3(id = "armHead",
-             "Reference Parameters"),
+             "Reference Arm Parameters"),
           
           # nclusters
           numericInput("nclusters1cpsdidbinary", simnclusterstext, value = 10),
@@ -1082,7 +1083,7 @@ ui <- fluidPage(
           
           ## TREATMENT VALUES
           h3(id = "armHead",
-             "Treatment Parameters"),
+             "Treatment Arm Parameters"),
           
           # nclusters
           numericInput("nclusters2cpsdidbinary", simnclusterstext, value = 10),
@@ -1122,7 +1123,7 @@ ui <- fluidPage(
         # cpa.did.count (no method)
         conditionalPanel(
           "input.type == 'Difference-in-Difference' && input.dist == 'Count' && input.meth == 'Analytic'",
-          HTML("No method exists. Use the simulation option instead.")
+          h4(id = "noMethod", "No method exists.  Use the simulation option instead.")
         ),
         
         # cps.did.count input start
@@ -1140,7 +1141,7 @@ ui <- fluidPage(
           
           ## REFERENCE VALUES
           h3(id = "armHead",
-             "Reference Parameters"),
+             "Reference Arm Parameters"),
           
           # nclusters
           numericInput("nclusters1cpsdidcount", simnclusterstext, value = 10),
@@ -1177,7 +1178,7 @@ ui <- fluidPage(
           
           ## Treatment VALUES
           h3(id = "armHead",
-             "Treatment Parameters"),
+             "Treatment Arm Parameters"),
           
           # nclusters
           numericInput("nclusters2cpsdidcount", simnclusterstext, value = 10),
@@ -1735,7 +1736,7 @@ ui <- fluidPage(
         # cpa.irgtt.count (no method)
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' && input.dist == 'Count' && input.meth == 'Analytic'",
-          HTML("No method exists. Use the simulation option instead.")
+          h4(id = "noMethod", "No method exists.  Use the simulation option instead.")
         ),
         
         # cps.irgtt.count input start
@@ -2419,10 +2420,11 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
-      answer <<- future({
-        val <- cpa.ma.binary()
-        return(val)
-      }, seed = TRUE)
+      disable("button")
+     # answer <<- future({
+    #    val <- cpa.ma.binary()
+    #    return(val)
+    #  }, seed = TRUE)
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
@@ -2861,7 +2863,6 @@ server <- function(input, output, session) {
       values = unlist(x, use.names = FALSE),
       mode = unlist(lapply(x, mode))
     )
-    dplyr::filter(holder, grepl(gsub("\\.", "", input$fxnName), names))
   })
   
   output$show_inputs <- renderTable({
@@ -2876,16 +2877,17 @@ server <- function(input, output, session) {
   
   #embedded documentation
   
-  observe({
-    helplink <<- sprintf(
+helplink <- function(fxnName = input$fxnName) {
+  help <- sprintf(
       "http://127.0.0.1:%d/library/clusterPower/html/%s",
       tools::startDynamicHelp(NA),
       paste0(input$fxnName, ".html")
     )
-  })
+  return(help)
+  }
   
   output$helpdetails <- renderUI({
-    tags$iframe(src = helplink,
+    tags$iframe(src = helplink(),
                 height = 600,
                 width = 600)
   })
@@ -2944,22 +2946,24 @@ server <- function(input, output, session) {
   #clear the data log under certain circumstances
   observeEvent(input$cleargraph, {
     logargs$tab <- NULL
-    out1$power <- NULL
+    out1 <- NULL
   })
   
   observeEvent(input$cleargraph2, {
     logargs$tab <- NULL
-    out1$power <- NULL
+    out1 <- NULL
   })
   
   observeEvent(input$fxnName, {
     logargs$tab <- NULL
-    out1$power <- NULL
+    out1 <- NULL
   })
+  
   # END clear the data log under certain circumstances
   
   # START clear the output console when the estimate power button is clicked
   observeEvent(input$button, {
+    out1 <- NULL
     out1$power <- "Calculating..."
   })
   # END clear the output console when the estimate power button is clicked
