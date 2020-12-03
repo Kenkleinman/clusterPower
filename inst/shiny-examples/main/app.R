@@ -2253,7 +2253,6 @@ server <- function(input, output, session) {
     prog <- Progress$new(session)
     prog$set(message = "Analysis in progress",
              value = NULL)
-    
     isolate({
       q <- reactiveValuesToList(input)
     })
@@ -2891,7 +2890,7 @@ helplink <- function(fxnName = input$fxnName) {
   
   #create the graphing table
   observeEvent(req(out1$power), {
-    if (is.character(out1$power) == FALSE) {
+    if (is.character(isolate(out1$power)) == FALSE) {
       x <- reactiveValuesToList(input)
       holder <- NULL
       if (sum(grepl("click", names(x))) == 1) {
@@ -2911,14 +2910,14 @@ helplink <- function(fxnName = input$fxnName) {
       if (x$meth == "Analytic") {
         tab <-
           rbind(specialnames,
-                c("alpha", input$alpha),
+                c("alpha", isolate(input$alpha)),
                 c("power", round(out1$power, 3)))
       }
       if (x$meth == "Simulation") {
         tab <-
           rbind(
             specialnames,
-            c("alpha", input$alpha),
+            c("alpha", isolate(input$alpha)),
             c("upper CI", round(out1$power$Upper.95.CI, 3)),
             c("power", round(out1$power$Power, 3)),
             c("lower CI", round(out1$power$Lower.95.CI, 3))
@@ -2955,22 +2954,15 @@ helplink <- function(fxnName = input$fxnName) {
   
   # END clear the data log under certain circumstances
   
-  # START clear the output console when the estimate power button is clicked
-  observeEvent(input$button, {
-    out1 <- NULL
-    out1 <- reactiveValues(power = "Calculating...")
-  })
-  # END clear the output console when the estimate power button is clicked
-  
   # make the graph
   #update the axis choices
   observeEvent(input$fxnName, {
     x <- reactiveValuesToList(input)
     holder <- names(x)
     specialnames <-
-      grep(gsub("\\.", "", input$fxnName), holder, value = TRUE)
+      grep(gsub("\\.", "", isolate(input$fxnName)), holder, value = TRUE)
     specialnames <-
-      gsub(gsub("\\.", "", input$fxnName), "", specialnames)
+      gsub(gsub("\\.", "", isolate(input$fxnName)), "", specialnames)
     specialnames <-
       specialnames[grepl("nsim", specialnames) == FALSE]
     args_ <- c("alpha", specialnames)
@@ -2983,7 +2975,7 @@ helplink <- function(fxnName = input$fxnName) {
       data <- data.frame(isolate(logargs$tab), check.names = TRUE)
       data$values <- as.numeric(data$values)
       data$argument <- as.factor(data$argument)
-      var <- input$axisname
+      var <- isolate(input$axisname)
       data <-
         dplyr::filter(data, argument == !!var |
                         argument == "power")
@@ -2999,7 +2991,7 @@ helplink <- function(fxnName = input$fxnName) {
     })
   
   dpfun <- function(x) {
-    var <- input$axisname
+    var <- isolate(input$axisname)
     data <- plot_this()
     fun <- function(x) {
       x <- enquo(x)
@@ -3025,7 +3017,7 @@ helplink <- function(fxnName = input$fxnName) {
   
   output$dp <- renderTable({
     q <- plot_this()
-    nearPoints(q, input$click, xvar = input$axisname)
+    nearPoints(q, isolate(input$click), xvar = isolate(input$axisname))
   })
   
   # create reactive input data table
@@ -3035,18 +3027,23 @@ helplink <- function(fxnName = input$fxnName) {
   # Downloadable csv of reactive input data table
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste("clusterPower_", input$fxnName, ".csv", sep = "")
+      paste("clusterPower_", isolate(input$fxnName), ".csv", sep = "")
     },
     content = function(file) {
       write.csv(logargs$tab, file, row.names = FALSE)
     }
   )
   
+ resultdisplay <-  reactive({
+  q <- reactiveValuesToList(out1)
+  if (input$verbose == FALSE)
+    return(q$power)
+  else
+    return(q)})
+  
   # present the output verbose/not verbose
-    output$CRTpower <- renderPrint(if (input$verbose == FALSE)
-      return(out1$power)
-      else
-        return(reactiveValuesToList(out1)))
+    output$CRTpower <- renderPrint(resultdisplay())
+)
   
 } #end of server fxn
 
