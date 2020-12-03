@@ -2118,11 +2118,6 @@ server <- function(input, output, session) {
   }
   #end of fxns to extract argument names
   
-  #which events to observe
-  watchfor <- reactive({
-    list(input$dist, input$meth, input$type, input$button)
-  }) # end of which events to observe
-  
   # update help documentation and params table when function is selected
   observe({
     if (input$type == 'Parallel' &&
@@ -2160,6 +2155,7 @@ server <- function(input, output, session) {
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.ma.binary")
+      shinyjs::hide(id = "button")
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
@@ -2168,6 +2164,7 @@ server <- function(input, output, session) {
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.ma.count")
+      shinyjs::hide(id = "button")
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
@@ -2192,6 +2189,7 @@ server <- function(input, output, session) {
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.did.count")
+      shinyjs::hide(id = "button")
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
@@ -2240,6 +2238,7 @@ server <- function(input, output, session) {
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.irgtt.count")
+      shinyjs::hide(id = "button")
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
@@ -2251,7 +2250,6 @@ server <- function(input, output, session) {
   observeEvent(input$button, {
     disable("button")
     enable("cancel")
-    
     prog <- Progress$new(session)
     prog$set(message = "Analysis in progress",
              value = NULL)
@@ -2420,11 +2418,10 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
-      disable("button")
-     # answer <<- future({
-    #    val <- cpa.ma.binary()
-    #    return(val)
-    #  }, seed = TRUE)
+      answer <<- future({
+        val <- cpa.ma.binary()
+        return(val)
+      }, seed = TRUE)
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
@@ -2946,17 +2943,14 @@ helplink <- function(fxnName = input$fxnName) {
   #clear the data log under certain circumstances
   observeEvent(input$cleargraph, {
     logargs$tab <- NULL
-    out1 <- NULL
   })
   
   observeEvent(input$cleargraph2, {
     logargs$tab <- NULL
-    out1 <- NULL
   })
   
   observeEvent(input$fxnName, {
     logargs$tab <- NULL
-    out1 <- NULL
   })
   
   # END clear the data log under certain circumstances
@@ -2964,7 +2958,7 @@ helplink <- function(fxnName = input$fxnName) {
   # START clear the output console when the estimate power button is clicked
   observeEvent(input$button, {
     out1 <- NULL
-    out1$power <- "Calculating..."
+    out1 <- reactiveValues(power = "Calculating...")
   })
   # END clear the output console when the estimate power button is clicked
   
@@ -3049,12 +3043,10 @@ helplink <- function(fxnName = input$fxnName) {
   )
   
   # present the output verbose/not verbose
-  observeEvent(req(out1$power), {
     output$CRTpower <- renderPrint(if (input$verbose == FALSE)
       return(out1$power)
       else
         return(reactiveValuesToList(out1)))
-  })
   
 } #end of server fxn
 
