@@ -67,8 +67,10 @@ c0text <- "Estimated baseline proportion (c0)"
 c1text <- "Estimated post-treatment effect (c1)"
 refsigma_sqtext <-
   "Reference arm within-cluster variance (sigma_sq)"
-nsubjectsirgttunclusttext <- "Observations in unclustered arm (nsubjects)"
-ncontrolsirgttunclusttext <- "Observations in unclustered arm (ncontrols)"
+nsubjectsirgttunclusttext <-
+  "Observations in unclustered arm (nsubjects)"
+ncontrolsirgttunclusttext <-
+  "Observations in unclustered arm (ncontrols)"
 
 
 
@@ -1920,6 +1922,9 @@ ui <- fluidPage(
       ),
       tabPanel(
         "Parameters",
+        h5(id = "helpnote", "Note: This tab shows help for the 
+           clusterPower functions. For help with this app, see 
+           the Help tab."),
         shinyjs::hidden(
           textInput("fxnName", "clusterPower function name", value = "cpa.normal")
         ),
@@ -1948,6 +1953,9 @@ ui <- fluidPage(
       
       tabPanel(
         "Help",
+        h5(id = "helpnote", "Note: This tab shows help for this app. 
+           For help with the clusterPower functions, see the Parameters tab."),
+        tags$style(HTML("#helpnote{color: #337ab7;}")),
         HTML(
           "<p>To use the calculator, select the trial type, outcome distribution, and calculation method.
         Then enter values for the quantities that appear below. When complete, select the ESTIMATE POWER button.</p>"
@@ -2123,34 +2131,42 @@ server <- function(input, output, session) {
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.count")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.count")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.ma.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.ma.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
@@ -2160,6 +2176,7 @@ server <- function(input, output, session) {
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.ma.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
@@ -2169,22 +2186,27 @@ server <- function(input, output, session) {
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.ma.count")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.did.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.did.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.did.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.did.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
@@ -2194,46 +2216,57 @@ server <- function(input, output, session) {
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.did.count")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.sw.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.sw.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.sw.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.sw.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.sw.count")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.sw.count")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.irgtt.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.irgtt.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.irgtt.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.irgtt.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
@@ -2243,6 +2276,7 @@ server <- function(input, output, session) {
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.irgtt.count")
+      shinyjs::show(id = "button")
     }
   }) # end update help documentation and params table when function is selected
   
@@ -2873,13 +2907,13 @@ server <- function(input, output, session) {
   
   #embedded documentation
   
-helplink <- function(fxnName = input$fxnName) {
-  help <- sprintf(
+  helplink <- function(fxnName = input$fxnName) {
+    help <- sprintf(
       "http://127.0.0.1:%d/library/clusterPower/html/%s",
       tools::startDynamicHelp(NA),
       paste0(input$fxnName, ".html")
     )
-  return(help)
+    return(help)
   }
   
   output$helpdetails <- renderUI({
@@ -3034,16 +3068,16 @@ helplink <- function(fxnName = input$fxnName) {
     }
   )
   
- resultdisplay <-  reactive({
-  q <- reactiveValuesToList(out1)
-  if (input$verbose == FALSE)
-    return(q$power)
-  else
-    return(q)})
+  resultdisplay <-  reactive({
+    q <- reactiveValuesToList(out1)
+    if (input$verbose == FALSE)
+      return(q$power)
+    else
+      return(q)
+  })
   
   # present the output verbose/not verbose
-    output$CRTpower <- renderPrint(resultdisplay())
-)
+  output$CRTpower <- renderPrint(resultdisplay())
   
 } #end of server fxn
 
