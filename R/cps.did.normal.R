@@ -23,8 +23,8 @@
 #' (unequal cluster sizes within groups) (required).
 #' @param nclusters Number of clusters per group; accepts integer scalar or vector of length 2 for unequal number
 #' of clusters per arm (required)
-#' @param mu Expected mean of arm 1; accepts numeric (required).
-#' @param mu2 Expected mean of arm 2; accepts numeric (required).
+#' @param mu Expected mean of arm 1 at follow-up; accepts numeric (required).
+#' @param mu2 Expected mean of arm 2 at follow-up; accepts numeric (required).
 #' @param sigma_sq Within-cluster variance; accepts numeric scalar (indicating equal within-cluster variances for both
 #' arms at both time points) or vector of length 4 specifying within-cluster variance for each arm at each time point.
 #' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal
