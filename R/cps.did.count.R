@@ -22,8 +22,8 @@
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
 #' @param nclusters Number of clusters per arm; accepts integer (required).
 #' At least 2 of the following 3 arguments must be specified:
-#' @param c1 Expected outcome count in arm 1 group
-#' @param c2 Expected outcome count in arm 2 group
+#' @param c1 Expected outcome count in arm 1 at baseline and follow-up and in arm 2 at baseline
+#' @param c2 Expected outcome count in arm 2 at follow-up only
 #' @param c.diff Expected difference in outcome count between groups, defined as 
 #' c.diff = c1 - c2
 #' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; 
