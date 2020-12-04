@@ -30,8 +30,8 @@
 #' @param nclusters Number of clusters per arm; accepts integer (required).
 #' 
 #' At least 2 of the following 3 arguments must be specified when using expected probabilities:
-#' @param p1 Expected probability of outcome in arm 1
-#' @param p2 Expected probability of outcome in arm 2
+#' @param p1 Expected probability of outcome in arm 1, at baseline and follow-up, and in arm 2 at baseline
+#' @param p2 Expected probability of outcome in arm 2 at follow up only
 #' @param p.diff Expected difference in probability of outcome between groups, defined as p.diff = p1 - p2
 #' 
 #' At least 2 of the following 3 arguments must be specified when using expected odds ratios:
