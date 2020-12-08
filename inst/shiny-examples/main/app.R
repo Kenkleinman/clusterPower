@@ -71,7 +71,7 @@ nsubjectsirgttunclusttext <-
   "Observations in unclustered arm (nsubjects)"
 ncontrolsirgttunclusttext <-
   "Observations in unclustered arm (ncontrols)"
-
+nclustersswtext <- "Number of clusters (nclusters)"
 
 
 
@@ -1221,7 +1221,7 @@ ui <- fluidPage(
           "input.type == 'Stepped Wedge' && input.dist == 'Normal' && input.meth == 'Analytic'",
           
           # nclusters
-          numericInput("nclusterscpaswnormal", analyticnclusterstext, value = 12),
+          numericInput("nclusterscpaswnormal", nclustersswtext, value = 12),
           
           # nsubjects
           numericInput("nsubjectscpaswnormal",
@@ -1275,7 +1275,7 @@ ui <- fluidPage(
           numericInput("stepscpsswnormal", stepstext, value = 3),
           
           # nclusters
-          numericInput("nclusterscpsswnormal", simnclusterstext, value = 12),
+          numericInput("nclusterscpsswnormal", nclustersswtext, value = 12),
           
           # nsubjects
           numericInput("nsubjectscpsswnormal",
@@ -1311,7 +1311,7 @@ ui <- fluidPage(
           numericInput("stepscpaswbinary", stepstext, value = 2),
           
           #nclusters
-          numericInput("nclusterscpaswbinary", analyticnclusterstext, value = 50),
+          numericInput("nclusterscpaswbinary", nclustersswtext, value = 50),
           
           # nsubjects
           numericInput("nsubjectscpaswbinary",
@@ -1351,7 +1351,7 @@ ui <- fluidPage(
           numericInput("stepscpsswbinary", stepstext, value = 3),
           
           # nclusters
-          numericInput("nclusterscpsswbinary", simnclusterstext, value = 12),
+          numericInput("nclusterscpsswbinary", nclustersswtext, value = 12),
           
           # nsubjects
           numericInput("nsubjectscpsswbinary",
@@ -1359,7 +1359,7 @@ ui <- fluidPage(
                        value = 20),
           
           numericInput(
-            "p1cpsswbinary",
+            "p0cpsswbinary",
             p0text,
             value = 0.1,
             step = 0.001,
@@ -1367,7 +1367,7 @@ ui <- fluidPage(
             max = 1
           ),
           numericInput(
-            "p2cpsswbinary",
+            "p1cpsswbinary",
             p1text,
             value = 0.5,
             step = 0.001,
@@ -1391,7 +1391,7 @@ ui <- fluidPage(
           numericInput("stepscpaswcount", stepstext, value = 3),
           
           # nclusters
-          numericInput("nclusterscpaswcount", analyticnclusterstext, value = 12),
+          numericInput("nclusterscpaswcount", nclustersswtext, value = 12),
           
           # nsubjects
           numericInput("nsubjectscpaswcount",
@@ -1433,7 +1433,7 @@ ui <- fluidPage(
           numericInput("stepscpsswcount", stepstext, value = 3),
           
           # nclusters
-          numericInput("nclusterscpsswcount", simnclusterstext, value = 12),
+          numericInput("nclusterscpsswcount", nclustersswtext, value = 12),
           
           # nsubjects
           numericInput("nsubjectscpsswcount",
@@ -2652,8 +2652,8 @@ server <- function(input, output, session) {
           nclusters = q$nclusterscpsswnormal,
           nsubjects = q$nsubjectscpsswnormal,
           steps = q$stepscpsswnormal,
-          mu = q$mucpsswnormal,
-          mu2 = q$mu2cpsswnormal,
+          mu0 = q$mu0cpsswnormal,
+          mu1 = q$mu1cpsswnormal,
           sigma_sq = q$sigma_sqcpsswnormal,
           sigma_b_sq = q$sigma_b_sqcpsswnormal,
           poorFitOverride = q$poorFitOverride,
@@ -2687,8 +2687,8 @@ server <- function(input, output, session) {
           nsim = q$nsimcpsswbinary,
           nsubjects = q$nsubjectscpsswbinary,
           nclusters = q$nclusterscpsswbinary,
+          p0 = q$p0cpsswbinary,
           p1 = q$p1cpsswbinary,
-          p2 = q$p2cpsswbinary,
           steps = q$stepscpsswbinary,
           sigma_b_sq = q$sigma_b_sqcpsswbinary,
           alpha = q$alpha,
@@ -2722,8 +2722,8 @@ server <- function(input, output, session) {
           nsim = q$nsimcpsswcount,
           nsubjects = q$nsubjectscpsswcount,
           nclusters = q$nclusterscpsswcount,
+          c0 = q$c0cpsswcount,
           c1 = q$c1cpsswcount,
-          c2 = q$c2cpsswcount,
           steps = q$stepscpsswcount,
           sigma_b_sq = q$sigma_b_sqcpsswcount,
           alpha = q$alpha,
