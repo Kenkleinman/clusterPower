@@ -23,7 +23,7 @@ p1inctext <- 'p1 > p2'
 p1inctooltip <- 'Select to indicate that the treatment group proportion is greater than the control group proportion. This option is needed only when the target quantity is either "p1" or "p2". If both "p1" and "p2" are given this option has no effect.'
 
 icctext <- 'ICC (icc)'
-icctooltip <- 'Intracluster correlation coefficient.'
+icctooltip <- 'Intracluster correlation coefficient. Two (2) of ICC, vart, sigma_b,and sigma_b_sq must be supplied.'
 
 cvtext <- 'Cluster size CV (cv)'
 cvtooltip <- 'Coefficient of variation of the cluster sizes. When this equals 0, all clusters have the same size.'
@@ -31,7 +31,13 @@ cvtooltip <- 'Coefficient of variation of the cluster sizes. When this equals 0,
 # -----------------------------------------------------------------------------
 # specific to 2mean:
 varttext <- 'Total variance (vart)'
-varttooltip <- 'The total variation of the outcome.'
+varttooltip <- 'The total variation of the outcome. Two (2) of ICC, vart, sigma_b,and sigma_b_sq must be supplied.'
+
+sigma_sqtext <- 'Within-cluster variance (sigma_sq)'
+sigma_sqtooltip <- 'Within-cluster variation. Two (2) of ICC, vart, sigma_b,and sigma_b_sq must be supplied.'
+
+sigma_b_sqtext <- 'Between-cluster variance (sigma_b_sq)'
+sigma_b_sqtooltip <- 'Between-cluster variation. Two (2) of ICC, vart, sigma_b,and sigma_b_sq must be supplied.'
 
 dtext <- 'Difference (d)'
 dtooltip <- 'Expected difference in condition means.'
@@ -102,6 +108,8 @@ varetooltip <- 'Variance within clusters, i.e. residual error.'
 pooledtext <- 'Pooled'
 pooledtooltip <- 'Select to indicate if pooled variance is desired.'
 
+ttesttext <- 't-test'
+ttesttooltip <- 'Select to use a t-distribution instead of a z-distribution.'
 
 # -----------------------------------------------------------------------------
 # specific to 2propD:

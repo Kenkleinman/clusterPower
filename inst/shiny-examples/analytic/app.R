@@ -11,17 +11,17 @@ source("helpers.R")
 source("builders.R")
 
 # vectors of names, needed for graphs and target param selection
-names2mean <- c("alpha","power","nclusters","nsubjects","cv","d","icc","vart","method")
-names2meanD <- c("alpha","power","nclusters","nsubjects","d","icc","rho_c","rho_s","vart")
+names2mean <- c("alpha","power","nclusters","nsubjects","sigma_sq","sigma_b_sq","CV","d","ICC","vart","method")
+names2meanD <- c("alpha","power","nclusters","nsubjects","d","ICC","rho_c","rho_s","vart")
 names2meanM <- c("alpha","power","nclusters","nsubjects","d","icc","vart","rho_m")
 namesnmean <- c("alpha","power","narms","nclusters","nsubjects","vara","varc","vare")
 
 namesSW <- c("alpha","power","nclusters","nsubjects","ntimes","d", "icc", "rho_c","rho_s","vart")
 
-names2prop <- c("alpha","power","nclusters","nsubjects","cv","p1","p2","icc","pooled","p1inc")
-names2propD <- c("alpha","power","nclusters","nsubjects","p","d","icc","rho_c","rho_s")
+names2prop <- c("alpha","power","nclusters","nsubjects","cv","p1","p2","ICC","pooled","p1inc","ttest")
+names2propD <- c("alpha","power","nclusters","nsubjects","p","d","ICC","rho_c","rho_s")
 names2propM <- c("alpha","power","nclusters","nsubjects","p1","p2","cvm","p1inc")
-names2rate <- c("alpha","power","nclusters","py","r1","r2","cvb","r1inc")
+names2rate <- c("alpha","power","nclusters","py","r1","r2","CVB","r1inc")
 
 umass <- "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-weight: bold; color: #ffffff; background-color: #881c1c; border: 3px solid #000000;"
 
@@ -61,6 +61,16 @@ ui <- function(request){
                     fluidRow(textInput("n2mean", nsubjectstext,
                                        value = "", width = "100%")),
                     bsTooltip("n2mean", nsubjectstooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("sigma_sq2mean", sigma_sqtext,
+                                       value = "", width = "100%")),
+                    bsTooltip("sigma_sq2mean", sigma_sqtooltip,
+                              'right', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(textInput("sigma_b_sq2mean", sigma_b_sqtext,
+                                       value = "", width = "100%")),
+                    bsTooltip("sigma_b_sq2mean", sigma_b_sqtooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(textInput("icc2mean", icctext,
@@ -357,7 +367,7 @@ ui <- function(request){
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(textInput("power2prop", powertext,
-                                       value = "0.80", width = "100%")),
+                                       value = "", width = "100%")),
                     bsTooltip("power2prop", powertooltip,
                               'right', options = list(container = "body")),
                     #----------------------------------------------------------
@@ -377,6 +387,10 @@ ui <- function(request){
                     #----------------------------------------------------------
                     fluidRow(checkboxInput("pooled2prop", pooledtext)),
                     bsTooltip("pooled2prop", pooledtooltip,
+                              'top', options = list(container = "body")),
+                    #----------------------------------------------------------
+                    fluidRow(checkboxInput("ttest2prop", ttesttext)),
+                    bsTooltip("ttest2prop", ttesttooltip,
                               'top', options = list(container = "body")),
                     #----------------------------------------------------------
                     fluidRow(textInput("nclusters2prop", nclusterstext,
@@ -614,6 +628,8 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "d2mean", value = "")
       updateTextInput(session, inputId = "icc2mean", value = "")
       updateTextInput(session, inputId = "vart2mean", value = "")
+      updateTextInput(session, inputId = "sigma_sq2mean", value = "")
+      updateTextInput(session, inputId = "sigma_b_sq2mean", value = "")
     }
   ) # end observeEvent(input$default2mean ...
   
@@ -632,6 +648,8 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "d2mean", value = "")
       updateTextInput(session, inputId = "icc2mean", value = "")
       updateTextInput(session, inputId = "vart2mean", value = "")
+      updateTextInput(session, inputId = "sigma_sq2mean", value = "")
+      updateTextInput(session, inputId = "sigma_b_sq2mean", value = "")
     }
   ) # end observeEvent(input$clear2mean ...
   
@@ -644,9 +662,11 @@ server <- function(input, output, session){
       power <- make_sequence(isolate(input$power2mean))
       nclusters <- make_sequence(isolate(input$nclusters2mean))
       nsubjects <- make_sequence(isolate(input$n2mean))
-      cv <- make_sequence(isolate(input$cv2mean))
+      sigma_sq <- make_sequence(isolate(input$sigma_sq2mean))
+      sigma_b_sq <- make_sequence(isolate(input$sigma_b_sq2mean))
+      CV <- make_sequence(isolate(input$cv2mean))
       d <- make_sequence(isolate(input$d2mean))
-      icc <- make_sequence(isolate(input$icc2mean))
+      ICC <- make_sequence(isolate(input$icc2mean))
       vart <- make_sequence(isolate(input$vart2mean))
       method <- na.omit(isolate(input$method2mean))
       
@@ -670,26 +690,55 @@ server <- function(input, output, session){
                          power,
                          nclusters,
                          nsubjects,
-                         cv,
+                         sigma_sq,
+                         sigma_b_sq,
+                         CV,
                          d,
-                         icc,
+                         ICC,
                          vart,
                          method,
                          stringsAsFactors = FALSE)
+      names(tab) <- names2mean
+      
+      # check for sufficient variance parameters
+      varname <-
+        c(vart,
+          ICC,
+          sigma_sq,
+          sigma_b_sq
+        )
+      varind <- which(is.na(varname))
+      # validate that two of vart, ICC, sigma_sq, and sigma_b_sq are supplied
+      validate(
+        need(length(varind) == 2,
+             "Two (2) of ICC, vart, sigma_b,and sigma_b_sq must be supplied."
+        )
+      )
+      
+      # needed inputs
+      neednames <-
+        c("alpha",
+          "power",
+          "nclusters",
+          "nsubjects",
+          "CV",
+          "d"
+        )
       
       # record the column index of the target parameter
-      needind <- which(is.na(tab[1,]))
+      needind <- which(is.na(tab[1,neednames]))
+      
       # validate that only one input is blank
       validate(
         need(length(needind) == 1,
-             "Exactly one of 'alpha', 'power', 'd', 'nclusters', 'nsubjects', 'icc', 'vart', and 'cv' must be left blank."
+             "Exactly one of 'alpha', 'power', 'nclusters', 'nsubjects', 'CV', and 'd' must be left blank."
         )
       )
-      names(tab) <- names2mean
+      
       target <- names2mean[needind]
       
       # apply function over table of input values
-      temp <-pmap_df(tab, crtpwr.2mean.safe)
+      temp <-pmap_df(tab, cpa.normal.safe)
       
       tab[[target]] <- signif(temp$result, 4)
       tab$error <- map_chr(temp$error, shorten_error, target = target)
@@ -697,13 +746,31 @@ server <- function(input, output, session){
       # make a column to store target variable for use in graphing
       tab$target <- target
       
+      # calculate missing values
+      if (!is.na(tab$sigma_b_sq[1]) && is.na(tab$vart[1])) {
+        tab$vart <- (tab$sigma_b_sq / tab$ICC)
+      }
+      if (!is.na(tab$sigma_sq[1]) && is.na(tab$vart[1])) {
+        tab$vart <- (tab$sigma_sq / (1 - tab$ICC))
+      }
+      if (!is.na(tab$sigma_b_sq[1]) && is.na(tab$ICC[1])) {
+        tab$ICC <- (tab$sigma_b_sq / tab$vart)
+      }
+      if (!is.na(tab$sigma_sq[1]) && is.na(tab$ICC[1])) {
+        tab$ICC <- (1 - (tab$sigma_sq / tab$vart))
+      }
+      if (is.na(tab$vart[1]) && is.na(tab$ICC[1])) {
+        tab$ICC <- ( (sigma_b_sq / (sigma_b_sq + sigma_sq) ) )
+        tab$vart <- (tab$sigma_b_sq + tab$sigma_sq)
+      }
+      
       # convert all input values to factors for ggplot
       mutate_if(tab, !(names(tab) %in% c(target,"error","target")), factor)
     })
   
   # create 2mean output table
   output$table2mean <- DT::renderDataTable(
-    res2mean()[,1:10],
+    res2mean()[,1:12],
     server = FALSE,
     extensions = 'Buttons',
     filter = 'top',
@@ -783,7 +850,7 @@ server <- function(input, output, session){
       rho_c <- make_sequence(isolate(input$rho_c2meanD))
       rho_s <- make_sequence(isolate(input$rho_s2meanD))
       d <- make_sequence(isolate(input$d2meanD))
-      icc <- make_sequence(isolate(input$icc2meanD))
+      ICC <- make_sequence(isolate(input$icc2meanD))
       vart <- make_sequence(isolate(input$vart2meanD))
       
       if(!is.na(power)){
@@ -807,7 +874,7 @@ server <- function(input, output, session){
                          nclusters,
                          nsubjects,
                          d,
-                         icc,
+                         ICC,
                          rho_c,
                          rho_s,
                          vart,
@@ -825,7 +892,7 @@ server <- function(input, output, session){
       target <- names2meanD[needind]
       
       # apply function over table of input values
-      temp <-pmap_df(tab, crtpwr.2meanD.safe)
+      temp <-pmap_df(tab, cpa.did.normal.safe)
       
       tab[[target]] <- signif(temp$result, 4)
       tab$error <- map_chr(temp$error, shorten_error, target = target)
@@ -1241,7 +1308,7 @@ server <- function(input, output, session){
       target <- namesnmean[needind]
       
       # apply function over table of input values
-      temp <-pmap_df(tab, crtpwr.nmean.safe)
+      temp <-pmap_df(tab, cpa.ma.normal.safe)
       
       tab[[target]] <- signif(temp$result, 4)
       tab$error <- map_chr(temp$error, shorten_error, target = target)
@@ -1296,8 +1363,8 @@ server <- function(input, output, session){
     input$default2prop,
     {
       updateTextInput(session, inputId = "alpha2prop", value = "0.05")
-      updateTextInput(session, inputId = "power2prop", value = "0.80")
-      updateTextInput(session, inputId = "cv2prop", value = "0")
+      updateTextInput(session, inputId = "power2prop", value = "")
+      updateTextInput(session, inputId = "cv2prop", value = "")
       updateTextInput(session, inputId = "nclusters2prop", value = "")
       updateTextInput(session, inputId = "n2prop", value = "")
       updateTextInput(session, inputId = "icc2prop", value = "")
@@ -1305,6 +1372,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "p22prop", value = "")
       updateTextInput(session, inputId = "pooled2prop", value = FALSE)
       updateTextInput(session, inputId = "p1inc2prop", value = FALSE)
+      updateTextInput(session, inputId = "ttest2prop", value = FALSE)
     } # end observeEvent(input$default2prop ...
   )
   
@@ -1322,6 +1390,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "p22prop", value = "")
       updateTextInput(session, inputId = "pooled2prop", value = FALSE)
       updateTextInput(session, inputId = "p1inc2prop", value = FALSE)
+      updateTextInput(session, inputId = "ttest2prop", value = FALSE)
     } 
   ) # end observeEvent(input$clear2prop ...
   
@@ -1336,9 +1405,10 @@ server <- function(input, output, session){
       cv <- make_sequence(isolate(input$cv2prop))
       p1 <- make_sequence(isolate(input$p12prop))
       p2 <- make_sequence(isolate(input$p22prop))
-      icc <- make_sequence(isolate(input$icc2prop))
+      ICC <- make_sequence(isolate(input$icc2prop))
       pooled <- isolate(input$pooled2prop)
       p1inc <- isolate(input$p1inc2prop)
+      ttest <- isolate(input$ttest2prop)
       
       tab <- expand.grid(alpha,
                          power,
@@ -1347,9 +1417,10 @@ server <- function(input, output, session){
                          cv,
                          p1,
                          p2,
-                         icc,
+                         ICC,
                          pooled,
                          p1inc,
+                         ttest,
                          stringsAsFactors = FALSE)
       
       if(!is.na(power)){
@@ -1371,14 +1442,14 @@ server <- function(input, output, session){
       # validate that only one input is blank
       validate(
         need(length(needind) == 1,
-             "Exactly one of 'alpha', 'power', 'p1', 'p2', 'nclusters', 'nsubjects', 'icc' or 'cv' must be left blank."
+             "Exactly one of 'alpha', 'power', 'p1', 'p2', 'nclusters', 'nsubjects', 'ICC' or 'cv' must be left blank."
         )
       )
       names(tab) <- names2prop
       target <- names2prop[needind]
       
       # apply function over table of input values
-      temp <-pmap_df(tab, crtpwr.2prop.safe)
+      temp <-pmap_df(tab, cpa.binary.safe)
       
       tab[[target]] <- signif(temp$result, 4)
       tab$error <- map_chr(temp$error, shorten_error, target = target)
@@ -1392,7 +1463,7 @@ server <- function(input, output, session){
   
   # create 2prop output table
   output$table2prop <- DT::renderDataTable(
-    res2prop()[,c(1:8,11)],
+    res2prop()[,c(1:8,12)],
     server = FALSE,
     extensions = 'Buttons',
     filter = 'top',
@@ -1437,6 +1508,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "rho_c2propD", value = "")
       updateTextInput(session, inputId = "rho_s2propD", value = "")
       updateTextInput(session, inputId = "nclusters2propD", value = "")
+      updateTextInput(session, inputId = "nubjects2propD", value = "")
       updateTextInput(session, inputId = "n2propD", value = "")
       updateTextInput(session, inputId = "p2propD", value = "")
       updateTextInput(session, inputId = "d2propD", value = "")
@@ -1454,6 +1526,7 @@ server <- function(input, output, session){
       updateTextInput(session, inputId = "rho_c2propD", value = "")
       updateTextInput(session, inputId = "rho_s2propD", value = "")
       updateTextInput(session, inputId = "nclusters2propD", value = "")
+      updateTextInput(session, inputId = "nubjects2propD", value = "")
       updateTextInput(session, inputId = "n2propD", value = "")
       updateTextInput(session, inputId = "p2propD", value = "")
       updateTextInput(session, inputId = "d2propD", value = "")
@@ -1474,7 +1547,7 @@ server <- function(input, output, session){
       rho_s <- make_sequence(isolate(input$rho_s2propD))
       p <- make_sequence(isolate(input$p2propD))
       d <- make_sequence(isolate(input$d2propD))
-      icc <- make_sequence(isolate(input$icc2propD))
+      ICC <- make_sequence(isolate(input$icc2propD))
 
       if(!is.na(power)){
         validate(
@@ -1498,7 +1571,7 @@ server <- function(input, output, session){
                          nsubjects,
                          p,
                          d,
-                         icc,
+                         ICC,
                          rho_c,
                          rho_s,
                          stringsAsFactors = FALSE)
@@ -1515,7 +1588,7 @@ server <- function(input, output, session){
       target <- names2propD[needind]
       
       # apply function over table of input values
-      temp <-pmap_df(tab, crtpwr.2propD.safe)
+      temp <-pmap_df(tab, cpa.did.binary.safe)
       
       tab[[target]] <- signif(temp$result, 4)
       tab$error <- map_chr(temp$error, shorten_error, target = target)
@@ -1737,7 +1810,7 @@ server <- function(input, output, session){
       py <- make_sequence(isolate(input$py2rate))
       r1 <- make_sequence(isolate(input$r12rate))
       r2 <- make_sequence(isolate(input$r22rate))
-      cvb <- make_sequence(isolate(input$cvb2rate))
+      CVB <- make_sequence(isolate(input$cvb2rate))
       r1inc <- isolate(input$r1inc2rate)
       
       tab <- expand.grid(alpha,
@@ -1746,7 +1819,7 @@ server <- function(input, output, session){
                          py,
                          r1,
                          r2,
-                         cvb,
+                         CVB,
                          r1inc,
                          stringsAsFactors = FALSE)
       
@@ -1776,7 +1849,7 @@ server <- function(input, output, session){
       target <- names2rate[needind]
       
       # apply function over table of input values
-      temp <-pmap_df(tab, crtpwr.2rate.safe)
+      temp <-pmap_df(tab, cpa.count.safe)
       
       tab[[target]] <- signif(temp$result, 4)
       tab$error <- map_chr(temp$error, shorten_error, target = target)
