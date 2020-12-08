@@ -8,6 +8,6 @@
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @importFrom shiny checkboxInput numericInput selectInput sliderInput textInput
 #' @importFrom foreach %dopar% %do%
-#' @importFrom MASS ::
+#' 
 #' 
 NULL

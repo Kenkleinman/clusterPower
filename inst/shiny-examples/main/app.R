@@ -67,8 +67,10 @@ c0text <- "Estimated baseline proportion (c0)"
 c1text <- "Estimated post-treatment effect (c1)"
 refsigma_sqtext <-
   "Reference arm within-cluster variance (sigma_sq)"
-nsubjectsirgttunclusttext <- "Observations in unclustered arm (nsubjects)"
-ncontrolsirgttunclusttext <- "Observations in unclustered arm (ncontrols)"
+nsubjectsirgttunclusttext <-
+  "Observations in unclustered arm (nsubjects)"
+ncontrolsirgttunclusttext <-
+  "Observations in unclustered arm (ncontrols)"
 
 
 
@@ -196,7 +198,7 @@ ui <- fluidPage(
           
           ## REFERENCE VALUES
           h3(id = "armHead",
-             "Reference Parameters"),
+             "Reference Arm Parameters"),
           tags$style(HTML("#armHead{color: #337ab7;}")),
           
           # nclusters
@@ -243,7 +245,7 @@ ui <- fluidPage(
           
           ### TREATMENT ARM
           h3(id = "armHead",
-             "Treatment Parameters"),
+             "Treatment Arm Parameters"),
           
           # nclusters
           numericInput("nclusters2cpsnormal", simnclusterstext, value = 10),
@@ -353,7 +355,7 @@ ui <- fluidPage(
           
           ## REFERENCE VALUES
           h3(id = "armHead",
-             "Reference Parameters"),
+             "Reference Arm Parameters"),
           
           # nclusters
           numericInput("nclusters1cpsbinary", simnclusterstext, value = 10),
@@ -384,7 +386,7 @@ ui <- fluidPage(
           
           ## TREATMENT VALUES
           h3(id = "armHead",
-             "Treatment Parameters"),
+             "Treatment Arm Parameters"),
           
           # nclusters
           numericInput("nclusters2cpsbinary", simnclusterstext, value = 10),
@@ -460,7 +462,7 @@ ui <- fluidPage(
           
           ## REFERENCE VALUES
           h3(id = "armHead",
-             "Reference Parameters"),
+             "Reference Arm Parameters"),
           
           # nclusters
           numericInput("nclusters1cpscount", simnclusterstext, value = 10),
@@ -490,7 +492,7 @@ ui <- fluidPage(
           
           ## Treatment VALUES
           h3(id = "armHead",
-             "Treatment Parameters"),
+             "Treatment Arm Parameters"),
           
           # nclusters
           numericInput("nclusters2cpscount", simnclusterstext, value = 10),
@@ -678,7 +680,8 @@ ui <- fluidPage(
         # cpa.ma.binary (no method)
         conditionalPanel(
           "input.type == 'Multi-Arm' && input.dist == 'Binary' && input.meth == 'Analytic'",
-          HTML("No method exists. Use the simulation option instead.")
+          h4(id = "noMethod", "No method exists.  Use the simulation option instead."),
+          tags$style(HTML("#noMethod{color: #d30000;}"))
         ),
         
         # cps.ma.binary input start
@@ -773,7 +776,7 @@ ui <- fluidPage(
         # cpa.ma.count (no method)
         conditionalPanel(
           "input.type == 'Multi-Arm' && input.dist == 'Count' && input.meth == 'Analytic'",
-          HTML("No method exists. Use the simulation option instead.")
+          h4(id = "noMethod", "No method exists.  Use the simulation option instead.")
         ),
         
         # cps.ma.count input start
@@ -915,7 +918,7 @@ ui <- fluidPage(
           
           ## REFERENCE VALUES
           h3(id = "armHead",
-             "Reference Parameters"),
+             "Reference Arm Parameters"),
           
           # nclusters
           numericInput("nclusters1cpsdidnormal", simnclusterstext, value = 10),
@@ -953,7 +956,7 @@ ui <- fluidPage(
           
           ### TREATMENT ARM
           h3(id = "armHead",
-             "Treatment Parameters"),
+             "Treatment Arm Parameters"),
           
           # nclusters
           numericInput("nclusters2cpsdidnormal", simnclusterstext, value = 10),
@@ -1044,7 +1047,7 @@ ui <- fluidPage(
           
           ## REFERENCE VALUES
           h3(id = "armHead",
-             "Reference Parameters"),
+             "Reference Arm Parameters"),
           
           # nclusters
           numericInput("nclusters1cpsdidbinary", simnclusterstext, value = 10),
@@ -1082,7 +1085,7 @@ ui <- fluidPage(
           
           ## TREATMENT VALUES
           h3(id = "armHead",
-             "Treatment Parameters"),
+             "Treatment Arm Parameters"),
           
           # nclusters
           numericInput("nclusters2cpsdidbinary", simnclusterstext, value = 10),
@@ -1122,7 +1125,7 @@ ui <- fluidPage(
         # cpa.did.count (no method)
         conditionalPanel(
           "input.type == 'Difference-in-Difference' && input.dist == 'Count' && input.meth == 'Analytic'",
-          HTML("No method exists. Use the simulation option instead.")
+          h4(id = "noMethod", "No method exists.  Use the simulation option instead.")
         ),
         
         # cps.did.count input start
@@ -1140,7 +1143,7 @@ ui <- fluidPage(
           
           ## REFERENCE VALUES
           h3(id = "armHead",
-             "Reference Parameters"),
+             "Reference Arm Parameters"),
           
           # nclusters
           numericInput("nclusters1cpsdidcount", simnclusterstext, value = 10),
@@ -1177,7 +1180,7 @@ ui <- fluidPage(
           
           ## Treatment VALUES
           h3(id = "armHead",
-             "Treatment Parameters"),
+             "Treatment Arm Parameters"),
           
           # nclusters
           numericInput("nclusters2cpsdidcount", simnclusterstext, value = 10),
@@ -1735,7 +1738,7 @@ ui <- fluidPage(
         # cpa.irgtt.count (no method)
         conditionalPanel(
           "input.type == 'Individually-Randomized Group' && input.dist == 'Count' && input.meth == 'Analytic'",
-          HTML("No method exists. Use the simulation option instead.")
+          h4(id = "noMethod", "No method exists.  Use the simulation option instead.")
         ),
         
         # cps.irgtt.count input start
@@ -1919,6 +1922,9 @@ ui <- fluidPage(
       ),
       tabPanel(
         "Parameters",
+        h5(id = "helpnote", "Note: This tab shows help for the 
+           clusterPower functions. For help with this app, see 
+           the Help tab."),
         shinyjs::hidden(
           textInput("fxnName", "clusterPower function name", value = "cpa.normal")
         ),
@@ -1947,6 +1953,9 @@ ui <- fluidPage(
       
       tabPanel(
         "Help",
+        h5(id = "helpnote", "Note: This tab shows help for this app. 
+           For help with the clusterPower functions, see the Parameters tab."),
+        tags$style(HTML("#helpnote{color: #337ab7;}")),
         HTML(
           "<p>To use the calculator, select the trial type, outcome distribution, and calculation method.
         Then enter values for the quantities that appear below. When complete, select the ESTIMATE POWER button.</p>"
@@ -2117,132 +2126,157 @@ server <- function(input, output, session) {
   }
   #end of fxns to extract argument names
   
-  #which events to observe
-  watchfor <- reactive({
-    list(input$dist, input$meth, input$type, input$button)
-  }) # end of which events to observe
-  
   # update help documentation and params table when function is selected
   observe({
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.count")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.count")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.ma.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.ma.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.ma.binary")
+      shinyjs::hide(id = "button")
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.ma.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.ma.count")
+      shinyjs::hide(id = "button")
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.ma.count")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.did.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.did.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.did.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.did.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.did.count")
+      shinyjs::hide(id = "button")
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.did.count")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.sw.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.sw.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.sw.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.sw.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.sw.count")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.sw.count")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.irgtt.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.irgtt.normal")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.irgtt.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.irgtt.binary")
+      shinyjs::show(id = "button")
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
       updateTextInput(session, "fxnName", value = "cpa.irgtt.count")
+      shinyjs::hide(id = "button")
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
       updateTextInput(session, "fxnName", value = "cps.irgtt.count")
+      shinyjs::show(id = "button")
     }
   }) # end update help documentation and params table when function is selected
   
@@ -2250,11 +2284,9 @@ server <- function(input, output, session) {
   observeEvent(input$button, {
     disable("button")
     enable("cancel")
-    
     prog <- Progress$new(session)
     prog$set(message = "Analysis in progress",
              value = NULL)
-    
     isolate({
       q <- reactiveValuesToList(input)
     })
@@ -2861,7 +2893,6 @@ server <- function(input, output, session) {
       values = unlist(x, use.names = FALSE),
       mode = unlist(lapply(x, mode))
     )
-    dplyr::filter(holder, grepl(gsub("\\.", "", input$fxnName), names))
   })
   
   output$show_inputs <- renderTable({
@@ -2876,23 +2907,24 @@ server <- function(input, output, session) {
   
   #embedded documentation
   
-  observe({
-    helplink <<- sprintf(
+  helplink <- function(fxnName = input$fxnName) {
+    help <- sprintf(
       "http://127.0.0.1:%d/library/clusterPower/html/%s",
       tools::startDynamicHelp(NA),
       paste0(input$fxnName, ".html")
     )
-  })
+    return(help)
+  }
   
   output$helpdetails <- renderUI({
-    tags$iframe(src = helplink,
+    tags$iframe(src = helplink(),
                 height = 600,
                 width = 600)
   })
   
   #create the graphing table
   observeEvent(req(out1$power), {
-    if (is.character(out1$power) == FALSE) {
+    if (is.character(isolate(out1$power)) == FALSE) {
       x <- reactiveValuesToList(input)
       holder <- NULL
       if (sum(grepl("click", names(x))) == 1) {
@@ -2912,14 +2944,14 @@ server <- function(input, output, session) {
       if (x$meth == "Analytic") {
         tab <-
           rbind(specialnames,
-                c("alpha", input$alpha),
+                c("alpha", isolate(input$alpha)),
                 c("power", round(out1$power, 3)))
       }
       if (x$meth == "Simulation") {
         tab <-
           rbind(
             specialnames,
-            c("alpha", input$alpha),
+            c("alpha", isolate(input$alpha)),
             c("upper CI", round(out1$power$Upper.95.CI, 3)),
             c("power", round(out1$power$Power, 3)),
             c("lower CI", round(out1$power$Lower.95.CI, 3))
@@ -2944,25 +2976,17 @@ server <- function(input, output, session) {
   #clear the data log under certain circumstances
   observeEvent(input$cleargraph, {
     logargs$tab <- NULL
-    out1$power <- NULL
   })
   
   observeEvent(input$cleargraph2, {
     logargs$tab <- NULL
-    out1$power <- NULL
   })
   
   observeEvent(input$fxnName, {
     logargs$tab <- NULL
-    out1$power <- NULL
   })
-  # END clear the data log under certain circumstances
   
-  # START clear the output console when the estimate power button is clicked
-  observeEvent(input$button, {
-    out1$power <- "Calculating..."
-  })
-  # END clear the output console when the estimate power button is clicked
+  # END clear the data log under certain circumstances
   
   # make the graph
   #update the axis choices
@@ -2970,9 +2994,9 @@ server <- function(input, output, session) {
     x <- reactiveValuesToList(input)
     holder <- names(x)
     specialnames <-
-      grep(gsub("\\.", "", input$fxnName), holder, value = TRUE)
+      grep(gsub("\\.", "", isolate(input$fxnName)), holder, value = TRUE)
     specialnames <-
-      gsub(gsub("\\.", "", input$fxnName), "", specialnames)
+      gsub(gsub("\\.", "", isolate(input$fxnName)), "", specialnames)
     specialnames <-
       specialnames[grepl("nsim", specialnames) == FALSE]
     args_ <- c("alpha", specialnames)
@@ -2985,7 +3009,7 @@ server <- function(input, output, session) {
       data <- data.frame(isolate(logargs$tab), check.names = TRUE)
       data$values <- as.numeric(data$values)
       data$argument <- as.factor(data$argument)
-      var <- input$axisname
+      var <- isolate(input$axisname)
       data <-
         dplyr::filter(data, argument == !!var |
                         argument == "power")
@@ -3001,7 +3025,7 @@ server <- function(input, output, session) {
     })
   
   dpfun <- function(x) {
-    var <- input$axisname
+    var <- isolate(input$axisname)
     data <- plot_this()
     fun <- function(x) {
       x <- enquo(x)
@@ -3027,7 +3051,7 @@ server <- function(input, output, session) {
   
   output$dp <- renderTable({
     q <- plot_this()
-    nearPoints(q, input$click, xvar = input$axisname)
+    nearPoints(q, isolate(input$click), xvar = isolate(input$axisname))
   })
   
   # create reactive input data table
@@ -3037,20 +3061,23 @@ server <- function(input, output, session) {
   # Downloadable csv of reactive input data table
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste("clusterPower_", input$fxnName, ".csv", sep = "")
+      paste("clusterPower_", isolate(input$fxnName), ".csv", sep = "")
     },
     content = function(file) {
       write.csv(logargs$tab, file, row.names = FALSE)
     }
   )
   
-  # present the output verbose/not verbose
-  observeEvent(req(out1$power), {
-    output$CRTpower <- renderPrint(if (input$verbose == FALSE)
-      return(out1$power)
-      else
-        return(reactiveValuesToList(out1)))
+  resultdisplay <-  reactive({
+    q <- reactiveValuesToList(out1)
+    if (input$verbose == FALSE)
+      return(q$power)
+    else
+      return(q)
   })
+  
+  # present the output verbose/not verbose
+  output$CRTpower <- renderPrint(resultdisplay())
   
 } #end of server fxn
 
