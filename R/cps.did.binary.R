@@ -490,7 +490,7 @@ cps.did.binary = function(nsim = NULL,
     }
     
     # option to stop the function early if fits are singular
-    if (poorFitOverride == FALSE && converge[i] == FALSE) {
+    if (poorFitOverride == FALSE && converge[i] == FALSE && i > 50) {
       if (sum(converge == FALSE, na.rm = TRUE) > (nsim * .25)) {
         stop(
           "more than 25% of simulations are singular fit: check model specifications"
@@ -619,8 +619,7 @@ cps.did.binary = function(nsim = NULL,
     'lmer' = c('ICC' = mean(lmer.icc.vector))
   )), 3)
   # Create object containing all ICC values
-  icc.list = data.frame('P_c' = icc2.vector,
-                        'lmer' = lmer.icc.vector)
+  icc.list = ICC
   
   # Create object containing group-specific variance parameters
   var.parms = list(

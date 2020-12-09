@@ -178,8 +178,8 @@ cps.ma.normal.internal <-
     # Create simulation loop
     for (i in 1:nsim) {
       sim.dat[[i]] = data.frame(y = NA,
-                                trt = as.factor(unlist(trt)),
-                                clust = as.factor(unlist(clust)))
+                                trt = as.factor(unlist(trt1)),
+                                clust = as.factor(unlist(clust1)))
       # Generate between-cluster effects for non-treatment and treatment
       if (tdist == TRUE) {
         randint = mapply(function(n, df)

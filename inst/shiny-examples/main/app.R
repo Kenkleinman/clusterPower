@@ -72,6 +72,8 @@ nsubjectsirgttunclusttext <-
 ncontrolsirgttunclusttext <-
   "Observations in unclustered arm (ncontrols)"
 nclustersswtext <- "Number of clusters (nclusters)"
+nsubjectsdelim <- 
+  "Note: comma delimited. Length of nsubjects must be 1 (all equal) or equal to the sum of nclusters."
 
 
 
@@ -205,9 +207,15 @@ ui <- fluidPage(
           numericInput("nclusters1cpsnormal", simnclusterstext, value = 10),
           
           # nsubjects
-          numericInput("nsubjects1cpsnormal",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjects1cpsnormal",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjects1cpsnormal",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # mu
           numericInput("mucpsnormal", refmutext, value = 2.4),
@@ -251,9 +259,15 @@ ui <- fluidPage(
           numericInput("nclusters2cpsnormal", simnclusterstext, value = 10),
           
           # nsubjects
-          numericInput("nsubjects2cpsnormal",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjects2cpsnormal",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjects2cpsnormal",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # mu
           numericInput("mu2cpsnormal", treatmutext, value = 1.5),
@@ -361,9 +375,15 @@ ui <- fluidPage(
           numericInput("nclusters1cpsbinary", simnclusterstext, value = 10),
           
           # nsubjects
-          numericInput("nsubjects1cpsbinary",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjects1cpsbinary",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjects1cpsbinary",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # p1
           numericInput(
@@ -392,9 +412,15 @@ ui <- fluidPage(
           numericInput("nclusters2cpsbinary", simnclusterstext, value = 10),
           
           # nsubjects
-          numericInput("nsubjects2cpsbinary",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjects2cpsbinary",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjects2cpsbinary",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # p2
           numericInput(
@@ -468,9 +494,15 @@ ui <- fluidPage(
           numericInput("nclusters1cpscount", simnclusterstext, value = 10),
           
           # nsubjects
-          numericInput("nsubjects1cpscount",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjects1cpscount",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjects1cpscount",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # c1
           numericInput(
@@ -498,9 +530,15 @@ ui <- fluidPage(
           numericInput("nclusters2cpscount", simnclusterstext, value = 10),
           
           # nsubjects
-          numericInput("nsubjects2cpscount",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjects2cpscount",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjects2cpscount",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # c2
           numericInput(
@@ -924,9 +962,15 @@ ui <- fluidPage(
           numericInput("nclusters1cpsdidnormal", simnclusterstext, value = 10),
           
           # nsubjects
-          numericInput("nsubjects1cpsdidnormal",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjects1cpsdidnormal",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjects1cpsdidnormal",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # mu
           numericInput("mucpsdidnormal", refmutext, value = 2.4),
@@ -960,11 +1004,17 @@ ui <- fluidPage(
           
           # nclusters
           numericInput("nclusters2cpsdidnormal", simnclusterstext, value = 10),
-          
+
           # nsubjects
-          numericInput("nsubjects2cpsdidnormal",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjects2cpsdidnormal",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjects2cpsdidnormal",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # mu
           numericInput("mu2cpsdidnormal", treatmutext, value = 1.5),
@@ -1053,9 +1103,15 @@ ui <- fluidPage(
           numericInput("nclusters1cpsdidbinary", simnclusterstext, value = 10),
           
           # nsubjects
-          numericInput("nsubjects1cpsdidbinary",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjects1cpsdidbinary",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjects1cpsdidbinary",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # p1
           numericInput(
@@ -1091,9 +1147,15 @@ ui <- fluidPage(
           numericInput("nclusters2cpsdidbinary", simnclusterstext, value = 10),
           
           # nsubjects
-          numericInput("nsubjects2cpsdidbinary",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjects2cpsdidbinary",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjects2cpsdidbinary",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # p2
           numericInput(
@@ -1149,9 +1211,15 @@ ui <- fluidPage(
           numericInput("nclusters1cpsdidcount", simnclusterstext, value = 10),
           
           # nsubjects
-          numericInput("nsubjects1cpsdidcount",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjects1cpsdidcount",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjects1cpsdidcount",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # c1
           numericInput(
@@ -1184,11 +1252,17 @@ ui <- fluidPage(
           
           # nclusters
           numericInput("nclusters2cpsdidcount", simnclusterstext, value = 10),
-          
+
           # nsubjects
-          numericInput("nsubjects2cpsdidcount",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjects2cpsdidcount",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjects2cpsdidcount",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # c2
           numericInput(
@@ -1221,12 +1295,12 @@ ui <- fluidPage(
           "input.type == 'Stepped Wedge' && input.dist == 'Normal' && input.meth == 'Analytic'",
           
           # nclusters
-          numericInput("nclusterscpaswnormal", nclustersswtext, value = 12),
+          numericInput("nclusterscpaswnormal", nclustersswtext, value = 8),
           
           # nsubjects
           numericInput("nsubjectscpaswnormal",
                        analyticnsubjectstext,
-                       value = 12),
+                       value = 8),
           
           # ntimes
           numericInput(
@@ -1244,7 +1318,7 @@ ui <- fluidPage(
           numericInput(
             "ICCcpaswnormal",
             analyticICCtext,
-            value = 0.05,
+            value = 0.01,
             step = 0.01,
             min = 0,
             max = 1
@@ -1276,11 +1350,17 @@ ui <- fluidPage(
           
           # nclusters
           numericInput("nclusterscpsswnormal", nclustersswtext, value = 12),
-          
+
           # nsubjects
-          numericInput("nsubjectscpsswnormal",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjectscpsswnormal",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjectscpsswnormal",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # expected outcomes
           numericInput("mu0cpsswnormal", mu0text, value = 1.4),
@@ -1352,11 +1432,17 @@ ui <- fluidPage(
           
           # nclusters
           numericInput("nclusterscpsswbinary", nclustersswtext, value = 12),
-          
+
           # nsubjects
-          numericInput("nsubjectscpsswbinary",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjectscpsswbinary",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjectscpsswbinary",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           numericInput(
             "p0cpsswbinary",
@@ -1436,9 +1522,15 @@ ui <- fluidPage(
           numericInput("nclusterscpsswcount", nclustersswtext, value = 12),
           
           # nsubjects
-          numericInput("nsubjectscpsswcount",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjectscpsswcount",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjectscpsswcount",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           #est outcomes
           numericInput(
@@ -1500,7 +1592,7 @@ ui <- fluidPage(
           
           # nclusters
           numericInput("nclusterscpairgttnormal",
-                       analyticnclusterstext,
+                       nclustersswtext,
                        value = 8),
           
           # nsubjects
@@ -1567,9 +1659,17 @@ ui <- fluidPage(
           numericInput("nclusterscpsirgttnormal",
                        simnclusterstext,
                        value = 8),
-          numericInput("nsubjects2cpsirgttnormal",
-                       simnsubjectstext,
-                       value = 10),
+          
+          # nsubjects
+          textInput("nsubjects2cpsirgttnormal",
+                    simnsubjectstext,
+                    value = "10"),
+          bsTooltip(
+            "nsubjects2cpsirgttnormal",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # mu2
           numericInput("mu2cpsirgttnormal", "Clustered arm expected mean (mu2)", value = 1.5),
@@ -1637,7 +1737,7 @@ ui <- fluidPage(
              "Clustered Arm Parameters"),
           
           # nclusters
-          numericInput("nclusterscpairgttbinary", analyticnclusterstext, value = 10),
+          numericInput("nclusterscpairgttbinary", nclustersswtext, value = 10),
           
           # nsubjects
           numericInput("nsubjectscpairgttbinary",
@@ -1648,7 +1748,7 @@ ui <- fluidPage(
           numericInput(
             "p2cpairgttbinary",
             "Clustered arm estimated proportion (p2)",
-            value = 0.2057,
+            value = 0.21,
             step = 0.001,
             min = 0,
             max = 1
@@ -1711,15 +1811,21 @@ ui <- fluidPage(
                        value = 10),
           
           # nsubjects
-          numericInput("nsubjects2cpsirgttbinary",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjects2cpsirgttbinary",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjects2cpsirgttbinary",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # p2
           numericInput(
             "p2cpsirgttbinary",
             "Clustered arm estimated proportion (p2)",
-            value = 0.5,
+            value = 0.21,
             step = 0.001,
             min = 0,
             max = 1
@@ -1729,7 +1835,7 @@ ui <- fluidPage(
           numericInput(
             "sigma_b_sq2cpsirgttbinary",
             analyticsigma_b_sqtext,
-            value = 0.1,
+            value = 0.02,
             step = 0.001,
             min = 0
           )
@@ -1780,11 +1886,17 @@ ui <- fluidPage(
           numericInput("nclusterscpsirgttcount",
                        simnclusterstext,
                        value = 10),
-          
+
           # nsubjects
-          numericInput("nsubjects2cpsirgttcount",
-                       simnsubjectstext,
-                       value = 20),
+          textInput("nsubjects2cpsirgttcount",
+                    simnsubjectstext,
+                    value = "20"),
+          bsTooltip(
+            "nsubjects2cpsirgttcount",
+            nsubjectsdelim,
+            'right',
+            options = list(container = "body")
+          ),
           
           # c2
           numericInput(
@@ -2293,6 +2405,8 @@ server <- function(input, output, session) {
     
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <-
           cpa.normal(
@@ -2312,11 +2426,13 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.normal(
           nsim = q$nsimcpsnormal,
           nclusters = c(q$nclusters1cpsnormal, q$nclusters2cpsnormal),
-          nsubjects = c(q$nsubjects1cpsnormal, q$nsubjects2cpsnormal),
+          nsubjects = textToNum(c(q$nsubjects1cpsnormal, q$nsubjects2cpsnormal)),
           mu = q$mucpsnormal,
           mu2 = q$mu2cpsnormal,
           ICC = q$ICCcpsnormal,
@@ -2336,6 +2452,8 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cpa.binary(
           alpha = q$alpha,
@@ -2355,10 +2473,12 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.binary(
           nsim = q$nsimcpsbinary,
-          nsubjects = c(q$nsubjects1cpsbinary, q$nsubjects2cpsbinary),
+          nsubjects = textToNum(c(q$nsubjects1cpsbinary, q$nsubjects2cpsbinary)),
           nclusters = c(q$nclusters1cpsbinary, q$nclusters2cpsbinary),
           p1 = q$p1cpsbinary,
           p2 = q$p2cpsbinary,
@@ -2375,6 +2495,8 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cpa.count(
           alpha = q$alpha,
@@ -2391,10 +2513,12 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Parallel' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.count(
           nsim = q$nsimcpscount,
-          nsubjects = c(q$nsubjects1cpscount, q$nsubjects2cpscount),
+          nsubjects = textToNum(c(q$nsubjects1cpscount, q$nsubjects2cpscount)),
           nclusters = c(q$nclusters1cpscount, q$nclusters2cpscount),
           c1 = q$c1cpscount,
           c2 = q$c2cpscount,
@@ -2411,6 +2535,8 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cpa.ma.normal(
           alpha = q$alpha,
@@ -2427,6 +2553,8 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.ma.normal(
           nsim = q$nsimcpsmanormal,
@@ -2451,6 +2579,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
+      out1$power <- NULL
       answer <<- future({
         val <- cpa.ma.binary()
         return(val)
@@ -2458,6 +2587,8 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.ma.binary(
           nsim = q$nsimcpsmabinary,
@@ -2479,6 +2610,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
+      out1$power <- NULL
       answer <<- future({
         val <- cpa.ma.count()
         return(val)
@@ -2486,6 +2618,8 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Multi-Arm' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.ma.count(
           nsim = q$nsimcpsmacount,
@@ -2507,6 +2641,8 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cpa.did.normal(
           alpha = q$alpha,
@@ -2524,10 +2660,12 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.did.normal(
           nsim = q$nsimcpsdidnormal,
-          nsubjects = c(q$nsubjects1cpsdidnormal, q$nsubjects2cpsdidnormal),
+          nsubjects = textToNum(c(q$nsubjects1cpsdidnormal, q$nsubjects2cpsdidnormal)),
           nclusters = c(q$nclusters1cpsdidnormal, q$nclusters2cpsdidnormal),
           mu = q$mucpsdidnormal,
           mu2 = q$mu2cpsdidnormal,
@@ -2551,6 +2689,8 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cpa.did.binary(
           alpha = q$alpha,
@@ -2568,10 +2708,12 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.did.binary(
           nsim = q$nsimcpsdidbinary,
-          nsubjects = c(q$nsubjects1cpsdidbinary, q$nsubjects2cpsdidbinary),
+          nsubjects = textToNum(c(q$nsubjects1cpsdidbinary, q$nsubjects2cpsdidbinary)),
           nclusters = c(q$nclusters1cpsdidbinary, q$nclusters2cpsdidbinary),
           p1 = q$p1cpsdidbinary,
           p2 = q$p2cpsdidbinary,
@@ -2594,6 +2736,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
+      out1$power <- NULL
       answer <<- future({
         val <- cpa.did.count()
         return(val)
@@ -2601,10 +2744,12 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Difference-in-Difference' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.did.count(
           nsim = q$nsimcpsdidcount,
-          nsubjects = c(q$nsubjects1cpsdidcount, q$nsubjects2cpsdidcount),
+          nsubjects = textToNum(c(q$nsubjects1cpsdidcount, q$nsubjects2cpsdidcount)),
           nclusters = c(q$nclusters1cpsdidcount, q$nclusters2cpsdidcount),
           c1 = q$c1cpsdidcount,
           c2 = q$c2cpsdidcount,
@@ -2627,6 +2772,8 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cpa.sw.normal(
           alpha = q$alpha,
@@ -2645,12 +2792,14 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.sw.normal(
           alpha = q$alpha,
           nsim = q$nsimcpsswnormal,
           nclusters = q$nclusterscpsswnormal,
-          nsubjects = q$nsubjectscpsswnormal,
+          nsubjects = textToNum(q$nsubjectscpsswnormal),
           steps = q$stepscpsswnormal,
           mu0 = q$mu0cpsswnormal,
           mu1 = q$mu1cpsswnormal,
@@ -2666,6 +2815,8 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cpa.sw.binary(
           alpha = q$alpha,
@@ -2682,10 +2833,12 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.sw.binary(
           nsim = q$nsimcpsswbinary,
-          nsubjects = q$nsubjectscpsswbinary,
+          nsubjects = textToNum(q$nsubjectscpsswbinary),
           nclusters = q$nclusterscpsswbinary,
           p0 = q$p0cpsswbinary,
           p1 = q$p1cpsswbinary,
@@ -2702,6 +2855,8 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cpa.sw.count(
           lambda1 = q$lambda1cpaswcount,
@@ -2717,10 +2872,12 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Stepped Wedge' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.sw.count(
           nsim = q$nsimcpsswcount,
-          nsubjects = q$nsubjectscpsswcount,
+          nsubjects = textToNum(q$nsubjectscpsswcount),
           nclusters = q$nclusterscpsswcount,
           c0 = q$c0cpsswcount,
           c1 = q$c1cpsswcount,
@@ -2737,6 +2894,8 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Normal' && input$meth == 'Analytic') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cpa.irgtt.normal(
           alpha = q$alpha,
@@ -2754,13 +2913,15 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Normal' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.irgtt.normal(
           nsim = q$nsimcpsirgttnormal,
-          nsubjects = c(
+          nsubjects = textToNum(c(
             q$nsubjectscpsirgttnormal,
             q$nsubjects2cpsirgttnormal
-          ),
+          )),
           nclusters = q$nclusterscpsirgttnormal,
           mu = q$mucpsirgttnormal,
           mu2 = q$mu2cpsirgttnormal,
@@ -2779,6 +2940,8 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Binary' && input$meth == 'Analytic') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cpa.irgtt.binary(
           alpha = q$alpha,
@@ -2796,13 +2959,15 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Binary' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.irgtt.binary(
           nsim = q$nsimcpsirgttbinary,
-          nsubjects = c(
+          nsubjects = textToNum(c(
             q$nsubjectscpsirgttbinary,
             q$nsubjects2cpsirgttbinary
-          ),
+          )),
           nclusters = q$nclusterscpsirgttbinary,
           p1 = q$p1cpsirgttbinary,
           p2 = q$p2cpsirgttbinary,
@@ -2818,6 +2983,7 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Analytic') {
+      out1$power <- NULL
       answer <<- future({
         val <- cpa.irgtt.count()
         return(val)
@@ -2825,10 +2991,12 @@ server <- function(input, output, session) {
     }
     if (input$type == 'Individually-Randomized Group' &&
         input$dist == 'Count' && input$meth == 'Simulation') {
+      out1$power <- NULL
+      out1$power$power <- "Calculating..."
       answer <<- future({
         val <- cps.irgtt.count(
           nsim = q$nsimcpsirgttcount,
-          nsubjects = c(q$nsubjectscpsirgttcount, q$nsubjects2cpsirgttcount),
+          nsubjects = textToNum(c(q$nsubjectscpsirgttcount, q$nsubjects2cpsirgttcount)),
           nclusters = q$nclusterscpsirgttcount,
           c1 = q$c1cpsirgttcount,
           c2 = q$c2cpsirgttcount,
@@ -2847,7 +3015,7 @@ server <- function(input, output, session) {
       answer,
       onFulfilled = function(value) {
         for (i in names(value)) {
-          out1[[i]] <- value[[i]]
+          out1$power[[i]] <- value[[i]]
         }
         out1 <<- out1
       },
@@ -2873,7 +3041,7 @@ server <- function(input, output, session) {
     async_pid <- answer$process$get_pid()
     print(paste("Killing PID:", async_pid))
     answer$process$kill()
-    out1 <- NULL
+    out1$power <- NULL
     disable("cancel")
     enable("run1")
   }, ignoreInit = TRUE)
@@ -2923,8 +3091,8 @@ server <- function(input, output, session) {
   })
   
   #create the graphing table
-  observeEvent(req(out1$power), {
-    if (is.character(isolate(out1$power)) == FALSE) {
+  observeEvent(req(out1$power$power), {
+    if (is.character(isolate(out1$power$power)) == FALSE) {
       x <- reactiveValuesToList(input)
       holder <- NULL
       if (sum(grepl("click", names(x))) == 1) {
@@ -2945,16 +3113,16 @@ server <- function(input, output, session) {
         tab <-
           rbind(specialnames,
                 c("alpha", isolate(input$alpha)),
-                c("power", round(out1$power, 3)))
+                c("power", round(out1$power$power, 3)))
       }
       if (x$meth == "Simulation") {
         tab <-
           rbind(
             specialnames,
             c("alpha", isolate(input$alpha)),
-            c("upper CI", round(out1$power$Upper.95.CI, 3)),
-            c("power", round(out1$power$Power, 3)),
-            c("lower CI", round(out1$power$Lower.95.CI, 3))
+            c("upper CI", round(out1$power$power$Upper.95.CI, 3)),
+            c("power", round(out1$power$power$Power, 3)),
+            c("lower CI", round(out1$power$power$Lower.95.CI, 3))
           )
       }
       if (is.null(logargs$tab)) {
@@ -3071,9 +3239,9 @@ server <- function(input, output, session) {
   resultdisplay <-  reactive({
     q <- reactiveValuesToList(out1)
     if (input$verbose == FALSE)
-      return(q$power)
+      return(q$power$power)
     else
-      return(q)
+      return(q$power)
   })
   
   # present the output verbose/not verbose

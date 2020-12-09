@@ -11,14 +11,9 @@
 #' Users must specify the desired number of simulations, number of subjects per 
 #' cluster, number of clusters per arm, two of the following three terms: 
 #' expected probability of outcome in arm 1, expected probability of 
-#' outcome in arm 2, expected difference in probabilities between groups
-#' ; significance level, analytic method, progress updates, 
+#' outcome in arm 2, expected difference in probabilities between groups; 
+#' significance level, analytic method, progress updates, 
 #' and simulated data set output may also be specified.
-#' 
-#' The following equations are used to estimate intra-cluster correltation coefficients:
-#' P_h: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \pi^{2}/3}}
-#' P_c: \deqn{ICC = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_{j}\pi_{h}}{\sqrt{\pi_{j}(1 - \pi_{j})\pi_{h}(1 - \pi_{h})}}}
-#' P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' @param nsubjects Number of subjects per cluster in the clustered (arm 2) 
@@ -47,22 +42,25 @@
 #'  
 #' @return A list with the following components
 #' \itemize{
-#'   \item Character string indicating total number of simulations, simulation type, and number of convergent models
+#'   \item Character string indicating total number of simulations, simulation type, 
+#'   and number of convergent models
 #'   \item Number of simulations
 #'   \item Data frame with columns "Power" (Estimated statistical power), 
-#'   "lower.95.ci" (Lower 95% confidence interval bound), "upper.95.ci" (Upper 95% confidence interval bound)
+#'   "lower.95.ci" (Lower 95% confidence interval bound), "upper.95.ci" (Upper 95% 
+#'   confidence interval bound)
 #'   \item Analytic method used for power estimation
 #'   \item Significance level
 #'   \item Vector containing user-defined cluster sizes
 #'   \item Vector containing user-defined number of clusters
 #'   \item Data frame reporting sigma_b_sq for each group
 #'   \item Vector containing expected difference in probabilities based on user inputs
-#'   \item Data frame containing three estimates of ICC
-#'   \item Data frame with columns: "Estimate" (Estimate of treatment effect for a given simulation), 
-#'   "Std.err" (Standard error for treatment effect estimate), "Test.statistic" (z-value (for GLMM) or 
+#'   \item Data frame with columns: "Estimate" (Estimate of treatment effect for a given 
+#'   simulation), "Std.err" (Standard error for treatment effect estimate), 
+#'   "Test.statistic" (z-value (for GLMM) or 
 #'   Wald statistic (for GEE)), "p.value", "converge" (Did simulated model converge?), 
 #'   "sig.val" (Is p-value less than alpha?)
-#'   \item If \code{allSimData = TRUE}, a list of data frames, each containing: "y" (Simulated response value), 
+#'   \item If \code{allSimData = TRUE}, a list of data frames, each containing: 
+#'   "y" (Simulated response value), 
 #'   "trt" (Indicator for arm), "clust" (Indicator for cluster)
 #'   \item List of warning messages produced by non-convergent models; 
 #'   Includes model number for cross-referencing against \code{model.estimates}
