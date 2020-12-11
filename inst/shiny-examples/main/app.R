@@ -1200,7 +1200,7 @@ ui <- fluidPage(
           
           # nsim
           numericInput(
-            "nsimcpscount",
+            "nsimcpsdidcount",
             simnsimtext,
             value = 100,
             max = 500000,
@@ -1411,7 +1411,7 @@ ui <- fluidPage(
           numericInput(
             "ICCcpaswbinary",
             analyticICCtext,
-            value = 0.01,
+            value = 0.05,
             step = 0.01,
             min = 0,
             max = 1
@@ -1945,7 +1945,7 @@ ui <- fluidPage(
           step = 0.02
         ),
         checkboxInput("verbose", "Show verbose results", value = FALSE),
-        checkboxInput("debug", "Show debug/diagnostics tab (advanced)", value = FALSE)
+        checkboxInput("debug", "Show debug/diagnostics (advanced)", value = FALSE)
       ),
       conditionalPanel(
         "input.more == true && input.meth == 'Simulation'",
@@ -2010,6 +2010,7 @@ ui <- fluidPage(
         conditionalPanel(
           "input.debug == true",
           actionButton("browser", "browser"),
+          textInput("debugSearch", "Search input", value = ""),
           tableOutput("show_inputs")
         )
         
@@ -3065,7 +3066,11 @@ server <- function(input, output, session) {
       values = unlist(x, use.names = FALSE),
       mode = unlist(lapply(x, mode))
     )
-    holder <- dplyr::arrange(names)
+    holder <- holder[order(holder$names),]
+    if (input$debugSearch != "") {
+      holder <- holder[grepl(x$debugSearch, holder$names),]
+    }
+    return(holder)
   })
   
   output$show_inputs <- renderTable({

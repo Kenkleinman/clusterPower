@@ -503,5 +503,6 @@ cpa.sw.binary <- function(nclusters = NA,
       )
     )
   }
+  names(power) <- "power"
   return(power)
 }

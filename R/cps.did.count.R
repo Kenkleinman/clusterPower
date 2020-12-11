@@ -220,8 +220,15 @@ cps.did.count = function(nsim = NULL,
       length(nsubjects) == nclusters[1]) {
     nsubjects = rep(nsubjects, 2)
   }
+  if (length(nsubjects) == 2 &&
+      length(nclusters) == 2) {
+    nsubjects <- c(rep(nsubjects[1], times = nclusters[1]),
+      rep(nsubjects[2], times = nclusters[2]))
+  }
+
   if (length(nclusters) == 2 &&
       length(nsubjects) != 1 &&
+      length(nsubjects) != length(nclusters) &&
       length(nsubjects) != sum(nclusters)) {
     stop(
       "A cluster size must be specified for each cluster. If all cluster sizes are equal, please provide a single value for NSUBJECTS"
