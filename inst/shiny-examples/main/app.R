@@ -109,6 +109,10 @@ ui <- fluidPage(
   shinyjs::useShinyjs(),
   sidebarLayout(
     sidebarPanel(
+      tags$head(tags$style(
+        type = 'text/css',
+        'form.well { max-height: 700px; overflow-y: auto; }'
+      )),
       selectInput(
         "type",
         "CRT Type",
@@ -1391,17 +1395,17 @@ ui <- fluidPage(
           numericInput("stepscpaswbinary", stepstext, value = 2),
           
           #nclusters
-          numericInput("nclusterscpaswbinary", nclustersswtext, value = 50),
+          numericInput("nclusterscpaswbinary", nclustersswtext, value = 10),
           
           # nsubjects
           numericInput("nsubjectscpaswbinary",
                        analyticnsubjectstext,
-                       value = 100),
+                       value = 10),
           
           # estimated outcomes
-          numericInput("dcpaswbinary", dtext, value = -0.75),
-          numericInput("mu0cpaswbinary", mu0text, value = 0.2),
-          numericInput("betacpaswbinary", betatext, value = 0.4),
+          numericInput("dcpaswbinary", "Estimated time effect (d)", value = 0),
+          numericInput("mu0cpaswbinary", mu0text, value = 0.5),
+          numericInput("betacpaswbinary", betatext, value = 0.19),
           
           # ICC
           numericInput(
@@ -3061,6 +3065,7 @@ server <- function(input, output, session) {
       values = unlist(x, use.names = FALSE),
       mode = unlist(lapply(x, mode))
     )
+    holder <- dplyr::arrange(names)
   })
   
   output$show_inputs <- renderTable({

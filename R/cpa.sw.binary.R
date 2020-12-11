@@ -27,8 +27,8 @@
 #' @param steps Number of crossover steps; Accepts positive scalar indicating the total
 #' number of steps (required).
 #' 
-#' @param d Total change over the study period (assume that time effects are linear
-#' across time steps); accepts numeric (required).
+#' @param d Expected time effect over the entire study period (assumed to be linear
+#' across time steps); accepts numeric (required). Default = 0 (no time effects).
 #' 
 #' @param ICC Intracluster correlation coefficient as defined by Hussey and Hughes (2007) 
 #' for participants at first time step; accepts numeric (required). 
@@ -57,13 +57,13 @@
 #' # The resulting power should be 0.8170374.
 #' 
 #' \dontrun{
-#' sw.bin <- cpa.sw.binary(nclusters = 50,
+#' sw.bin <- cpa.sw.binary(nclusters = 10,
 #'   steps = 2,
-#'   nsubjects = 100,
-#'   d = -0.75,
-#'   ICC = 0.01,
-#'   beta = 0.4,
-#'   mu0 = 0.2)
+#'   nsubjects = 10,
+#'   d = 0,
+#'   ICC = 0.05,
+#'   beta = 0.19,
+#'   mu0 = 0.5)
 #' }
 #'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu})
@@ -82,7 +82,7 @@ cpa.sw.binary <- function(nclusters = NA,
                           steps = NA,
                           nsubjects = NA,
                           alpha = 0.05,
-                          d = NA,
+                          d = 0,
                           ICC = NA,
                           beta = NA,
                           mu0 = NA,
@@ -303,6 +303,18 @@ cpa.sw.binary <- function(nclusters = NA,
   maxcomp <- comp
   mincomp <- comp
   
+  ## Set start.time for progress iterator & initialize progress bar
+  if (quiet == FALSE) {
+    start.time = Sys.time()
+    prog.bar =  progress::progress_bar$new(
+      format = "(:spin) [:bar] :percent eta :eta",
+      total = (nsubjects + 1),
+      clear = FALSE,
+      width = 100
+    )
+    prog.bar$tick(0)
+  }
+  
   if (d > tol || d < -tol) {
     a <-  100
     b <- -100
@@ -361,17 +373,6 @@ cpa.sw.binary <- function(nclusters = NA,
     invVar <- matrix(0, nrow = (steps + 2), ncol = (steps + 2))
     
     h <- 0
-    ## Set start.time for progress iterator & initialize progress bar
-    if (quiet == FALSE) {
-      start.time = Sys.time()
-      prog.bar =  progress::progress_bar$new(
-        format = "(:spin) [:bar] :percent eta :eta",
-        total = (nsubjects + 1),
-        clear = FALSE,
-        width = 100
-      )
-      prog.bar$tick(0)
-    }
     
     for (i in 1:(steps - 1)) {
       z0 <- rep(0, times = steps)
