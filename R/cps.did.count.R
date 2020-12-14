@@ -22,10 +22,15 @@
 #' @param nsubjects Number of subjects per cluster; accepts integer (required). 
 #' @param nclusters Number of clusters per arm; accepts integer (required).
 #' At least 2 of the following 3 arguments must be specified:
-#' @param c1 Expected outcome count in arm 1 at baseline and follow-up and in arm 2 at baseline
-#' @param c2 Expected outcome count in arm 2 at follow-up only
-#' @param c.diff Expected difference in outcome count between groups, defined as 
-#' c.diff = c1 - c2
+#' @param c1t0 Required. Expected outcome count in arm 1 at baseline.
+#' @param c2t0 Optional. Expected outcome count in arm 2 at baseline. If 
+#' no quantity is provided, c2t0 = c1t0 is assumed.
+#' @param c1t1 Optional. Expected outcome count in arm 1 at follow-up. 
+#' If no quantity is provided, c1t1 = c1t0 is assumed.
+#' @param c2t1 Required. Expected outcome count in arm 2 at follow-up.
+#' @param c.diff Optional if c1t1 and c2t0 are provided. Expected difference 
+#' in outcome count between groups, defined as 
+#' c.diff = (c1t1 - c1t0) - (c2t1 - c2t0).
 #' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; 
 #' accepts numeric scalar (indicating equal 
 #' between-cluster variances for both arm) or a vector of length 2 specifying 
@@ -121,10 +126,11 @@
 #' # estimated power (if you set seed = 123) should be 0.86.
 #' 
 #' \dontrun{
-#' did.count.sim = cps.did.count(nsim = 100, nsubjects = 9, nclusters = 7, c1 = 5, 
-#'                               c2 = 3, sigma_b_sq0 = c(1, 0.5), sigma_b_sq1 = c(0.5, 0.8), 
-#'                               family = 'poisson', analysis = 'poisson', method = 'glmm',
-#'                               seed = 123)
+#' did.count.sim = cps.did.count(nsim = 100, nsubjects = 9, nclusters = 7, 
+#'                               c1t0 = 5, c1t1 = 5, c2t0 = 5, c2t1 = 8,  
+#'                               sigma_b_sq0 = c(1, 0.5), sigma_b_sq1 = c(0.5, 0.8), 
+#'                               family = 'poisson', analysis = 'poisson', 
+#'                               method = 'glmm', seed = 123)
 #' }
 #' 
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}
@@ -144,8 +150,10 @@
 cps.did.count = function(nsim = NULL,
                          nsubjects = NULL,
                          nclusters = NULL,
-                         c1 = NULL,
-                         c2 = NULL,
+                         c1t0 = NULL,
+                         c2t0 = NULL,
+                         c1t1 = NULL,
+                         c2t1 = NULL,
                          c.diff = NULL,
                          sigma_b_sq0 = NULL,
                          sigma_b_sq1 = 0,
@@ -236,23 +244,33 @@ cps.did.count = function(nsim = NULL,
   }
   
   # Validate C1, C2, C.DIFF
-  parm1.arg.list = list(c1, c2, c.diff)
+  parm1.arg.list = list(c1t0, c2t1, c.diff)
   parm1.args = unlist(lapply(parm1.arg.list, is.null))
   if (sum(parm1.args) > 1) {
-    stop("At least two of the following terms must be specified: C1, C2, C.DIFF")
+    stop("At least two of the following terms must be specified: c1t0, c2t1, C.DIFF")
   }
-  if (sum(parm1.args) == 0 && c.diff != abs(c1 - c2)) {
-    stop("At least one of the following terms has been misspecified: C1, C2, C.DIFF")
+  if (sum(parm1.args) == 0 && c.diff != abs(c2t1 - c1t0)) {
+    stop("At least one of the following terms has been misspecified: c1t0, c2t1, C.DIFF")
   }
   # Set C1, C2, C.DIFF (if not already specified)
-  if (is.null(c1)) {
-    c1 = abs(c.diff - c2)
+  
+  if (!is.null(c.diff)) {
+    if (is.null(c1t0)) {
+      c1t0 = abs(c.diff - c2t1)
+    }
+    if (is.null(c2t1)) {
+      c2t1 = abs(c1t0 - c.diff)
+    }
   }
-  if (is.null(c2)) {
-    c2 = abs(c1 - c.diff)
-  }
+    if (is.null(c1t1)) {
+      c1t1 = c1t0
+    }
+    if (is.null(c2t0)) {
+      c2t0 = c1t0
+    }
+  
   if (is.null(c.diff)) {
-    c.diff = c1 - c2
+    c.diff = (c1t1 - c1t0) - (c2t1 - c2t0)
   }
   
   # Validate sigma_b_sq0 & sigma_b_sq1
@@ -331,7 +349,7 @@ cps.did.count = function(nsim = NULL,
     # Create arm 1 y-value
     y0.ntrt.intercept = unlist(lapply(1:nclusters[1], function(x)
       rep(randint.ntrt.0[x], length.out = nsubjects[x])))
-    y0.ntrt.linpred = y0.ntrt.intercept + log(c1)
+    y0.ntrt.linpred = y0.ntrt.intercept + log(c1t0)
     y0.ntrt.prob = exp(y0.ntrt.linpred)
     if (family == 'poisson') {
       y0.ntrt = stats::rpois(length(y0.ntrt.prob), y0.ntrt.prob)
@@ -343,7 +361,7 @@ cps.did.count = function(nsim = NULL,
     # Create arm 2 y-value
     y0.trt.intercept = unlist(lapply(1:nclusters[2], function(x)
       rep(randint.trt.0[x], length.out = nsubjects[nclusters[1] + x])))
-    y0.trt.linpred = y0.trt.intercept + log(c1)
+    y0.trt.linpred = y0.trt.intercept + log(c2t0)
     y0.trt.prob = exp(y0.trt.linpred)
     if (family == 'poisson') {
       y0.trt = stats::rpois(length(y0.trt.prob), y0.trt.prob)
@@ -360,7 +378,7 @@ cps.did.count = function(nsim = NULL,
     # Create arm 1 y-value
     y1.ntrt.intercept = unlist(lapply(1:nclusters[1], function(x)
       rep(randint.ntrt.1[x], length.out = nsubjects[x])))
-    y1.ntrt.linpred = y1.ntrt.intercept + log(c1)
+    y1.ntrt.linpred = y1.ntrt.intercept + log(c1t1)
     y1.ntrt.prob = exp(y1.ntrt.linpred)
     if (family == 'poisson') {
       y1.ntrt = stats::rpois(length(y1.ntrt.prob), y1.ntrt.prob)
@@ -372,7 +390,7 @@ cps.did.count = function(nsim = NULL,
     # Create arm 2 y-value
     y1.trt.intercept = unlist(lapply(1:nclusters[2], function(x)
       rep(randint.trt.1[x], length.out = nsubjects[nclusters[1] + x])))
-    y1.trt.linpred = y1.trt.intercept + log(c2)
+    y1.trt.linpred = y1.trt.intercept + log(c2t1)
     y1.trt.prob = exp(y1.trt.linpred)
     if (family == 'poisson') {
       y1.trt = stats::rpois(length(y1.trt.prob), y1.trt.prob)
@@ -557,11 +575,11 @@ cps.did.count = function(nsim = NULL,
                              p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs
-  c1.c2.rr = round(exp(log(c1) - log(c2)), 3)
-  c2.c1.rr = round(exp(log(c2) - log(c1)), 3)
+  c1.c2.rr = round(exp(log(abs(c1t0 - c2t0)) - log(abs(c2t1 - c1t1))), 3)
+  c2.c1.rr = round(exp(log(abs(c2t1 - c1t1)) - log(abs(c1t0 - c2t0))), 3)
   inputs = t(data.frame(
-    'Arm.1' = c("count" = c1, "risk.ratio" = c1.c2.rr),
-    'Arm.2' = c("count" = c2, 'risk.ratio' = c2.c1.rr),
+    'Arm.1' = c("count" = abs(c1t1 - c1t0), "risk.ratio" = c1.c2.rr),
+    'Arm.2' = c("count" = abs(c2t1 - c2t0), 'risk.ratio' = c2.c1.rr),
     'Difference' = c("count" = c.diff, 'risk.ratio' = c2.c1.rr - c1.c2.rr)
   ))
   
