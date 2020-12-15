@@ -575,11 +575,11 @@ cps.did.count = function(nsim = NULL,
                              p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs
-  c1.c2.rr = round(exp(log(abs(c1t0 - c2t0)) - log(abs(c2t1 - c1t1))), 3)
-  c2.c1.rr = round(exp(log(abs(c2t1 - c1t1)) - log(abs(c1t0 - c2t0))), 3)
+  c1.c2.rr = round(exp(log(c1t1) - log(c2t1)), 3)
+  c2.c1.rr = round(exp(log(c2t1) - log(c1t1)), 3)
   inputs = t(data.frame(
-    'Arm.1' = c("count" = abs(c1t1 - c1t0), "risk.ratio" = c1.c2.rr),
-    'Arm.2' = c("count" = abs(c2t1 - c2t0), 'risk.ratio' = c2.c1.rr),
+    'Arm.1' = c("count" = abs(c1t1), "risk.ratio" = c1.c2.rr),
+    'Arm.2' = c("count" = abs(c2t1), 'risk.ratio' = c2.c1.rr),
     'Difference' = c("count" = c.diff, 'risk.ratio' = c2.c1.rr - c1.c2.rr)
   ))
   

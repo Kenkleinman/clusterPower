@@ -1117,14 +1117,22 @@ ui <- fluidPage(
             options = list(container = "body")
           ),
           
-          # p1
+          # p1t0
           numericInput(
-            "p1cpsdidbinary",
-            refp1text,
-            value = 0.8,
+            "p1t0cpsdidbinary",
+            "Reference arm baseline proportion (p1t0)",
+            value = 0.1,
             step = 0.001,
-            min = 0,
-            max = 1
+            min = 0
+          ),
+          
+          # p1t1
+          numericInput(
+            "p1t1cpsdidbinary",
+            "Reference arm expected outcome proportion (p1t1)",
+            value = 0.1,
+            step = 0.001,
+            min = 0
           ),
           
           # variance param
@@ -1138,7 +1146,7 @@ ui <- fluidPage(
           numericInput(
             "sigma_b_sq11cpsdidbinary",
             didsigma_b_sqposttext,
-            value = 0,
+            value = 1,
             step = 0.001,
             min = 0
           ),
@@ -1161,14 +1169,23 @@ ui <- fluidPage(
             options = list(container = "body")
           ),
           
-          # p2
+          
+          # p2t0
           numericInput(
-            "p2cpsdidbinary",
-            treatp2text,
+            "p2t0cpsdidbinary",
+            "Reference arm baseline proportion (p2t0)",
+            value = 0.2,
+            step = 0.001,
+            min = 0
+          ),
+          
+          # p2t1
+          numericInput(
+            "p2t1cpsdidbinary",
+            "Reference arm expected outcome proportion (p2t1)",
             value = 0.5,
             step = 0.001,
-            min = 0,
-            max = 1
+            min = 0
           ),
           
           #variance param
@@ -1182,7 +1199,7 @@ ui <- fluidPage(
           numericInput(
             "sigma_b_sq12cpsdidbinary",
             didsigma_b_sqposttext,
-            value = 0,
+            value = 1,
             step = 0.001,
             min = 0
           )
@@ -1212,12 +1229,12 @@ ui <- fluidPage(
              "Reference Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters1cpsdidcount", simnclusterstext, value = 10),
+          numericInput("nclusters1cpsdidcount", simnclusterstext, value = 7),
           
           # nsubjects
           textInput("nsubjects1cpsdidcount",
                     simnsubjectstext,
-                    value = "20"),
+                    value = "9"),
           bsTooltip(
             "nsubjects1cpsdidcount",
             nsubjectsdelim,
@@ -1225,11 +1242,20 @@ ui <- fluidPage(
             options = list(container = "body")
           ),
           
-          # c1
+          # c1t0
           numericInput(
-            "c1cpsdidcount",
-            refc1text,
-            value = 200,
+            "c1t0cpsdidcount",
+            "Reference arm baseline count (c1t0)",
+            value = 4,
+            step = 1,
+            min = 0
+          ),
+          
+          # c1t1
+          numericInput(
+            "c1t1cpsdidcount",
+            "Reference arm expected outcome count (c1t1)",
+            value = 5,
             step = 1,
             min = 0
           ),
@@ -1245,7 +1271,7 @@ ui <- fluidPage(
           numericInput(
             "sigma_b_sq11cpsdidcount",
             didsigma_b_sqposttext,
-            value = 0,
+            value = 0.5,
             step = 0.001,
             min = 0
           ),
@@ -1255,12 +1281,12 @@ ui <- fluidPage(
              "Treatment Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters2cpsdidcount", simnclusterstext, value = 10),
+          numericInput("nclusters2cpsdidcount", simnclusterstext, value = 7),
 
           # nsubjects
           textInput("nsubjects2cpsdidcount",
                     simnsubjectstext,
-                    value = "20"),
+                    value = "9"),
           bsTooltip(
             "nsubjects2cpsdidcount",
             nsubjectsdelim,
@@ -1268,11 +1294,20 @@ ui <- fluidPage(
             options = list(container = "body")
           ),
           
-          # c2
+          # c2t0
           numericInput(
-            "c2cpsdidcount",
-            treatc2text,
-            value = 80,
+            "c2t0cpsdidcount",
+            "Treatment arm baseline count (c1t0)",
+            value = 4,
+            step = 1,
+            min = 0
+          ),
+          
+          # c2t1
+          numericInput(
+            "c2t1cpsdidcount",
+            "Treatment arm expected outcome count (c1t1)",
+            value = 8,
             step = 1,
             min = 0
           ),
@@ -1281,14 +1316,14 @@ ui <- fluidPage(
           numericInput(
             "sigma_b_sq02cpsdidcount",
             didsigma_b_sqpretext,
-            value = 1,
+            value = 0.5,
             step = 0.001,
             min = 0
           ),
           numericInput(
             "sigma_b_sq12cpsdidcount",
             didsigma_b_sqposttext,
-            value = 0,
+            value = 0.8,
             step = 0.001,
             min = 0
           ),
@@ -2720,8 +2755,10 @@ server <- function(input, output, session) {
           nsim = q$nsimcpsdidbinary,
           nsubjects = textToNum(c(q$nsubjects1cpsdidbinary, q$nsubjects2cpsdidbinary)),
           nclusters = c(q$nclusters1cpsdidbinary, q$nclusters2cpsdidbinary),
-          p1 = q$p1cpsdidbinary,
-          p2 = q$p2cpsdidbinary,
+          p1t0 = q$p1t0cpsdidbinary,
+          p2t0 = q$p2t0cpsdidbinary,
+          p1t1 = q$p1t1cpsdidbinary,
+          p2t1 = q$p2t1cpsdidbinary,
           sigma_b_sq0 = c(
             q$sigma_b_sq01cpsdidbinary,
             q$sigma_b_sq02cpsdidbinary
@@ -2756,8 +2793,10 @@ server <- function(input, output, session) {
           nsim = q$nsimcpsdidcount,
           nsubjects = textToNum(c(q$nsubjects1cpsdidcount, q$nsubjects2cpsdidcount)),
           nclusters = c(q$nclusters1cpsdidcount, q$nclusters2cpsdidcount),
-          c1 = q$c1cpsdidcount,
-          c2 = q$c2cpsdidcount,
+          c1t0 = q$c1t0cpsdidcount,
+          c2t0 = q$c2t0cpsdidcount,
+          c1t1 = q$c1t1cpsdidcount,
+          c2t1 = q$c2t1cpsdidcount,
           sigma_b_sq0 = c(
             q$sigma_b_sq01cpsdidcount,
             q$sigma_b_sq02cpsdidcount
