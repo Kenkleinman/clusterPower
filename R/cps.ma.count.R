@@ -227,7 +227,8 @@
 #' # seed = 123, the overall power for this trial should be 0.81.
 #'
 #' \dontrun{
-#' nsubjects.example <- list(c(150, 200, 50, 100), c(50, 150, 210, 100), c(70, 200, 150, 50, 100))
+#' nsubjects.example <- list(c(150, 200, 50, 100), c(50, 150, 210, 100), 
+#'                        c(70, 200, 150, 50, 100))
 #' counts.example <- c(10, 55, 65)
 #' sigma_b_sq.example <- c(1, 1, 2)
 #'
@@ -280,12 +281,12 @@ cps.ma.count <- function(nsim = 1000,
   # use this later to determine total elapsed time
   start.time <- Sys.time()
   
-  # create narms and nclusters if not provided directly by user
+  if (is.null(narms)) {
+    stop("ERROR: narms is required.")
+  }
+  
+  # create nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
-    # create narms and nclusters if not supplied by the user
-    if (is.null(narms)) {
-      narms <- length(nsubjects)
-    }
     if (is.null(nclusters)) {
       nclusters <- vapply(nsubjects, length, 0)
     }
@@ -328,7 +329,7 @@ cps.ma.count <- function(nsim = 1000,
   if (length(nclusters) == 1 & length(nsubjects) > 1) {
     nclusters <- rep(nclusters, length(nsubjects))
   }
-  # Create nsubjects structure from narms and nclusters when nsubjects is scalar or a list
+  # Create nsubjects structure from narms and nclusters
   if (mode(nsubjects) == "list") {
     str.nsubjects <- nsubjects
   } else {
@@ -336,11 +337,12 @@ cps.ma.count <- function(nsim = 1000,
       str.nsubjects <- lapply(nclusters, function(x)
         rep(nsubjects, x))
     } else {
+      if (length(nsubjects) != narms) {
+        stop("nsubjects must be length 1 or length narms if not provided in a list.")
+      }
       str.nsubjects <- list()
       for (i in 1:length(nsubjects)) {
-        for (j in nclusters) {
-          str.nsubjects[[i]] <- rep(nsubjects[i], times = j)
-        }
+          str.nsubjects[[i]] <- rep(nsubjects[i], times = nclusters[i])
       }
     }
   }

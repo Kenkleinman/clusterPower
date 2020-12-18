@@ -204,21 +204,21 @@ cps.ma.normal <- function(nsim = 1000,
                           nofit = FALSE,
                           timelimitOverride = TRUE) {
   converge <- NULL
-  # create narms and nclusters if not provided directly by user
+  
+  if (is.null(narms)) {
+    stop("ERROR: narms is required.")
+  }
+  
+  if (length(nsubjects) == narms)
+  
+  # create nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
-    # create narms and nclusters if not supplied by the user
-    if (is.null(narms)) {
-      narms <- length(nsubjects)
-    }
     if (is.null(nclusters)) {
       nclusters <- vapply(nsubjects, length, 0)
     }
   }
   if (length(nclusters) == 1 & !isTRUE(is.list(nsubjects))) {
     nclusters <- rep(nclusters, narms)
-  }
-  if (length(nclusters) > 1 & length(nsubjects) == 1) {
-    narms <- length(nclusters)
   }
   
   # input validation steps
@@ -266,11 +266,12 @@ cps.ma.normal <- function(nsim = 1000,
     stop("nsubjects must be positive integer values.")
   }
   
-  # Generate nclusters vector when a scalar is provided but nsubjects is a vector
-  if (length(nclusters) == 1 & length(nsubjects) > 1) {
-    nclusters <- rep(nclusters, length(nsubjects))
+  # Generate nclusters vector when a scalar is provided
+  if (length(nclusters) == 1) {
+    nclusters <- rep(nclusters, narms)
   }
-  # Create nsubjects structure from narms and nclusters when nsubjects is scalar or a list
+  
+  # Create nsubjects structure from narms and nclusters
   if (mode(nsubjects) == "list") {
     str.nsubjects <- nsubjects
   } else {
@@ -278,11 +279,12 @@ cps.ma.normal <- function(nsim = 1000,
       str.nsubjects <- lapply(nclusters, function(x)
         rep(nsubjects, x))
     } else {
+      if (length(nsubjects) != narms) {
+        stop("nsubjects must be length 1 or length narms if not provided in a list.")
+      }
       str.nsubjects <- list()
       for (i in 1:length(nsubjects)) {
-        for (j in nclusters) {
-          str.nsubjects[[i]] <- rep(nsubjects[i], times = j)
-        }
+        str.nsubjects[[i]] <- rep(nsubjects[i], times = nclusters[i])
       }
     }
   }

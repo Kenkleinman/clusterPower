@@ -658,7 +658,7 @@ ui <- fluidPage(
           textInput(
             "meanscpsmanormal",
             "Expected absolute treatment effect for each arm (means)",
-            "22.0, 21.0, 22.5"
+            "22.0, 21.0, 23.5"
           ),
           bsTooltip(
             "meanscpsmanormal",
@@ -681,7 +681,7 @@ ui <- fluidPage(
           # variance params
           textInput("sigma_sqcpsmanormal",
                     analyticsigma_sqtext,
-                    value = "0.1, 0.1, 0.1"),
+                    value = "1, 1, 1"),
           bsTooltip(
             "sigma_sqcpsmanormal",
             delimtext,
@@ -691,7 +691,7 @@ ui <- fluidPage(
           
           textInput("sigma_b_sqcpsmanormal",
                     analyticsigma_b_sqtext,
-                    value = "0.1, 0.1, 0.1"),
+                    value = "1, 1, 1"),
           bsTooltip(
             "sigma_b_sqcpsmanormal",
             delimtext,
@@ -2237,7 +2237,7 @@ server <- function(input, output, session) {
   
   #change text input to numeric
   textToNum <- function(x) {
-    result <- as.numeric(unlist(strsplit(x, split = ", ")))
+    result <- as.numeric(unlist(strsplit(x, split = ",")))
     return(result)
   }
   
@@ -3064,7 +3064,7 @@ server <- function(input, output, session) {
         out1 <<- out1
       },
       onRejected = function(error) {
-        out1$power <- paste0("ERROR: ", error$message)
+        out1$power$power <- paste0("ERROR: ", error$message)
       }
     )
     
@@ -3096,20 +3096,20 @@ server <- function(input, output, session) {
   
   AllInputs <- reactive({
     x <- reactiveValuesToList(input)
-    holder <- NULL
+    holderDebug <- NULL
     if (sum(grepl("click", names(x))) == 1) {
       x$click <- NULL
     }
-    holder <- data.frame(
-      names = names(x),
-      values = unlist(x, use.names = FALSE),
-      mode = unlist(lapply(x, mode))
+    holderDebug <- data.frame(
+      names = names(isolate(x)),
+      values = unlist(isolate(x), use.names = FALSE),
+      mode = unlist(lapply(isolate(x), mode))
     )
-    holder <- holder[order(holder$names),]
+    holderDebug <- holderDebug[order(holderDebug$names),]
     if (input$debugSearch != "") {
-      holder <- holder[grepl(x$debugSearch, holder$names),]
+      holderDebug <- holderDebug[grepl(x$debugSearch, holderDebug$names),]
     }
-    return(holder)
+    return(holderDebug)
   })
   
   output$show_inputs <- renderTable({
