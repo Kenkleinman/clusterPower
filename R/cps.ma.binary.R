@@ -171,12 +171,17 @@ cps.ma.binary <- function(nsim = 1000,
                           nofit = FALSE,
                           optmethod = "Nelder-Mead",
                           return.all.models = FALSE) {
+  
   converge <- NULL
   # use this later to determine total elapsed time
   start.time <- Sys.time()
   
   if (is.null(narms)) {
     stop("ERROR: narms is required.")
+  }
+  
+  if (narms < 3) {
+    stop("ERROR: LRT significance not calculable when narms < 3. Use cps.binary() instead.")
   }
   
   # create nclusters if not provided directly by user
@@ -261,10 +266,6 @@ cps.ma.binary <- function(nsim = 1000,
       "Length of variance parameters sigma_b_sq must equal narms, or be provided as a scalar
          if sigma_b_sq for all arms are equal."
     )
-  }
-  
-  if (narms < 3) {
-    message("Warning: LRT significance not calculable when narms < 3. Use cps.binary() instead.")
   }
   
   validateVariance(

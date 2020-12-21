@@ -209,7 +209,9 @@ cps.ma.normal <- function(nsim = 1000,
     stop("ERROR: narms is required.")
   }
   
-  if (length(nsubjects) == narms)
+  if (narms < 3) {
+    stop("ERROR: LRT significance not calculable when narms < 3. Use cps.normal() instead.")
+  }
   
   # create nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
@@ -429,6 +431,7 @@ cps.ma.normal <- function(nsim = 1000,
     colnames(t.val) <- names.tval
     colnames(p.val) <- names.pval
     
+    if (narms > 2) {
     # Organize the LRT output
     if ((max(sigma_sq) == min(sigma_sq) &
          max(sigma_b_sq) == min(sigma_b_sq)) |
@@ -456,6 +459,10 @@ cps.ma.normal <- function(nsim = 1000,
     # Proportion of times P(>F)
     
     LRT.holder.abbrev <- sum(sig.LRT)
+    } else {
+      LRT.holder <- NULL
+      LRT.holder.abbrev <- NULL
+      }
     
     cps.model.temp <-
       data.frame(cbind(unlist(normal.ma.rct[[3]]), p.val))
