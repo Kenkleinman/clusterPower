@@ -1,6 +1,6 @@
 #' Power simulations for cluster-randomized trials: Difference in Difference Design, Continuous Outcome.
 #'
-#' @description 
+#' @description
 #' \loadmathjax
 #'
 #' This set of functions utilize iterative simulations to determine
@@ -23,8 +23,8 @@
 #' (unequal cluster sizes within groups) (required).
 #' @param nclusters Number of clusters per group; accepts integer scalar or vector of length 2 for unequal number
 #' of clusters per arm (required)
-#' @param mu Expected mean of arm 1 at follow-up (mean at baseline is 0); accepts numeric (required).
-#' @param mu2 Expected mean of arm 2 at follow-up (mean at baseline is 0); accepts numeric (required).
+#' @param delta_mu Default = 0. Reference arm expected change between from baseline to followup.
+#' @param delta_mu2 Expected change in tretament arm at follow-up; accepts numeric (required).
 #' @param sigma_sq Within-cluster variance; accepts numeric scalar (indicating equal within-cluster variances for both
 #' arms at both time points) or vector of length 4 specifying within-cluster variance for each arm at each time point.
 #' @param sigma_b_sq0 Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal
@@ -94,13 +94,13 @@
 #'
 #' # Estimate power for a trial with 6 clusters in arm 1 and 6 clusters in arm 2,
 #' # those clusters having 120 subjects each, with sigma_sq = 1. Estimated
-#' # arm means are 1 and 0.48 in the first and second arms, respectively, and we use
+#' # arm mean changes are 0 and 0.48 in the first and second arms, respectively, and we use
 #' # 100 simulated data sets analyzed by the GLMM method. The resulting estimated
 #' # power (for seed = 123) should be 0.81.
 #'
 #' \dontrun{
 #' normal.did.rct = cps.did.normal(nsim = 100, nsubjects = 120, nclusters = 6,
-#'                                 mu = 1, mu2 = 0.48, sigma_sq = 1, alpha = 0.05,
+#'                                 delta_mu = 0, delta_mu2 = 0.48, sigma_sq = 1, alpha = 0.05,
 #'                                 sigma_b_sq0 = 0.1, method = 'glmm', seed = 123)
 #' }
 #'
@@ -115,8 +115,8 @@
 cps.did.normal = function(nsim = NULL,
                           nsubjects = NULL,
                           nclusters = NULL,
-                          mu = 0,
-                          mu2 = NULL,
+                          delta_mu = 0,
+                          delta_mu2 = NULL,
                           sigma_sq = NULL,
                           sigma_b_sq0 = NULL,
                           sigma_b_sq1 = 0,
@@ -155,12 +155,12 @@ cps.did.normal = function(nsim = NULL,
   is.wholenumber = function(x, tol = .Machine$double.eps ^ 0.5)
     abs(x - round(x)) < tol
   
-  # Validate NSIM, NSUBJECTS, NCLUSTERS, mu and mu2
-  sim.data.arg.list = list(nsim, nclusters, nsubjects, mu, mu2)
+  # Validate NSIM, NSUBJECTS, NCLUSTERS, delta_mu and delta_mu2
+  sim.data.arg.list = list(nsim, nclusters, nsubjects, delta_mu, delta_mu2)
   sim.data.args = unlist(lapply(sim.data.arg.list, is.null))
   if (sum(sim.data.args) > 0) {
     stop(
-      "nsim, nclusters, nsubjects, mu, and mu2 must all be specified. Please review your input values."
+      "nsim, nclusters, nsubjects, delta_mu, and delta_mu2 must all be specified. Please review your input values."
     )
   }
   min1.warning = " must be an integer greater than or equal to 1"
@@ -201,10 +201,10 @@ cps.did.normal = function(nsim = NULL,
     )
   }
   
-  # Validate mu and mu2, ALPHA
+  # Validate delta_mu and delta_mu2, ALPHA
   min0.warning = "must be numeric values"
-  if (!is.numeric(mu) || !is.numeric(mu2)) {
-    stop("mu & mu2", min0.warning)
+  if (!is.numeric(delta_mu) || !is.numeric(delta_mu2)) {
+    stop("delta_mu & delta_mu2", min0.warning)
   }
   if (!is.numeric(alpha) || alpha < 0 || alpha > 1) {
     stop("ALPHA must be a numeric value between 0 - 1")
@@ -310,7 +310,7 @@ cps.did.normal = function(nsim = NULL,
       rep(randint.ntrt.1[x], length.out = nsubjects[x])))
     y1.ntrt.wclust = unlist(lapply(nsubjects[1:nclusters[1]], function(x)
       stats::rnorm(
-        x, mean = mu, sd = sqrt(sigma_sq[3])
+        x, mean = delta_mu, sd = sqrt(sigma_sq[3])
       )))
     y1.ntrt.post = y1.ntrt.bclust + y1.ntrt.wclust + stats::rnorm(nsubjects[1:nclusters[1]])
     
@@ -320,7 +320,7 @@ cps.did.normal = function(nsim = NULL,
     y1.trt.wclust = unlist(lapply(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])],
                                   function(x)
                                     stats::rnorm(
-                                      x, mean = mu2, sd = sqrt(sigma_sq[4])
+                                      x, mean = delta_mu2, sd = sqrt(sigma_sq[4])
                                     )))
     y1.trt.post = y1.trt.bclust + y1.trt.wclust + stats::rnorm(nsubjects[(nclusters[1] + 1):(nclusters[1] + nclusters[2])])
     
@@ -365,6 +365,10 @@ cps.did.normal = function(nsim = NULL,
     iter.values = cbind(stats::aggregate(y ~ trt + period, data = sim.dat, mean)[, 3])
     values.vector = values.vector + iter.values
     
+    # Set warnings to OFF
+    # Note: Warnings will still be stored in 'warning.list'
+    options(warn = -1)
+    
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       my.mod = lme4::lmer(y ~ trt + period + trt:period + (1 |
@@ -377,6 +381,9 @@ cps.did.normal = function(nsim = NULL,
       pval.vector[i] = p.val
       converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
+    
+    # Set warnings to ON
+    options(warn = 0)
     
     # Fit GEE (geeglm)
     if (method == 'gee') {
@@ -541,7 +548,7 @@ cps.did.normal = function(nsim = NULL,
       "cluster.sizes" = cluster.sizes,
       "n.clusters" = n.clusters,
       "variance.parms" = var.parms,
-      "means" = c(mu, mu2),
+      "means" = c(delta_mu, delta_mu2),
       "model.estimates" = cps.model.est,
       "sim.data" = simulated.datasets,
       "differences" = differences,

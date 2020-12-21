@@ -11,8 +11,8 @@
 #' Users must specify the desired number of simulations, number of subjects per 
 #' cluster, number of clusters per arm, between-cluster variance, 
 #' two of the following: expected count in arm 1 (no clusters), expected count 
-#' in arm 2 (clustered arm), expected difference in counts between arms; significance level, 
-#' analytic method, and whether or not progress updates should be displayed 
+#' in arm 2 (clustered arm), expected difference in counts between arms; 
+#' significance level, and whether or not progress updates should be displayed 
 #' while the function is running.
 #' 
 #' 

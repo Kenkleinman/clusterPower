@@ -41,6 +41,7 @@ confintCalc <- function(alpha = alpha,
   Upper.95.CI <- vector(length = length(pval.power))
   Alpha <- vector(length = length(pval.power))
   Beta <- vector(length = length(pval.power))
+  Converged <- vector(length = length(pval.power))
   Names <- vector(length = length(pval.power))
   
   for (o in 1:length(pval.power)) {
@@ -51,8 +52,9 @@ confintCalc <- function(alpha = alpha,
     Names[o] = paste0("Arm.", o + 1)
   }
   Beta <- 1 - Power
+  Converged <- length(unlist(p.val))
   power.parms <-
-    data.frame(Power, Lower.95.CI, Upper.95.CI, Alpha, Beta)
+    data.frame(Power, Lower.95.CI, Upper.95.CI, Alpha, Beta, Converged)
   rownames(power.parms) <- Names
   return(power.parms)
 }

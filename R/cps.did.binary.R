@@ -488,6 +488,10 @@ cps.did.binary = function(nsim = NULL,
     lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
     lmer.icc.vector =  append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
     
+    # Set warnings to OFF
+    # Note: Warnings will still be stored in 'warning.list'
+    options(warn = -1)
+    
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       my.mod = lme4::glmer(
@@ -503,6 +507,10 @@ cps.did.binary = function(nsim = NULL,
       pval.vector[i] = glmm.values['trt2:period1', 'Pr(>|z|)']
       converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
+    
+    # Set warnings to ON
+    options(warn = 0)
+    
     # Fit GEE (geeglm)
     if (method == 'gee') {
       sim.dat = dplyr::arrange(sim.dat, clust)

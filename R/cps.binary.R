@@ -462,7 +462,7 @@ cps.binary = function(nsim = NULL,
     options(warn = -1)
     
     start.time = Sys.time()
-    
+
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       if (irgtt == TRUE) {
@@ -473,8 +473,7 @@ cps.binary = function(nsim = NULL,
             data = sim.dat,
             family = stats::binomial(link = 'logit')
           ))
-        if (class(my.mod) == "try-error"){
-          browser()
+        if (class(my.mod) == "try-error") {
           glmm.values <- NA
           est.vector[index] <- NA
           se.vector[index] <- NA
@@ -514,21 +513,23 @@ cps.binary = function(nsim = NULL,
           stat.vector = append(stat.vector, glmm.values['trt2', 'z value'])
           pval.vector = append(pval.vector, glmm.values['trt2', 'Pr(>|z|)'])
         }
+      }
         if (poorFitOverride == FALSE &&
-            length(converge.vector) > 10 &&
+            length(converge.vector) > 50 &&
             sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * 0.25)) {
           stop("more than 25% of simulations are singular fit: check model specifications")
         }
-      }
+
     }
     
-    # Set warnings to OFF
+    # Set warnings to ON
     # Note: Warnings will still be stored in 'warning.list'
     options(warn = 0)
     
     # Fit GEE (geeglm)
-    if (method == 'gee') {
-      sim.dat = dplyr::arrange(sim.dat, clust)
+    if (method == "gee"){
+    sim.dat = dplyr::arrange(sim.dat, clust)
+    if (irgtt == FALSE) {
       my.mod = geepack::geeglm(
         y ~ trt,
         data = sim.dat,
@@ -536,7 +537,15 @@ cps.binary = function(nsim = NULL,
         id = clust,
         corstr = "exchangeable"
       )
-      
+    } else {
+      my.mod = geepack::geeglm(
+        y ~ trt + (0 + trt | clust),
+        data = sim.dat,
+        family = stats::binomial(link = 'logit'),
+        id = clust,
+        corstr = "exchangeable"
+      ) 
+    }
       gee.values = summary(my.mod)$coefficients
       est.vector = append(est.vector, gee.values['trt2', 'Estimate'])
       se.vector = append(se.vector, gee.values['trt2', 'Std.err'])
@@ -734,7 +743,7 @@ cps.binary = function(nsim = NULL,
         "model.estimates" = cps.model.est,
         "sim.data" = simulated.datasets,
         "warning.list" = warning.list,
-        "convergence" = rep(NA, nsim)
+        "convergence" = converge.vector
       ),
       class = "crtpwr"
     )

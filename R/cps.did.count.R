@@ -441,6 +441,10 @@ cps.did.count = function(nsim = NULL,
     iter.values = cbind(stats::aggregate(y ~ trt + period, data = sim.dat, mean)[, 3])
     values.vector = values.vector + iter.values
     
+    # Set warnings to OFF
+    # Note: Warnings will still be stored in 'warning.list'
+    options(warn = -1)
+    
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       if (analysis == 'poisson') {
@@ -462,6 +466,10 @@ cps.did.count = function(nsim = NULL,
       pval.vector[i] = glmm.values['trt:period', 'Pr(>|z|)']
       converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
+    
+    # Set warnings to ON
+    options(warn = 0)
+    
     # Fit GEE (geeglm)
     if (method == 'gee') {
       sim.dat = dplyr::arrange(sim.dat, clust)

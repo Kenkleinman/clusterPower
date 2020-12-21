@@ -59,7 +59,6 @@ rho_stext <-
   "Baseline and post-test subject-level correlation (rho_s)"
 stepstext <- "Number of crossover steps (steps)"
 mu0text <- "Estimated baseline mean (mu0)"
-betatext <- "Estimated post-treatment effect (beta)"
 mu1text <- "Estimated post-treatment effect (mu1)"
 p0text <- "Estimated baseline proportion (p0)"
 p1text <- "Estimated post-treatment effect (p1)"
@@ -658,7 +657,7 @@ ui <- fluidPage(
           textInput(
             "meanscpsmanormal",
             "Expected absolute treatment effect for each arm (means)",
-            "22.0, 21.0, 23.5"
+            "22.0, 21.0, 22.5"
           ),
           bsTooltip(
             "meanscpsmanormal",
@@ -963,12 +962,12 @@ ui <- fluidPage(
              "Reference Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters1cpsdidnormal", simnclusterstext, value = 10),
+          numericInput("nclusters1cpsdidnormal", simnclusterstext, value = 6),
           
           # nsubjects
           textInput("nsubjects1cpsdidnormal",
                     simnsubjectstext,
-                    value = "20"),
+                    value = "120"),
           bsTooltip(
             "nsubjects1cpsdidnormal",
             nsubjectsdelim,
@@ -977,13 +976,20 @@ ui <- fluidPage(
           ),
           
           # mu
-          numericInput("mucpsdidnormal", refmutext, value = 2.4),
+          numericInput("delta_mucpsdidnormal", 
+          "Reference arm expected change from baseline to followup (delta_mu)", value = 0),
+          bsTooltip(
+            "delta_mucpsdidnormal",
+            "Usually 0",
+            'right',
+            options = list(container = "body")
+          ),
           
           # variance params
           numericInput(
             "sigma_sqcpsdidnormal",
             refsigma_sqtext,
-            value = 0.2,
+            value = 1,
             step = 0.001,
             min = 0
           ),
@@ -1007,12 +1013,12 @@ ui <- fluidPage(
              "Treatment Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters2cpsdidnormal", simnclusterstext, value = 10),
+          numericInput("nclusters2cpsdidnormal", simnclusterstext, value = 6),
 
           # nsubjects
           textInput("nsubjects2cpsdidnormal",
                     simnsubjectstext,
-                    value = "20"),
+                    value = "120"),
           bsTooltip(
             "nsubjects2cpsdidnormal",
             nsubjectsdelim,
@@ -1021,13 +1027,15 @@ ui <- fluidPage(
           ),
           
           # mu
-          numericInput("mu2cpsdidnormal", treatmutext, value = 1.5),
+          numericInput("delta_mu2cpsdidnormal", 
+                       "Treatment arm expected change from baseline to followup (delta_mu2)", 
+                       value = 0.48),
           
           # variance params
           numericInput(
             "sigma_sq2cpsdidnormal",
             treatsigma_sqtext,
-            value = 0.2,
+            value = 1,
             step = 0.001,
             min = 0
           ),
@@ -1427,20 +1435,20 @@ ui <- fluidPage(
           "input.type == 'Stepped Wedge' && input.dist == 'Binary' && input.meth == 'Analytic'",
           
           # steps
-          numericInput("stepscpaswbinary", stepstext, value = 2),
+          numericInput("stepscpaswbinary", stepstext, value = 3),
           
           #nclusters
-          numericInput("nclusterscpaswbinary", nclustersswtext, value = 10),
+          numericInput("nclusterscpaswbinary", nclustersswtext, value = 9),
           
           # nsubjects
           numericInput("nsubjectscpaswbinary",
                        analyticnsubjectstext,
-                       value = 10),
+                       value = 20),
           
           # estimated outcomes
-          numericInput("dcpaswbinary", "Estimated time effect (d)", value = 0),
-          numericInput("mu0cpaswbinary", mu0text, value = 0.5),
-          numericInput("betacpaswbinary", betatext, value = 0.19),
+          numericInput("timeEffectcpaswbinary", "Estimated time effect (timeEffect)", value = 0),
+          numericInput("p0cpaswbinary", p0text, value = 0.2),
+          numericInput("p1cpaswbinary", p1text, value = 0.31),
           
           # ICC
           numericInput(
@@ -2033,8 +2041,8 @@ ui <- fluidPage(
           input.dismissMsgCrossover == false",
           wellPanel(
             HTML(
-              "<p>Note: Crossover steps > 3 will substantially increase
-              calculation time. </p>"
+              "<p>Note: Including time effects or many crossover steps may 
+              substantially increase calculation time. </p>"
             ),
             checkboxInput("dismissMsgCrossover", "dismiss this message", value = FALSE)
           )
@@ -2707,8 +2715,8 @@ server <- function(input, output, session) {
           nsim = q$nsimcpsdidnormal,
           nsubjects = textToNum(c(q$nsubjects1cpsdidnormal, q$nsubjects2cpsdidnormal)),
           nclusters = c(q$nclusters1cpsdidnormal, q$nclusters2cpsdidnormal),
-          mu = q$mucpsdidnormal,
-          mu2 = q$mu2cpsdidnormal,
+          delta_mu = q$delta_mucpsdidnormal,
+          delta_mu2 = q$delta_mu2cpsdidnormal,
           sigma_sq = q$sigma_sqcpsdidnormal,
           sigma_b_sq0 = c(
             q$sigma_b_sq01cpsdidnormal,
@@ -2867,10 +2875,10 @@ server <- function(input, output, session) {
           nclusters = q$nclusterscpaswbinary,
           steps = q$stepscpaswbinary,
           nsubjects = q$nsubjectscpaswbinary,
-          d = q$dcpaswbinary,
+          timeEffect = q$timeEffectcpaswbinary,
           ICC = q$ICCcpaswbinary,
-          beta = q$betacpaswbinary,
-          mu0 = q$mu0cpaswbinary
+          p1 = q$p1cpaswbinary,
+          p0 = q$p0cpaswbinary
         )
         return(val)
       }, seed = TRUE)

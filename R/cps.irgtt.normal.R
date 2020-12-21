@@ -13,7 +13,7 @@
 #' cluster, number of clusters per arm, expected means for the 
 #' arm 1 and arm 2 (respectively), two of the following: ICC, 
 #' within-cluster variance, or between-cluster variance; significance level, 
-#' analytic method, progress updates, and simulated data set output may also be 
+#' progress updates, and simulated data set output may also be 
 #' specified.
 #' 
 #' 

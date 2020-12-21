@@ -12,7 +12,7 @@
 #' cluster, number of clusters per arm, two of the following three terms: 
 #' expected probability of outcome in arm 1, expected probability of 
 #' outcome in arm 2, expected difference in probabilities between groups; 
-#' significance level, analytic method, progress updates, 
+#' significance level, progress updates, 
 #' and simulated data set output may also be specified.
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
