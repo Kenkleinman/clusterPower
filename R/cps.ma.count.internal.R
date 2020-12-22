@@ -135,14 +135,13 @@ cps.ma.count.internal <-
     # Create vectors to collect iteration-specific values
     simulated.datasets <- list()
     goodopt <- opt
-    converge <- NULL
-    
+
     # Create NCLUSTERS, NARMS, from str.nsubjects
     narms = length(str.nsubjects)
     nclusters = sapply(str.nsubjects, length)
     
     # This container keeps track of how many models failed to converge
-    converged <- rep(NA, nsim)
+    converged <- rep(FALSE, nsim)
     
     # Create a container for the simulated.dataset and model output
     sim.dat = vector(mode = "list", length = nsim)
@@ -621,6 +620,13 @@ cps.ma.count.internal <-
           )
         }
       }
+      
+      # check for gee convergence
+      for (i in 1:length(my.mod)){
+        converged[i] <- ifelse(summary(my.mod[[i]])$error == 0, TRUE, FALSE)
+      }
+      
+      
       if (!is.na(cores) & quiet == FALSE) {
         message("Performing null model comparisons")
       }

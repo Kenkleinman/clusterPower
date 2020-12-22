@@ -2047,6 +2047,8 @@ ui <- fluidPage(
             checkboxInput("dismissMsgCrossover", "dismiss this message", value = FALSE)
           )
         ),
+        conditionalPanel("input.meth == 'Simulation'",
+        textOutput("convergence")),
         verbatimTextOutput("CRTpower", placeholder = TRUE),
         
         ####  DEBUG ACCESS PANEL START #####
@@ -3293,6 +3295,15 @@ server <- function(input, output, session) {
     }
   )
   
+  # convergence measures
+  convergenceTable <-  reactive({
+    q <- reactiveValuesToList(out1)
+    paste0(sum(q$power$convergence), " models converged", sep = "")
+  })
+  
+  output$convergence <- renderPrint(convergenceTable())
+  
+  # main power output
   resultdisplay <-  reactive({
     q <- reactiveValuesToList(out1)
     if (input$verbose == FALSE)
@@ -3303,6 +3314,7 @@ server <- function(input, output, session) {
   
   # present the output verbose/not verbose
   output$CRTpower <- renderPrint(resultdisplay())
+  
   
 } #end of server fxn
 

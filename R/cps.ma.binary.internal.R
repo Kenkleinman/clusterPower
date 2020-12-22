@@ -102,13 +102,12 @@ cps.ma.binary.internal <-
            return.all.models = FALSE) {
     # Create vectors to collect iteration-specific values
     simulated.datasets <- list()
-    converge <- NULL
     # Create NCLUSTERS, NARMS, from str.nsubjects
     narms = length(str.nsubjects)
     nclusters = sapply(str.nsubjects, length)
     
     # This container keeps track of how many models converged
-    converged <- rep(NA, nsim)
+    converged <- rep(FALSE, nsim)
     
     # Create a container for the simulated.dataset and model output
     sim.dat = vector(mode = "list", length = nsim)
@@ -334,7 +333,6 @@ cps.ma.binary.internal <-
         Sys.sleep(1 / 100)
       }
       
-      # option to stop the function early if fits are singular
       for (i in 1:nsim) {
         converged[i] <-
           ifelse(is.null(my.mod[[i]]@optinfo$conv$lme4$messages),
@@ -342,6 +340,7 @@ cps.ma.binary.internal <-
                  FALSE)
       }
       
+      # option to stop the function early if fits are singular
       if (poor.fit.override == FALSE) {
         if (sum(unlist(converged), na.rm = TRUE) < (nsim * .75)) {
           stop("more than 25% of simulations are singular fit: check model specifications")
@@ -491,6 +490,12 @@ cps.ma.binary.internal <-
           corstr = "exchangeable"
         )
       }
+      
+      # check for gee convergence
+      for (i in 1:length(my.mod)){
+      converged[i] <- ifelse(summary(my.mod[[i]])$error == 0, TRUE, FALSE)
+      }
+      
       if (!is.na(cores) & quiet == FALSE) {
         message("Performing null model comparisons")
       }
