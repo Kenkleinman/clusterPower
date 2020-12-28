@@ -2,10 +2,8 @@ inst/doc
 src/*.o
 src/*.so
 src/*.dll
-.Rproj
 doc
 Meta
-.Rproj
 man/*.Rd
 
 # History files
@@ -29,6 +27,7 @@ man/*.Rd
 
 # RStudio files
 .Rproj.user/
+*.Rproj
 
 # produced vignettes
 vignettes/*.html
@@ -44,3 +43,6 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+#markdown comment files
+*.md
