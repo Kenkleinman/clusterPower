@@ -2135,7 +2135,7 @@ ui <- fluidPage(
         ),
         tags$a(
           "clusterPower vignette.",
-          href = get_vignette_link("clusterPower", package = "clusterPower"),
+          href = get_vignette_link("clusterpower", package = "clusterPower"),
           target = "_blank"
         ),
         HTML(
