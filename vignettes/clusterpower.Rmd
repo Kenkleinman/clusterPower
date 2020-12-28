@@ -91,7 +91,7 @@ y_{itj}= \beta_{0}+x_{itj}\beta_{1}+p_{itj}\beta_{2}+x_{itj}p_{itj}\beta_{3}+b_{
 
 where $t$ indexes period (baseline or intervention) and $x_{itj}=1$ if cluster $i$ is in the treatment group and $p_{itj}=1$ if time $t$ is in the intervention period, and $0$ otherwise. Notably, $\beta_{3}$ is the difference in period effect in the treatment group relative to the non-treatment group.  For assessing power by simulation, we determine whether $H_0: \beta_3=0$ is rejected or not.
 
-NOTE TO KK-- ADD IN THE EXTRA RANDOM EFFECT FOR THE SECOND TIME POINT???
+NOTE TO KK-- ADD IN THE EXTRA RANDOM EFFECT FOR THE SECOND TIME POINT??
 
 -----------------------
 
