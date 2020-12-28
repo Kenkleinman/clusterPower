@@ -184,7 +184,7 @@ cps.ma.normal.internal <-
         randint = mapply(function(n, df)
           stats::rt(n, df = df),
           n = nclusters,
-          df = Inf)
+          df = sum(nclusters) - narms)
       } else {
         randint = mapply(
           function(nc, s, mu)

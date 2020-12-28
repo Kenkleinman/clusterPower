@@ -2047,9 +2047,9 @@ ui <- fluidPage(
             checkboxInput("dismissMsgCrossover", "dismiss this message", value = FALSE)
           )
         ),
+        verbatimTextOutput("CRTpower", placeholder = TRUE),
         conditionalPanel("input.meth == 'Simulation'",
         textOutput("convergence")),
-        verbatimTextOutput("CRTpower", placeholder = TRUE),
         
         ####  DEBUG ACCESS PANEL START #####
         conditionalPanel(
