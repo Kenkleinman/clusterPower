@@ -409,8 +409,9 @@ cps.ma.binary <- function(nsim = 1000,
     }
     
     # Calculate and store power estimate & confidence intervals
-    power.parms <- confintCalc(alpha = alpha,
-                               p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)]))
+    power.parms <- cbind(confintCalc(alpha = alpha,
+                               p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])),
+                         multi_p_method)
     
     # Store simulation output in data frame
     ma.model.est <-
@@ -447,14 +448,14 @@ cps.ma.binary <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms,
-          "beta" = power.parms['Beta'],
-          "overall.power2" =
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "beta" = power.parms['Beta'],
+          "overall.power2" = power.parms,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
@@ -475,14 +476,14 @@ cps.ma.binary <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms,
-          "beta" = power.parms['Beta'],
-          "overall.power2" =
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "beta" = power.parms['Beta'],
+          "overall.power2" = power.parms,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
@@ -503,14 +504,14 @@ cps.ma.binary <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms,
-          "beta" = power.parms['Beta'],
-          "overall.power2" =
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "beta" = power.parms['Beta'],
+          "overall.power2" = power.parms,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
@@ -588,8 +589,9 @@ cps.ma.binary <- function(nsim = 1000,
         }
       )
     
-    power.parms <- confintCalc(alpha = alpha,
-                               p.val = Pr[, 2:narms])
+    power.parms <- cbind(confintCalc(alpha = alpha,
+                               p.val = Pr[, 2:narms]),
+                         multi_p_method)
     
     # Store GEE simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)
@@ -622,14 +624,14 @@ cps.ma.binary <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms,
-          "beta" = power.parms['Beta'],
-          "overall.power2" =
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "beta" = power.parms['Beta'],
+          "overall.power2" = power.parms,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
@@ -648,14 +650,14 @@ cps.ma.binary <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms,
-          "beta" = power.parms['Beta'],
-          "overall.power2" =
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "beta" = power.parms['Beta'],
+          "overall.power2" = power.parms,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
@@ -674,14 +676,14 @@ cps.ma.binary <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms,
-          "beta" = power.parms['Beta'],
-          "overall.power2" =
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
               LRT.holder.abbrev = LRT.holder.abbrev
             ),
+          "beta" = power.parms['Beta'],
+          "overall.power2" = power.parms,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,

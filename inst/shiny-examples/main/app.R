@@ -72,7 +72,7 @@ ncontrolsirgttunclusttext <-
   "Observations in unclustered arm (ncontrols)"
 nclustersswtext <- "Number of clusters (nclusters)"
 nsubjectsdelim <- 
-  "Note: comma delimited. Length of nsubjects must be 1 (all equal) or equal to the sum of nclusters."
+  "Comma delimited. Length of nsubjects can be 1 (all equal) or equal to the number of clusters."
 
 
 
@@ -2049,7 +2049,8 @@ ui <- fluidPage(
         ),
         verbatimTextOutput("CRTpower", placeholder = TRUE),
         conditionalPanel("input.meth == 'Simulation'",
-        textOutput("convergence")),
+       # textOutput("convergence")
+        ),
         
         ####  DEBUG ACCESS PANEL START #####
         conditionalPanel(
@@ -3296,12 +3297,12 @@ server <- function(input, output, session) {
   )
   
   # convergence measures
-  convergenceTable <-  reactive({
-    q <- reactiveValuesToList(out1)
-    paste0(sum(q$power$convergence), " models converged", sep = "")
-  })
+ # convergenceTable <-  reactive({
+#    q <- reactiveValuesToList(out1)
+#    paste0(sum(q$power$convergence), " models converged", sep = "")
+#  })
   
-  output$convergence <- renderPrint(convergenceTable())
+#  output$convergence <- renderPrint(convergenceTable())
   
   # main power output
   resultdisplay <-  reactive({

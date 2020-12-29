@@ -23,7 +23,9 @@ prop_H0_rejection <- function (alpha = alpha,
   Power = f.test$estimate
   Lower.95.CI = f.test$conf.int[1]
   Upper.95.CI = f.test$conf.int[2]
-  Ftest <- data.frame(Power, Lower.95.CI, Upper.95.CI)
+  Beta <- 1 - Power
+  Alpha <- alpha
+  Ftest <- data.frame(Power, Lower.95.CI, Upper.95.CI, Alpha, Beta)
   return(Ftest)
 }
 
