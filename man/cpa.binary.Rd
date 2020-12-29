@@ -57,11 +57,12 @@ The computed value of the NA parameter (among \code{alpha}, \code{power},
   sample size equation.
 }
 \description{
+\loadmathjax
+
 Compute the power, number of clusters needed, number of subjects per cluster needed, 
 or other key parameters for a parallel cluster randomized trial with a 
 binary outcome.
-}
-\details{
+
 Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
   \code{CV}, \code{p1}, \code{p2}, and \code{ICC} must be passed as \code{NA}.
   Note that \code{alpha}, \code{power}, and \code{CV} have non-\code{NA}

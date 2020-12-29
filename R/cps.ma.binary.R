@@ -171,24 +171,21 @@ cps.ma.binary <- function(nsim = 1000,
                           nofit = FALSE,
                           optmethod = "Nelder-Mead",
                           return.all.models = FALSE) {
+  
   converge <- NULL
   # use this later to determine total elapsed time
   start.time <- Sys.time()
   
-  # allow some arguments to be entered as text for the Shiny app
-  if (!is.numeric(sigma_b_sq)) {
-    sigma_b_sq <- as.numeric(unlist(strsplit(sigma_b_sq, split = ", ")))
-  }
-  if (!is.numeric(probs)) {
-    probs <- as.numeric(unlist(strsplit(probs, split = ", ")))
+  if (is.null(narms)) {
+    stop("ERROR: narms is required.")
   }
   
-  # create narms and nclusters if not provided directly by user
+  if (narms < 3) {
+    stop("ERROR: LRT significance not calculable when narms < 3. Use cps.binary() instead.")
+  }
+  
+  # create nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
-    # create narms and nclusters if not supplied by the user
-    if (is.null(narms)) {
-      narms <- length(nsubjects)
-    }
     if (is.null(nclusters)) {
       nclusters <- vapply(nsubjects, length, 0)
     }
@@ -232,7 +229,7 @@ cps.ma.binary <- function(nsim = 1000,
     nclusters <- rep(nclusters, length(nsubjects))
   }
   
-  # Create nsubjects structure from narms and nclusters when nsubjects is scalar or a list
+  # Create nsubjects structure from narms and nclusters
   if (mode(nsubjects) == "list") {
     str.nsubjects <- nsubjects
   } else {
@@ -240,11 +237,12 @@ cps.ma.binary <- function(nsim = 1000,
       str.nsubjects <- lapply(nclusters, function(x)
         rep(nsubjects, x))
     } else {
+      if (length(nsubjects) != narms) {
+        stop("nsubjects must be length 1 or length narms if not provided in a list.")
+      }
       str.nsubjects <- list()
       for (i in 1:length(nsubjects)) {
-        for (j in nclusters) {
-          str.nsubjects[[i]] <- rep(nsubjects[i], times = j)
-        }
+        str.nsubjects[[i]] <- rep(nsubjects[i], times = nclusters[i])
       }
     }
   }
@@ -268,10 +266,6 @@ cps.ma.binary <- function(nsim = 1000,
       "Length of variance parameters sigma_b_sq must equal narms, or be provided as a scalar
          if sigma_b_sq for all arms are equal."
     )
-  }
-  
-  if (narms < 3) {
-    message("Warning: LRT significance not calculable when narms < 3. Use cps.binary() instead.")
   }
   
   validateVariance(

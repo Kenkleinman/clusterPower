@@ -5,23 +5,25 @@
 \title{Power simulations for cluster-randomized trials: Parallel Designs, Normal Outcome}
 \usage{
 cps.normal(
-  nsim = NULL,
-  nclusters = NULL,
-  nsubjects = NULL,
+  nsim = NA,
+  nclusters = NA,
+  nsubjects = NA,
   mu = 0,
-  mu2 = NULL,
-  ICC = NULL,
-  sigma_sq = NULL,
-  sigma_b_sq = NULL,
-  ICC2 = NULL,
-  sigma_sq2 = NULL,
-  sigma_b_sq2 = NULL,
+  mu2 = NA,
+  ICC = NA,
+  sigma_sq = NA,
+  sigma_b_sq = NA,
+  ICC2 = NA,
+  sigma_sq2 = NA,
+  sigma_b_sq2 = NA,
   alpha = 0.05,
   method = "glmm",
   quiet = FALSE,
-  all.sim.data = FALSE,
+  allSimData = FALSE,
   seed = NA,
-  poor.fit.override = FALSE,
+  poorFitOverride = FALSE,
+  timelimitOverride = TRUE,
+  lowPowerOverride = FALSE,
   irgtt = FALSE,
   nofit = FALSE
 )
@@ -69,20 +71,31 @@ Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee').}
 
 \item{quiet}{When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.}
 
-\item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
+\item{allSimData}{Option to include a list of all simulated datasets in the output object.
+Default = \code{FALSE}.}
 
 \item{seed}{Option to set the seed. Default, NA, selects a seed based on the system clock.}
 
-\item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
+\item{poorFitOverride}{Option to override \code{stop()} if more than 25\% 
 of fits fail to converge.}
 
-\item{irgtt}{Logical. Is the experimental design an individually randomized 
+\item{timelimitOverride}{Logical. When FALSE, stops execution if the estimated completion time
+is more than 2 minutes. Defaults to TRUE.}
+
+\item{lowPowerOverride}{Option to override \code{stop()} if the power
+is less than 0.5 after the first 50 simulations and every ten simulations
+thereafter. On function execution stop, the actual power is printed in the
+stop message. Default = FALSE. When TRUE, this check is ignored and the
+calculated power is returned regardless of value.}
+
+\item{irgtt}{Logical. Default = FALSE. Is the experimental design an individually randomized 
 group treatment trial? For details, see ?cps.irgtt.normal.}
 
-\item{nofit}{Option to return only the simulated data, no analysis. Defaults: FALSE.}
+\item{nofit}{Option to skip model fitting and analysis and instead return a dataframe with
+the simulated datasets. Default = \code{FALSE}.}
 }
 \value{
-If \code{nofit = FALSE}, a list with the following components:
+If \code{nofit = F}, a list with the following components:
 \itemize{
   \item Character string indicating total number of simulations and simulation type
   \item Number of simulations
@@ -105,14 +118,18 @@ If \code{nofit = FALSE}, a list with the following components:
                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
                   "p.value", 
                   "converge", (Did the model converge?)
-  \item If all.sim.data = TRUE, list of data frames, each containing: 
+  \item If \code{allSimData = TRUE}, a list of data frames, each containing: 
                   "y" (Simulated response value), 
                   "trt" (Indicator for arm), 
                   "clust" (Indicator for cluster)
                   }
 
-If \code{nofit = TRUE}, a dataframe with \code{nsim} + 2 columns 
-and a row for each simulated subject.
+If \code{nofit = T}, a data frame of the simulated data sets, containing:
+\itemize{
+  \item "arm" (Indicator for treatment arm)
+  \item "clust" (Indicator for cluster)
+  \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+  }
 }
 \description{
 \loadmathjax
@@ -181,29 +198,62 @@ Sample Size Calculator, PASS11, \code{CRTsize::n4means}, and
 
 # Estimate power for a trial with 10 clusters in each arm and 25 subjects in each 
 # cluster, with an ICC of .3, sigma squared of 20 (implying sigma_b^2 of 8.57143) 
-# in each group, with arm means of 1 and 4.75 in the two groups using 100 simulated 
-# data sets.  
+# in each group, with arm means of 1 and 4.75 in the two groups, using 100 simulated 
+# data sets. The resulting estimated power should be 0.78.
    
 \dontrun{
 
 normal.sim = cps.normal(nsim = 100, nsubjects = 25, nclusters = 10, mu = 1, 
-  mu2 = 4.75, ICC = 0.3, sigma_sq = 20)
+  mu2 = 4.75, ICC = 0.3, sigma_sq = 20, seed = 123)
 }
 
-# The resulting estimated power should be somewhere around 0.77.
 
 
 # Estimate power for a trial with 5 clusters in one arm, those clusters having 25 subjects 
 # each, 25 clusters in the other arm, those clusters having 5 subjects each, the first arm
 # having a sigma squared of 20 and sigma_b squared of 8.57143, and the second a sigma squared
 # of 9 and a sigma_b squared of 1, with estimated arm means of 1 and 4.75 in the first and 
-# second groups, respectively, using 100 simulated data sets.
+# second groups, respectively, using 100 simulated data sets analyzed by the GEE method. 
+# The estimated power should be 0.79, assuming seed = 123.
+
+\dontrun{
+normal.sim2 = cps.normal(nsim = 100, nclusters = c(5,25), nsubjects = c(25,5), mu = 1, 
+  mu2 = 4.75, sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1, 
+  method = "gee", seed = 123)
+}
+
+
+# Estimate power for a trial with 5 clusters in one arm, those clusters having
+# 4, 5, 6, 7, 7, and 7 subjects each, and 10 clusters in the other arm,
+# those clusters having 5 subjects each, with sigma_b_sq = .3 and and ICC of .3 in both arms.
+# We have estimated arm means of 1 and 2 in the first and second arms, respectively, and we use
+# 100 simulated data sets analyzed by the GLMM method.
+
+\dontrun{
+normal.sim2 = cps.normal(nsim = 100, nclusters = c(6,10), 
+  nsubjects = list(c(4, 5, 6, 7, 7, 7), rep(5, times = 10)),
+  mu = 1, mu2 = 2, sigma_b_sq = .3, ICC = .3, method = "glmm",
+  seed = 1)
+}
+
+# The resulting estimated power (if you set seed = 1) should be about 0.76.
+
+# Estimate power for a trial with 3 clusters in one arm, 
+# those clusters having 25, 35, and 45 subjects each, and 10 clusters 
+# in the other arm, those clusters having 5 subjects each, the first arm
+# having a sigma squared of 20 and sigma_b squared of 8.57143, and the second a sigma squared
+# of 9 and a sigma_b squared of 1, with estimated arm means of 1 and 4.75 in the first and 
+# second groups, respectively, using 100 simulated data sets analyzed by the GLMM method.
 
 \dontrun{
 
-normal.sim2 = cps.normal(nsim = 100, nclusters = c(5,25), nsubjects = c(25,5), mu = 1, 
-  mu2 = 4.75, sigma_sq = 20,sigma_b_sq = 8.8571429, sigma_sq2 = 9, sigma_b_sq2 = 1, method = "gee")
+normal.sim2 <- cps.normal(nsim = 100, nclusters = c(3,10), 
+  nsubjects = c(25, 35, 45, rep(5, times = 10)),
+  mu = 1, mu2 = 4.75, sigma_sq = 20, sigma_b_sq = 8.8571429,
+  sigma_sq2 = 9, sigma_b_sq2 = 1, method = "glmm")
 }
+
+# The resulting estimated power (if you set seed = 1) should be about 0.71.
 
 
 }

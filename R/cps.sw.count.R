@@ -25,8 +25,8 @@
 #' @param nsubjects Number of subjects per cluster; accepts either a scalar (equal cluster sizes)
 #' or a vector of length \code{nclusters} (user-defined size for each cluster) (required).
 #' @param nclusters Number of clusters; accepts non-negative integer scalar (required).
-#' @param c1 Expected outcome count in arm 1. Accepts scalar (required).
-#' @param c2 Expected outcome count in arm 2. Accepts scalar (required).
+#' @param c0 Expected outcome count in arm 1. Accepts scalar (required).
+#' @param c1 Expected outcome count in arm 2. Accepts scalar (required).
 #' @param steps Number of crossover steps; a baseline step (all clusters in arm 1) is assumed.
 #' Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by
 #' \code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number
@@ -109,7 +109,7 @@
 #'
 #' \dontrun{
 #' count.sw.rct = cps.sw.count(nsim = 100, nsubjects = 15, nclusters = 12,
-#'                               c1 = 4, c2 = 5, steps = 3, sigma_b_sq = 1,
+#'                               c0 = 4, c1 = 5, steps = 3, sigma_b_sq = 1,
 #'                               alpha = 0.05, family = 'poisson', analysis = 'poisson',
 #'                               method = 'glmm', seed = 123)
 #' }
@@ -126,8 +126,8 @@
 cps.sw.count = function(nsim = NULL,
                         nsubjects = NULL,
                         nclusters = NULL,
+                        c0 = NULL,
                         c1 = NULL,
-                        c2 = NULL,
                         steps = NULL,
                         sigma_b_sq = NULL,
                         alpha = 0.05,
@@ -205,10 +205,10 @@ cps.sw.count = function(nsim = NULL,
   }
   
   # Validate C.NTRT & C.TRT
-  if (length(c1) != 1 || c1 < 1) {
+  if (length(c0) != 1 || c0 < 1) {
     stop("C.NTRT", min1.warning)
   }
-  if (length(c2) != 1 || c2 < 1) {
+  if (length(c1) != 1 || c1 < 1) {
     stop("C.TRT", min1.warning)
   }
   
@@ -318,16 +318,16 @@ cps.sw.count = function(nsim = NULL,
   sim.dat['y'] = 0
   
   # Calculate log odds for each group
+  log.c0 = log(c0)
   log.c1 = log(c1)
-  log.c2 = log(c2)
   
   ## Create simulation & analysis loop
   for (i in 1:nsim) {
     # Create vectors of cluster effects
     ntrt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b_sq[1]))
     trt.cluster.effects = stats::rnorm(nclusters, mean = 0, sd = sqrt(sigma_b_sq[2]))
-    ntrt.linpred = ntrt.cluster.effects + log.c1
-    trt.linpred = trt.cluster.effects + log.c2
+    ntrt.linpred = ntrt.cluster.effects + log.c0
+    trt.linpred = trt.cluster.effects + log.c1
     
     for (j in 1:nclusters) {
       if (family == 'poisson') {
@@ -395,10 +395,9 @@ cps.sw.count = function(nsim = NULL,
       simulated.datasets = append(simulated.datasets, list(sim.dat))
     }
     
-    #########################################################################
-    ### DEV NOTE: Majority of models do not converge (huge test statistics).
-    ###           Consider using glmerControl().
-    #########################################################################
+    # Set warnings to OFF
+    # Note: Warnings will still be stored in 'warning.list'
+    options(warn = -1)
     
     # Fit GLMM (lmer)
     if (method == 'glmm') {
@@ -429,6 +428,9 @@ cps.sw.count = function(nsim = NULL,
       pval.vector[i] = glmm.values['trt', 'Pr(>|z|)']
       converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
+    
+    # Set warnings to ON
+    options(warn = 0)
     
     # Fit GEE (geeglm)
     if (method == 'gee') {
@@ -555,6 +557,7 @@ cps.sw.count = function(nsim = NULL,
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
   power.parms <- confintCalc(alpha = alpha,
                              p.val = cps.model.temp[, 'p.value'])
+  rownames(power.parms) <- "post-treatment"
   
   # Create object containing treatment & time-specific differences
   values.vector = values.vector / nsim
@@ -569,7 +572,7 @@ cps.sw.count = function(nsim = NULL,
   )
   
   # Create object containing expected arm 1 and arm 2 probabilities
-  exp.counts = data.frame("Expected.Counts" = c("Arm.1" = c1, "Arm.2" = c2))
+  exp.counts = data.frame("Expected.Counts" = c("Arm.1" = c0, "Arm.2" = c1))
   
   # Create object containing cluster sizes
   cluster.sizes = nsubjects

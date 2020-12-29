@@ -11,16 +11,20 @@ cps.irgtt.count(
   nclusters = NULL,
   c1 = NULL,
   c2 = NULL,
-  c.diff = NULL,
   sigma_b_sq = 0,
   sigma_b_sq2 = 0,
   family = "poisson",
   analysis = "poisson",
+  negBinomSize = 1,
   alpha = 0.05,
   quiet = FALSE,
-  all.sim.data = FALSE,
+  allSimData = FALSE,
+  poorFitOverride = FALSE,
+  lowPowerOverride = FALSE,
+  timelimitOverride = TRUE,
+  nofit = FALSE,
   seed = NA,
-  opt = "L-BFGS-B"
+  optmethod = "Nelder_Mead"
 )
 }
 \arguments{
@@ -28,34 +32,59 @@ cps.irgtt.count(
 
 \item{nsubjects}{Number of subjects per cluster; accepts integer (required).}
 
-\item{nclusters}{Number of clusters in the treatment group; accepts integer (required). 
-Treatment group cluster size defaults to 1.
+\item{nclusters}{Number of clusters in the arm; accepts integer (required). 
+Arm 1 cluster size defaults to 1.
+
 At least 2 of the following 3 arguments must be specified:}
 
-\item{c1}{Expected outcome count in non-treatment group}
+\item{c1}{Expected outcome count in arm 1}
 
-\item{c2}{Expected outcome count in treatment group}
-
-\item{c.diff}{Expected difference in outcome count between groups, defined as c.diff = c1 - c2}
+\item{c2}{Expected outcome count in arm 2}
 
 \item{sigma_b_sq}{Between-cluster variance; defaults to 0. Accepts numeric.
-If between cluster variances differ between treatment groups, the following must also be specified:}
+If between cluster variances differ between arms, the following must 
+also be specified:}
 
-\item{sigma_b_sq2}{Between-cluster variance for clusters in TREATMENT group}
+\item{sigma_b_sq2}{Between-cluster variance for clusters in arm 2}
 
-\item{family}{Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'}
+\item{family}{Distribution from which responses are simulated. Accepts Poisson 
+('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'}
 
-\item{analysis}{Family used for regression; currently only applicable for GLMM. Accepts 'poisson' or 'neg.binom' (required); default = 'poisson'}
+\item{analysis}{Family used for regression; currently only applicable for GLMM. 
+Accepts 'poisson' or 'neg.binom' (required); default = 'poisson'}
+
+\item{negBinomSize}{Only used when generating simulated data from the 
+negative binomial (family = 'neg.binom'), this is the target for number of 
+successful trials, or the dispersion parameter (the shape parameter of the gamma 
+mixing distribution). Must be strictly positive but need not be integer. 
+Defaults to 1.}
 
 \item{alpha}{Significance level. Default = 0.05.}
 
-\item{quiet}{When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.}
+\item{quiet}{When set to FALSE, displays simulation progress and estimated 
+completion time. Default = FALSE.}
 
-\item{all.sim.data}{Option to output list of all simulated datasets. Default = FALSE.}
+\item{allSimData}{Option to output list of all simulated datasets. Default = FALSE.}
+
+\item{poorFitOverride}{Option to override \code{stop()} if more than 25\%
+of fits fail to converge; default = FALSE.}
+
+\item{lowPowerOverride}{Option to override \code{stop()} if the power
+is less than 0.5 after the first 50 simulations and every ten simulations
+thereafter. On function execution stop, the actual power is printed in the
+stop message. Default = FALSE. When TRUE, this check is ignored and the
+calculated power is returned regardless of value.}
+
+\item{timelimitOverride}{Logical. When FALSE, stops execution if the estimated completion time
+is more than 2 minutes. Defaults to TRUE.}
+
+\item{nofit}{Option to skip model fitting and analysis and return the simulated data.
+Defaults to \code{FALSE}.}
 
 \item{seed}{Option to set seed. Default is NA.}
 
-\item{opt}{Option to fit with a different optimizer (using the package \code{optimx}). Defaults to L-BFGS-B.}
+\item{optmethod}{Option to fit with a different optimizer. 
+Defaults to \code{Nelder_Mead}.}
 }
 \value{
 A list with the following components
@@ -71,7 +100,7 @@ A list with the following components
   \item Significance level
   \item Vector containing user-defined cluster sizes
   \item Vector containing user-defined number of clusters
-  \item Data frame reporting between-cluster variances for Treatment/Non-Treatment groups
+  \item Data frame reporting between-cluster variances for both arms
   \item Vector containing expected counts and risk ratios based on user inputs
   \item Data frame with columns: 
                   "Estimate" (Estimate of treatment effect for a given simulation), 
@@ -79,11 +108,17 @@ A list with the following components
                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
                   "p.value",
                   "sig.val" (Is p-value less than alpha?)
-  \item List of data frames, each containing: 
+  \item If \code{allSimData = TRUE}, a list of data frames, each containing: 
                   "y" (Simulated response value), 
-                  "trt" (Indicator for treatment group), 
+                  "trt" (Indicator for arm), 
                   "clust" (Indicator for cluster)
 }
+If \code{nofit = T}, a data frame of the simulated data sets, containing:
+\itemize{
+  \item "arm" (Indicator for treatment arm)
+  \item "cluster" (Indicator for cluster)
+  \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+  }
 }
 \description{
 This function utilizes iterative simulations to determine 
@@ -95,26 +130,25 @@ desired experimental situation.
 Runs the power simulation for count outcomes.
 
 Users must specify the desired number of simulations, number of subjects per 
-cluster, number of clusters per treatment arm, between-cluster variance, 
-two of the following: expected count in non-treatment group, expected count 
-in treatment group, difference in counts between groups; significance level, 
-analytic method, and whether or not progress updates should be displayed 
+cluster, number of clusters per arm, between-cluster variance, 
+two of the following: expected count in arm 1 (no clusters), expected count 
+in arm 2 (clustered arm), expected difference in counts between arms; 
+significance level, and whether or not progress updates should be displayed 
 while the function is running.
 }
 \examples{
 \dontrun{
-irgtt.count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(500, 10), nclusters = 500, 
-                             c1 = 85, c2 = 450, sigma_b_sq2 = 0.25, 
+irgtt.count.sim <- cps.irgtt.count(nsim = 100, nsubjects = c(200, 10), nclusters = 10, 
+                             c1 = 5, c2 = 7, sigma_b_sq2 = 0.1, 
                              family = 'poisson', analysis = 'poisson',
-                             alpha = 0.05, quiet = FALSE, all.sim.data = FALSE, 
-                             opt = 'auto')
+                             alpha = 0.05, quiet = FALSE, allSimData = FALSE)
 }
 
 }
 \author{
-Alexander R. Bogdan
-
 Alexandria C. Sakrejda (\email{acbro0@umass.edu}
+
+Alexander R. Bogdan
 
 Ken Kleinman (\email{ken.kleinman@gmail.com})
 }

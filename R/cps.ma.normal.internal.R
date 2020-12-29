@@ -117,8 +117,7 @@ cps.ma.normal.internal <-
            timelimitOverride = TRUE) {
     # Create vectors to collect iteration-specific values
     simulated.datasets <- list()
-    converge <- NULL
-    
+
     # Create NCLUSTERS, NARMS, from str.nsubjects
     narms = length(str.nsubjects)
     nclusters = sapply(str.nsubjects, length)
@@ -132,8 +131,8 @@ cps.ma.normal.internal <-
     )
     
     # This container keeps track of how many models failed to converge
-    converge.vector <- rep(TRUE, nsim)
-    
+    converge.vector <- rep(FALSE, nsim)
+
     # Create a container for the simulated.dataset and model output
     sim.dat = vector(mode = "list", length = nsim)
     model.values <- list()
@@ -178,14 +177,14 @@ cps.ma.normal.internal <-
     # Create simulation loop
     for (i in 1:nsim) {
       sim.dat[[i]] = data.frame(y = NA,
-                                trt = as.factor(unlist(trt)),
-                                clust = as.factor(unlist(clust)))
+                                trt = as.factor(unlist(trt1)),
+                                clust = as.factor(unlist(clust1)))
       # Generate between-cluster effects for non-treatment and treatment
       if (tdist == TRUE) {
         randint = mapply(function(n, df)
           stats::rt(n, df = df),
           n = nclusters,
-          df = Inf)
+          df = sum(nclusters) - narms)
       } else {
         randint = mapply(
           function(nc, s, mu)
@@ -223,13 +222,13 @@ cps.ma.normal.internal <-
       return(sim.dat)
     }
     
-    # status message
-    if (quiet == FALSE && i == 1) {
-      message(paste0('Begin simulations :: Start Time: ', Sys.time()))
-    }
-    
     for (i in 1:nsim) {
       # Update simulation progress information
+      # status message
+      if (quiet == FALSE && i == 1) {
+        message(paste0('Begin simulations :: Start Time: ', Sys.time()))
+      }
+      
       y <- sim.dat[[i]][["y"]]
       trt <- sim.dat[[i]][["trt"]]
       clust <- sim.dat[[i]][["clust"]]
@@ -253,6 +252,9 @@ cps.ma.normal.internal <-
               optmethod != "nlminb" && optmethod != "auto") {
             stop("optmethod must be either nlm or nlminb for this model type.")
           }
+          
+          counter <- 0
+          while (counter < 2 & converge.vector[i] == FALSE) {
           my.mod <-
             try(nlme::lme(
               y ~ as.factor(trt2),
@@ -283,8 +285,11 @@ cps.ma.normal.internal <-
             ))
           converge.vector[i] <-
             ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE)
+          counter <- counter + 1
+          } # end of while loop
+          
           if (poor.fit.override == FALSE) {
-            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
+            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25) & i > 50) {
               stop("more than 25% of simulations are singular fit: check model specifications")
             }
           }
@@ -304,6 +309,9 @@ cps.ma.normal.internal <-
               goodopt <- optmethod
             }
           }
+          
+          counter <- 0
+          while (counter < 2 & converge.vector[i] == FALSE) {
           my.mod <-
             lmerTest::lmer(
               y ~ trt + (1 + as.factor(trt) | clust),
@@ -323,8 +331,11 @@ cps.ma.normal.internal <-
             ifelse(is.null(my.mod@optinfo$conv$lme4$messages),
                    TRUE,
                    FALSE)
+          counter <- counter + 1
+          } # end of while loop
+          
           if (poor.fit.override == FALSE) {
-            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
+            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25) & i > 50) {
               stop("more than 25% of simulations are singular fit: check model specifications")
             }
           }
@@ -337,6 +348,9 @@ cps.ma.normal.internal <-
           if (optmethod != "nlm" && optmethod != "nlminb") {
             stop("optmethod must be either nlm or nlminb for this model type.")
           }
+          
+          counter <- 0
+          while (counter < 2 & converge.vector[i] == FALSE) {
           my.mod <-
             try(nlme::lme(
               y ~ as.factor(trt2),
@@ -366,8 +380,11 @@ cps.ma.normal.internal <-
           ))
           converge.vector[i] <-
             ifelse(isTRUE(class(my.mod) == "try-error"), FALSE, TRUE)
+          counter <- counter + 1
+          } #end of while loop
+          
           if (poor.fit.override == FALSE) {
-            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
+            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25) & i > 50) {
               stop("more than 25% of simulations are singular fit: check model specifications")
             }
           }
@@ -384,6 +401,8 @@ cps.ma.normal.internal <-
               goodopt <- optmethod
             }
           }
+          counter <- 0
+          while (counter < 2 & converge.vector[i] == FALSE) {
           my.mod <-  lmerTest::lmer(
             y ~ trt + (1 | clust),
             REML = FALSE,
@@ -400,8 +419,11 @@ cps.ma.normal.internal <-
             ifelse(is.null(my.mod@optinfo$conv$lme4$messages),
                    TRUE,
                    FALSE)
+          counter <- counter + 1
+          } #end of while loop
+          
           if (poor.fit.override == FALSE) {
-            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25)) {
+            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25) & i > 50) {
               stop("more than 25% of simulations are singular fit: check model specifications")
             }
           }
@@ -425,7 +447,7 @@ cps.ma.normal.internal <-
         }
         
         model.values[[i]] <-  summary(my.mod)
-      } #end of loop
+      } #end of glmm options
       
       
       
@@ -448,6 +470,8 @@ cps.ma.normal.internal <-
                                    id = clust,
                                    corstr = "exchangeable")
         model.values[[i]] = summary(my.mod)
+        # check for gee convergence
+        converge.vector[i] <- ifelse(summary(my.mod)$error == 0, TRUE, FALSE)
       }
       
       
@@ -499,7 +523,7 @@ cps.ma.normal.internal <-
           )
         )
       }
-    }
+    } # end of loop
     
     ## Output objects
     if (all.sim.data == TRUE) {

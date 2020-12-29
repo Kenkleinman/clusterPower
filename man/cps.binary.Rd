@@ -2,7 +2,7 @@
 % Please edit documentation in R/cps.binary.R
 \name{cps.binary}
 \alias{cps.binary}
-\title{Power simulations for cluster-randomized trials: Simple Designs, Binary Outcome.}
+\title{Power simulations for cluster-randomized trials: Parallel Designs, Binary Outcome}
 \usage{
 cps.binary(
   nsim = NULL,
@@ -10,126 +10,212 @@ cps.binary(
   nclusters = NULL,
   p1 = NULL,
   p2 = NULL,
-  or1 = NULL,
-  or2 = NULL,
-  or.diff = NULL,
   sigma_b_sq = NULL,
   sigma_b_sq2 = NULL,
   alpha = 0.05,
   method = "glmm",
-  quiet = TRUE,
-  all.sim.data = FALSE,
+  quiet = FALSE,
+  allSimData = FALSE,
   seed = NA,
+  nofit = FALSE,
+  poorFitOverride = FALSE,
+  lowPowerOverride = FALSE,
+  timelimitOverride = TRUE,
   irgtt = FALSE
 )
 }
 \arguments{
-\item{nsim}{Number of datasets to simulate; accepts integer (required).}
+\item{nsim}{Number of datasets to simulate; accepts integer. Required.}
 
-\item{nsubjects}{Number of subjects per cluster; accepts integer (required).}
+\item{nsubjects}{Number of subjects per cluster; accepts either a scalar
+(implying equal cluster sizes for the two groups), a vector of length two
+(equal cluster sizes within arm), or a vector of length \code{sum(nclusters)}
+(unequal cluster sizes within arm). Required.}
 
-\item{nclusters}{Number of clusters per treatment group; accepts integer (required).}
+\item{nclusters}{Number of clusters per treatment group; accepts a single integer
+(if there are the same number of clusters in each arm) or a vector of 2 integers
+(if nsubjects differs between arms). If a vector of cluster sizes >2 is provided in
+\code{nsubjects}, \code{sum(nclusters)} must match the \code{nsubjects} vector length.
+Required.}
 
-\item{p1}{Expected probability of outcome in non-treatment group}
+\item{p1}{Expected probability of outcome in first group.}
 
-\item{p2}{Expected probability of outcome in treatment group}
+\item{p2}{Expected probability of outcome in second group.}
 
-\item{or1}{Expected odds ratio for outcome in non-treatment group}
+\item{sigma_b_sq}{Between-cluster variance; if sigma_b_sq2 is not specified,
+between-cluster variances are assumed to be equal in the two arms. Accepts numeric. Required.}
 
-\item{or2}{Expected odds ratio for outcome in treatment group}
+\item{sigma_b_sq2}{Between-cluster variance for clusters in second group. Only required if
+between-cluster variances differ between treatment arms.}
 
-\item{or.diff}{Expected difference in odds ratio for outcome between groups, defined as or.diff = or1 - or2}
+\item{alpha}{Significance level; default = 0.05.}
 
-\item{sigma_b_sq}{Between-cluster variance; if sigma_b_sq2 is not specified, 
-between cluster variances are assumed to be equal for both groups. Accepts numeric.
-If between cluster variances differ between treatment groups, sigma_b_sq2 must also be specified:}
+\item{method}{Data analysis method, either generalized linear mixed effects model (GLMM)
+or generalized estimating equations (GEE). Accepts c('glmm', 'gee'); default = 'glmm'. Required.}
 
-\item{sigma_b_sq2}{Between-cluster variance for clusters in TREATMENT group}
+\item{quiet}{When set to FALSE, displays simulation progress and estimated completion
+time, default = TRUE.}
 
-\item{alpha}{Significance level; default = 0.05}
+\item{allSimData}{Option to output list of all simulated datasets; default = FALSE.}
 
-\item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.}
+\item{seed}{Option to set the seed. Default is NA.}
 
-\item{quiet}{When set to FALSE, displays simulation progress and estimated completion time, default is TRUE.}
+\item{nofit}{Option to skip model fitting and analysis and only return the simulated data.
+Default = \code{FALSE}.}
 
-\item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE}
+\item{poorFitOverride}{Option to override \code{stop()} if more than 25\%
+of fits fail to converge.}
 
-\item{seed}{Option to set the seed. Default is NA.
+\item{lowPowerOverride}{Option to override \code{stop()} if the power
+is less than 0.5 after the first 50 simulations and every ten simulations
+thereafter. On function execution stop, the actual power is printed in the
+stop message. Default = FALSE. When TRUE, this check is ignored and the
+calculated power is returned regardless of value.}
 
-At least 2 of the following 3 arguments must be specified when using expected odds ratios:}
+\item{timelimitOverride}{Logical. When FALSE, stops execution if the estimated completion time
+is more than 2 minutes. Defaults to TRUE.}
+
+\item{irgtt}{Logical. Default = FALSE. Is the experimental design an
+individually randomized group treatment trial? For details,
+see ?cps.irgtt.binary.}
 }
 \value{
-A list with the following components
+If \code{nofit = F}, a list with the following components:
 \itemize{
-  \item Character string indicating total number of simulations, simulation type, and number of convergent models
+  \item Character string indicating total number of simulations, simulation type,
+  and number of convergent models
   \item Number of simulations
-  \item Data frame with columns "Power" (Estimated statistical power), 
-  "lower.95.ci" (Lower 95% confidence interval bound), 
-  "upper.95.ci" (Upper 95% confidence interval bound),
-  Note that non-convergent models are returned for review, 
+  \item Data frame with columns "Power" (estimated statistical power),
+  "lower.95.ci" (lower 95% confidence interval bound),
+  "upper.95.ci" (upper 95% confidence interval bound),
+  "Alpha" (probability of committing a Type I error or rejecting a true null),
+  "Beta" (probability of committing a Type II error or failing to reject a false null).
+  Note that non-convergent models are returned for review,
   but not included in this calculation.
   \item Analytic method used for power estimation
   \item Significance level
   \item Vector containing user-defined cluster sizes
   \item Vector containing user-defined number of clusters
   \item Data frame reporting sigma_b_sq for each group
-  \item Vector containing expected difference in probabilities based on user inputs
+  \item Vector containing user-supplied outcome probability and estimated odds ratio
   \item Data frame containing three estimates of ICC
-  \item Data frame with columns: "Estimate" (Estimate of treatment effect for a given simulation), 
-  "Std.err" (Standard error for treatment effect estimate), "Test.statistic" (z-value (for GLMM) or 
-  Wald statistic (for GEE)), "p.value", "converge" (Did simulated model converge?), 
-  "sig.val" (Is p-value less than alpha?)
-  \item List of data frames, each containing: "y" (Simulated response value), 
+  \item Data frame with columns:
+  "Estimate" (Estimate of treatment effect for a given simulation),
+  "Std.err" (Standard error for treatment effect estimate),
+  "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)),
+  "p.value",
+  "converge" (Did simulated model converge?)
+  \item If allSimData = TRUE, list of data frames, each containing: "y" (Simulated response value),
   "trt" (Indicator for treatment group), "clust" (Indicator for cluster)
-  \item List of warning messages produced by non-convergent models; 
+  \item List of warning messages produced by non-convergent models;
   Includes model number for cross-referencing against \code{model.estimates}
+  \item Logical vector reporting whether models converged.
 }
+
+If \code{nofit = T}, a data frame of the simulated data sets, containing:
+
+\itemize{
+  \item "arm" (Indicator for treatment arm)
+  \item "cluster" (Indicator for cluster)
+  \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+  }
 }
 \description{
-This function utilizes iterative simulations to determine 
-approximate power for cluster-randomized controlled trials. Users 
+\loadmathjax
+
+
+This function uses Monte Carlo methods (simulations) to estimate
+power for cluster-randomized trials. Users
 can modify a variety of parameters to suit the simulations to their
 desired experimental situation.
+
+Users must specify the desired number of simulations, number of subjects per
+cluster, number of clusters per arm, and two of the following three
+parameters: expected probability of the outcome in one group, expected
+probability of the outcome in the second group,
+and expected difference in probabilities between groups.
+Default values are provided for significance level, analytic method,
+progress updates, and whether the simulated data sets are retained.
 }
 \details{
-Runs the power simulation for binary outcomes.
+The data generating model for observation \mjseqn{j} in cluster \mjseqn{i} is:
 
-Users must specify the desired number of simulations, number of subjects per 
-cluster, number of clusters per treatment arm, two of the following three terms: 
-expected probability of outcome in non-treatment group, expected probability of 
-outcome in treatment group, expected difference in probabilities between groups
-; significance level, analytic method, progress updates, 
-and simulated data set output may also be specified.
+\mjsdeqn{y_{ij} \sim \text{Bernoulli}(\frac{e^{p_1 + b_i}}{1 + e^{p_1 + b_i} }) }
+for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)}, 
+while for the second group,
+\mjsdeqn{y_{ij} \sim \text{Bernoulli}(\frac{e^{p_2 + b_i}}{1 + e^{p_2 + b_i} }) }
+where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if
+\mjseqn{\sigma_{b_2}^2} is not used, then the second group uses
+\mjseqn{b_i \sim N(0,\sigma_b^2)}.
 
-The following equations are used to estimate intra-cluster correltation coefficients:
-P_h: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \pi^{2}/3}}
-P_c: \deqn{ICC = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_{j}\pi_{h}}{\sqrt{\pi_{j}(1 - \pi_{j})\pi_{h}(1 - \pi_{h})}}}
-P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
+All random terms are generated independent of one another.
 
-Non-convergent models are not included in the calculation of exact confidence 
+
+Non-convergent models are not included in the calculation of exact confidence
 intervals.
 }
 \section{Testing details}{
-   
-This function has been verified against reference values from the NIH's GRT 
-Sample Size Calculator, PASS11, \code{CRTsize::n4prop}, and 
+
+This function has been verified against reference values from the NIH's GRT
+Sample Size Calculator, PASS11, \code{CRTsize::n4prop}, and
 \code{clusterPower::cpa.binary}.
 }
 
 \examples{
+
+# Estimate power for a trial with 10 clusters in each arm, 20 subjects in
+# each cluster, with a probability of 0.8 in the first arm and 0.5 in the
+# second arm, with a sigma_b_sq = 1 in the first arm sigma_b_sq = 1.2 in
+# the second arm.
+
 \dontrun{
-binary.sim = cps.binary(nsim = 100, nsubjects = 20, nclusters = 10, p1 = 0.8,
-                        p2 = 0.5, sigma_b_sq = 1, sigma_b_sq2 = 1.2, alpha = 0.05, 
-                        method = 'glmm', all.sim.data = FALSE)
+binary.sim = cps.binary(nsim = 100, nsubjects = 20,
+  nclusters = 10, p1 = 0.8,
+  p2 = 0.5, sigma_b_sq = 1,
+  sigma_b_sq2 = 1.2, alpha = 0.05,
+  method = 'glmm', allSimData = FALSE)
 }
+
+# Estimate power for a trial just as above, except that in the first arm,
+# the clusters have 10 subjects in 9 of the 10 clusters and 100 in the tenth
+# cluster, while in the second arm all clusters have 20 subjects.
+
+\dontrun{
+binary.sim2 = cps.binary(nsim = 100,
+  nsubjects = c(c(rep(10,9),100), rep(20,10)),
+  nclusters = 10, p1 = 0.8,
+  p2 = 0.5, sigma_b_sq = 1,
+  sigma_b_sq2 = 1.2, alpha = 0.05,
+  method = 'gee', allSimData = FALSE)
+}
+
+
 
 }
 \references{
-Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and Advanced Multilevel Modelling. London, 1999: Sage.
+Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation
+Coefficient in Cluster Randomized Trials:
+A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394.
+doi: 10.1111/j.1751-5823.2009.00092.x
 
-Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation Coefficient in Cluster Randomized Trials: 
-A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. doi: 10.1111/j.1751-5823.2009.00092.x
+Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and
+Advanced Multilevel Modelling. London, 1999: Sage.
+
+Wu S, Crespi CM, Wong WK. Comparison of Methods for Estimating Intraclass
+Correlation Coefficient for Binary Responses in Cancer Prevention Cluster Randomized
+Trials. Contemp Clin Trials. 2012; 33(5): 869-880. doi:10.1016/j.cct.2012.05.004
+London: Arnold; 2000.
+}
+\seealso{
+An intracluster correlation coefficient (ICC) for binary outcome data is
+neither a natural parameter of the data generating model nor a function
+of its parameters.  Several methods for calculation have been suggested
+(Wu, Crespi, and Wong, 2012).  We provide several versions of ICCs for
+comparison.  These can be accessed in the \code{bincalcICC()} function.
 }
 \author{
-Alexander R. Bogdan, Alexandria C. Sakrejda, and Ken Kleinman (\email{ken.kleinman@gmail.com})
+Alexander R. Bogdan, Alexandria C. Sakrejda
+(\email{acbro0@umass.edu}), and Ken Kleinman
+(\email{ken.kleinman@gmail.com})
+#'
 }

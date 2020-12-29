@@ -1,12 +1,43 @@
 inst/doc
-.Rproj.user
-.Rhistory
-.RData
 src/*.o
 src/*.so
 src/*.dll
-.Rproj
 doc
 Meta
-.Rproj
-man/*.Rd
+
+# History files
+.Rhistory
+.Rapp.history
+
+# Session Data files
+.RData
+
+# User-specific files
+.Ruserdata
+
+# Example code in package build process
+*-Ex.R
+
+# Output files from R CMD build
+/*.tar.gz
+
+# Output files from R CMD check
+/*.Rcheck/
+
+# RStudio files
+.Rproj.user/
+*.Rproj
+
+# knitr and R markdown default cache directories
+*_cache/
+/cache/
+
+# Temporary files created by R markdown
+*.utf8.md
+*.knit.md
+
+# R Environment Variables
+.Renviron
+
+#markdown comment files
+*.md

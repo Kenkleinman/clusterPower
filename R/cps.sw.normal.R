@@ -362,6 +362,10 @@ cps.sw.normal = function(nsim = NULL,
   ###################################################################
   models <- list()
   
+  # Set warnings to OFF
+  # Note: Warnings will still be stored in 'warning.list'
+  options(warn = -1)
+  
   for (i in 1:nsim) {
     # Fit GLMM (lmer)
     if (method == 'glmm') {
@@ -376,6 +380,9 @@ cps.sw.normal = function(nsim = NULL,
       pval.vector[i] = p.val
       converge[i] = is.null(my.mod@optinfo$conv$lme4$messages)
     }
+    
+    # Set warnings to ON
+    options(warn = 0)
     
     # Fit GEE (geeglm)
     if (method == 'gee') {
@@ -499,6 +506,7 @@ cps.sw.normal = function(nsim = NULL,
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
   power.parms <- confintCalc(alpha = alpha,
                              p.val = cps.model.temp[, 'p.value'])
+  rownames(power.parms) <- "post-treatment"
   
   # Create object containing treatment & time-specific differences
   values.vector = values.vector / nsim

@@ -4,15 +4,17 @@
 \alias{runExample}
 \title{Run a Shiny app for power analysis functions}
 \usage{
-runExample()
+runExample(appname = "main")
+}
+\arguments{
+\item{appname}{which app should be launched. Choices are either "main" or "analytic".
+Default is "main".}
 }
 \description{
-This function runs a Shiny app that employs the \code{crtpwr.2mean},
-\code{crtpwr.2prop}, and \code{crtpwr.2rate}. The app can do calculations
-for several sets of parameters and produces graphs.
+This function runs the clusterPower Shiny apps.
 }
-\section{Authors}{
-
+\author{
 Jonathan Moyer (\email{jon.moyer@gmail.com})
-}
 
+Alexandria Sakrejda (\email{acbro0@umass.edu})
+}

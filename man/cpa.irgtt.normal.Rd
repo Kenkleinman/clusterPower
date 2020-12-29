@@ -32,11 +32,14 @@ error.}
 
 \item{d}{The expected treatment effect.}
 
-\item{varu}{The variance of the cluster level random effect for clusters in the intervention arm.}
+\item{varu}{The variance of the cluster level random effect for clusters 
+in the intervention arm.}
 
-\item{varei}{The variance of the subject level random error for individuals in the intervention arm.}
+\item{varei}{The variance of the subject level random error for individuals 
+in the intervention arm.}
 
-\item{varr}{The variance of the subject level random error for individuals in the control arm.}
+\item{varr}{The variance of the subject level random error for individuals 
+in the control arm.}
 
 \item{tol}{Numerical tolerance used in root finding. The default provides
 at least four significant digits.}

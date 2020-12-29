@@ -8,17 +8,25 @@ cps.did.count(
   nsim = NULL,
   nsubjects = NULL,
   nclusters = NULL,
-  c1 = NULL,
-  c2 = NULL,
+  c1t0 = NULL,
+  c2t0 = NULL,
+  c1t1 = NULL,
+  c2t1 = NULL,
   c.diff = NULL,
   sigma_b_sq0 = NULL,
   sigma_b_sq1 = 0,
   family = "poisson",
   analysis = "poisson",
+  negBinomSize = 1,
   method = "glmm",
   alpha = 0.05,
   quiet = FALSE,
-  all.sim.data = FALSE
+  allSimData = FALSE,
+  poorFitOverride = FALSE,
+  lowPowerOverride = FALSE,
+  timelimitOverride = TRUE,
+  seed = NA,
+  nofit = FALSE
 )
 }
 \arguments{
@@ -26,35 +34,80 @@ cps.did.count(
 
 \item{nsubjects}{Number of subjects per cluster; accepts integer (required).}
 
-\item{nclusters}{Number of clusters per treatment group; accepts integer (required).
+\item{nclusters}{Number of clusters per arm; accepts integer (required).
 At least 2 of the following 3 arguments must be specified:}
 
-\item{c1}{Expected outcome count in non-treatment group}
+\item{c1t0}{Required. Expected outcome count in arm 1 at baseline.}
 
-\item{c2}{Expected outcome count in treatment group}
+\item{c2t0}{Optional. Expected outcome count in arm 2 at baseline. If 
+no quantity is provided, c2t0 = c1t0 is assumed.}
 
-\item{c.diff}{Expected difference in outcome count between groups, defined as c.diff = c1 - c2}
+\item{c1t1}{Optional. Expected outcome count in arm 1 at follow-up. 
+If no quantity is provided, c1t1 = c1t0 is assumed.}
 
-\item{sigma_b_sq0}{Pre-treatment (time == 0) between-cluster variance; accepts numeric scalar (indicating equal 
-between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
+\item{c2t1}{Required. Expected outcome count in arm 2 at follow-up.}
+
+\item{c.diff}{Optional if c1t1 and c2t0 are provided. Expected difference 
+in outcome count between groups, defined as 
+c.diff = (c1t1 - c1t0) - (c2t1 - c2t0).}
+
+\item{sigma_b_sq0}{Pre-treatment (time == 0) between-cluster variance; 
+accepts numeric scalar (indicating equal 
+between-cluster variances for both arm) or a vector of length 2 specifying 
+treatment-specific 
 between-cluster variances}
 
-\item{sigma_b_sq1}{Post-treatment (time == 1) between-cluster variance; accepts numeric scalar (indicating equal 
-between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
-between-cluster variances. For data simulation, sigma_b_sq1 is added to sigma_b_sq0, such that if sigma_b_sq0 = 5 
-and sigma_b_sq1 = 2, the between-cluster variance at time == 1 equals 7. Default = 0.}
+\item{sigma_b_sq1}{Post-treatment (time == 1) between-cluster variance; 
+accepts numeric scalar (indicating equal 
+between-cluster variances for both arm) or a vector of length 2 specifying 
+treatment-specific 
+between-cluster variances. For data simulation, sigma_b_sq1 is added to 
+sigma_b_sq0, such that if sigma_b_sq0 = 5 
+and sigma_b_sq1 = 2, the between-cluster variance at time == 1 equals 7. 
+Default = 0.}
 
-\item{family}{Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'}
+\item{family}{Distribution from which responses are simulated. Accepts Poisson 
+('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'}
 
-\item{analysis}{Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'}
+\item{analysis}{Family used for regression; currently only applicable for GLMM. 
+Accepts c('poisson', 'neg.binom') (required); default = 'poisson'}
 
-\item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'}
+\item{negBinomSize}{Only used when generating simulated data from the 
+negative binomial (family = 'neg.binom'), this is the target for number of 
+successful trials, or the dispersion parameter (the shape parameter of the gamma 
+mixing distribution). Must be strictly positive but need not be integer. 
+Defaults to 1.}
 
-\item{alpha}{Significance level for power estimation, accepts value between 0 - 1; default = 0.05}
+\item{method}{Analytical method, either Generalized Linear Mixed Effects Model 
+(GLMM) or Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') 
+(required); default = 'glmm'}
 
-\item{quiet}{When set to FALSE, displays simulation progress and estimated completion time. Default = FALSE.}
+\item{alpha}{Significance level for power estimation, accepts value between 
+0 - 1; default = 0.05}
 
-\item{all.sim.data}{Option to output list of all simulated datasets. Default = FALSE}
+\item{quiet}{When set to FALSE, displays simulation progress and estimated 
+completion time. Default = FALSE.}
+
+\item{allSimData}{Option to output list of all simulated datasets. 
+Default = FALSE}
+
+\item{poorFitOverride}{Option to override \code{stop()} if more than 25\%
+of fits fail to converge; default = FALSE.}
+
+\item{lowPowerOverride}{Option to override \code{stop()} if the power
+is less than 0.5 after the first 50 simulations and every ten simulations
+thereafter. On function execution stop, the actual power is printed in the
+stop message. Default = FALSE. When TRUE, this check is ignored and the
+calculated power is returned regardless of value.}
+
+\item{timelimitOverride}{Logical. When FALSE, stops execution if the estimated completion time
+is more than 2 minutes. Defaults to TRUE.}
+
+\item{seed}{Option to set the seed. Default is NA.}
+
+\item{nofit}{Option to skip model fitting and analysis and only return the 
+simulated data.
+Default = \code{FALSE}.}
 }
 \value{
 A list with the following components:
@@ -71,11 +124,11 @@ A list with the following components:
   \item Vector containing user-defined cluster sizes
   \item Vector containing user-defined number of clusters
   \item Data frame reporting between-cluster variances at each time point for 
-  each treatment group
+  each arm
   \item Vector containing expected counts and risk ratios based on user inputs
   \item Data frame with columns: 
                   'Period' (Pre/Post-treatment indicator), 
-                  'Treatment' (Treatment group indicator), 
+                  'Arm.2' (Arm indicator), 
                   'Value' (Mean response value)
   \item Data frame with columns: 
                   'Estimate' (Estimate of treatment effect for a given simulation), 
@@ -84,35 +137,51 @@ A list with the following components:
                   'p.value', 
                   'converge' (Did simulated model converge?), 
                   'sig.val' (Is p-value less than alpha?)
-  \item List of data frames, each containing: 
+  \item If \code{allSimData = TRUE}, a list of data frames, each containing: 
                   'y' (Simulated response value), 
-                  'trt' (Indicator for treatment group), 
+                  'trt' (Indicator for arm), 
                   'clust' (Indicator for cluster), 
                   'period' (Indicator for time point)
 }
+If \code{nofit = T}, a data frame of the simulated data sets, containing:
+
+\itemize{
+  \item "arm" (Indicator for treatment arm)
+  \item "cluster" (Indicator for cluster)
+  \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+  }
 }
 \description{
+\loadmathjax
+
 This function utilizes iterative simulations to determine 
 approximate power for cluster-randomized controlled trials. Users 
 can modify a variety of parameters to suit the simulations to their
 desired experimental situation.
-}
-\details{
+
 Runs power simulations for difference in difference cluster randomized control trials using count outcomes
 
 Users must specify the desired number of simulations, number of subjects per 
-cluster, number of clusters per treatment arm, between-cluster variance, 
-two of the following: expected count in non-treatment group, expected count 
-in treatment group, difference in counts between groups; significance level, 
+cluster, number of clusters per arm, between-cluster variance, 
+two of the following: expected count in arm 1, expected count 
+in arm 2, difference in counts between groups; significance level, 
 analytic method, and whether or not progress updates should be displayed 
 while the function is running.
 }
 \examples{
+
+# Estimate power for a trial with 7 clusters in both arms, those clusters having
+# 9 subjects each, with sigma_b_sq0 = 0.1 in the first arm and 0.5 in the second arm. 
+# We have estimated arm counts of 5 and 3 in the first and second arms, respectively, 
+# and we use 100 simulated data sets analyzed by the GLMM method. The resulting 
+# estimated power (if you set seed = 123) should be 0.86.
+
 \dontrun{
-did.count.sim = cps.did.count(nsim = 100, nsubjects = 9, nclusters = 7, c1 = 5, 
-                              c2 = 3, sigma_b_sq0 = c(1, 0.5), sigma_b_sq1 = c(0.5, 0.8), 
-                              family = 'poisson', analysis = 'poisson', method = 'glmm', 
-                              alpha = 0.05, quiet = FALSE, all.sim.data = TRUE)
+did.count.sim = cps.did.count(nsim = 100, nsubjects = 9, nclusters = 7, 
+                              c1t0 = 5, c1t1 = 5, c2t0 = 5, c2t1 = 8,  
+                              sigma_b_sq0 = c(1, 0.5), sigma_b_sq1 = c(0.5, 0.8), 
+                              family = 'poisson', analysis = 'poisson', 
+                              method = 'glmm', seed = 123)
 }
 
 }
@@ -121,4 +190,11 @@ Snjiders, T. & Bosker, R. Multilevel Analysis: an Introduction to Basic and Adva
 
 Elridge, S., Ukoumunne, O. & Carlin, J. The Intra-Cluster Correlation Coefficient in Cluster Randomized Trials: 
 A Review of Definitions. International Statistical Review (2009), 77, 3, 378-394. doi: 10.1111/j.1751-5823.2009.00092.x
+}
+\author{
+Alexandria C. Sakrejda (\email{acbro0@umass.edu}
+
+Alexander R. Bogdan
+
+Ken Kleinman (\email{ken.kleinman@gmail.com})
 }

@@ -2,7 +2,8 @@
 % Please edit documentation in R/crtpwr.2meanD.ltf.R
 \name{crtpwr.2meanD.ltf}
 \alias{crtpwr.2meanD.ltf}
-\title{Power calculations for difference-in-difference cluster randomized trials accounting for loss to and gain at follow-up, continuous outcome}
+\title{Power calculations for difference-in-difference cluster randomized trials accounting for 
+loss to and gain at follow-up, continuous outcome}
 \usage{
 crtpwr.2meanD.ltf(
   alpha = 0.05,
@@ -64,8 +65,10 @@ at least four significant digits.}
 The computed argument.
 }
 \description{
-Compute the power of a difference-in-difference cluster randomized trial design with a continuous outcome,
-accounting for potential loss to or gain at follow-up, or determine parameters to obtain a target power.
+Compute the power of a difference-in-difference cluster 
+randomized trial design with a continuous outcome,
+accounting for potential loss to or gain at follow-up, or 
+determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
@@ -95,7 +98,8 @@ Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@
 # power = 0.80, nsubjects = 20, d = 0.50 units, icc = 0.05, rho_c = 0.50, rho_s = 0.70,
 # and vart = 1 square unit if 50 percent of subjects in each cluster are lost to follow-up 
 # and replaced.
-crtpwr.2meanD.ltf(nsubjects = 100 , d = 0.5, icc = 0.05, rho_c = 0.50, rho_s = 0.70, vart = 1,ltf=0.5)
+crtpwr.2meanD.ltf(nsubjects = 100 , d = 0.5, icc = 0.05, 
+  rho_c = 0.50, rho_s = 0.70, vart = 1,ltf=0.5)
 # 
 # The result, nclusters = 8.099772, suggests 9 clusters per condition should be used.
 

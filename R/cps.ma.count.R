@@ -227,7 +227,8 @@
 #' # seed = 123, the overall power for this trial should be 0.81.
 #'
 #' \dontrun{
-#' nsubjects.example <- list(c(150, 200, 50, 100), c(50, 150, 210, 100), c(70, 200, 150, 50, 100))
+#' nsubjects.example <- list(c(150, 200, 50, 100), c(50, 150, 210, 100), 
+#'                        c(70, 200, 150, 50, 100))
 #' counts.example <- c(10, 55, 65)
 #' sigma_b_sq.example <- c(1, 1, 2)
 #'
@@ -276,16 +277,22 @@ cps.ma.count <- function(nsim = 1000,
                          return.all.models = FALSE,
                          nofit = FALSE,
                          opt = "NLOPT_LN_BOBYQA") {
+  
+  
   converge <- NULL
   # use this later to determine total elapsed time
   start.time <- Sys.time()
   
-  # create narms and nclusters if not provided directly by user
+  if (is.null(narms)) {
+    stop("ERROR: narms is required.")
+  }
+  
+  if (narms < 3) {
+    stop("ERROR: LRT significance not calculable when narms < 3. Use cps.count() instead.")
+  }
+  
+  # create nclusters if not provided directly by user
   if (isTRUE(is.list(nsubjects))) {
-    # create narms and nclusters if not supplied by the user
-    if (is.null(narms)) {
-      narms <- length(nsubjects)
-    }
     if (is.null(nclusters)) {
       nclusters <- vapply(nsubjects, length, 0)
     }
@@ -328,7 +335,7 @@ cps.ma.count <- function(nsim = 1000,
   if (length(nclusters) == 1 & length(nsubjects) > 1) {
     nclusters <- rep(nclusters, length(nsubjects))
   }
-  # Create nsubjects structure from narms and nclusters when nsubjects is scalar or a list
+  # Create nsubjects structure from narms and nclusters
   if (mode(nsubjects) == "list") {
     str.nsubjects <- nsubjects
   } else {
@@ -336,11 +343,12 @@ cps.ma.count <- function(nsim = 1000,
       str.nsubjects <- lapply(nclusters, function(x)
         rep(nsubjects, x))
     } else {
+      if (length(nsubjects) != narms) {
+        stop("nsubjects must be length 1 or length narms if not provided in a list.")
+      }
       str.nsubjects <- list()
       for (i in 1:length(nsubjects)) {
-        for (j in nclusters) {
-          str.nsubjects[[i]] <- rep(nsubjects[i], times = j)
-        }
+          str.nsubjects[[i]] <- rep(nsubjects[i], times = nclusters[i])
       }
     }
   }
@@ -372,10 +380,6 @@ cps.ma.count <- function(nsim = 1000,
       "Length of variance parameters sigma_b_sq must equal narms, or be provided as a scalar
          if sigma_b_sq for all arms are equal."
     )
-  }
-  
-  if (narms < 3) {
-    message("Warning: LRT significance not calculable when narms<3. Use cps.count() instead.")
   }
   
   # Set warnings to OFF

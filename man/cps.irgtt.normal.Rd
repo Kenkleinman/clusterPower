@@ -6,60 +6,73 @@
 randomized group treatment trials.}
 \usage{
 cps.irgtt.normal(
-  nsim = NULL,
-  nsubjects = NULL,
-  nclusters = NULL,
-  difference = NULL,
-  ICC = NULL,
-  sigma_sq = NULL,
+  nsim = NA,
+  nsubjects = NA,
+  nclusters = NA,
+  mu = NA,
+  mu2 = NA,
+  sigma_sq = NA,
   sigma_b_sq = 0,
-  ICC2 = ICC,
-  sigma_sq2 = sigma_sq,
+  ICC2 = NA,
+  sigma_sq2 = NA,
   sigma_b_sq2 = 0,
   alpha = 0.05,
-  method = "glmm",
   quiet = FALSE,
-  all.sim.data = FALSE,
+  allSimData = FALSE,
+  nofit = FALSE,
   seed = NA,
-  poor.fit.override = FALSE
+  poorFitOverride = FALSE,
+  lowPowerOverride = FALSE,
+  timelimitOverride = TRUE
 )
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
 
-\item{nsubjects}{Number of subjects per treatment group; accepts either a scalar (equal cluster sizes, both groups), 
+\item{nsubjects}{Number of subjects per cluster in each arm; accepts either a scalar (equal cluster sizes, both groups), 
 a vector of length two (equal cluster sizes within groups), or a vector of length \code{sum(nclusters)} 
 (unequal cluster sizes within groups) (required).}
 
 \item{nclusters}{Number of clusters in the clustered group; accepts a scalar (required)}
 
-\item{difference}{Expected absolute treatment effect; accepts numeric (required).}
+\item{mu}{Expected mean of arm 1; accepts numeric (required).}
 
-\item{ICC}{Intra-cluster correlation coefficient; accepts a value between 0 - 1}
+\item{mu2}{Expected mean of arm 2; accepts numeric (required).}
 
 \item{sigma_sq}{Within-cluster variance; accepts numeric}
 
-\item{sigma_b_sq}{Between-cluster variance; defaults to 0. Accepts numeric.
-If clusters differ between treatment groups, at least 1 of the following 
-must be specified: ICC2, sigma_sq2.}
+\item{sigma_b_sq}{Between-cluster variance for clusters in arm 2. Defaults to 0.}
 
-\item{ICC2}{Intra-cluster correlation coefficient for clusters in TREATMENT group}
+\item{ICC2}{Intra-cluster correlation coefficient for clusters in arm 2}
 
-\item{sigma_sq2}{Within-cluster variance for clusters in TREATMENT group}
+\item{sigma_sq2}{Within-cluster variance for clusters in arm 2}
 
-\item{sigma_b_sq2}{Between-cluster variance for clusters in TREATMENT group.}
+\item{sigma_b_sq2}{Between-cluster variance for clusters in arm 2.}
 
 \item{alpha}{Significance level; default = 0.05.}
 
 \item{quiet}{When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.}
 
-\item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
+\item{allSimData}{Option to output list of all simulated datasets; default = FALSE.}
+
+\item{nofit}{Option to skip model fitting and analysis and return the simulated data.
+Defaults to \code{FALSE}.
+
+At least 2 of the following must be specified:}
 
 \item{seed}{Option to set seed. Default is NA.}
 
-\item{poor.fit.override}{Option to override \code{stop()} if more than 25\% 
-of fits fail to converge.
-At least 2 of the following must be specified:}
+\item{poorFitOverride}{Option to override \code{stop()} if more than 25\%
+of fits fail to converge; default = FALSE.}
+
+\item{lowPowerOverride}{Option to override \code{stop()} if the power
+is less than 0.5 after the first 50 simulations and every ten simulations
+thereafter. On function execution stop, the actual power is printed in the
+stop message. Default = FALSE. When TRUE, this check is ignored and the
+calculated power is returned regardless of value.}
+
+\item{timelimitOverride}{Logical. When FALSE, stops execution if the estimated completion time
+is more than 2 minutes. Defaults to TRUE.}
 }
 \value{
 A list with the following components:
@@ -74,45 +87,55 @@ A list with the following components:
   \item Vector containing user-defined cluster sizes
   \item Vector containing user-defined number of clusters in each treatment group
   \item Data frame reporting ICC for Treatment/Non-Treatment groups
-  \item Vector containing expected difference between groups based on user inputs
+  \item Vector containing expected group means based on user inputs
   \item Data frame with columns: 
                   "Estimate" (Estimate of treatment effect for a given simulation), 
                   "Std.err" (Standard error for treatment effect estimate), 
                   "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
                   "p.value", 
                   "sig.val" (Is p-value less than alpha?)
-  \item List of data frames, each containing: 
+  \item If \code{allSimData = TRUE}, a list of data frames, each containing: 
                   "y" (Simulated response value), 
                   "trt" (Indicator for treatment group), 
                   "clust" (Indicator for cluster)
                   }
+If \code{nofit = T}, a data frame of the simulated data sets, containing:
+\itemize{
+  \item "arm" (Indicator for treatment arm)
+  \item "cluster" (Indicator for cluster)
+  \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+  }
 }
 \description{
 This function uses iterative simulations to determine 
 approximate power for individually randomized group treatment trials with a 
 normally-distributed outcome of interest. Users can modify a variety of 
 parameters to suit the simulations to their desired experimental situation. 
-This function returns the summary power values for each treatment arm.
+This function returns the summary power values for each arm.
 }
 \details{
 Runs the power simulation.
 
 Users must specify the desired number of simulations, number of subjects per 
-cluster, number of clusters per treatment arm, expected absolute difference 
-between treatments, two of the following: ICC, within-cluster variance, or 
-between-cluster variance; significance level, analytic method, progress updates, 
-and simulated data set output may also be specified.
+cluster, number of clusters per arm, expected means for the 
+arm 1 and arm 2 (respectively), two of the following: ICC, 
+within-cluster variance, or between-cluster variance; significance level, 
+progress updates, and simulated data set output may also be 
+specified.
 }
 \examples{
 \dontrun{
-irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = 10, 
-                       nclusters = 10, difference = .5,
-                        sigma_sq = 1, sigma_sq2 = 0.9, 
+irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = c(100, 10), 
+                       nclusters = 8, mu = 1.1, mu2 = 1.5,
+                        sigma_sq = 0.1, sigma_sq2 = 0.2, 
                         sigma_b_sq2 = 0.1, alpha = 0.05,
-                        quiet = FALSE, all.sim.data = FALSE)
+                        quiet = FALSE, allSimData = FALSE)
 }
 }
 \author{
-Alexandria C. Sakrejda (\email{acbro0@umass.edu}), Alexander R. Bogdan, 
-  and Ken Kleinman (\email{ken.kleinman@gmail.com})
+Alexandria C. Sakrejda (\email{acbro0@umass.edu})
+
+Alexander R. Bogdan
+
+Ken Kleinman (\email{ken.kleinman@gmail.com})
 }

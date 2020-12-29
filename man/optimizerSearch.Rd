@@ -16,7 +16,7 @@ A string
 }
 }
 \description{
-This function can be called by some of the clusterPower functions to search 
+This function can be called by some of the clusterPower functions to search
 for an optimizer that does not produce convergence errors.
 }
 \author{

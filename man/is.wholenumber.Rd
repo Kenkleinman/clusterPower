@@ -8,6 +8,8 @@ is.wholenumber(x, tol = .Machine$double.eps^0.5)
 }
 \arguments{
 \item{x}{The numeric value to be tested.}
+
+\item{tol}{The machine tolerance. Defaults to \code{.Machine$double.eps ^ 0.5}.}
 }
 \value{
 Logical.

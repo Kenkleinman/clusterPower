@@ -26,7 +26,7 @@ weighted.crossover.cluster.level(dat, incl.period.effect, outcome.type, alpha)
 \item{alpha}{the type I error rate}
 }
 \value{
-A numeric vector with the following three elements, in order: 
+A numeric vector with the following three elements, in order:
  [1] a point estimate for the treatment effect, [2] lower bound of (1-alpha)
  confidence interval, [3] lower bound of (1-alpha) confidence interval.
 }
@@ -38,9 +38,9 @@ not designed to be called directly by the user.
 }
 \details{
 \code{random.effect()} relies on a call to \code{glmer()} from the \code{lme4}
-package. \code{fixed.effect()} relies on a call to \code{glm()}. 
+package. \code{fixed.effect()} relies on a call to \code{glm()}.
 \code{fixed.effect.cluster.level()} will save lots of time if you just want to
-run a cluster-level analysis and you have lots of observations. 
+run a cluster-level analysis and you have lots of observations.
 \code{weighted.crossover.cluster.level()} implements methods for fitting
 a weighted analysis on data from a crossover study (see Turner et al. 1997).
 }

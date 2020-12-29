@@ -210,13 +210,13 @@
 #' # data sets analyzed by the GLMM method.
 #'
 #' \dontrun{
-#' count.sim = cps.count(nsim = 100, nsubjects = c(10,20), nclusters = c(10,20),
+#' count.sim = cps.count(nsim = 100, nsubjects = c(10,20), nclusters = c(10,10),
 #'                       c1 = 20, c2 = 30, sigma_b_sq = 0.1,
 #'                       family = 'poisson', analysis = 'poisson',
 #'                       method = 'glmm', alpha = 0.05, quiet = FALSE,
 #'                       allSimData = FALSE, seed = 123)
 #' }
-#' # The resulting estimated power (if you set seed = 123) should be about 0.95.
+#' # The resulting estimated power (if you set seed = 123) should be about 0.85.
 #'
 #'
 #'
@@ -540,9 +540,7 @@ cps.count = function(nsim = NULL,
             data = sim.dat,
             family = stats::poisson(link = 'log'),
             control = lme4::glmerControl(
-              optimizer = optmethod,
-              optCtrl = list(starttests = FALSE,
-                             kkt = FALSE)
+              optimizer = optmethod
             )
           ))
         }
@@ -552,9 +550,7 @@ cps.count = function(nsim = NULL,
             y ~ trt + (1 | clust),
             data = sim.dat,
             control = lme4::glmerControl(
-              optimizer = optmethod,
-              optCtrl = list(starttests = FALSE,
-                             kkt = FALSE)
+              optimizer = optmethod
             )
           ))
         }
@@ -577,19 +573,7 @@ cps.count = function(nsim = NULL,
               data = sim.dat,
               family = stats::poisson(link = 'log')
             ))
-          #try(lme4::glmer(
-          #y ~ trt + (0 + trt | clust),
-          #data = sim.dat,
-          #family = stats::poisson(link = 'log'),
-          #control = lme4::glmerControl(
-          #  optimizer = optmethod,
-          #  optCtrl = list(
-          #    starttests = FALSE,
-          #    kkt = FALSE
-          #  )
-          #)
-          #)
-          #)
+
           if (length(my.mod)==1 & class(my.mod) == "try-error") {
             converge.vector[i] <- FALSE
             next
@@ -608,9 +592,7 @@ cps.count = function(nsim = NULL,
             y ~ trt + (0 + trt | clust),
             data = sim.dat,
             control = lme4::glmerControl(
-              optimizer = optmethod,
-              optCtrl = list(starttests = FALSE,
-                             kkt = FALSE)
+              optimizer = optmethod
             )
           ))
         }

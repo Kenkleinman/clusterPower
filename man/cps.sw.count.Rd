@@ -8,115 +8,157 @@ cps.sw.count(
   nsim = NULL,
   nsubjects = NULL,
   nclusters = NULL,
-  c.ntrt = NULL,
-  c.trt = NULL,
+  c0 = NULL,
+  c1 = NULL,
   steps = NULL,
   sigma_b_sq = NULL,
   alpha = 0.05,
   family = "poisson",
   analysis = "poisson",
+  negBinomSize = 1,
   method = "glmm",
   quiet = FALSE,
-  all.sim.data = FALSE,
-  opt = "L-BFGS-B"
+  allSimData = FALSE,
+  poorFitOverride = FALSE,
+  lowPowerOverride = FALSE,
+  timelimitOverride = TRUE,
+  opt = "L-BFGS-B",
+  seed = NULL
 )
 }
 \arguments{
 \item{nsim}{Number of datasets to simulate; accepts integer (required).}
 
-\item{nsubjects}{Number of subjects per cluster; accepts either a scalar (equal cluster sizes) 
+\item{nsubjects}{Number of subjects per cluster; accepts either a scalar (equal cluster sizes)
 or a vector of length \code{nclusters} (user-defined size for each cluster) (required).}
 
 \item{nclusters}{Number of clusters; accepts non-negative integer scalar (required).}
 
-\item{c.ntrt}{Expected outcome count in non-treatment group. Accepts scalar (required).}
+\item{c0}{Expected outcome count in arm 1. Accepts scalar (required).}
 
-\item{c.trt}{Expected outcome count in treatment group. Accepts scalar (required).}
+\item{c1}{Expected outcome count in arm 2. Accepts scalar (required).}
 
-\item{steps}{Number of crossover steps; a baseline step (all clusters in non-treatment group) is assumed. 
-Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by 
-\code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number 
-of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the cumulative 
+\item{steps}{Number of crossover steps; a baseline step (all clusters in arm 1) is assumed.
+Accepts positive scalar (indicating the total number of steps; clusters per step is obtained by
+\code{nclusters / steps}) or a vector of non-negative integers corresponding either to the number
+of clusters to be crossed over at each time point (e.g c(2,4,4,2); nclusters = 10) or the cumulative
 number of clusters crossed over by a given time point (e.g. c(2,4,8,10); nclusters = 10) (required).}
 
-\item{sigma_b_sq}{Between-cluster variance; accepts non-negative numeric scalar (indicating equal 
-between-cluster variances for both treatment groups) or a vector of length 2 specifying treatment-specific 
+\item{sigma_b_sq}{Between-cluster variance; accepts non-negative numeric scalar (indicating equal
+between-cluster variances for both arms) or a vector of length 2 specifying treatment-specific
 between-cluster variances (required).}
 
 \item{alpha}{Significance level. Default = 0.05.}
 
-\item{family}{Distribution from which responses are simulated. Accepts Poisson ('poisson') or negative binomial ('neg.binom') (required); default = 'poisson'}
+\item{family}{Distribution from which responses are simulated. Accepts Poisson ('poisson') or
+negative binomial ('neg.binom') (required); default = 'poisson'}
 
-\item{analysis}{Family used for regression; currently only applicable for GLMM. Accepts c('poisson', 'neg.binom') (required); default = 'poisson'}
+\item{analysis}{Family used for regression; currently only applicable for GLMM. Accepts
+c('poisson', 'neg.binom') (required); default = 'poisson'}
 
-\item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or 
+\item{negBinomSize}{Only used when generating simulated data from the
+negative binomial (family = 'neg.binom'), this is the target for number of
+successful trials, or the dispersion parameter (the shape parameter of the gamma
+mixing distribution). Must be strictly positive but need not be integer.
+Defaults to 1.}
+
+\item{method}{Analytical method, either Generalized Linear Mixed Effects Model (GLMM) or
 Generalized Estimating Equation (GEE). Accepts c('glmm', 'gee') (required); default = 'glmm'.}
 
 \item{quiet}{When set to FALSE, displays simulation progress and estimated completion time; default is FALSE.}
 
-\item{all.sim.data}{Option to output list of all simulated datasets; default = FALSE.}
+\item{allSimData}{Option to output list of all simulated datasets; default = FALSE.}
+
+\item{poorFitOverride}{Option to override \code{stop()} if more than 25\%
+of fits fail to converge; default = FALSE.}
+
+\item{lowPowerOverride}{Option to override \code{stop()} if the power
+is less than 0.5 after the first 50 simulations and every ten simulations
+thereafter. On function execution stop, the actual power is printed in the
+stop message. Default = FALSE. When TRUE, this check is ignored and the
+calculated power is returned regardless of value.}
+
+\item{timelimitOverride}{Logical. When FALSE, stops execution if the estimated completion time
+is more than 2 minutes. Defaults to TRUE.}
 
 \item{opt}{Option to fit with a different optimizer (using the package \code{optimx}). Default is 'L-BFGS-B'.}
+
+\item{seed}{Option to set.seed. Default is NULL.}
 }
 \value{
 A list with the following components
 \itemize{
   \item Character string indicating total number of simulations and simulation type
   \item Number of simulations
-  \item Data frame with columns "Power" (Estimated statistical power), 
-               "lower.95.ci" (Lower 95% confidence interval bound), 
+  \item Data frame with columns "Power" (Estimated statistical power),
+               "lower.95.ci" (Lower 95% confidence interval bound),
                "upper.95.ci" (Upper 95% confidence interval bound)
   \item Analytic method used for power estimation
   \item Significance level
   \item Vector containing user-defined cluster sizes
   \item Vector containing user-defined number of clusters
-  \item Data frame reporting ICC, within & between cluster variances for Treatment/Non-Treatment 
-  groups at each time point
+  \item Data frame reporting ICC, within & between cluster variances for both arms
+  at each time point
   \item Vector containing expected difference between groups based on user inputs
-  \item Data frame containing mean response values for each treatment group at each time point
+  \item Data frame containing mean response values for each arm at each time point
   \item Matrix showing cluster crossover at each time point
-  \item Data frame with columns: 
-                  "Estimate" (Estimate of treatment effect for a given simulation), 
-                  "Std.err" (Standard error for treatment effect estimate), 
-                  "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)), 
-                  "p.value", 
+  \item Data frame with columns:
+                  "Estimate" (Estimate of treatment effect for a given simulation),
+                  "Std.err" (Standard error for treatment effect estimate),
+                  "Test.statistic" (z-value (for GLMM) or Wald statistic (for GEE)),
+                  "p.value",
                   "sig.val" (Is p-value less than alpha?)
-  \item List of data frames, each containing: 
-                  "y" (Simulated response value), 
-                  "trt" (Indicator for treatment group),
-                  "time.point" (Indicator for step; "t1" = time point 0) 
-                  "clust" (Indicator for cluster), 
+  \item If \code{allSimData = TRUE}, a list of data frames, each containing:
+                  "y" (Simulated response value),
+                  "trt" (Indicator for arm),
+                  "time.point" (Indicator for step; "t1" = time point 0)
+                  "clust" (Indicator for cluster),
                   "period" (Indicator for at which step a cluster crosses over)
 }
+If \code{nofit = T}, a data frame of the simulated data sets, containing:
+
+\itemize{
+  \item "arm" (Indicator for treatment arm)
+  \item "cluster" (Indicator for cluster)
+  \item "y1" ... "yn" (Simulated response value for each of the \code{nsim} data sets).
+  }
 }
 \description{
-This set of functions utilize iterative simulations to determine 
-approximate power for stepped wedge cluster-randomized controlled trials. Users 
+This set of functions utilize iterative simulations to determine
+approximate power for stepped wedge cluster-randomized controlled trials. Users
 can modify a variety of parameters to suit the simulations to their
 desired experimental situation.
 }
 \details{
-Runs power simulations for stepped wedge cluster-randomized controlled trials 
+Runs power simulations for stepped wedge cluster-randomized controlled trials
 with a count outcome. The stepped wedge trial design is a type of cross-over
-design in which clusters change treatments in waves. Initially all the 
+design in which clusters change treatments in waves. Initially all the
 clusters recieve the same standard treatment, and at the end of the trial all
-of the clusters will be recieving the treatment of interest. More than one 
-cluster can change treatments in a wave, but the order in which clusters 
-change treatments is randomly determined. The outcome of interest is assessed 
+of the clusters will be recieving the treatment of interest. More than one
+cluster can change treatments in a wave, but the order in which clusters
+change treatments is randomly determined. The outcome of interest is assessed
 in each cluster during each wave.
 
-Users must specify the desired number of simulations, number of subjects per 
-cluster, number of clusters per treatment arm, expected absolute difference 
-between treatment arms, between-cluster variance; significance level, 
-distributional family for data generation, analytic method, progress updates, 
+Users must specify the desired number of simulations, number of subjects per
+cluster, number of clusters per arm, expected absolute difference
+between arms, between-cluster variance; significance level,
+distributional family for data generation, analytic method, progress updates,
 and simulated data set output may also be specified.
 }
 \examples{
+
+# Estimate power for a trial with 3 steps and 12 clusters in arm 1
+# (often the standard-of-care or 'control' arm) at the initiation
+#of the study. Those clusters have 15 subjects each, with sigma_b_sq = 1.
+# We have estimated arm outcome counts of 4 and 5 in the first and second arms,
+# respectively, and 100 simulated data sets analyzed by the GLMM method. Using seed = 123,
+# the resulting power should be 0.85.
+
 \dontrun{
-count.sw.rct = cps.sw.count(nsim = 100, nsubjects = 50, nclusters = 30, 
-                              c.ntrt = 3, c.trt = 5, steps = 5, sigma_b_sq = 20, 
-                              alpha = 0.05, family = 'poisson', analysis = 'poisson', 
-                              method = 'glmm', quiet = FALSE, all.sim.data = FALSE)
+count.sw.rct = cps.sw.count(nsim = 100, nsubjects = 15, nclusters = 12,
+                              c0 = 4, c1 = 5, steps = 3, sigma_b_sq = 1,
+                              alpha = 0.05, family = 'poisson', analysis = 'poisson',
+                              method = 'glmm', seed = 123)
 }
 
 }

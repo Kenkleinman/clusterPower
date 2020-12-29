@@ -11,7 +11,7 @@ cpa.sw.normal(
   nsubjects = NA,
   ntimes = NA,
   d = NA,
-  icc = NA,
+  ICC = NA,
   rho_c = NA,
   rho_s = NA,
   vart = NA,
@@ -33,7 +33,7 @@ error.}
 
 \item{d}{The expected treatment effect.}
 
-\item{icc}{The intra-cluster correlation, the correlation in outcome measurements between
+\item{ICC}{The intra-cluster correlation, the correlation in outcome measurements between
 two individuals from the same cluster.}
 
 \item{rho_c}{The cluster autocorrelation, the correlation between two population means
@@ -60,7 +60,7 @@ or determine parameters to obtain a target power.
 }
 \details{
 Exactly one of \code{alpha}, \code{power}, \code{nclusters}, \code{nsubjects},
-  \code{ntimes}, \code{d}, \code{icc}, \code{rho_c}, \code{rho_s}, and \code{vart}
+  \code{ntimes}, \code{d}, \code{ICC}, \code{rho_c}, \code{rho_s}, and \code{vart}
   must be passed as \code{NA}. Note that \code{alpha} and\code{power}
   have non-\code{NA} defaults, so if those are the parameters of 
   interest they must be explicitly passed as \code{NA}.
@@ -106,18 +106,21 @@ When \eqn{\rho_S = 0} the design is considered to be a cross-sectional design, w
 
 \section{Authors}{
 
-Jonathan Moyer (\email{jon.moyer@gmail.com}), Ken Kleinman (\email{ken.kleinman@gmail.com}), Alexandria C. Sakrejda
+Jonathan Moyer (\email{jon.moyer@gmail.com}),
+Alexandria C. Sakrejda (\email{acbro0@gmail.com}), 
+Ken Kleinman (\email{ken.kleinman@gmail.com})
 }
 
 \examples{
 # Find the required number of clusters switching to intervention at each time point for a trial 
-# with alpha = 0.05, power = 0.80, nsubjects = 50, ntimes = 5, d = 1.5 units, icc = 0.2,
+# with alpha = 0.05, power = 0.80, nsubjects = 50, ntimes = 5, d = 1.5 units, ICC = 0.2,
 # rho_c = 0.80, rho_s = 0, and vart = 16 square-units. Note that because rho_s = 0, this is a 
 # cross-sectional design.
-cpa.sw.normal(nsubjects = 50, ntimes = 5, d = 1.5, icc = 0.2, rho_c = 0.80, rho_s = 0, vart = 16)
+cpa.sw.normal(nsubjects = 50, ntimes = 5, d = 1.5, ICC = 0.2, rho_c = 0.80, rho_s = 0, vart = 16)
 # 
-# The result, nclusters = 1.288772, suggests 2 clusters switching per time point should be used. This
-# means that the total number of clusters in the study is nclusters*ntimes = 2*5 = 10.
+# The result, nclusters = 1.288772, suggests 2 clusters switching per time point 
+# should be used. This means that the total number of clusters in the study is 
+# nclusters * ntimes = 2 * 5 = 10.
 
 }
 \references{

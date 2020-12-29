@@ -27,9 +27,12 @@
 #' @param nsubjects The number of subjects in each cluster in the intervention arm.
 #' @param ncontrols The number of subjects in the control arm.
 #' @param d The expected treatment effect.
-#' @param varu The variance of the cluster level random effect for clusters in the intervention arm.
-#' @param varei The variance of the subject level random error for individuals in the intervention arm.
-#' @param varr The variance of the subject level random error for individuals in the control arm.
+#' @param varu The variance of the cluster level random effect for clusters 
+#' in the intervention arm.
+#' @param varei The variance of the subject level random error for individuals 
+#' in the intervention arm.
+#' @param varr The variance of the subject level random error for individuals 
+#' in the control arm.
 #' @param tol Numerical tolerance used in root finding. The default provides
 #'   at least four significant digits.
 #' @return The computed argument.
