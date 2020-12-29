@@ -124,7 +124,7 @@ JM-- Please add equation!! And a statement about how we do simulation!
 Frequently investigators need to design trials with three, four, or more arms. For a thourough discussion of the benefits of using mutli-arm approaches, see @parmar2014more and @o2014scientists. Consider the following linear model, where $k$ represents the treatment arm $k=1...k-1$:
 
 \begin{equation}
-y^{-1}(\mu_{ij})= \beta_{0}+x_{1ij}\beta_{1}+x_{2ij}\beta_{2}+...x_{(k-1)ij}\beta_{(k-1)}+b_{i}+e_{ij}
+y_{ij}= \beta_{0}+x_{1ij}\beta_{1}+x_{2ij}\beta_{2}+...x_{(k-1)ij}\beta_{(k-1)}+b_{i}+e_{ij}
 \end{equation}
 
 Here, $x_{rij}$ is an indicator variable identifying whether subject $ij$ is in treatment group $r$ or not.  For assessing power by simulation, we determine whether $H_0: \beta_1= \beta_2= \cdots \beta_{k-1}=0$ is rejected or not, and we can also examine individual $\beta$s.
