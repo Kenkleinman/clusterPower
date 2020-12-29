@@ -4,7 +4,6 @@ src/*.so
 src/*.dll
 doc
 Meta
-man/*.Rd
 
 # History files
 .Rhistory
@@ -28,10 +27,6 @@ man/*.Rd
 # RStudio files
 .Rproj.user/
 *.Rproj
-
-# produced vignettes
-vignettes/*.html
-vignettes/*.pdf
 
 # knitr and R markdown default cache directories
 *_cache/
