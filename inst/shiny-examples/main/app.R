@@ -22,6 +22,14 @@ plan(callr)
 
 # labels for arguments
 
+simnsubjectstext <- "Number of observations per cluster (nsubjects)"
+refsimnsubjectstext <- "Number of reference arm observations (nsubjects)"
+treatsimnsubjectstext <- "Number of treatment arm observations (nsubjects)"
+
+simnclusterstext <- "Number of clusters per arm (nclusters)"
+refsimnclusterstext <- "Number of reference arm clusters (nclusters)"
+treatsimnclusterstext <- "Number of treatment arm clusters (nclusters)"
+
 analyticnsubjectstext <- "Mean observations per cluster (nsubjects)"
 analyticnclusterstext <- "Mean clusters per arm (nclusters)"
 analyticICCtext <- "Intracluster correlation coefficient (ICC)"
@@ -34,8 +42,6 @@ refsigma_b_sqtext <-
 treatsigma_b_sqtext <-
   "Treatment arm between-cluster variance (sigma_b_sq)"
 simnsimtext <- "Number of simulations (nsim)"
-simnsubjectstext <- "Observations per cluster (nsubjects)"
-simnclusterstext <- "Clusters per arm (nclusters)"
 refmutext <- "Reference arm expected mean (mu)"
 treatmutext <- "Treatment arm expected mean (mu2)"
 refICCtext <- "Reference arm ICC (ICC)"
@@ -207,11 +213,11 @@ ui <- fluidPage(
           tags$style(HTML("#armHead{color: #337ab7;}")),
           
           # nclusters
-          numericInput("nclusters1cpsnormal", simnclusterstext, value = 10),
+          numericInput("nclusters1cpsnormal", refsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects1cpsnormal",
-                    simnsubjectstext,
+                    refsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects1cpsnormal",
@@ -259,11 +265,11 @@ ui <- fluidPage(
              "Treatment Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters2cpsnormal", simnclusterstext, value = 10),
+          numericInput("nclusters2cpsnormal", treatsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects2cpsnormal",
-                    simnsubjectstext,
+                    treatsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects2cpsnormal",
@@ -375,11 +381,11 @@ ui <- fluidPage(
              "Reference Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters1cpsbinary", simnclusterstext, value = 10),
+          numericInput("nclusters1cpsbinary", refsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects1cpsbinary",
-                    simnsubjectstext,
+                    refsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects1cpsbinary",
@@ -412,11 +418,11 @@ ui <- fluidPage(
              "Treatment Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters2cpsbinary", simnclusterstext, value = 10),
+          numericInput("nclusters2cpsbinary", treatsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects2cpsbinary",
-                    simnsubjectstext,
+                    treatsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects2cpsbinary",
@@ -494,11 +500,11 @@ ui <- fluidPage(
              "Reference Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters1cpscount", simnclusterstext, value = 10),
+          numericInput("nclusters1cpscount", refsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects1cpscount",
-                    simnsubjectstext,
+                    refsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects1cpscount",
@@ -530,11 +536,11 @@ ui <- fluidPage(
              "Treatment Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters2cpscount", simnclusterstext, value = 10),
+          numericInput("nclusters2cpscount", treatsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects2cpscount",
-                    simnsubjectstext,
+                    treatsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects2cpscount",
@@ -962,11 +968,11 @@ ui <- fluidPage(
              "Reference Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters1cpsdidnormal", simnclusterstext, value = 6),
+          numericInput("nclusters1cpsdidnormal", refsimnclusterstext, value = 6),
           
           # nsubjects
           textInput("nsubjects1cpsdidnormal",
-                    simnsubjectstext,
+                    refsimnsubjectstext,
                     value = "120"),
           bsTooltip(
             "nsubjects1cpsdidnormal",
@@ -1013,11 +1019,11 @@ ui <- fluidPage(
              "Treatment Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters2cpsdidnormal", simnclusterstext, value = 6),
+          numericInput("nclusters2cpsdidnormal", treatsimnclusterstext, value = 6),
 
           # nsubjects
           textInput("nsubjects2cpsdidnormal",
-                    simnsubjectstext,
+                    treatsimnsubjectstext,
                     value = "120"),
           bsTooltip(
             "nsubjects2cpsdidnormal",
@@ -1112,11 +1118,11 @@ ui <- fluidPage(
              "Reference Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters1cpsdidbinary", simnclusterstext, value = 10),
+          numericInput("nclusters1cpsdidbinary", refsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects1cpsdidbinary",
-                    simnsubjectstext,
+                    refsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects1cpsdidbinary",
@@ -1164,11 +1170,11 @@ ui <- fluidPage(
              "Treatment Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters2cpsdidbinary", simnclusterstext, value = 10),
+          numericInput("nclusters2cpsdidbinary", treatsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects2cpsdidbinary",
-                    simnsubjectstext,
+                    treatsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects2cpsdidbinary",
@@ -1237,11 +1243,11 @@ ui <- fluidPage(
              "Reference Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters1cpsdidcount", simnclusterstext, value = 7),
+          numericInput("nclusters1cpsdidcount", refsimnclusterstext, value = 7),
           
           # nsubjects
           textInput("nsubjects1cpsdidcount",
-                    simnsubjectstext,
+                    refsimnsubjectstext,
                     value = "9"),
           bsTooltip(
             "nsubjects1cpsdidcount",
@@ -1289,11 +1295,11 @@ ui <- fluidPage(
              "Treatment Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters2cpsdidcount", simnclusterstext, value = 7),
+          numericInput("nclusters2cpsdidcount", treatsimnclusterstext, value = 7),
 
           # nsubjects
           textInput("nsubjects2cpsdidcount",
-                    simnsubjectstext,
+                    treatsimnsubjectstext,
                     value = "9"),
           bsTooltip(
             "nsubjects2cpsdidcount",
