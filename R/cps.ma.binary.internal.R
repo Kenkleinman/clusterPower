@@ -434,7 +434,7 @@ cps.ma.binary.internal <-
       avg.iter.time <- Sys.time() - sim.start
       time.est = avg.iter.time * (nsim - 1) / 60
       hr.est = time.est %/% 60
-      min.est = round(time.est %% 60, 0)
+      min.est = round(time.est %% 60, 3)
       
       #time limit override (for Shiny)
       if (min.est > 2 && timelimitOverride == FALSE) {
@@ -538,7 +538,7 @@ cps.ma.binary.internal <-
         "estimates" = model.values,
         "model.comparisons" = model.compare,
         "converged" = unlist(converged),
-        "sim.data" = data.frame(trt, clust, sim.dat)
+        "sim.data" = data.frame(sim.dat)
       )
     } else {
       complete.output.internal <-  list(

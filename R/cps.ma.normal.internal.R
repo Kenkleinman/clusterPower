@@ -289,7 +289,7 @@ cps.ma.normal.internal <-
           } # end of while loop
           
           if (poor.fit.override == FALSE) {
-            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25) & i > 50) {
+            if (sum(converge.vector[1:i] == FALSE, na.rm = TRUE) > (nsim * .25) & i > 50) {
               stop("more than 25% of simulations are singular fit: check model specifications")
             }
           }
@@ -335,7 +335,7 @@ cps.ma.normal.internal <-
           } # end of while loop
           
           if (poor.fit.override == FALSE) {
-            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25) & i > 50) {
+            if (sum(converge.vector[1:i] == FALSE, na.rm = TRUE) > (nsim * .25) & i > 50) {
               stop("more than 25% of simulations are singular fit: check model specifications")
             }
           }
@@ -384,7 +384,7 @@ cps.ma.normal.internal <-
           } #end of while loop
           
           if (poor.fit.override == FALSE) {
-            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25) & i > 50) {
+            if (sum(converge.vector[1:i] == FALSE, na.rm = TRUE) > (nsim * .25) & i > 50) {
               stop("more than 25% of simulations are singular fit: check model specifications")
             }
           }
@@ -423,7 +423,7 @@ cps.ma.normal.internal <-
           } #end of while loop
           
           if (poor.fit.override == FALSE) {
-            if (sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * .25) & i > 50) {
+            if (sum(converge.vector[1:i] == FALSE, na.rm = TRUE) > (nsim * .25) & i > 50) {
               stop("more than 25% of simulations are singular fit: check model specifications")
             }
           }
@@ -434,7 +434,7 @@ cps.ma.normal.internal <-
           avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
           time.est = (avg.iter.time / 10) * (nsim - 10) / 60
           hr.est = time.est %/% 60
-          min.est = round(time.est %% 60, 0)
+          min.est = round(time.est %% 60, 3)
           if (min.est > 2 && timelimitOverride == FALSE) {
             stop(paste0(
               "Estimated completion time: ",
@@ -508,7 +508,7 @@ cps.ma.normal.internal <-
         total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         hr.est = total.est %/% 3600
         min.est = total.est %/% 60
-        sec.est = round(total.est %% 60, 0)
+        sec.est = round(total.est %% 60, 3)
         message(
           paste0(
             "Simulations Complete! Time Completed: ",

@@ -560,7 +560,7 @@ cps.binary = function(nsim = NULL,
       avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
       time.est = avg.iter.time * (nsim - 1) / 60
       hr.est = time.est %/% 60
-      min.est = round(time.est %% 60, 0)
+      min.est = round(time.est %% 60, 3)
       if (quiet == FALSE) {
         message(
           paste0(

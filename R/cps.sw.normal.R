@@ -463,7 +463,7 @@ cps.sw.normal = function(nsim = NULL,
         total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         hr.est = total.est %/% 3600
         min.est = total.est %/% 60
-        sec.est = round(total.est %% 60, 0)
+        sec.est = round(total.est %% 60, 2)
         message(
           paste0(
             "Simulations Complete! Time Completed: ",

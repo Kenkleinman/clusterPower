@@ -195,20 +195,23 @@ Sample Size Calculator, PASS11, \code{CRTsize::n4means}, \code{clusterPower::cps
 
 \examples{
 \dontrun{
-nsubjects.example <- list(c(20,20,20,20, 20, 75, 20, 20, 20, 75),
-  c(20, 20, 25, 25, 25, 25, 25, 25), c(40, 25, 40, 20, 20, 20, 20, 20))
-means.example <- c(1, 1.75, 0)
-sigma_sq.example <- c(2, 1.2, 2)
-sigma_b_sq.example <- c(1.1, 1.15, 1.1)
+nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+means.example <- c(22, 21, 21.5)
+sigma_sq.example <- c(1, 1, 0.9)
+sigma_b_sq.example <- c(0.1, 0.15, 0.1)
 
-multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.example,
-                       means = means.example, sigma_sq = sigma_sq.example,
-                       sigma_b_sq = sigma_b_sq.example, alpha = 0.05,
-                       quiet = FALSE, ICC=NULL, method = 'glmm',
-                       allSimData = FALSE,
-                       seed = 123, cores = "all",
-                       poorFitOverride = FALSE,
-                       optmethod = "nlminb")
+multi.cps.normal.models <- cps.ma.normal(nsim = 100,
+                              narms = 3,
+                              nsubjects = nsubjects.example,
+                              means = means.example,
+                              sigma_sq = sigma_sq.example,
+                              sigma_b_sq = sigma_b_sq.example,
+                              alpha = 0.05,
+                              quiet = FALSE, method = 'glmm',
+                              seed = 123, cores = "all",
+                              lowPowerOverride = FALSE,
+                              poorFitOverride = FALSE,
+                              optmethod = "nlm")
 
  multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3,
                                    nclusters = c(10,11,10), nsubjects = 25,
@@ -222,10 +225,10 @@ multi.cps.normal.unbal <- cps.ma.normal(nsim = 100, nsubjects = nsubjects.exampl
                                    optmethod = "nlminb")
 
 multi.cps.normal.simple <- cps.ma.normal(nsim = 100, narms = 3,
-                                  nclusters = 5, nsubjects = 25,
-                                  means = c(22.0, 21.0, 22.5),
-                                  sigma_sq = 0.1,
-                                  sigma_b_sq = 0.1, alpha = 0.05,
+                                  nclusters = 5, nsubjects = 10,
+                                  means = c(22.0, 22.5, 22.9),
+                                  sigma_sq = 0.2,
+                                  sigma_b_sq = 0.2, alpha = 0.05,
                                   quiet = FALSE, ICC=NULL, method = 'glmm',
                                   allSimData = FALSE, seed = 123,
                                   poorFitOverride = TRUE, cores="all",
