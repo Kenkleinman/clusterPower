@@ -134,7 +134,7 @@
 #'                             rep(17, times=15)),
 #'                             narms = 3,
 #'                             nclusters = 15,
-#'                             probs = c(0.15, 0.23, 0.22),
+#'                             probs = c(0.35, 0.43, 0.50),
 #'                             sigma_b_sq = c(0.1, 0.1, 0.1),
 #'                             alpha = 0.05, allSimData = TRUE,
 #'                             seed = 123, cores="all")

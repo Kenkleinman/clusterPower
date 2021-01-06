@@ -39,7 +39,7 @@
 #'                             nclusters = 15,
 #'                             probs = c(0.15, 0.23, 0.22),
 #'                             sigma_b_sq = c(0.1, 0.1, 0.1),
-#'                             alpha = 0.05, all.sim.data = TRUE,
+#'                             alpha = 0.05, allSimData = TRUE,
 #'                             seed = 123, cores="all")
 #'
 #'   bin <- binCalcICC(data = bin.ma.rct.unbal, nsim = 1000)
@@ -72,7 +72,7 @@ binCalcICC <-
            kappa = 0.45,
            nAGQ = 1,
            sim.min = 1,
-           sim.max = (length(data$sim.data) - 2),
+           sim.max = 100,
            nsim = 1000) {
     clust <- NULL
     #First, here's Akhtar Hossain's and Hirshikesh Chakraborty's iccbin function definition
@@ -555,7 +555,7 @@ binCalcICC <-
         nw01 <- 0
         nw00 <- 0
         for (i in 1:k) {
-          dti <- dt[cid == ucid[i],]
+          dti <- dt[cid == ucid[i], ]
           wsamp1 <- c()
           wsamp2 <- c()
           for (m in 1:(nrow(dti) - 1)) {
@@ -592,9 +592,9 @@ binCalcICC <-
         nb01 <- 0
         nb00 <- 0
         for (i in 1:(k - 1)) {
-          dti <- dt[cid == ucid[i],]
+          dti <- dt[cid == ucid[i], ]
           for (m in (i + 1):k) {
-            dtm <- dt[cid == ucid[m],]
+            dtm <- dt[cid == ucid[m], ]
             bsamp1 <- rep(dti$y, each = nrow(dtm))
             bsamp2 <- rep(dtm$y, times = nrow(dti))
             bsamp <- rbind(bsamp1, bsamp2)
@@ -720,48 +720,84 @@ binCalcICC <-
       }
     
     # apply iccbin to the simulated data
-    o <- data$sim.data
-    narms <- max(as.numeric(o[, 1]))
+    
     holder <- list()
     simnum <- sim.max - sim.min + 1
-    temp <- data.frame("trt" = o[, 1],
-                       "clust" = o[, 2],
-                       "y" = o[, (sim.min + 2):(sim.max + 2)])
-    for (j in (sim.min:sim.max)) {
-      holder[[j]] <- list()
-      for (k in 1:narms) {
-        holder[[j]][[k]] <- list()
-        o2 <- temp[temp[, 1] == k, ]
-        o2$clust <- as.factor(as.numeric(o2[, 2]))
-        y <- o2[3]
-        options(warn = -1)
-        if (simnum > 1 && j == 1 && k == 1) {
-          start.time = Sys.time()
+    # if data is a list
+    if (!is.data.frame(data$sim.data)) {
+      narms <- 2
+      for (j in (sim.min:sim.max)) {
+        holder[[j]] <- list()
+        temp <- data$sim.data[[j]]
+        for (k in 1:2) {
+          holder[[j]][[k]] <- list()
+          o2 <- temp[as.numeric(temp[, "trt"]) == k,]
+          o2$clust <- as.factor(as.numeric(o2[, "clust"]))
+          y <- o2["y"]
+          options(warn = -1)
+          if (simnum > 1 && j == 1 && k == 1) {
+            start.time = Sys.time()
+          }
+          holder[[j]][[k]] <- iccbin(
+            cid = clust,
+            y = y,
+            data = o2,
+            method = method,
+            ci.type = ci.type,
+            alpha = alpha,
+            kappa = kappa,
+            nAGQ = nAGQ,
+            M = nsim
+          )
+          if (simnum > 1 && j == 1 && k == 1) {
+            atime <- difftime(Sys.time(), start.time)
+            est <-
+              round(as.numeric(atime) * (narms * simnum) / 60, 2)
+            print(paste0("Estimated time to completion: ", est,  " minutes."))
+          }
+          options(warn = 0)
         }
-        holder[[j]][[k]] <- iccbin(
-          cid = clust,
-          y = y,
-          data = o2,
-          method = method,
-          ci.type = ci.type,
-          alpha = alpha,
-          kappa = kappa,
-          nAGQ = nAGQ,
-          M = nsim
-        )
-        if (simnum > 1 && j == 1 && k == 1) {
-          atime <- difftime(Sys.time(), start.time)
-          est <- round(as.numeric(atime) * (narms * simnum) / 60, 0)
-          print(paste0("Estimated time to completion: ", est,  " minutes."))
+      }
+    } else {
+      o <- data$sim.data
+      narms <- max(as.numeric(o[, 1]))
+      for (j in (sim.min:sim.max)) {
+        holder[[j]] <- list()
+        temp <- data.frame("arm" = o[, 1],
+                           "cluster" = o[, 2],
+                           "y" = as.numeric(levels(o[, j + 2]))[o[, j + 2]])
+        for (k in 1:narms) {
+          holder[[j]][[k]] <- list()
+          o2 <- temp[temp[, 1] == k,]
+          o2$cluster <- as.factor(as.numeric(o2[, 2]))
+          options(warn = -1)
+          if (simnum > 1 && j == 1 && k == 1) {
+            start.time = Sys.time()
+          }
+          holder[[j]][[k]] <- iccbin(
+            cid = cluster,
+            y = y,
+            data = o2,
+            method = method,
+            ci.type = ci.type,
+            alpha = alpha,
+            kappa = kappa,
+            nAGQ = nAGQ,
+            M = nsim
+          )
+          if (simnum > 1 && j == 1 && k == 1) {
+            atime <- difftime(Sys.time(), start.time)
+            est <- round(as.numeric(atime) * (narms * simnum) / 60, 0)
+            print(paste0("Estimated time to completion: ", est,  " minutes."))
+          }
+          options(warn = 0)
         }
-        options(warn = 0)
       }
     }
     armname <- vector(mode = "character", length = narms)
     armname <- paste0("arm", 1:narms)
     simname <- paste0("simulation", 1:simnum)
     names(holder) <- simname
-    browser()
     for (i in 1:simnum) {
       names(holder[[i]]) <- armname
     }
