@@ -73,8 +73,19 @@ bin.ma.rct.unbal <- cps.ma.binary(nsim = 3,
                             alpha = 0.05, allSimData = TRUE,
                             seed = 123, cores="all")
 
-  bin <- binCalcICC(data = bin.ma.rct.unbal, nsim = 1000)
+binCalcICC(data = bin.ma.rct.unbal, nsim = 1000)
 }
+
+\dontrun{ 
+binary.sim = cps.binary(nsim = 100, nsubjects = 20,
+  nclusters = 10, p1 = 0.8,
+  p2 = 0.5, sigma_b_sq = 1,
+  sigma_b_sq2 = 1.2, alpha = 0.05,
+  method = 'glmm', allSimData = TRUE)
+
+binCalcICC(data = binary.sim, nsim = 1000)
+}
+
 
 }
 \author{

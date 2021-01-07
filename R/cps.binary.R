@@ -453,8 +453,9 @@ cps.binary = function(nsim = NULL,
         data = sim.dat,
         family = stats::binomial(link = 'logit')
       )
-      lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
-      lmer.icc.vector = append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
+      lmer.vcov <- as.numeric(as.data.frame(lme4::VarCorr(lmer.mod))[, 4:5])
+      icc.val <- lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2])
+      lmer.icc.vector <- append(lmer.icc.vector, icc.val)
     }
     
     # Set warnings to OFF
@@ -682,8 +683,8 @@ cps.binary = function(nsim = NULL,
     # Create object containing estimated ICC values
     ICC = round(t(data.frame(
       'P_h' = c('ICC' = icc1),
-      'P_c' = c('ICC' = mean(icc2.vector)),
-      'lmer' = c('ICC' = mean(lmer.icc.vector))
+      'P_c' = c('ICC' = mean(icc2.vector, na.rm = TRUE)),
+      'lmer' = c('ICC' = mean(lmer.icc.vector, na.rm = TRUE))
     )), 3)
     # Create object containing all ICC values
     # Note: P_h is a single calculated value. No vector to be appended.

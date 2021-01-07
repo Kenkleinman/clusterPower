@@ -42,8 +42,19 @@
 #'                             alpha = 0.05, allSimData = TRUE,
 #'                             seed = 123, cores="all")
 #'
-#'   bin <- binCalcICC(data = bin.ma.rct.unbal, nsim = 1000)
+#' binCalcICC(data = bin.ma.rct.unbal, nsim = 1000)
 #' }
+#'
+#'\dontrun{ 
+#' binary.sim = cps.binary(nsim = 100, nsubjects = 20,
+#'   nclusters = 10, p1 = 0.8,
+#'   p2 = 0.5, sigma_b_sq = 1,
+#'   sigma_b_sq2 = 1.2, alpha = 0.05,
+#'   method = 'glmm', allSimData = TRUE)
+#'
+#' binCalcICC(data = binary.sim, nsim = 1000)
+#' }
+#'
 #'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}) and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #' @export
@@ -721,6 +732,11 @@ binCalcICC <-
     
     # apply iccbin to the simulated data
     
+    if (data[["nsim"]] < sim.max) {
+      message(paste0("The number of datasets provided is < sim.max. Setting sim.max to ", 
+                     data[["nsim"]], "."))
+      sim.max <- data[["nsim"]]
+    }
     holder <- list()
     simnum <- sim.max - sim.min + 1
     # if data is a list
@@ -729,6 +745,9 @@ binCalcICC <-
       for (j in (sim.min:sim.max)) {
         holder[[j]] <- list()
         temp <- data$sim.data[[j]]
+        if (length(unique(temp$y)) > 2) {
+          stop("Data ('y') is not binary.")
+        }
         for (k in 1:2) {
           holder[[j]][[k]] <- list()
           o2 <- temp[as.numeric(temp[, "trt"]) == k,]
@@ -766,6 +785,9 @@ binCalcICC <-
         temp <- data.frame("arm" = o[, 1],
                            "cluster" = o[, 2],
                            "y" = as.numeric(levels(o[, j + 2]))[o[, j + 2]])
+        if (length(unique(temp$y)) > 2) {
+          stop("Data ('y') is not binary.")
+        }
         for (k in 1:narms) {
           holder[[j]][[k]] <- list()
           o2 <- temp[temp[, 1] == k,]
@@ -787,7 +809,7 @@ binCalcICC <-
           )
           if (simnum > 1 && j == 1 && k == 1) {
             atime <- difftime(Sys.time(), start.time)
-            est <- round(as.numeric(atime) * (narms * simnum) / 60, 0)
+            est <- round(as.numeric(atime) * (narms * simnum) / 60, 2)
             print(paste0("Estimated time to completion: ", est,  " minutes."))
           }
           options(warn = 0)
