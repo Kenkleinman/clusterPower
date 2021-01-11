@@ -141,7 +141,7 @@ progress updates, and whether the simulated data sets are retained.
 The data generating model for observation \mjseqn{j} in cluster \mjseqn{i} is:
 
 \mjsdeqn{y_{ij} \sim \text{Bernoulli}(\frac{e^{p_1 + b_i}}{1 + e^{p_1 + b_i} }) }
-for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)}, 
+for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)},
 while for the second group,
 \mjsdeqn{y_{ij} \sim \text{Bernoulli}(\frac{e^{p_2 + b_i}}{1 + e^{p_2 + b_i} }) }
 where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if

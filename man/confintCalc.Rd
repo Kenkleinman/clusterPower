@@ -4,7 +4,7 @@
 \alias{confintCalc}
 \title{Power simulations for cluster-randomized trials: get exact confidence intervals.}
 \usage{
-confintCalc(alpha = alpha, p.val = p.val)
+confintCalc(alpha = alpha, p.val = p.val, nsim = nsim, multi = FALSE)
 }
 \arguments{
 \item{alpha}{A numeric; the user-selected alpha cutoff.}

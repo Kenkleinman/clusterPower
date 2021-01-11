@@ -80,12 +80,12 @@
 #' @param tdist Logical value indicating whether simulated data should be
 #' drawn from a t-distribution rather than the normal distribution.
 #' Default = FALSE.
-#' @param nofit Option to skip model fitting and analysis and return the 
+#' @param nofit Option to skip model fitting and analysis and return the
 #' simulated data.
 #' Defaults to \code{FALSE}.
-#' @param optmethod User-specified optimizer method. Accepts \code{bobyqa}, 
+#' @param optmethod User-specified optimizer method. Accepts \code{bobyqa},
 #' \code{Nelder_Mead} (default), and optimizers wrapped in the \code{optimx} package.
-#' @param return.all.models Logical; Returns all of the fitted models and the 
+#' @param return.all.models Logical; Returns all of the fitted models and the
 #' simulated data.
 #' Defaults to FALSE.
 #' @return A list with the following components:
@@ -171,7 +171,6 @@ cps.ma.binary <- function(nsim = 1000,
                           nofit = FALSE,
                           optmethod = "Nelder-Mead",
                           return.all.models = FALSE) {
-  
   converge <- NULL
   # use this later to determine total elapsed time
   start.time <- Sys.time()
@@ -349,10 +348,10 @@ cps.ma.binary <- function(nsim = 1000,
     p.val = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]][[10]][, 1]
-      std.error[i,] <- models[[i]][[10]][, 2]
-      z.val[i,] <- models[[i]][[10]][, 3]
-      p.val[i,] <-
+      Estimates[i, ] <- models[[i]][[10]][, 1]
+      std.error[i, ] <- models[[i]][[10]][, 2]
+      z.val[i, ] <- models[[i]][[10]][, 3]
+      p.val[i, ] <-
         p.adjust(models[[i]][[10]][, 4], method = multi_p_method)
     }
     
@@ -377,7 +376,19 @@ cps.ma.binary <- function(nsim = 1000,
     colnames(z.val) <- names.zval
     colnames(p.val) <- names.pval
     
-    if (narms > 2) {
+      cps.model.temp <- data.frame(unlist(binary.ma.rct[[3]]), p.val)
+      colnames(cps.model.temp)[1] <- "converge"
+      cps.model.temp2 <-
+        dplyr::filter(cps.model.temp, converge == TRUE)
+      if (nrow(cps.model.temp2) < (.25 * nsim)) {
+        warning(paste0(
+          nrow(cps.model.temp2),
+          " models converged. Check model parameters."
+        ),
+        immediate. = TRUE)
+      }
+      
+      
       # Organize the LRT output
       LRT.holder <-
         matrix(
@@ -388,30 +399,17 @@ cps.ma.binary <- function(nsim = 1000,
           dimnames = list(seq(1:nsim),
                           colnames(binary.ma.rct[[2]][[1]]))
         )
-      # Proportion of times P(>F)
-      sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
-      LRT.holder.abbrev <- sum(sig.LRT)
-    } else {
-      LRT.holder <- list()
-      LRT.holder.abbrev <- list()
-    }
-    
-    cps.model.temp <- data.frame(unlist(binary.ma.rct[[3]]), p.val)
-    colnames(cps.model.temp)[1] <- "converge"
-    cps.model.temp2 <-
-      dplyr::filter(cps.model.temp, converge == TRUE)
-    if (nrow(cps.model.temp2) < (.25 * nsim)) {
-      warning(paste0(
-        nrow(cps.model.temp2),
-        " models converged. Check model parameters."
-      ),
-      immediate. = TRUE)
-    }
+      LRT.holder <- cbind(LRT.holder, cps.model.temp["converge"])
+      LRT.holder <- LRT.holder[LRT.holder[,"converge"] == TRUE,]
+
     
     # Calculate and store power estimate & confidence intervals
-    power.parms <- cbind(confintCalc(alpha = alpha,
-                               p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])),
-                         multi_p_method)
+    power.parms <- cbind(confintCalc(
+      multi = TRUE,
+      alpha = alpha,
+      p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])
+    ),
+    multi_p_method)
     
     # Store simulation output in data frame
     ma.model.est <-
@@ -452,7 +450,7 @@ cps.ma.binary <- function(nsim = 1000,
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              LRT.holder = LRT.holder
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
@@ -480,7 +478,7 @@ cps.ma.binary <- function(nsim = 1000,
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              LRT.holder = LRT.holder
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
@@ -508,7 +506,7 @@ cps.ma.binary <- function(nsim = 1000,
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              LRT.holder = LRT.holder
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
@@ -536,10 +534,10 @@ cps.ma.binary <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]]$coefficients[, 1]
-      std.error[i,] <- models[[i]]$coefficients[, 2]
-      Wald[i,] <- models[[i]]$coefficients[, 3]
-      Pr[i,] <- models[[i]]$coefficients[, 4]
+      Estimates[i, ] <- models[[i]]$coefficients[, 1]
+      std.error[i, ] <- models[[i]]$coefficients[, 2]
+      Wald[i, ] <- models[[i]]$coefficients[, 3]
+      Pr[i, ] <- models[[i]]$coefficients[, 4]
     }
     
     # Organize the row/col names for the output
@@ -589,9 +587,12 @@ cps.ma.binary <- function(nsim = 1000,
         }
       )
     
-    power.parms <- cbind(confintCalc(alpha = alpha,
-                               p.val = Pr[, 2:narms]),
-                         multi_p_method)
+    power.parms <- cbind(confintCalc(
+      multi = TRUE,
+      alpha = alpha,
+      p.val = Pr[, 2:narms]
+    ),
+    multi_p_method)
     
     # Store GEE simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)
@@ -628,7 +629,7 @@ cps.ma.binary <- function(nsim = 1000,
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              LRT.holder = LRT.holder
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
@@ -654,7 +655,7 @@ cps.ma.binary <- function(nsim = 1000,
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              LRT.holder = LRT.holder
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
@@ -680,7 +681,7 @@ cps.ma.binary <- function(nsim = 1000,
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              LRT.holder = LRT.holder
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,

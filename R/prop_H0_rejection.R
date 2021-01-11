@@ -18,14 +18,20 @@
 
 prop_H0_rejection <- function (alpha = alpha,
                                nsim = nsim,
-                               LRT.holder.abbrev = LRT.holder.abbrev) {
-  f.test <- binom.test(p = 0.05, n = nsim, x = LRT.holder.abbrev)
+                               LRT.holder = LRT.holder) {
+  # Proportion of times P(>F)
+  sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
+  LRT.holder.abbrev <- sum(sig.LRT)
+  f.test <- binom.test(p = 0.05, n = nrow(LRT.holder), x = LRT.holder.abbrev)
   Power = f.test$estimate
   Lower.95.CI = f.test$conf.int[1]
   Upper.95.CI = f.test$conf.int[2]
   Beta <- 1 - Power
   Alpha <- alpha
   Ftest <- data.frame(Power, Lower.95.CI, Upper.95.CI, Alpha, Beta)
+  num.returned <- data.frame("Converged" = nrow(LRT.holder), 
+                             "Requested" = nsim)
+  Ftest <- cbind(Ftest, num.returned)
   return(Ftest)
 }
 

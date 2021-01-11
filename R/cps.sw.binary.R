@@ -523,7 +523,8 @@ cps.sw.binary = function(nsim = NULL,
   
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
-  power.parms <- confintCalc(alpha = alpha,
+  power.parms <- confintCalc(nsim = nsim,
+                             alpha = alpha,
                              p.val = cps.model.temp[, 'p.value'])
   rownames(power.parms) <- "post-treatment"
   
