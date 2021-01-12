@@ -248,6 +248,7 @@ counts.example <- c(10, 55, 65)
 sigma_b_sq.example <- c(1, 1, 2)
 
 count.ma.rct.unbal <- cps.ma.count(nsim = 100,
+                            narms = 3,    
                             nsubjects = nsubjects.example,
                             counts = counts.example,
                             sigma_b_sq = sigma_b_sq.example,

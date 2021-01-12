@@ -45,7 +45,7 @@
 #' When this option is set to NA, no parallel computing is used.
 #' @param nofit Option to skip model fitting and analysis and return the simulated data.
 #' Defaults to \code{FALSE}.
-#' @param optmethod User-specified optimizer method. Accepts \code{bobyqa}, 
+#' @param optmethod User-specified optimizer method. Accepts \code{bobyqa},
 #' \code{Nelder_Mead}, and optimizers wrapped in the \code{optimx} package.
 #' @param return.all.models Logical; Returns all of the fitted models and the simulated data.
 #' Defaults to FALSE.
@@ -198,7 +198,7 @@ cps.ma.binary.internal <-
       y <-
         sapply(unlist(y.intercept), function(x)
           stats::rbinom(1, 1, x))
-      y <- as.factor(y)
+      y <- as.numeric(y)
       return(y)
     } #end make.sim.dat function definition
     
@@ -245,7 +245,15 @@ cps.ma.binary.internal <-
     progress <- function(n)
       setTxtProgressBar(pb, n)
     opts <- list(progress = progress)
-
+    
+    # define function to perform parallel vs sequential computing
+    if (is.na(cores)) {
+      `%fun%` <- foreach::`%do%`
+    } else {
+      `%fun%` <- foreach::`%dopar%`
+    }
+    
+    ## BEGIN GLMM METHOD
     if (method == "glmm") {
       # Update simulation progress information
       sim.start <- Sys.time()
@@ -301,11 +309,6 @@ cps.ma.binary.internal <-
         message("Fitting models")
       }
       
-      `%fun%` <- foreach::`%dopar%`
-      if (is.na(cores)) {
-        `%fun%` <- foreach::`%do%`
-      }
-      
       my.mod <- foreach::foreach(
         i = 1:nsim,
         .options.snow = opts,
@@ -338,17 +341,52 @@ cps.ma.binary.internal <-
           ifelse(is.null(my.mod[[i]]@optinfo$conv$lme4$messages),
                  TRUE,
                  FALSE)
-      }
-      
-      # option to stop the function early if fits are singular
-      if (poor.fit.override == FALSE) {
-        if (sum(unlist(converged), na.rm = TRUE) < (nsim * .75)) {
-          stop("more than 25% of simulations are singular fit: check model specifications")
+        # option to stop the function early if fits are singular
+        if (poor.fit.override == FALSE) {
+          if (sum(unlist(converged), na.rm = TRUE) < (nsim * .75)) {
+            stop("more than 25% of simulations are singular fit: check model specifications")
+          }
         }
       }
       
-      # stop the loop if power is <0.5
-      if (narms > 2) {
+      # refit once if model did not converge
+      idx <- which(converged == FALSE)
+      if (length(idx > 0)) {
+        for (j in idx)
+          my.mod[[j]] <- lme4::glmer(
+            sim.dat[, j + 2] ~ trt + (1 | clust),
+            family = stats::binomial(link = 'logit'),
+            control = lme4::glmerControl(
+              calc.derivs = TRUE,
+              optCtrl = list(
+                maxfun = 2e4,
+                method = optmethod,
+                starttests = TRUE,
+                kkt = FALSE
+              )
+            )
+          )
+        converged[j] <-
+          ifelse(is.null(my.mod[[j]]@optinfo$conv$lme4$messages),
+                 TRUE,
+                 FALSE)
+      }
+      
+      if (!is.na(cores) & quiet == FALSE) {
+        message("\r Performing null model comparisons")
+      }
+      # get the overall p-values (>Chisq)
+      model.compare <- foreach::foreach(
+        i = 1:nsim,
+        .options.snow = opts,
+        .packages = c("car", "optimx"),
+        .inorder = FALSE
+      ) %fun% {
+        car::Anova(my.mod[[i]], type = "II")
+      }
+      
+      for (i in 1:nsim) {
+        # stop the loop if power is <0.5
         if (low.power.override == FALSE &&
             i > 50 &&
             (i %% 10 == 0) && length(model.compare) != 0) {
@@ -375,20 +413,8 @@ cps.ma.binary.internal <-
             )
           }
         }
-        
-        if (!is.na(cores) & quiet == FALSE) {
-          message("\r Performing null model comparisons")
-        }
-        # get the overall p-values (>Chisq)
-        model.compare <- foreach::foreach(
-          i = 1:nsim,
-          .options.snow = opts,
-          .packages = c("car", "optimx"),
-          .inorder = FALSE
-        ) %fun% {
-          car::Anova(my.mod[[i]], type = "II")
-        }
       }
+      
       if (is.na(cores) & quiet == FALSE) {
         # Iterate progress bar
         prog.bar$update(4 / 5)
@@ -431,7 +457,8 @@ cps.ma.binary.internal <-
         id = clust,
         corstr = "exchangeable"
       )
-      avg.iter.time <- Sys.time() - sim.start
+      avg.iter.time <-
+        as.numeric(difftime(Sys.time(), sim.start, units = 'secs'))
       time.est = avg.iter.time * (nsim - 1) / 60
       hr.est = time.est %/% 60
       min.est = round(time.est %% 60, 3)
@@ -492,8 +519,8 @@ cps.ma.binary.internal <-
       }
       
       # check for gee convergence
-      for (i in 1:length(my.mod)){
-      converged[i] <- ifelse(summary(my.mod[[i]])$error == 0, TRUE, FALSE)
+      for (i in 1:length(my.mod)) {
+        converged[i] <- ifelse(summary(my.mod[[i]])$error == 0, TRUE, FALSE)
       }
       
       if (!is.na(cores) & quiet == FALSE) {

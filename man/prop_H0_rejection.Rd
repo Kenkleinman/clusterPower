@@ -4,18 +4,14 @@
 \alias{prop_H0_rejection}
 \title{Power simulations for cluster-randomized trials: proportion of F-test rejections}
 \usage{
-prop_H0_rejection(
-  alpha = alpha,
-  nsim = nsim,
-  LRT.holder.abbrev = LRT.holder.abbrev
-)
+prop_H0_rejection(alpha = alpha, nsim = nsim, sig.LRT = sig.LRT)
 }
 \arguments{
 \item{alpha}{A numeric; the user-selected alpha cutoff.}
 
 \item{nsim}{A scalar; the number of simulations chosen by the user.}
 
-\item{LRT.holder.abbrev}{A scalar; the number of test rejections.}
+\item{sig.LRT}{A logical vector indicating whether or not the model was significant.}
 }
 \value{
 A dataframe

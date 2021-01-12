@@ -398,18 +398,18 @@ cps.ma.normal <- function(nsim = 1000,
     
     if (max(sigma_sq) != min(sigma_sq)) {
       for (i in 1:nsim) {
-        Estimates[i,] <- models[[i]][20][[1]][, 1]
-        std.error[i,] <- models[[i]][20][[1]][, 2]
-        t.val[i,] <- models[[i]][20][[1]][, 4]
-        p.val[i,] <- models[[i]][20][[1]][, 5]
+        Estimates[i, ] <- models[[i]][20][[1]][, 1]
+        std.error[i, ] <- models[[i]][20][[1]][, 2]
+        t.val[i, ] <- models[[i]][20][[1]][, 4]
+        p.val[i, ] <- models[[i]][20][[1]][, 5]
       }
       keep.names <- rownames(models[[1]][20][[1]])
     } else {
       for (i in 1:nsim) {
-        Estimates[i,] <- models[[i]][[10]][, 1]
-        std.error[i,] <- models[[i]][[10]][, 2]
-        t.val[i,] <- models[[i]][[10]][, 4]
-        p.val[i,] <- models[[i]][[10]][, 5]
+        Estimates[i, ] <- models[[i]][[10]][, 1]
+        std.error[i, ] <- models[[i]][[10]][, 2]
+        t.val[i, ] <- models[[i]][[10]][, 4]
+        p.val[i, ] <- models[[i]][[10]][, 5]
       }
       keep.names <- rownames(models[[1]][[10]])
     }
@@ -434,7 +434,20 @@ cps.ma.normal <- function(nsim = 1000,
     colnames(t.val) <- names.tval
     colnames(p.val) <- names.pval
     
-    if (narms > 2) {
+    # convergence
+    cps.model.temp <-
+      data.frame(cbind(unlist(normal.ma.rct[[3]]), p.val))
+    colnames(cps.model.temp)[1] <- "converge"
+    cps.model.temp2 <-
+      dplyr::filter(cps.model.temp, converge == TRUE)
+    if (isTRUE(nrow(cps.model.temp2) < (.25 * nsim))) {
+      warning(paste0(
+        nrow(cps.model.temp2),
+        " models converged. Check model parameters."
+      ),
+      immediate. = TRUE)
+    }
+    
     # Organize the LRT output
     if ((max(sigma_sq) == min(sigma_sq) &
          max(sigma_b_sq) == min(sigma_b_sq)) |
@@ -450,40 +463,26 @@ cps.ma.normal <- function(nsim = 1000,
           c("Sum Sq", "Mean Sq", "NumDF", "DenDF", "F value", "P(>F)")
         )
       )
+      LRT.holder <- cbind(LRT.holder, cps.model.temp["converge"])
+      LRT.holder <- LRT.holder[LRT.holder[, "converge"] == TRUE, ]
       sig.LRT <-  ifelse(LRT.holder[, 6] < alpha, 1, 0)
     } else {
       LRT.holder <- as.vector(rep(NA, nsim))
       for (i in 1:nsim) {
         LRT.holder[i] <- na.omit(normal.ma.rct[[2]][[i]][, 9])
       }
+      LRT.holder <- cbind(LRT.holder, cps.model.temp["converge"])
+      LRT.holder <- LRT.holder[LRT.holder[, "converge"] == TRUE, ]
       sig.LRT <-  ifelse(LRT.holder < alpha, 1, 0)
     }
     
-    # Proportion of times P(>F)
-    
-    LRT.holder.abbrev <- sum(sig.LRT)
-    } else {
-      LRT.holder <- NULL
-      LRT.holder.abbrev <- NULL
-      }
-    
-    cps.model.temp <-
-      data.frame(cbind(unlist(normal.ma.rct[[3]]), p.val))
-    colnames(cps.model.temp)[1] <- "converge"
-    cps.model.temp2 <-
-      dplyr::filter(cps.model.temp, converge == TRUE)
-    if (isTRUE(nrow(cps.model.temp2) < (.25 * nsim))) {
-      warning(paste0(
-        nrow(cps.model.temp2),
-        " models converged. Check model parameters."
-      ),
-      immediate. = TRUE)
-    }
-    
     # Calculate and store power estimate & confidence intervals
-    power.parms <- cbind(confintCalc(alpha = alpha,
-                               p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])),
-                         multi_p_method)
+    power.parms <- cbind(confintCalc(
+      alpha = alpha,
+      multi = TRUE,
+      p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])
+    ),
+    multi_p_method)
     
     # Store simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, t.val, p.val)
@@ -501,7 +500,7 @@ cps.ma.normal <- function(nsim = 1000,
           "power" = prop_H0_rejection(
             alpha = alpha,
             nsim = nsim,
-            LRT.holder.abbrev = LRT.holder.abbrev
+            sig.LRT = sig.LRT
           ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
@@ -525,12 +524,12 @@ cps.ma.normal <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =              
+          "power" =
             prop_H0_rejection(
-            alpha = alpha,
-            nsim = nsim,
-            LRT.holder.abbrev = LRT.holder.abbrev
-          ),
+              alpha = alpha,
+              nsim = nsim,
+              sig.LRT = sig.LRT
+            ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
           "overall.power" = LRT.holder,
@@ -553,11 +552,11 @@ cps.ma.normal <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" = 
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              sig.LRT = sig.LRT
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
@@ -585,10 +584,10 @@ cps.ma.normal <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]]$coefficients[, 1]
-      std.error[i,] <- models[[i]]$coefficients[, 2]
-      Wald[i,] <- models[[i]]$coefficients[, 3]
-      Pr[i,] <-
+      Estimates[i, ] <- models[[i]]$coefficients[, 1]
+      std.error[i, ] <- models[[i]]$coefficients[, 2]
+      Wald[i, ] <- models[[i]]$coefficients[, 3]
+      Pr[i, ] <-
         p.adjust(models[[i]]$coefficients[, 4], method = multi_p_method)
     }
     
@@ -625,13 +624,17 @@ cps.ma.normal <- function(nsim = 1000,
       )
     
     # Proportion of times P(>F)
+    LRT.holder <- cbind(LRT.holder, normal.ma.rct[["converged"]])
+    LRT.holder <- LRT.holder[LRT.holder[, "converged"] == TRUE, ]
     sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
-    LRT.holder.abbrev <- sum(sig.LRT)
     
     # Calculate and store power estimate & confidence intervals
-    power.parms <- cbind(confintCalc(alpha = alpha,
-                               p.val = Pr[, 2:narms]),
-                         multi_p_method)
+    power.parms <- cbind(confintCalc(
+      alpha = alpha,
+      multi = TRUE,
+      p.val = Pr[, 2:narms]
+    ),
+    multi_p_method)
     
     # Store GEE simulation output in data frame
     ma.model.est <-  data.frame(Estimates, std.error, Wald, Pr)
@@ -646,11 +649,11 @@ cps.ma.normal <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" = 
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              sig.LRT = sig.LRT
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
@@ -672,11 +675,11 @@ cps.ma.normal <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" = 
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              sig.LRT = sig.LRT
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
@@ -702,7 +705,7 @@ cps.ma.normal <- function(nsim = 1000,
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              sig.LRT = sig.LRT
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,

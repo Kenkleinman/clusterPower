@@ -348,10 +348,10 @@ cps.ma.binary <- function(nsim = 1000,
     p.val = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i, ] <- models[[i]][[10]][, 1]
-      std.error[i, ] <- models[[i]][[10]][, 2]
-      z.val[i, ] <- models[[i]][[10]][, 3]
-      p.val[i, ] <-
+      Estimates[i,] <- models[[i]][[10]][, 1]
+      std.error[i,] <- models[[i]][[10]][, 2]
+      z.val[i,] <- models[[i]][[10]][, 3]
+      p.val[i,] <-
         p.adjust(models[[i]][[10]][, 4], method = multi_p_method)
     }
     
@@ -376,32 +376,35 @@ cps.ma.binary <- function(nsim = 1000,
     colnames(z.val) <- names.zval
     colnames(p.val) <- names.pval
     
-      cps.model.temp <- data.frame(unlist(binary.ma.rct[[3]]), p.val)
-      colnames(cps.model.temp)[1] <- "converge"
-      cps.model.temp2 <-
-        dplyr::filter(cps.model.temp, converge == TRUE)
-      if (nrow(cps.model.temp2) < (.25 * nsim)) {
-        warning(paste0(
-          nrow(cps.model.temp2),
-          " models converged. Check model parameters."
-        ),
-        immediate. = TRUE)
-      }
-      
-      
-      # Organize the LRT output
-      LRT.holder <-
-        matrix(
-          unlist(binary.ma.rct[[2]]),
-          ncol = 3,
-          nrow = nsim,
-          byrow = TRUE,
-          dimnames = list(seq(1:nsim),
-                          colnames(binary.ma.rct[[2]][[1]]))
-        )
-      LRT.holder <- cbind(LRT.holder, cps.model.temp["converge"])
-      LRT.holder <- LRT.holder[LRT.holder[,"converge"] == TRUE,]
-
+    # convergence
+    cps.model.temp <-
+      data.frame(unlist(binary.ma.rct[[3]]), p.val)
+    colnames(cps.model.temp)[1] <- "converge"
+    cps.model.temp2 <-
+      dplyr::filter(cps.model.temp, converge == TRUE)
+    if (nrow(cps.model.temp2) < (.25 * nsim)) {
+      warning(paste0(
+        nrow(cps.model.temp2),
+        " models converged. Check model parameters."
+      ),
+      immediate. = TRUE)
+    }
+    
+    
+    # Organize the LRT output
+    LRT.holder <-
+      matrix(
+        unlist(binary.ma.rct[[2]]),
+        ncol = 3,
+        nrow = nsim,
+        byrow = TRUE,
+        dimnames = list(seq(1:nsim),
+                        colnames(binary.ma.rct[[2]][[1]]))
+      )
+    LRT.holder <- cbind(LRT.holder, cps.model.temp["converge"])
+    LRT.holder <- LRT.holder[LRT.holder[, "converge"] == TRUE, ]
+    sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
+    
     
     # Calculate and store power estimate & confidence intervals
     power.parms <- cbind(confintCalc(
@@ -450,7 +453,7 @@ cps.ma.binary <- function(nsim = 1000,
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder = LRT.holder
+              sig.LRT = sig.LRT
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
@@ -478,7 +481,7 @@ cps.ma.binary <- function(nsim = 1000,
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder = LRT.holder
+              sig.LRT = sig.LRT
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
@@ -506,7 +509,7 @@ cps.ma.binary <- function(nsim = 1000,
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder = LRT.holder
+              sig.LRT = sig.LRT
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
@@ -534,10 +537,10 @@ cps.ma.binary <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i, ] <- models[[i]]$coefficients[, 1]
-      std.error[i, ] <- models[[i]]$coefficients[, 2]
-      Wald[i, ] <- models[[i]]$coefficients[, 3]
-      Pr[i, ] <- models[[i]]$coefficients[, 4]
+      Estimates[i,] <- models[[i]]$coefficients[, 1]
+      std.error[i,] <- models[[i]]$coefficients[, 2]
+      Wald[i,] <- models[[i]]$coefficients[, 3]
+      Pr[i,] <- models[[i]]$coefficients[, 4]
     }
     
     # Organize the row/col names for the output
@@ -573,8 +576,10 @@ cps.ma.binary <- function(nsim = 1000,
       )
     
     # Proportion of times P(>F)
+    converge <- binary.ma.rct[["converged"]]
+    LRT.holder <- cbind(LRT.holder, converge)
+    LRT.holder <- LRT.holder[LRT.holder[, "converge"] == TRUE, ]
     sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
-    LRT.holder.abbrev <- sum(sig.LRT)
     
     # Calculate and store power estimate & confidence intervals
     sig.val <-  ifelse(Pr < alpha, 1, 0)
@@ -586,7 +591,6 @@ cps.ma.binary <- function(nsim = 1000,
           sum(x, na.rm = TRUE) / nsim
         }
       )
-    
     power.parms <- cbind(confintCalc(
       multi = TRUE,
       alpha = alpha,
@@ -629,7 +633,7 @@ cps.ma.binary <- function(nsim = 1000,
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder = LRT.holder
+              sig.LRT = sig.LRT
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
@@ -655,7 +659,7 @@ cps.ma.binary <- function(nsim = 1000,
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder = LRT.holder
+              sig.LRT = sig.LRT
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,
@@ -681,7 +685,7 @@ cps.ma.binary <- function(nsim = 1000,
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder = LRT.holder
+              sig.LRT = sig.LRT
             ),
           "beta" = power.parms['Beta'],
           "overall.power2" = power.parms,

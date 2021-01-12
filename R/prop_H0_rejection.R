@@ -7,7 +7,7 @@
 #' 
 #' @param nsim A scalar; the number of simulations chosen by the user.
 #' @param alpha A numeric; the user-selected alpha cutoff.
-#' @param LRT.holder.abbrev A scalar; the number of test rejections.
+#' @param sig.LRT A logical vector indicating whether or not the model was significant.
 #' 
 #' @return A dataframe
 #' \describe{
@@ -18,18 +18,17 @@
 
 prop_H0_rejection <- function (alpha = alpha,
                                nsim = nsim,
-                               LRT.holder = LRT.holder) {
+                               sig.LRT = sig.LRT) {
   # Proportion of times P(>F)
-  sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
   LRT.holder.abbrev <- sum(sig.LRT)
-  f.test <- binom.test(p = 0.05, n = nrow(LRT.holder), x = LRT.holder.abbrev)
+  f.test <- binom.test(p = 0.05, n = length(sig.LRT), x = LRT.holder.abbrev)
   Power = f.test$estimate
   Lower.95.CI = f.test$conf.int[1]
   Upper.95.CI = f.test$conf.int[2]
   Beta <- 1 - Power
   Alpha <- alpha
   Ftest <- data.frame(Power, Lower.95.CI, Upper.95.CI, Alpha, Beta)
-  num.returned <- data.frame("Converged" = nrow(LRT.holder), 
+  num.returned <- data.frame("Converged" = length(sig.LRT), 
                              "Requested" = nsim)
   Ftest <- cbind(Ftest, num.returned)
   return(Ftest)
