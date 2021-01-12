@@ -505,6 +505,7 @@ cps.sw.normal = function(nsim = NULL,
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
   power.parms <- confintCalc(alpha = alpha,
+                             nsim = nsim,
                              p.val = cps.model.temp[, 'p.value'])
   rownames(power.parms) <- "post-treatment"
   

@@ -731,6 +731,7 @@ cps.count = function(nsim = NULL,
   }
   
   power.parms <- confintCalc(alpha = alpha,
+                             nsim = nsim,
                              p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs

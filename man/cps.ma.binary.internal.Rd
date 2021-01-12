@@ -69,7 +69,7 @@ When this option is set to NA, no parallel computing is used.}
 \item{nofit}{Option to skip model fitting and analysis and return the simulated data.
 Defaults to \code{FALSE}.}
 
-\item{optmethod}{User-specified optimizer method. Accepts \code{bobyqa}, 
+\item{optmethod}{User-specified optimizer method. Accepts \code{bobyqa},
 \code{Nelder_Mead}, and optimizers wrapped in the \code{optimx} package.}
 
 \item{return.all.models}{Logical; Returns all of the fitted models and the simulated data.

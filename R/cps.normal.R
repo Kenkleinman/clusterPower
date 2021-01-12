@@ -802,10 +802,11 @@ cps.normal = function(nsim = NA,
     p.value = as.vector(unlist(pval.vector)),
     converge = as.vector(unlist(converge.vector))
   )
-  
+  browser()
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
   power.parms <- confintCalc(alpha = alpha,
+                             nsim = nsim,
                               p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing group-specific cluster sizes

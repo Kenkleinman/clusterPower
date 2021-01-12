@@ -505,6 +505,7 @@ cps.did.normal = function(nsim = NULL,
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
   power.parms <- confintCalc(alpha = alpha,
+                             nsim = nsim,
                              p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing arm & time-specific differences
