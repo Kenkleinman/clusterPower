@@ -2295,7 +2295,6 @@ server <- function(input, output, session) {
                          names(formals(fxnName))))
     arghelper <- function(argname) {
       x <- paste0("input$", argname)
-      #  x <- eval(parse(text = x))
       return(x)
     }
     holder <- list()

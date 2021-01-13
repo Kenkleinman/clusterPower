@@ -8,7 +8,6 @@
 #' @param justNames Logical. Default is FALSE. Should only argument names be returned
 #'
 #' @return List of numericInput expressions.
-#' @export
 
 argMatch <- function(fxnName, justNames = FALSE) {
   

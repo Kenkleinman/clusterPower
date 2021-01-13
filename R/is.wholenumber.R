@@ -7,7 +7,6 @@
 #' @param tol The machine tolerance. Defaults to \code{.Machine$double.eps ^ 0.5}.
 #' 
 #' @return Logical.
-#' @export
 
 is.wholenumber <- function(x, tol = .Machine$double.eps ^ 0.5){
   abs(x - round(x)) < tol

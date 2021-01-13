@@ -8,7 +8,7 @@
 #' @author Jonathan Moyer (\email{jon.moyer@@gmail.com})
 #' @author Alexandria Sakrejda (\email{acbro0@@umass.edu})
 #' 
-#' @export
+
 runExample <- function(appname = "main") {
   # find the examples
   validappnames <- list.files(system.file("shiny-examples", package = "clusterPower"))

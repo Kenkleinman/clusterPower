@@ -110,7 +110,6 @@
 #'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
-#' @export
 
 cps.ma.count.internal <-
   function(nsim = 1000,

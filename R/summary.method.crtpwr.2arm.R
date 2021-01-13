@@ -4,7 +4,6 @@
 #' @param ... other arguments passed to the summary method
 #'  
 #' 
-#' @export
 
 setMethod(
   "summary",

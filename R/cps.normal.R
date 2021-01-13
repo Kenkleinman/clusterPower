@@ -293,7 +293,7 @@ cps.normal = function(nsim = NA,
   if (!is.wholenumber(nclusters) || nclusters < 1) {
     stop(paste0("NCLUSTERS", min1.warning))
   }
-  if (is.list(nsubjects)){
+  if (is.list(nsubjects)) {
     temp <- unlist(nsubjects)
   } else {
     temp <- nsubjects

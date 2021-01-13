@@ -469,11 +469,11 @@ cps.ma.normal <- function(nsim = 1000,
     } else {
       LRT.holder <- as.vector(rep(NA, nsim))
       for (i in 1:nsim) {
-        LRT.holder[i] <- na.omit(normal.ma.rct[[2]][[i]][, 9])
+        LRT.holder[i] <- normal.ma.rct[[2]][[i]][2, 9]
       }
       LRT.holder <- cbind(LRT.holder, cps.model.temp["converge"])
       LRT.holder <- LRT.holder[LRT.holder[, "converge"] == TRUE, ]
-      sig.LRT <-  ifelse(LRT.holder < alpha, 1, 0)
+      sig.LRT <-  ifelse(LRT.holder["LRT.holder"] < alpha, 1, 0)
     }
     
     # Calculate and store power estimate & confidence intervals

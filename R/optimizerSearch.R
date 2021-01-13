@@ -12,7 +12,6 @@
 #'   \item{goodopt}{The name of the first optimizer tested that showed convergence.}
 #' }
 #'
-#' @export
 
 
 optimizerSearch <- function(model) {

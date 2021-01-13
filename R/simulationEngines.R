@@ -73,7 +73,7 @@
 #'   estimation.function=random.effect, verbose=TRUE, period.var=0, at.risk.params=10)
 #' }
 #'
-#' @export
+#' 
 
 power.sim.normal <- function(n.sim=10,
 			     effect.size,
@@ -188,7 +188,7 @@ power.sim.normal <- function(n.sim=10,
 }
 
 #' @rdname power.sim.normal
-#' @export
+#' 
 
 power.sim.binomial <- function(n.sim=10,
 			     effect.size,
@@ -300,7 +300,7 @@ power.sim.binomial <- function(n.sim=10,
 }
 
 #' @rdname power.sim.normal
-#' @export
+#' 
 
 power.sim.poisson <- function(n.sim=10,
 			      effect.size,
@@ -513,11 +513,11 @@ make.base.data <- function(n.obs, n.clusters,
 #' 
 #' logit(.5)
 #' curve(logit(x), from=0, to=1)
-#' @export
+#' rt
 expit <- function(x) exp(x)/(1+exp(x))
 
 #' @rdname expit
-#' @export
+#' rt
 logit <- function(p) log(p/(1-p))
 
 
@@ -551,7 +551,7 @@ logit <- function(p) log(p/(1-p))
 #' @examples 
 #' mixed.eff.params(pi0=log(1), btw.clust.var=.5, Tk=100)
 #' 
-#' @export
+#' 
 mixed.eff.params <- function(pi0, btw.clust.var, Tk) {
         e <- Tk * exp(pi0) * exp(btw.clust.var/2)
         v <- e + e^2*(exp(btw.clust.var)-1)
@@ -595,7 +595,7 @@ mixed.eff.params <- function(pi0, btw.clust.var, Tk) {
 #' hayes.power.poisson(n.clusters=36, period.effect=log(.015), btw.clust.var=0,
 #'   at.risk.params=20, cluster.size=20, effect.size=log(.7))
 #'
-#' @export
+#' 
 
 ## implements power calculation based on Hayes (1999) formulas and the coef of variation, k
 hayes.power.poisson <- function(n.clusters, period.effect, btw.clust.var, at.risk.params, cluster.size, effect.size, alpha=.05) {

@@ -14,7 +14,6 @@
 #'   \item{power.parms}{Exact confidence intervals produced using \code{binom.test()}}
 #' }
 #'
-#' @export confintCalc
 confintCalc <- function(alpha = alpha,
                         p.val = p.val,
                         nsim = nsim,

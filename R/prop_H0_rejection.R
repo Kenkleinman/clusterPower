@@ -14,9 +14,8 @@
 #'   \item{Ftest}{Exact confidence intervals produced using \code{binom.test()}}
 #' }
 #' 
-#' @export
 
-prop_H0_rejection <- function (alpha = alpha,
+prop_H0_rejection <- function(alpha = alpha,
                                nsim = nsim,
                                sig.LRT = sig.LRT) {
   # Proportion of times P(>F)
