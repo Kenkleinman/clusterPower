@@ -187,8 +187,6 @@ power.sim.normal <- function(n.sim=10,
 	return(out)
 }
 
-#' @rdname power.sim.normal
-#' 
 
 power.sim.binomial <- function(n.sim=10,
 			     effect.size,
@@ -299,7 +297,6 @@ power.sim.binomial <- function(n.sim=10,
 	return(out)
 }
 
-#' @rdname power.sim.normal
 #' 
 
 power.sim.poisson <- function(n.sim=10,
@@ -424,7 +421,7 @@ power.sim.poisson <- function(n.sim=10,
 	return(out)
 }
 
-#' @rdname power.sim.normal
+
 make.base.data <- function(n.obs, n.clusters,
 			   cluster.size, n.periods){
 	## #####################
@@ -516,7 +513,6 @@ make.base.data <- function(n.obs, n.clusters,
 #' rt
 expit <- function(x) exp(x)/(1+exp(x))
 
-#' @rdname expit
 #' rt
 logit <- function(p) log(p/(1-p))
 
