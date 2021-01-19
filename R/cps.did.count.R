@@ -23,6 +23,7 @@
 #' @param nclusters Number of clusters per arm; accepts integer (required).
 #' At least 2 of the following 3 arguments must be specified:
 #' @param c1t0 Required. Expected outcome count in arm 1 at baseline.
+#' Default is 0.
 #' @param c2t0 Optional. Expected outcome count in arm 2 at baseline. If 
 #' no quantity is provided, c2t0 = c1t0 is assumed.
 #' @param c1t1 Optional. Expected outcome count in arm 1 at follow-up. 
@@ -150,7 +151,7 @@
 cps.did.count = function(nsim = NULL,
                          nsubjects = NULL,
                          nclusters = NULL,
-                         c1t0 = NULL,
+                         c1t0 = 0,
                          c2t0 = NULL,
                          c1t1 = NULL,
                          c2t1 = NULL,

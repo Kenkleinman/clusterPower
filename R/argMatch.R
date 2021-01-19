@@ -1,5 +1,5 @@
 #' Updates the Shiny app options if the function arguments change
-#'
+#' @noRd
 #'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}
 #'

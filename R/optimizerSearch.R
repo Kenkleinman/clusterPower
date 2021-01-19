@@ -12,7 +12,7 @@
 #'   \item{goodopt}{The name of the first optimizer tested that showed convergence.}
 #' }
 #'
-
+#' @noRd
 
 optimizerSearch <- function(model) {
   if (isTRUE(missing(model))) {

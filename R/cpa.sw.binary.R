@@ -84,12 +84,16 @@ cpa.sw.binary <- function(nclusters = NA,
                           alpha = 0.05,
                           timeEffect = 0,
                           ICC = NA,
-                          p1 = NA,
                           p0 = NA,
+                          p1 = NA,
                           tol = 1e-5,
                           GQ = 100,
                           quiet = FALSE) {
   ###### Define some FORTRAN-calling functions  ########
+  
+  if (p1 < 0 | p0 < 0) {
+    stop("Proportions (p1 & p2) cannot be negative.")
+  }
   
   beta <- p1 - p0
   
@@ -323,6 +327,7 @@ cpa.sw.binary <- function(nclusters = NA,
     
     for (i in 1:steps) {
       temp = p0 + gammaobj[i]
+      print(temp)
       if (temp < a) {
         a = temp
         mincomp <- comp
@@ -336,6 +341,7 @@ cpa.sw.binary <- function(nclusters = NA,
         maxcomp[i] = 1
       }
       temp = p0 + beta + gammaobj[i]
+      print(temp)
       if (temp < a) {
         a = temp
         mincomp <- comp

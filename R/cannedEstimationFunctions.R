@@ -24,7 +24,7 @@
 #'  [1] a point estimate for the treatment effect, [2] lower bound of (1-alpha)
 #'  confidence interval, [3] lower bound of (1-alpha) confidence interval.
 #'
-
+#' @noRd
 fixed.effect <-
   function(dat,
            incl.period.effect,

@@ -15,7 +15,7 @@
 #' ICC <- createMissingVarianceParam(sigma_sq = c(1, 1, 0.9), sigma_b_sq = c(0.1, 0.15, 0.1))
 #' }
 #' 
-
+#' @noRd
 ## Create missing variance parameters
 createMissingVarianceParam <- function(ICC = NULL,
                                        sigma_sq = NULL,

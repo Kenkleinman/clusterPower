@@ -14,7 +14,7 @@
 #'   \item{Ftest}{Exact confidence intervals produced using \code{binom.test()}}
 #' }
 #' 
-
+#' @noRd
 prop_H0_rejection <- function(alpha = alpha,
                                nsim = nsim,
                                sig.LRT = sig.LRT) {

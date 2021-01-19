@@ -94,7 +94,7 @@
 #'                               poor.fit.override = FALSE,
 #'                               optmethod = "nlm")
 #'                               }
-
+#' @noRd
 cps.ma.normal.internal <-
   function(nsim = 1000,
            str.nsubjects = NULL,

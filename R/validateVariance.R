@@ -52,7 +52,7 @@
 #'                   all.sim.data=FALSE, poor.fit.override=TRUE)
 #'
 #' }
-
+#' @noRd
 
 
 validateVariance <-

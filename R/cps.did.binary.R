@@ -31,6 +31,7 @@
 #' @param nclusters Number of clusters per arm; accepts integer (required).
 #' 
 #' @param p1t0 Required. Expected outcome proportion in arm 1 at baseline.
+#' Default is 0.
 #' @param p2t0 Optional. Expected outcome proportion in arm 2 at baseline. If 
 #' no quantity is provided, p2t0 = p1t0 is assumed.
 #' @param p1t1 Optional. Expected outcome proportion in arm 1 at follow-up. 
@@ -168,7 +169,7 @@ cps.did.binary = function(nsim = NULL,
                           nsubjects = NULL,
                           nclusters = NULL,
                           p.diff = NULL,
-                          p1t0 = NULL,
+                          p1t0 = 0,
                           p2t0 = NULL,
                           p1t1 = NULL,
                           p2t1 = NULL,

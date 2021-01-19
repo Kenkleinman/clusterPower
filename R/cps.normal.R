@@ -568,7 +568,7 @@ cps.normal = function(nsim = NA,
           my.mod <-
             try(nlme::lme(
               y ~ as.factor(trt2),
-              random =  ~ 1 + as.factor(trt2) | clust2,
+              random =  ~ 0 + as.factor(trt2) | clust2,
               weights = nlme::varIdent(form =  ~ 1 |
                                          as.factor(trt2)),
               method = "ML",
@@ -581,7 +581,7 @@ cps.normal = function(nsim = NA,
             null.mod <-
               try(nlme::lme(
                 y ~ 1,
-                random =  ~ 1 + as.factor(trt2) | clust2,
+                random =  ~ 0 + as.factor(trt2) | clust2,
                 weights = nlme::varIdent(form =  ~ 1 |
                                            as.factor(trt2)),
                 method = "ML",
@@ -600,12 +600,12 @@ cps.normal = function(nsim = NA,
         
         if (sigma_sq == sigma_sq2 && sigma_b_sq != sigma_b_sq2) {
           my.mod <-
-            lmerTest::lmer(y ~ trt + (1 + as.factor(trt) | clust),
+            lmerTest::lmer(y ~ trt + (0 + as.factor(trt) | clust),
                            REML = FALSE,
                            data = sim.dat)
           # get the overall p-values (>Chisq)
           null.mod <-
-            stats::update.formula(my.mod, y ~ 1 + (1 + as.factor(trt) |
+            stats::update.formula(my.mod, y ~ 1 + (0 + as.factor(trt) |
                                                      clust))
           glmm.values = summary(my.mod)$coefficients
           pval.vector[i] = glmm.values['trt', 'Pr(>|t|)']
