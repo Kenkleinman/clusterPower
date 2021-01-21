@@ -25,7 +25,7 @@
 #' @param alpha Significance level (default=0.05).
 #' 
 #' @param steps Number of crossover steps; Accepts positive scalar indicating the total
-#' number of steps (required).
+#' number of steps, NOT including the baseline (required).
 #' 
 #' @param timeEffect Expected time effect over the entire study period (assumed to be linear
 #' across time steps); accepts numeric (required). Default = 0 (no time effects).
@@ -58,7 +58,7 @@
 #' 
 #' \dontrun{
 #' sw.bin <- cpa.sw.binary(nclusters = 9,
-#'   steps = 3,
+#'   steps = 4,
 #'   nsubjects = 20,
 #'   timeEffect = 0,
 #'   ICC = 0.05,
@@ -90,6 +90,8 @@ cpa.sw.binary <- function(nclusters = NA,
                           GQ = 100,
                           quiet = FALSE) {
   ###### Define some FORTRAN-calling functions  ########
+  
+  steps = steps + 1 # to include the baseline
   
   if (p1 < 0 | p0 < 0) {
     stop("Proportions (p1 & p2) cannot be negative.")
@@ -302,7 +304,6 @@ cpa.sw.binary <- function(nclusters = NA,
   )
   tau2 <- parholder$tau2
   gammaobj <- parholder$gamma
-  
   # mincomp and maxcomp are steps+2 vectors of 0 and 1's,
   # representing the weights of gammaobj(1),...,gammaobj(steps), p0, beta.
   comp <- rep(0, times = (steps + 2))
@@ -326,8 +327,7 @@ cpa.sw.binary <- function(nclusters = NA,
     b <- -100
     
     for (i in 1:steps) {
-      temp = p0 + gammaobj[i]
-      print(temp)
+      temp = p0[i] + gammaobj[i]
       if (temp < a) {
         a = temp
         mincomp <- comp
@@ -340,8 +340,7 @@ cpa.sw.binary <- function(nclusters = NA,
         maxcomp[steps + 1] = 1
         maxcomp[i] = 1
       }
-      temp = p0 + beta + gammaobj[i]
-      print(temp)
+      temp = p0[i] + beta + gammaobj[i]
       if (temp < a) {
         a = temp
         mincomp <- comp

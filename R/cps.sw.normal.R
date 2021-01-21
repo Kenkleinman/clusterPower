@@ -134,7 +134,7 @@ cps.sw.normal = function(nsim = NULL,
                          lowPowerOverride = FALSE, 
                          timelimitOverride = TRUE,
                          seed = NULL) {
-  if (!is.na(seed)) {
+  if (!is.null(seed)) {
     set.seed(seed = seed)
   }
   

@@ -142,7 +142,7 @@ cps.sw.count = function(nsim = NULL,
                         timelimitOverride = TRUE,
                         opt = 'L-BFGS-B',
                         seed = NULL) {
-  if (!is.na(seed)) {
+  if (!is.null(seed)) {
     set.seed(seed = seed)
   }
   

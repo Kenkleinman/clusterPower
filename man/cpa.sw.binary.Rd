@@ -22,7 +22,7 @@ cpa.sw.binary(
 \item{nclusters}{Number of clusters; accepts non-negative integer scalar (required).}
 
 \item{steps}{Number of crossover steps; Accepts positive scalar indicating the total
-number of steps (required).}
+number of steps, NOT including the baseline (required).}
 
 \item{nsubjects}{Number of subjects per cluster; accepts a scalar. Equal cluster sizes
 are assumed (required).}
@@ -83,7 +83,7 @@ Much of the FORTRAN code for this package was kindly provided by Dr. Zhou.
 
 \dontrun{
 sw.bin <- cpa.sw.binary(nclusters = 9,
-  steps = 3,
+  steps = 4,
   nsubjects = 20,
   timeEffect = 0,
   ICC = 0.05,
