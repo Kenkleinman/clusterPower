@@ -87,7 +87,6 @@ test_that("simulation and analytic methods give similar power estimations",
                 quiet = FALSE,
                 allSimData = FALSE
               )
-            print(sim.power$power)
             reference <-
               as.numeric(
                 cpa.normal(
@@ -102,7 +101,6 @@ test_that("simulation and analytic methods give similar power estimations",
                   tol = .Machine$double.eps ^ 0.25
                 )
                 )[1]
-            print(paste("analytic power = ", reference, sep = ""))
             expect_equal(sim.power$power[, 2] <= reference &
                            sim.power$power[, 3] >= reference,
                          TRUE)
@@ -1108,78 +1106,68 @@ test_that("analytic normal SW case matches a function from SWSamp pkg", {
 #### MULTI-ARM CRT DESIGNS TESTING #######
 #######################################
 
-#--------------------------------- MULTI-ARM BINARY OUTCOME
+#--------------------------------- MULTI-ARM NORMAL OUTCOME
+
+# analytic
+
+test_that("normal simulation methods match a reference I",
+          {
+          x <- cpa.ma.normal(narms=3,nclusters=5,vara=36,varc=9,vare=64)
+            expect_equal(as.numeric(round(x, 0)), 21)
+          })
 
 # compare simulation and analytic methods for continuous outcomes -uses ICC, 
 #asked John in include the definition in the documentation
-test_that("simulation and analytic methods give similar power estimations",
+test_that("normal simulation methods match a reference I",
           {
-            sim.power <-
-              cps.normal(
-                nsim = 1000,
-                nsubjects = 10,
-                nclusters = 16,
-                mu2 = 1,
-                ICC = 0.1009569,
-                sigma_sq = 5,
-                alpha = 0.05,
-                method = 'glmm',
-                quiet = FALSE,
-                allSimData = FALSE
-              )
-            reference <-
-              as.numeric(round(
-                cpa.normal(
-                  alpha = 0.05,
-                  power = NA,
-                  d = 1,
-                  nclusters = 16,
-                  nsubjects = 10,
-                  ICC = 0.1009569,
-                  vart = 5,
-                  method = "weighted",
-                  tol = .Machine$double.eps ^
-                    0.25
-                ),
-                1
-              ))
-            print(paste("analytic power = ", reference, sep = ""))
-            expect_equal(sim.power$power[, 2] <= reference &
-                           sim.power$power[, 3] >= reference,
-                         TRUE)
+            nsubjects.example <- list(c(20,20,20,25), c(15, 20, 20, 21), c(17, 20, 21))
+            means.example <- c(22, 21, 21.5)
+            sigma_sq.example <- c(1, 1, 0.9)
+            sigma_b_sq.example <- c(0.1, 0.15, 0.1)
+            
+            multi.cps.normal.models <- cps.ma.normal(nsim = 100,
+                                                     narms = 3,
+                                                     nsubjects = nsubjects.example,
+                                                     means = means.example,
+                                                     sigma_sq = sigma_sq.example,
+                                                     sigma_b_sq = sigma_b_sq.example,
+                                                     alpha = 0.05,
+                                                     quiet = FALSE, method = 'glmm',
+                                                     seed = 123, cores = "all",
+                                                     lowPowerOverride = FALSE,
+                                                     poorFitOverride = FALSE,
+                                                     optmethod = "nlm")
+            expect_equal(multi.cps.normal.models$power$Power, 0.84)
           })
 
-# compare to a comparable function in CRTSize -uses ICC
-test_that("continuous case matches CRTSize", {
-  nc <- sample.int(200, 10)
-  ns <- sample.int(200, 10)
-  icc. <- runif(10, min = 0.1, max = 0.99)
-  for (i in 1:10) {
-    expect_equal(round(as.numeric(
-      cps.normal(
-        alpha = 0.05,
-        nclusters = nc[i],
-        nsubjects = ns[i],
-        ICC = icc.[i],
-        sigma_sq = 1,
-        mu2 = 1
-      )
-    ), 0),
-    round(n4means(
-      delta = 1,
-      sigma = sqrt(1),
-      m = 10,
-      ICC = icc.[i]
-    )$n, 0))
-    print(nc[i])
-    print(ns[i])
-    print(icc.[i])
-    print(sig[i])
-    print(paste("Interation", i, "of 10."))
-  } # end of loop
-})
+test_that("normal simulation methods match a reference II",
+          {
+            multi.cps.normal <- cps.ma.normal(nsim = 100, narms = 3,
+                                              nclusters = c(10,11,10), nsubjects = 25,
+                                              means = c(1, 0.25, 1.75),
+                                              sigma_sq = c(1.2, 1, 1.9),
+                                              sigma_b_sq = c(0.5, 1, 0.75),
+                                              quiet = FALSE, ICC=NULL, method = 'glmm',
+                                              allSimData = FALSE, seed = 123,
+                                              poorFitOverride = TRUE,
+                                              cores = NULL,
+                                              optmethod = "nlminb")
+            expect_equal(multi.cps.normal$power$Power, 0.88)
+          })
 
-#Normal simulation methods
+test_that("normal simulation methods match a reference III",
+          {
+ multi.cps.normal.simple <- cps.ma.normal(nsim = 1000, narms = 3,
+                                   nclusters = 5, nsubjects = 10,
+                                   means = c(22.0, 22.5, 22.9),
+                                   sigma_sq = 0.2,
+                                   sigma_b_sq = 0.2, alpha = 0.05,
+                                   quiet = FALSE, ICC=NULL, method = 'glmm',
+                                   allSimData = FALSE, seed = 123,
+                                   poorFitOverride = TRUE, cores="all",
+                                   optmethod = "NLOPT_LN_NELDERMEAD")
+ expect_equal(multi.cps.normal.simple$power$Power, 0.781)
+          })
 
 test_that("continuous simulation method matches a reference (previous value)",
           {
@@ -1211,192 +1199,64 @@ test_that("continuous simulation method matches a reference (previous value)",
               )
             prev.value <- t(data.frame(0.34, 0.45))
             prev.value <- data.frame(as.numeric(prev.value))
-            rownames(prev.value) <- c("Treatment.2", "Treatment.3")
+            rownames(prev.value) <- c("Arm.2", "Arm.3")
             colnames(prev.value) <- "Power"
-            expect_equal(round(multi.cps.normal.unbal[['power']]['Power'], 2), prev.value)
+            expect_equal(round(multi.cps.normal.unbal[['overall.power2']]['Power'], 2), 
+                         prev.value)
           })
 
+###### Multi-arm Binary outcome testing
 
-test_that("normal vs t-dist comparison", {
-  q <- 10
-  nc <- sample.int(200, q)
-  ns <- sample.int(200, q)
-  icc. <- runif(q, min = 0.1, max = 0.99)
-  sig <- (runif(q, min = 0.1, max = 50)) ^ 2
-  sigb <- clusterPower:::createMissingVarianceParam(ICC = icc., sigma_b = sig)
-  holder <- data.frame(nc, ns, icc., sig, sigb)
-  same <- rep(NA, length = q)
-  for (i in 1:q) {
-    multi.cps.normal <- cps.ma.normal(
-      nsim = 200,
-      narms = 2,
-      nclusters = nc[i],
-      nsubjects = ns[i],
-      means = c(0, 1),
-      tdist = FALSE,
-      ICC = icc.[i],
-      sigma_sq = sig[i],
-      alpha = 0.05,
-      quiet = FALSE,
-      method = 'glmm',
-      allSimData = FALSE,
-      poorFitOverride = TRUE,
-      cores = "all"
-    )
-    multi.cps.tdist <- cps.ma.normal(
-      nsim = 200,
-      narms = 2,
-      nclusters = nc[i],
-      nsubjects = ns[i],
-      means = c(0, 1),
-      tdist = TRUE,
-      ICC = icc.[i],
-      sigma_sq = sig[i],
-      alpha = 0.05,
-      quiet = FALSE,
-      method = 'glmm',
-      allSimData = FALSE,
-      poorFitOverride = TRUE,
-      cores = "all"
-    )
-    if (round(multi.cps.normal[['power']]['Power'], 2) == round(multi.cps.tdist[['power']]['Power'], 2)) {
-      same[i] <- 1
-    }  else {
-      same[i] <- 0
-    }
-  } # end of loop
-  expect_equal(same, rep(1, times = q))
-})
+test_that("continuous simulation method matches a reference (previous value) I",
+          {
+ bin.ma.rct.unbal <- cps.ma.binary(nsim = 12,
+                             nsubjects = list(rep(20, times=15),
+                             rep(15, times=15),
+                             rep(17, times=15)),
+                             narms = 3,
+                             nclusters = 15,
+                             probs = c(0.35, 0.43, 0.50),
+                             sigma_b_sq = c(0.1, 0.1, 0.1),
+                             alpha = 0.05, allSimData = TRUE,
+                             seed = 123, cores="all")
+ expect_equal(round(bin.ma.rct.unbal$power$Power, 6), 0.833333)
+          })
 
-test_that("continuous simulation method matches the analytic method", {
-  q <- 10
-  nc <- sample.int(200, q)
-  ns <- sample.int(200, q)
-  icc. <- runif(q, min = 0.01, max = 0.99)
-  sig <- runif(q, min = 0.01, max = 3)
-  sigb <- clusterPower:::createMissingVarianceParam(ICC = icc., sigma_b = sig)
-  holder <- data.frame(nc, ns, icc., sig, sigb)
-  for (i in 1:q) {
-    multi.cps.normal <-
-      cps.ma.normal(
-        nsim = 100,
-        narms = 2,
-        nclusters = nc[i],
-        nsubjects = ns[i],
-        means = c(0, 1),
-        tdist = FALSE,
-        ICC = icc.[i],
-        sigma_sq = sig[i],
-        alpha = 0.05,
-        quiet = FALSE,
-        method = 'glmm',
-        allSimData = FALSE,
-        poorFitOverride = TRUE,
-        low.power.override = TRUE,
-        cores = NULL,
-        optmethod = "NLOPT_LN_NELDERMEAD"
-      )
-    twoarm.mean <-
-      cps.normal(
-        nsim = 100,
-        nsubjects = ns[i],
-        nclusters = nc[i],
-        mu = 0,
-        mu2 = 1,
-        ICC = icc.[i],
-        sigma_sq = sig[i],
-        alpha = 0.05,
-        method = 'glmm',
-        quiet = FALSE,
-        allSimData = FALSE
-      )
-    analytic.mean <- cpa.normal(
-      alpha = 0.05,
-      power = NA,
-      nclusters = nc[i],
-      nsubjects = ns[i],
-      ICC = icc.[i],
-      sigma_sq = sig[i],
-      method = "weighted",
-      tol = .Machine$double.eps ^ 0.25,
-      d = 1
-    )
-    print(paste("Interation", i, "of 10."))
-    expect_equal(
-      data.table::between(
-        as.numeric(analytic.mean),
-        twoarm.mean$power$Lower.95.CI,
-        twoarm.mean$power$Upper.95.CI
-      ),
-      TRUE
-    )
-    expect_equal(
-      data.table::between(
-        as.numeric(analytic.mean),
-        multi.cps.normal$power$Lower.95.CI,
-        multi.cps.normal$power$Upper.95.CI
-      ),
-      TRUE
-    )
-    expect_equal(
-      data.table::between(
-        multi.cps.normal$power$Power,
-        twoarm.mean$power$Lower.95.CI,
-        twoarm.mean$power$Upper.95.CI
-      ),
-      TRUE
-    )
-    expect_equal(
-      data.table::between(
-        twoarm.mean$power$Power,
-        multi.cps.normal$power$Lower.95.CI,
-        multi.cps.normal$power$Upper.95.CI
-      ),
-      TRUE
-    )
-  } # end of loop
-})
-
+test_that("continuous simulation method matches a reference (previous value) II",
+          {
+ bin.ma.rct.bal <- cps.ma.binary(nsim = 100, nsubjects = 50, narms=3,
+                             nclusters = 8,
+                             probs = c(0.35, 0.4, 0.5),
+                             sigma_b_sq = 0.1, alpha = 0.05,
+                             quiet = FALSE, method = 'glmm',
+                             allSimData = FALSE,
+                             multi_p_method="none",
+                             seed = 123, cores="all",
+                             poorFitOverride = FALSE)
+ expect_equal(round(bin.ma.rct.bal$power$Power, 6), 0.808081)
+          })
 
 ###### Multi-arm Count outcome testing
 
-test_that("count simulation method matches the 2-arm simulation method", {
-  q <- 1
-  nc <- sample.int(200, q)
-  ns <- sample.int(200, q)
-  sig <- runif(q, min = 0.01, max = 1)
-  for (i in 1:q) {
-    count.ma <- cps.ma.count(
-      nsim = 100,
-      nsubjects = ns[i],
-      narms = 2,
-      nclusters = nc[i],
-      counts = c(30, 70),
-      sigma_b_sq = sig[i],
-      alpha = 0.05,
-      quiet = TRUE,
-      method = 'glmm',
-      allSimData = FALSE,
-      multi_p_method = "none",
-      poorFitOverride = TRUE
-    )
-    count.sim = cps.count(
-      nsim = 100,
-      nsubjects = ns[i],
-      nclusters = nc[i],
-      c1 = 30,
-      c2 = 70,
-      sigma_b = sig[i],
-      family = 'poisson',
-      analysis = 'poisson',
-      method = 'glmm',
-      alpha = 0.05,
-      quiet = FALSE,
-      allSimData = TRUE
-    )
-    expect_equal(as.numeric(round(count.ma[[1]][, 1], 1)), as.numeric(round(count.sim$power[1], 1)))
-    print(paste("Interation", i, "of 10."))
-  } # end of loop
+test_that("count simulation method matches a reference I", {
+   nsubjects.example <- list(c(150, 200, 50, 100), c(50, 150, 210, 100),
+                          c(70, 200, 150, 50, 100))
+   counts.example <- c(10, 55, 65)
+   sigma_b_sq.example <- c(1, 1, 2)
+   count.ma.rct.unbal <- cps.ma.count(nsim = 100,
+                               narms = 3,
+                               nsubjects = nsubjects.example,
+                               counts = counts.example,
+                               sigma_b_sq = sigma_b_sq.example,
+                               alpha = 0.05, seed = 123)
+   expect_equal(round(count.ma.rct.unbal$power$Power, 6), 0.808081)
+})
+             
+test_that("count simulation method matches a reference II", {                  
+ count.ma.rct.bal <- cps.ma.count(nsim = 10, nsubjects = 100, narms = 4,
+                               nclusters = 25, counts = c(30, 35, 70, 40),
+                               sigma_b_sq = c(1, 1.2, 1, 0.9), seed = 123)
+ expect_equal(round(count.ma.rct.bal$power$Power, 6), 0.9)
 })
 
 

@@ -141,7 +141,7 @@
 #'
 #' bin.ma.rct.bal <- cps.ma.binary(nsim = 100, nsubjects = 50, narms=3,
 #'                             nclusters=8,
-#'                             probs = c(0.30, 0.4, 0.5),
+#'                             probs = c(0.35, 0.4, 0.5),
 #'                             sigma_b_sq = 0.1, alpha = 0.05,
 #'                             quiet = FALSE, method = 'glmm',
 #'                             allSimData = FALSE,
@@ -197,7 +197,7 @@ cps.ma.binary <- function(nsim = 1000,
   }
   
   # input validation steps
-  if (!is.wholenumber(nsim) || nsim < 1 || length(nsim) > 1) {
+  if (!clusterPower:::is.wholenumber(nsim) || nsim < 1 || length(nsim) > 1) {
     stop("nsim must be a positive integer of length 1.")
   }
   if (isTRUE(is.null(nsubjects))) {
@@ -212,13 +212,13 @@ cps.ma.binary <- function(nsim = 1000,
   }
   
   # nclusters must be whole numbers
-  if (sum(is.wholenumber(nclusters) == FALSE) != 0 ||
+  if (sum(clusterPower:::is.wholenumber(nclusters) == FALSE) != 0 ||
       nclusters < 1) {
     stop("nclusters must be postive integer values.")
   }
   
   # nsubjects must be whole numbers
-  if (sum(is.wholenumber(unlist(nsubjects)) == FALSE) != 0 ||
+  if (sum(clusterPower:::is.wholenumber(unlist(nsubjects)) == FALSE) != 0 ||
       unlist(nsubjects) < 1) {
     stop("nsubjects must be positive integer values.")
   }
@@ -466,7 +466,7 @@ cps.ma.binary <- function(nsim = 1000,
           "probs" = probs,
           "model.estimates" = ma.model.est,
           "convergence" = binary.ma.rct[[3]],
-          "sim.data" = binary.ma.rct[[4]]
+          "sim.data" = binary.ma.rct[["sim.data"]]
         ),
         class = 'crtpwr.ma'
       )
@@ -494,7 +494,7 @@ cps.ma.binary <- function(nsim = 1000,
           "probs" = probs,
           "model.estimates" = ma.model.est,
           "convergence" = binary.ma.rct[[3]],
-          "sim.data" = binary.ma.rct[[4]],
+          "sim.data" = binary.ma.rct[["sim.data"]],
           "all.models" <-  binary.ma.rct
         ),
         class = 'crtpwr.ma'
@@ -645,7 +645,7 @@ cps.ma.binary <- function(nsim = 1000,
           "variance.parms" = var.parms,
           "probs" = probs,
           "model.estimates" = ma.model.est,
-          "sim.data" = binary.ma.rct[[4]]
+          "sim.data" = binary.ma.rct[["sim.data"]]
         ),
         class = 'crtpwr.ma'
       )

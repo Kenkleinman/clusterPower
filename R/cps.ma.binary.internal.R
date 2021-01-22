@@ -179,14 +179,14 @@ cps.ma.binary.internal <-
           randint.holder[[j]] <- logit.p[j] + randint[[j]]
         }
         randintrandint <-
-          sapply(randint.holder, clusterPower::expit)
+          sapply(randint.holder, clusterPower:::expit)
       } else {
         randint.holder <-
           matrix(nrow = nclusters[1], ncol = length(logit.p))
         for (j in 1:length(logit.p)) {
           randint.holder[, j] <- logit.p[j] + randint[, j]
         }
-        randintrandint <- clusterPower::expit(randint.holder)
+        randintrandint <- clusterPower:::expit(randint.holder)
       }
       # Create y-value
       y.intercept <-  vector(mode = "numeric",
@@ -317,17 +317,8 @@ cps.ma.binary.internal <-
       ) %fun% {
         lme4::glmer(
           sim.dat[, i + 2] ~ trt + (1 | clust),
-          family = stats::binomial(link = 'logit'),
-          control = lme4::glmerControl(
-            calc.derivs = TRUE,
-            optCtrl = list(
-              maxfun = 2e4,
-              method = optmethod,
-              starttests = TRUE,
-              kkt = FALSE
-            )
+          family = stats::binomial(link = 'logit')
           )
-        )
       }
       
       if (is.na(cores) & quiet == FALSE) {
@@ -341,13 +332,13 @@ cps.ma.binary.internal <-
           ifelse(is.null(my.mod[[i]]@optinfo$conv$lme4$messages),
                  TRUE,
                  FALSE)
+      }
         # option to stop the function early if fits are singular
-        if (poor.fit.override == FALSE) {
+        if (poor.fit.override == FALSE & i > 50) {
           if (sum(unlist(converged), na.rm = TRUE) < (nsim * .75)) {
             stop("more than 25% of simulations are singular fit: check model specifications")
           }
         }
-      }
       
       # refit once if model did not converge
       idx <- which(converged == FALSE)

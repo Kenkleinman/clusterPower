@@ -193,7 +193,7 @@ bin.ma.rct.unbal <- cps.ma.binary(nsim = 12,
 
 bin.ma.rct.bal <- cps.ma.binary(nsim = 100, nsubjects = 50, narms=3,
                             nclusters=8,
-                            probs = c(0.30, 0.4, 0.5),
+                            probs = c(0.35, 0.4, 0.5),
                             sigma_b_sq = 0.1, alpha = 0.05,
                             quiet = FALSE, method = 'glmm',
                             allSimData = FALSE,
