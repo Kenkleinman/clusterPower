@@ -13,7 +13,7 @@ binCalcICC(
   kappa = 0.45,
   nAGQ = 1,
   sim.min = 1,
-  sim.max = (length(data$sim.data) - 2),
+  sim.max = 100,
   nsim = 1000
 )
 }
@@ -70,11 +70,22 @@ bin.ma.rct.unbal <- cps.ma.binary(nsim = 3,
                             nclusters = 15,
                             probs = c(0.15, 0.23, 0.22),
                             sigma_b_sq = c(0.1, 0.1, 0.1),
-                            alpha = 0.05, all.sim.data = TRUE,
+                            alpha = 0.05, allSimData = TRUE,
                             seed = 123, cores="all")
 
-  bin <- binCalcICC(data = bin.ma.rct.unbal, nsim = 1000)
+binCalcICC(data = bin.ma.rct.unbal, nsim = 1000)
 }
+
+\dontrun{ 
+binary.sim = cps.binary(nsim = 100, nsubjects = 20,
+  nclusters = 10, p1 = 0.8,
+  p2 = 0.5, sigma_b_sq = 1,
+  sigma_b_sq2 = 1.2, alpha = 0.05,
+  method = 'glmm', allSimData = TRUE)
+
+binCalcICC(data = binary.sim, nsim = 1000)
+}
+
 
 }
 \author{

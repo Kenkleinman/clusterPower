@@ -1,5 +1,5 @@
 #' Updates the Shiny app options if the function arguments change
-#'
+#' @noRd
 #'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}
 #'
@@ -8,7 +8,6 @@
 #' @param justNames Logical. Default is FALSE. Should only argument names be returned
 #'
 #' @return List of numericInput expressions.
-#' @export
 
 argMatch <- function(fxnName, justNames = FALSE) {
   

@@ -110,8 +110,7 @@
 #'
 #' @author Alexandria C. Sakrejda (\email{acbro0@@umass.edu}), Alexander R. Bogdan, and Ken Kleinman (\email{ken.kleinman@@gmail.com})
 #'
-#' @export
-
+#' @noRd
 cps.ma.count.internal <-
   function(nsim = 1000,
            str.nsubjects = NULL,
@@ -288,7 +287,7 @@ cps.ma.count.internal <-
     avg.iter.time = as.numeric(difftime(Sys.time(), sim.start, units = 'secs'))
     time.est = avg.iter.time * (nsim - 1) / 60
     hr.est = time.est %/% 60
-    min.est = round(time.est %% 60, 0)
+    min.est = round(time.est %% 60, 3)
     #time limit override (for Shiny)
     if (min.est > 2 && timelimitOverride == FALSE) {
       stop(paste0("Estimated completion time: ",
@@ -549,7 +548,7 @@ cps.ma.count.internal <-
       )
       time.est = avg.iter.time * (nsim - 1) / 60
       hr.est = time.est %/% 60
-      min.est = round(time.est %% 60, 0)
+      min.est = round(time.est %% 60, 3)
       
       #time limit override (for Shiny)
       if (min.est > 2 && timelimitOverride == FALSE) {
@@ -675,7 +674,7 @@ cps.ma.count.internal <-
         "estimates" = model.values,
         "model.comparisons" = model.compare,
         "converged" = unlist(converged),
-        "sim.data" = data.frame(trt, clust, sim.dat),
+        "sim.data" = data.frame(sim.dat),
         "optimizer algorithm" = goodopt
       )
     } else {

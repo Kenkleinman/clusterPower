@@ -24,8 +24,7 @@
 #'  [1] a point estimate for the treatment effect, [2] lower bound of (1-alpha)
 #'  confidence interval, [3] lower bound of (1-alpha) confidence interval.
 #'
-#' @export
-
+#' @noRd
 fixed.effect <-
   function(dat,
            incl.period.effect,
@@ -59,8 +58,6 @@ fixed.effect <-
     
   }
 
-#' @rdname fixed.effect
-#' @export
 
 fixed.effect.cluster.level <-
   function(dat,
@@ -112,8 +109,6 @@ fixed.effect.cluster.level <-
     
   }
 
-#' @rdname fixed.effect
-#' @export
 
 random.effect <-
   function(dat,
@@ -164,8 +159,6 @@ random.effect <-
     return(c(est["Estimate"], ci))
   }
 
-#' @rdname fixed.effect
-#' @export
 
 ## based on Turner (1997) method C2
 weighted.crossover.cluster.level <-

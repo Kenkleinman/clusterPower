@@ -10,4 +10,5 @@
 #' @importFrom foreach %dopar% %do%
 #' 
 #' 
+#' @noRd
 NULL

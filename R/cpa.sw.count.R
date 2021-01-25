@@ -8,7 +8,7 @@
 #' @param lambda1 Baseline rate for outcome of interest
 #' @param RR Estimated relative risk of the intervention
 #' @param nclusters Number of clusters
-#' @param steps Number of time steps
+#' @param steps Number of time steps. Baseline is assumed.
 #' @param nsubjects Average size of each cluster
 #' @param ICC Intra-class correlation coefficient (default = 0.01)
 #' @param alpha Significance level (default=0.05)

@@ -9,7 +9,7 @@ cps.did.binary(
   nsubjects = NULL,
   nclusters = NULL,
   p.diff = NULL,
-  p1t0 = NULL,
+  p1t0 = 0,
   p2t0 = NULL,
   p1t1 = NULL,
   p2t1 = NULL,
@@ -44,7 +44,8 @@ p.diff = (p1t1 - p1t0) - (p2t1 - p2t0).
 At least 2 of the following 3 arguments must be specified when using 
 expected odds ratios:}
 
-\item{p1t0}{Required. Expected outcome proportion in arm 1 at baseline.}
+\item{p1t0}{Required. Expected outcome proportion in arm 1 at baseline.
+Default is 0.}
 
 \item{p2t0}{Optional. Expected outcome proportion in arm 2 at baseline. If 
 no quantity is provided, p2t0 = p1t0 is assumed.}
@@ -163,9 +164,10 @@ outcome in arm 2, expected difference in probabilities between groups
 and simulated data set output may also be specified.
 
 The following equations are used to estimate intra-cluster correlation coefficients:
-P_h: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \pi^{2}/3}}
-P_c: \deqn{ICC = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_{j}\pi_{h}}{\sqrt{\pi_{j}(1 - \pi_{j})\pi_{h}(1 - \pi_{h})}}}
-P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
+
+P_h: \mjsdeqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \pi^{2}/3}}
+P_c: \mjsdeqn{ICC = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_{j}\pi_{h}}{\sqrt{\pi_{j}(1 - \pi_{j})\pi_{h}(1 - \pi_{h})}}}
+P_lmer: \mjsdeqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 }
 \examples{
 

@@ -1,5 +1,6 @@
 #' Power simulations for cluster-randomized crossover study designs.
 #'
+#'
 #' These functions run simulations to calculate power for a given 
 #' cluster-randomized crossover study design. The user can specify a function
 #' which runs the desired method of analysis. The function \code{make.base.data()} is
@@ -73,7 +74,7 @@
 #'   estimation.function=random.effect, verbose=TRUE, period.var=0, at.risk.params=10)
 #' }
 #'
-#' @export
+#' @noRd
 
 power.sim.normal <- function(n.sim=10,
 			     effect.size,
@@ -187,8 +188,6 @@ power.sim.normal <- function(n.sim=10,
 	return(out)
 }
 
-#' @rdname power.sim.normal
-#' @export
 
 power.sim.binomial <- function(n.sim=10,
 			     effect.size,
@@ -299,8 +298,7 @@ power.sim.binomial <- function(n.sim=10,
 	return(out)
 }
 
-#' @rdname power.sim.normal
-#' @export
+
 
 power.sim.poisson <- function(n.sim=10,
 			      effect.size,
@@ -424,7 +422,7 @@ power.sim.poisson <- function(n.sim=10,
 	return(out)
 }
 
-#' @rdname power.sim.normal
+
 make.base.data <- function(n.obs, n.clusters,
 			   cluster.size, n.periods){
 	## #####################
@@ -513,11 +511,9 @@ make.base.data <- function(n.obs, n.clusters,
 #' 
 #' logit(.5)
 #' curve(logit(x), from=0, to=1)
-#' @export
+#' rt
+#' @noRd
 expit <- function(x) exp(x)/(1+exp(x))
-
-#' @rdname expit
-#' @export
 logit <- function(p) log(p/(1-p))
 
 
@@ -551,7 +547,8 @@ logit <- function(p) log(p/(1-p))
 #' @examples 
 #' mixed.eff.params(pi0=log(1), btw.clust.var=.5, Tk=100)
 #' 
-#' @export
+#' 
+#' @noRd
 mixed.eff.params <- function(pi0, btw.clust.var, Tk) {
         e <- Tk * exp(pi0) * exp(btw.clust.var/2)
         v <- e + e^2*(exp(btw.clust.var)-1)
@@ -595,8 +592,8 @@ mixed.eff.params <- function(pi0, btw.clust.var, Tk) {
 #' hayes.power.poisson(n.clusters=36, period.effect=log(.015), btw.clust.var=0,
 #'   at.risk.params=20, cluster.size=20, effect.size=log(.7))
 #'
-#' @export
-
+#' 
+#' @noRd
 ## implements power calculation based on Hayes (1999) formulas and the coef of variation, k
 hayes.power.poisson <- function(n.clusters, period.effect, btw.clust.var, at.risk.params, cluster.size, effect.size, alpha=.05) {
 	Tk <- at.risk.params*cluster.size

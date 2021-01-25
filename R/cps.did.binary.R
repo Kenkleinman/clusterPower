@@ -19,9 +19,10 @@
 #' and simulated data set output may also be specified.
 #' 
 #' The following equations are used to estimate intra-cluster correlation coefficients:
-#' P_h: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \pi^{2}/3}}
-#' P_c: \deqn{ICC = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_{j}\pi_{h}}{\sqrt{\pi_{j}(1 - \pi_{j})\pi_{h}(1 - \pi_{h})}}}
-#' P_lmer: \deqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
+#' 
+#' P_h: \mjsdeqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \pi^{2}/3}}
+#' P_c: \mjsdeqn{ICC = \frac{P(Y_{ij} = 1, Y_{ih} = 1) - \pi_{j}\pi_{h}}{\sqrt{\pi_{j}(1 - \pi_{j})\pi_{h}(1 - \pi_{h})}}}
+#' P_lmer: \mjsdeqn{ICC = \frac{\sigma_{b}}{\sigma_{b} + \sigma_{w}}}
 #' 
 #' @param nsim Number of datasets to simulate; accepts integer (required).
 #' 
@@ -30,6 +31,7 @@
 #' @param nclusters Number of clusters per arm; accepts integer (required).
 #' 
 #' @param p1t0 Required. Expected outcome proportion in arm 1 at baseline.
+#' Default is 0.
 #' @param p2t0 Optional. Expected outcome proportion in arm 2 at baseline. If 
 #' no quantity is provided, p2t0 = p1t0 is assumed.
 #' @param p1t1 Optional. Expected outcome proportion in arm 1 at follow-up. 
@@ -167,7 +169,7 @@ cps.did.binary = function(nsim = NULL,
                           nsubjects = NULL,
                           nclusters = NULL,
                           p.diff = NULL,
-                          p1t0 = NULL,
+                          p1t0 = 0,
                           p2t0 = NULL,
                           p1t1 = NULL,
                           p2t1 = NULL,
@@ -196,7 +198,7 @@ cps.did.binary = function(nsim = NULL,
   pval.vector = vector("numeric", length = nsim)
   converge = vector("logical", length = nsim)
   icc2.vector = vector("numeric", length = nsim)
-  lmer.icc.vector = NULL
+  lmer.icc.vector = vector("numeric", length = nsim)
   values.vector = cbind(c(0, 0, 0, 0))
   simulated.datasets = list()
   
@@ -446,7 +448,7 @@ cps.did.binary = function(nsim = NULL,
       clust = as.factor(clust)
     )
     if (allSimData == TRUE) {
-      simulated.datasets = append(simulated.datasets, list(sim.dat))
+      simulated.datasets[[i]] = list(sim.dat)
     }
     
     # option to return simulated data only
@@ -480,13 +482,13 @@ cps.did.binary = function(nsim = NULL,
     icc2 = (mean(c(mean(y0.ntrt), mean(y1.ntrt))) - p1t1) * 
       (mean(c(mean(y0.trt), mean(y1.trt))) - p2t1) / 
       sqrt((p1t1 * (1 - p1t1)) * p2t1 * (1 - p2t1))
-    icc2.vector = append(icc2.vector, icc2)
+    icc2.vector[i] = icc2
     
     # Calculate LMER.ICC (lmer: sigma_b_sq / (sigma_b_sq + sigma))
     lmer.mod = lme4::lmer(y ~ trt + period + trt:period + (1 |
                                                              clust), data = sim.dat)
     lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
-    lmer.icc.vector =  append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
+    lmer.icc.vector[i] =  lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2])
     
     # Set warnings to OFF
     # Note: Warnings will still be stored in 'warning.list'
@@ -561,7 +563,7 @@ cps.did.binary = function(nsim = NULL,
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
-        min.est = round(time.est %% 60, 0)
+        min.est = round(time.est %% 60, 3)
         if (min.est > 2 && timelimitOverride == FALSE){
           stop(paste0("Estimated completion time: ",
                       hr.est,
@@ -618,9 +620,10 @@ cps.did.binary = function(nsim = NULL,
   # Calculate and store power estimate & confidence intervals
   # pval.data = subset(cps.model.est, converge == TRUE)
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
-  power.parms <- confintCalc(alpha = alpha,
+  power.parms <- confintCalc(nsim = nsim,
+                             alpha = alpha,
                              p.val = cps.model.temp[, 'p.value'])
-  
+
   # Create object containing inputs
   p1.p2.or = round(p1t1 / (1 - p1t1) / (p2t1 / (1 - p2t1)), 3)
   p2.p1.or = round(p2t1 / (1 - p2t1) / (p1t1 / (1 - p1t1)), 3)
@@ -659,7 +662,9 @@ cps.did.binary = function(nsim = NULL,
     'lmer' = c('ICC' = mean(lmer.icc.vector))
   )), 3)
   # Create object containing all ICC values
-  icc.list = ICC
+  # Note: P_h is a single calculated value. No vector to be appended.
+  icc.list = data.frame('P_c' = icc2.vector,
+                        'lmer' = lmer.icc.vector)
   
   # Create object containing group-specific variance parameters
   var.parms = list(

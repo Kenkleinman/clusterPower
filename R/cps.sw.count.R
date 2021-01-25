@@ -142,7 +142,7 @@ cps.sw.count = function(nsim = NULL,
                         timelimitOverride = TRUE,
                         opt = 'L-BFGS-B',
                         seed = NULL) {
-  if (!is.na(seed)) {
+  if (!is.null(seed)) {
     set.seed(seed = seed)
   }
   
@@ -172,7 +172,7 @@ cps.sw.count = function(nsim = NULL,
   if (length(steps) == 1) {
     if (!is.wholenumber(nclusters / steps)) {
       stop(
-        "nclusters/steps must be a whole number. See documentation for steps parameter in '?clusterPower::cps.sw.binary'"
+        "nclusters/steps must be a whole number. See documentation for steps parameter in '?cps.sw.count'"
       )
     }
   }
@@ -479,7 +479,7 @@ cps.sw.count = function(nsim = NULL,
       avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
       time.est = avg.iter.time * (nsim - 1) / 60
       hr.est = time.est %/% 60
-      min.est = round(time.est %% 60, 0)
+      min.est = round(time.est %% 60, 2)
       if (min.est > 2 && timelimitOverride == FALSE) {
         stop(paste0(
           "Estimated completion time: ",
@@ -510,7 +510,7 @@ cps.sw.count = function(nsim = NULL,
         total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         hr.est = total.est %/% 3600
         min.est = total.est %/% 60
-        sec.est = round(total.est %% 60, 0)
+        sec.est = round(total.est %% 60, 2)
         message(
           paste0(
             "Simulations Complete! Time Completed: ",
@@ -556,6 +556,7 @@ cps.sw.count = function(nsim = NULL,
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
   power.parms <- confintCalc(alpha = alpha,
+                             nsim = nsim,
                              p.val = cps.model.temp[, 'p.value'])
   rownames(power.parms) <- "post-treatment"
   

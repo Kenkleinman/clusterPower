@@ -14,9 +14,11 @@
 #'   \item{power.parms}{Exact confidence intervals produced using \code{binom.test()}}
 #' }
 #'
-#' @export confintCalc
+#' @noRd
 confintCalc <- function(alpha = alpha,
-                        p.val = p.val) {
+                        p.val = p.val,
+                        nsim = nsim,
+                        multi = FALSE) {
   sig.val <-  ifelse(p.val < alpha, 1, 0)
   if (isTRUE(is.data.frame(sig.val)) ||
       isTRUE(is.matrix(sig.val))) {
@@ -54,5 +56,10 @@ confintCalc <- function(alpha = alpha,
   power.parms <-
     data.frame(Power, Lower.95.CI, Upper.95.CI, Alpha, Beta)
   rownames(power.parms) <- Names
+  if (multi == FALSE){
+  num.returned <- data.frame("Converged" = length(p.val), 
+                             "Requested" = nsim)
+  power.parms <- cbind(power.parms, num.returned)
+  }
   return(power.parms)
 }

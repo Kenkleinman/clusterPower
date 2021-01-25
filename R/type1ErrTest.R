@@ -16,9 +16,7 @@
 #'   \item{warning}{With the parameters you entered, the power estimate may be conservative.}
 #' }
 #' 
-#' @export
-
-
+#' @noRd
 type1ErrTest <- function(sigma_sq_, sigma_b_sq_, nsubjects_) {
   ICC <- createMissingVarianceParam(sigma_sq = sigma_sq_,
                                     sigma_b_sq = sigma_b_sq_)

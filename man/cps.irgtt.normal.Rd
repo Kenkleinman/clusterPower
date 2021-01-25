@@ -129,7 +129,7 @@ irgtt.normal.sim <- cps.irgtt.normal(nsim = 100, nsubjects = c(100, 10),
                        nclusters = 8, mu = 1.1, mu2 = 1.5,
                         sigma_sq = 0.1, sigma_sq2 = 0.2, 
                         sigma_b_sq2 = 0.1, alpha = 0.05,
-                        quiet = FALSE, allSimData = FALSE)
+                        quiet = FALSE, allSimData = TRUE, seed = 123)
 }
 }
 \author{

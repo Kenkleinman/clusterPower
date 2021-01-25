@@ -6,8 +6,8 @@
 #'
 #' The stepped wedge trial design is a type of cross-over
 #' design in which clusters change treatments in waves. Initially all the
-#' clusters recieve the same standard treatment, and at the end of the trial all
-#' of the clusters will be recieving the treatment of interest. More than one
+#' clusters receive the same standard treatment, and at the end of the trial all
+#' of the clusters will be receiving the treatment of interest. More than one
 #' cluster can change treatments in a wave, but the order in which clusters
 #' change treatments is randomly determined. The outcome of interest is assessed
 #' in each cluster during each wave.
@@ -25,7 +25,7 @@
 #' @param alpha Significance level (default=0.05).
 #' 
 #' @param steps Number of crossover steps; Accepts positive scalar indicating the total
-#' number of steps (required).
+#' number of steps, NOT including the baseline (required).
 #' 
 #' @param timeEffect Expected time effect over the entire study period (assumed to be linear
 #' across time steps); accepts numeric (required). Default = 0 (no time effects).
@@ -50,16 +50,16 @@
 #' 
 #' # Estimate power for a trial with 3 steps and 9 clusters at the 
 #' # initiation of the study. Those 
-#' # clusters have 20 subjects each with no time effects. 
+#' # clusters have 14 subjects each with no time effects. 
 #' # We estimated arm outcome proportions of 
 #' # 0.2 (pre-treatment) and 0.31 (post-treatment) and intracluster 
 #' # correlation coefficient (ICC) of 0.05. 
-#' # The resulting power should be 0.7974636.
+#' # The resulting power should be 0.7992842.
 #' 
 #' \dontrun{
 #' sw.bin <- cpa.sw.binary(nclusters = 9,
 #'   steps = 3,
-#'   nsubjects = 20,
+#'   nsubjects = 14,
 #'   timeEffect = 0,
 #'   ICC = 0.05,
 #'   p1 = 0.31,
@@ -84,12 +84,18 @@ cpa.sw.binary <- function(nclusters = NA,
                           alpha = 0.05,
                           timeEffect = 0,
                           ICC = NA,
-                          p1 = NA,
                           p0 = NA,
+                          p1 = NA,
                           tol = 1e-5,
                           GQ = 100,
                           quiet = FALSE) {
   ###### Define some FORTRAN-calling functions  ########
+  
+  steps = steps + 1 # to include the baseline
+  
+  if (p1 < 0 | p0 < 0) {
+    stop("Proportions (p1 & p2) cannot be negative.")
+  }
   
   beta <- p1 - p0
   
@@ -298,7 +304,6 @@ cpa.sw.binary <- function(nclusters = NA,
   )
   tau2 <- parholder$tau2
   gammaobj <- parholder$gamma
-  
   # mincomp and maxcomp are steps+2 vectors of 0 and 1's,
   # representing the weights of gammaobj(1),...,gammaobj(steps), p0, beta.
   comp <- rep(0, times = (steps + 2))
@@ -322,7 +327,7 @@ cpa.sw.binary <- function(nclusters = NA,
     b <- -100
     
     for (i in 1:steps) {
-      temp = p0 + gammaobj[i]
+      temp = p0[i] + gammaobj[i]
       if (temp < a) {
         a = temp
         mincomp <- comp
@@ -335,7 +340,7 @@ cpa.sw.binary <- function(nclusters = NA,
         maxcomp[steps + 1] = 1
         maxcomp[i] = 1
       }
-      temp = p0 + beta + gammaobj[i]
+      temp = p0[i] + beta + gammaobj[i]
       if (temp < a) {
         a = temp
         mincomp <- comp

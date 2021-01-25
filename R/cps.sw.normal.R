@@ -134,7 +134,7 @@ cps.sw.normal = function(nsim = NULL,
                          lowPowerOverride = FALSE, 
                          timelimitOverride = TRUE,
                          seed = NULL) {
-  if (!is.na(seed)) {
+  if (!is.null(seed)) {
     set.seed(seed = seed)
   }
   
@@ -198,7 +198,7 @@ cps.sw.normal = function(nsim = NULL,
   if (length(steps) == 1) {
     if (!is.wholenumber(nclusters / steps)) {
       stop(
-        "nclusters/steps must be a whole number. See documentation for steps parameter in '?clusterPower::cps.sw.binary'"
+        "nclusters/steps must be a whole number. See documentation for steps parameter in '?cps.sw.normal'"
       )
     }
   }
@@ -463,7 +463,7 @@ cps.sw.normal = function(nsim = NULL,
         total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         hr.est = total.est %/% 3600
         min.est = total.est %/% 60
-        sec.est = round(total.est %% 60, 0)
+        sec.est = round(total.est %% 60, 2)
         message(
           paste0(
             "Simulations Complete! Time Completed: ",
@@ -505,6 +505,7 @@ cps.sw.normal = function(nsim = NULL,
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
   power.parms <- confintCalc(alpha = alpha,
+                             nsim = nsim,
                              p.val = cps.model.temp[, 'p.value'])
   rownames(power.parms) <- "post-treatment"
   

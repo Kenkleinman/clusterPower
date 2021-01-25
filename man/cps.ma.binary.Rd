@@ -87,14 +87,14 @@ calculated power is returned regardless of value.}
 \item{timelimitOverride}{Logical. When FALSE, stops execution if the estimated
 completion time is more than 2 minutes. Defaults to TRUE.}
 
-\item{nofit}{Option to skip model fitting and analysis and return the 
+\item{nofit}{Option to skip model fitting and analysis and return the
 simulated data.
 Defaults to \code{FALSE}.}
 
-\item{optmethod}{User-specified optimizer method. Accepts \code{bobyqa}, 
+\item{optmethod}{User-specified optimizer method. Accepts \code{bobyqa},
 \code{Nelder_Mead} (default), and optimizers wrapped in the \code{optimx} package.}
 
-\item{return.all.models}{Logical; Returns all of the fitted models and the 
+\item{return.all.models}{Logical; Returns all of the fitted models and the
 simulated data.
 Defaults to FALSE.}
 }
@@ -186,14 +186,14 @@ bin.ma.rct.unbal <- cps.ma.binary(nsim = 12,
                             rep(17, times=15)),
                             narms = 3,
                             nclusters = 15,
-                            probs = c(0.15, 0.23, 0.22),
+                            probs = c(0.35, 0.43, 0.50),
                             sigma_b_sq = c(0.1, 0.1, 0.1),
                             alpha = 0.05, allSimData = TRUE,
                             seed = 123, cores="all")
 
 bin.ma.rct.bal <- cps.ma.binary(nsim = 100, nsubjects = 50, narms=3,
                             nclusters=8,
-                            probs = c(0.30, 0.4, 0.5),
+                            probs = c(0.35, 0.4, 0.5),
                             sigma_b_sq = 0.1, alpha = 0.05,
                             quiet = FALSE, method = 'glmm',
                             allSimData = FALSE,

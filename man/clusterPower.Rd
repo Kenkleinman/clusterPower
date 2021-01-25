@@ -10,7 +10,7 @@ for cluster randomized trials and related designs.}
 
 The clusterPower package is design for experiments with correlated, A.K.A. clustered observations.
 It contains many functions for calculating the power, sample size, 
-and parameters necessary for acheiving desired power and sample size from analytic equations.  It also
+and parameters necessary for achieving desired power and sample size from analytic equations.  It also
 estimation of power via Monte Carlo methods via very flexible functions for a wide range of 
 methods for which analytic methods or approximations may not exist.
 }
@@ -36,7 +36,7 @@ though it has no natural analogue in generalized linear mixed models
 when the distribution lacks a variance that is independent of
 the mean.
 
-For example, for dichotomous outcomes, one covenient data generating model is:
+For example, for dichotomous outcomes, one convenient data generating model is:
 
 \mjsdeqn{logit(Pr(y_{ij}|b_i = \beta_0 + \beta_1 x_{ij} + b_i}
 }

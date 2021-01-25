@@ -227,12 +227,13 @@
 #' # seed = 123, the overall power for this trial should be 0.81.
 #'
 #' \dontrun{
-#' nsubjects.example <- list(c(150, 200, 50, 100), c(50, 150, 210, 100), 
+#' nsubjects.example <- list(c(150, 200, 50, 100), c(50, 150, 210, 100),
 #'                        c(70, 200, 150, 50, 100))
 #' counts.example <- c(10, 55, 65)
 #' sigma_b_sq.example <- c(1, 1, 2)
 #'
 #' count.ma.rct.unbal <- cps.ma.count(nsim = 100,
+#'                             narms = 3,
 #'                             nsubjects = nsubjects.example,
 #'                             counts = counts.example,
 #'                             sigma_b_sq = sigma_b_sq.example,
@@ -277,8 +278,6 @@ cps.ma.count <- function(nsim = 1000,
                          return.all.models = FALSE,
                          nofit = FALSE,
                          opt = "NLOPT_LN_BOBYQA") {
-  
-  
   converge <- NULL
   # use this later to determine total elapsed time
   start.time <- Sys.time()
@@ -348,7 +347,7 @@ cps.ma.count <- function(nsim = 1000,
       }
       str.nsubjects <- list()
       for (i in 1:length(nsubjects)) {
-          str.nsubjects[[i]] <- rep(nsubjects[i], times = nclusters[i])
+        str.nsubjects[[i]] <- rep(nsubjects[i], times = nclusters[i])
       }
     }
   }
@@ -454,10 +453,10 @@ cps.ma.count <- function(nsim = 1000,
     p.val = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]][[10]][, 1]
-      std.error[i,] <- models[[i]][[10]][, 2]
-      z.val[i,] <- models[[i]][[10]][, 3]
-      p.val[i,] <-
+      Estimates[i, ] <- models[[i]][[10]][, 1]
+      std.error[i, ] <- models[[i]][[10]][, 2]
+      z.val[i, ] <- models[[i]][[10]][, 3]
+      p.val[i, ] <-
         p.adjust(models[[i]][[10]][, 4], method = multi_p_method)
     }
     
@@ -482,27 +481,7 @@ cps.ma.count <- function(nsim = 1000,
     colnames(z.val) <- names.zval
     colnames(p.val) <- names.pval
     
-    if (narms > 2) {
-      # Organize the LRT output
-      LRT.holder <-
-        matrix(
-          unlist(count.ma.rct[[2]]),
-          ncol = 3,
-          nrow = nsim,
-          byrow = TRUE,
-          dimnames = list(seq(1:nsim),
-                          colnames(count.ma.rct[[2]][[1]]))
-        )
-      
-      # Proportion of times P(>F)
-      sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
-      LRT.holder.abbrev <- sum(sig.LRT)
-    }
-    
-    # Calculate and store power estimate & confidence intervals
-    sig.val <-  ifelse(p.val < alpha, 1, 0)
-    pval.power <- apply(sig.val, 2, sum)
-    
+    #convergence
     converge <- as.vector(rep(NA, times = nsim))
     for (i in 1:nsim) {
       converge[i] <-
@@ -522,9 +501,33 @@ cps.ma.count <- function(nsim = 1000,
       immediate. = TRUE)
     }
     
+    # Organize the LRT output
+    LRT.holder <-
+      matrix(
+        unlist(count.ma.rct[[2]]),
+        ncol = 3,
+        nrow = nsim,
+        byrow = TRUE,
+        dimnames = list(seq(1:nsim),
+                        colnames(count.ma.rct[[2]][[1]]))
+      )
+    
+    # Proportion of times P(>F)
+    LRT.holder <- cbind(LRT.holder, cps.model.temp["converge"])
+    LRT.holder <- LRT.holder[LRT.holder[, "converge"] == TRUE, ]
+    sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
+    
     # Calculate and store power estimate & confidence intervals
-    power.parms <- confintCalc(alpha = alpha,
-                               p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)]))
+    sig.val <-  ifelse(p.val < alpha, 1, 0)
+    pval.power <- apply(sig.val, 2, sum)
+    
+    # Calculate and store power estimate & confidence intervals
+    power.parms <- cbind(confintCalc(
+      alpha = alpha,
+      multi = TRUE,
+      p.val = as.vector(cps.model.temp2[, 3:length(cps.model.temp2)])
+    ),
+    multi_p_method)
     
     # Store simulation output in data frame
     ma.model.est <-
@@ -559,14 +562,14 @@ cps.ma.count <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms,
-          "beta" = power.parms['Beta'],
-          "overall.power2" =
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              sig.LRT = sig.LRT
             ),
+          "beta" = power.parms['Beta'],
+          "overall.power2" = power.parms,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
@@ -587,14 +590,14 @@ cps.ma.count <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms,
-          "beta" = power.parms['Beta'],
-          "overall.power2" =
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              sig.LRT = sig.LRT
             ),
+          "beta" = power.parms['Beta'],
+          "overall.power2" = power.parms,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
@@ -615,14 +618,14 @@ cps.ma.count <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms,
-          "beta" = power.parms['Beta'],
-          "overall.power2" =
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              sig.LRT = sig.LRT
             ),
+          "beta" = power.parms['Beta'],
+          "overall.power2" = power.parms,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
@@ -647,10 +650,10 @@ cps.ma.count <- function(nsim = 1000,
     Pr = matrix(NA, nrow = nsim, ncol = narms)
     
     for (i in 1:nsim) {
-      Estimates[i,] <- models[[i]]$coefficients[, 1]
-      std.error[i,] <- models[[i]]$coefficients[, 2]
-      Wald[i,] <- models[[i]]$coefficients[, 3]
-      Pr[i,] <- models[[i]]$coefficients[, 4]
+      Estimates[i, ] <- models[[i]]$coefficients[, 1]
+      std.error[i, ] <- models[[i]]$coefficients[, 2]
+      Wald[i, ] <- models[[i]]$coefficients[, 3]
+      Pr[i, ] <- models[[i]]$coefficients[, 4]
     }
     
     # Organize the row/col names for the output
@@ -686,12 +689,17 @@ cps.ma.count <- function(nsim = 1000,
       )
     
     # Proportion of times P(>F)
+    LRT.holder <- cbind(LRT.holder, count.ma.rct[["converged"]])
+    LRT.holder <- LRT.holder[LRT.holder[, "converged"] == TRUE, ]
     sig.LRT <-  ifelse(LRT.holder[, 3] < alpha, 1, 0)
-    LRT.holder.abbrev <- sum(sig.LRT) / nsim
     
     # Calculate and store power estimate & confidence intervals
-    power.parms <- confintCalc(alpha = alpha,
-                               p.val = Pr[, 2:narms])
+    power.parms <- cbind(confintCalc(
+      alpha = alpha,
+      multi = TRUE,
+      p.val = Pr[, 2:narms]
+    ),
+    multi_p_method)
     
     
     # Store GEE simulation output in data frame
@@ -725,14 +733,14 @@ cps.ma.count <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms,
-          "beta" = power.parms['Beta'],
-          "overall.power2" =
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              sig.LRT = sig.LRT
             ),
+          "beta" = power.parms['Beta'],
+          "overall.power2" = power.parms,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
@@ -751,14 +759,14 @@ cps.ma.count <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms,
-          "beta" = power.parms['Beta'],
-          "overall.power2" =
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              sig.LRT = sig.LRT
             ),
+          "beta" = power.parms['Beta'],
+          "overall.power2" = power.parms,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,
@@ -777,14 +785,14 @@ cps.ma.count <- function(nsim = 1000,
         list(
           "overview" = summary.message,
           "nsim" = nsim,
-          "power" =  power.parms,
-          "beta" = power.parms['Beta'],
-          "overall.power2" =
+          "power" =
             prop_H0_rejection(
               alpha = alpha,
               nsim = nsim,
-              LRT.holder.abbrev = LRT.holder.abbrev
+              sig.LRT = sig.LRT
             ),
+          "beta" = power.parms['Beta'],
+          "overall.power2" = power.parms,
           "overall.power" = LRT.holder,
           "method" = long.method,
           "alpha" = alpha,

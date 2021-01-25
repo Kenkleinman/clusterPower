@@ -22,6 +22,18 @@ plan(callr)
 
 # labels for arguments
 
+simnsubjectstext <- "Number of observations per cluster (nsubjects)"
+refsimnsubjectstext <-
+  "Number of reference arm observations (nsubjects)"
+treatsimnsubjectstext <-
+  "Number of treatment arm observations (nsubjects)"
+
+simnclusterstext <- "Number of clusters per arm (nclusters)"
+refsimnclusterstext <-
+  "Number of reference arm clusters (nclusters)"
+treatsimnclusterstext <-
+  "Number of treatment arm clusters (nclusters)"
+
 analyticnsubjectstext <- "Mean observations per cluster (nsubjects)"
 analyticnclusterstext <- "Mean clusters per arm (nclusters)"
 analyticICCtext <- "Intracluster correlation coefficient (ICC)"
@@ -34,8 +46,6 @@ refsigma_b_sqtext <-
 treatsigma_b_sqtext <-
   "Treatment arm between-cluster variance (sigma_b_sq)"
 simnsimtext <- "Number of simulations (nsim)"
-simnsubjectstext <- "Observations per cluster (nsubjects)"
-simnclusterstext <- "Clusters per arm (nclusters)"
 refmutext <- "Reference arm expected mean (mu)"
 treatmutext <- "Treatment arm expected mean (mu2)"
 refICCtext <- "Reference arm ICC (ICC)"
@@ -71,8 +81,8 @@ nsubjectsirgttunclusttext <-
 ncontrolsirgttunclusttext <-
   "Observations in unclustered arm (ncontrols)"
 nclustersswtext <- "Number of clusters (nclusters)"
-nsubjectsdelim <- 
-  "Note: comma delimited. Length of nsubjects must be 1 (all equal) or equal to the sum of nclusters."
+nsubjectsdelim <-
+  "Comma delimited. Length of nsubjects can be 1 (all equal) or equal to the number of clusters."
 
 
 
@@ -108,10 +118,10 @@ ui <- fluidPage(
   shinyjs::useShinyjs(),
   sidebarLayout(
     sidebarPanel(
-      tags$head(tags$style(
-        type = 'text/css',
-        'form.well { max-height: 700px; overflow-y: auto; }'
-      )),
+      tags$head(
+        tags$style(type = 'text/css',
+                   'form.well { max-height: 700px; overflow-y: auto; }')
+      ),
       selectInput(
         "type",
         "CRT Type",
@@ -207,11 +217,11 @@ ui <- fluidPage(
           tags$style(HTML("#armHead{color: #337ab7;}")),
           
           # nclusters
-          numericInput("nclusters1cpsnormal", simnclusterstext, value = 10),
+          numericInput("nclusters1cpsnormal", refsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects1cpsnormal",
-                    simnsubjectstext,
+                    refsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects1cpsnormal",
@@ -259,11 +269,11 @@ ui <- fluidPage(
              "Treatment Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters2cpsnormal", simnclusterstext, value = 10),
+          numericInput("nclusters2cpsnormal", treatsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects2cpsnormal",
-                    simnsubjectstext,
+                    treatsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects2cpsnormal",
@@ -375,11 +385,11 @@ ui <- fluidPage(
              "Reference Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters1cpsbinary", simnclusterstext, value = 10),
+          numericInput("nclusters1cpsbinary", refsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects1cpsbinary",
-                    simnsubjectstext,
+                    refsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects1cpsbinary",
@@ -412,11 +422,11 @@ ui <- fluidPage(
              "Treatment Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters2cpsbinary", simnclusterstext, value = 10),
+          numericInput("nclusters2cpsbinary", treatsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects2cpsbinary",
-                    simnsubjectstext,
+                    treatsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects2cpsbinary",
@@ -494,11 +504,11 @@ ui <- fluidPage(
              "Reference Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters1cpscount", simnclusterstext, value = 10),
+          numericInput("nclusters1cpscount", refsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects1cpscount",
-                    simnsubjectstext,
+                    refsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects1cpscount",
@@ -530,11 +540,11 @@ ui <- fluidPage(
              "Treatment Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters2cpscount", simnclusterstext, value = 10),
+          numericInput("nclusters2cpscount", treatsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects2cpscount",
-                    simnsubjectstext,
+                    treatsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects2cpscount",
@@ -962,11 +972,11 @@ ui <- fluidPage(
              "Reference Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters1cpsdidnormal", simnclusterstext, value = 6),
+          numericInput("nclusters1cpsdidnormal", refsimnclusterstext, value = 6),
           
           # nsubjects
           textInput("nsubjects1cpsdidnormal",
-                    simnsubjectstext,
+                    refsimnsubjectstext,
                     value = "120"),
           bsTooltip(
             "nsubjects1cpsdidnormal",
@@ -976,8 +986,11 @@ ui <- fluidPage(
           ),
           
           # mu
-          numericInput("delta_mucpsdidnormal", 
-          "Reference arm expected change from baseline to followup (delta_mu)", value = 0),
+          numericInput(
+            "delta_mucpsdidnormal",
+            "Reference arm expected change from baseline to followup (delta_mu)",
+            value = 0
+          ),
           bsTooltip(
             "delta_mucpsdidnormal",
             "Usually 0",
@@ -1013,11 +1026,11 @@ ui <- fluidPage(
              "Treatment Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters2cpsdidnormal", simnclusterstext, value = 6),
-
+          numericInput("nclusters2cpsdidnormal", treatsimnclusterstext, value = 6),
+          
           # nsubjects
           textInput("nsubjects2cpsdidnormal",
-                    simnsubjectstext,
+                    treatsimnsubjectstext,
                     value = "120"),
           bsTooltip(
             "nsubjects2cpsdidnormal",
@@ -1027,9 +1040,11 @@ ui <- fluidPage(
           ),
           
           # mu
-          numericInput("delta_mu2cpsdidnormal", 
-                       "Treatment arm expected change from baseline to followup (delta_mu2)", 
-                       value = 0.48),
+          numericInput(
+            "delta_mu2cpsdidnormal",
+            "Treatment arm expected change from baseline to followup (delta_mu2)",
+            value = 0.48
+          ),
           
           # variance params
           numericInput(
@@ -1112,11 +1127,11 @@ ui <- fluidPage(
              "Reference Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters1cpsdidbinary", simnclusterstext, value = 10),
+          numericInput("nclusters1cpsdidbinary", refsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects1cpsdidbinary",
-                    simnsubjectstext,
+                    refsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects1cpsdidbinary",
@@ -1164,11 +1179,11 @@ ui <- fluidPage(
              "Treatment Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters2cpsdidbinary", simnclusterstext, value = 10),
+          numericInput("nclusters2cpsdidbinary", treatsimnclusterstext, value = 10),
           
           # nsubjects
           textInput("nsubjects2cpsdidbinary",
-                    simnsubjectstext,
+                    treatsimnsubjectstext,
                     value = "20"),
           bsTooltip(
             "nsubjects2cpsdidbinary",
@@ -1237,11 +1252,11 @@ ui <- fluidPage(
              "Reference Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters1cpsdidcount", simnclusterstext, value = 7),
+          numericInput("nclusters1cpsdidcount", refsimnclusterstext, value = 7),
           
           # nsubjects
           textInput("nsubjects1cpsdidcount",
-                    simnsubjectstext,
+                    refsimnsubjectstext,
                     value = "9"),
           bsTooltip(
             "nsubjects1cpsdidcount",
@@ -1289,11 +1304,11 @@ ui <- fluidPage(
              "Treatment Arm Parameters"),
           
           # nclusters
-          numericInput("nclusters2cpsdidcount", simnclusterstext, value = 7),
-
+          numericInput("nclusters2cpsdidcount", treatsimnclusterstext, value = 7),
+          
           # nsubjects
           textInput("nsubjects2cpsdidcount",
-                    simnsubjectstext,
+                    treatsimnsubjectstext,
                     value = "9"),
           bsTooltip(
             "nsubjects2cpsdidcount",
@@ -1397,7 +1412,7 @@ ui <- fluidPage(
           
           # nclusters
           numericInput("nclusterscpsswnormal", nclustersswtext, value = 12),
-
+          
           # nsubjects
           textInput("nsubjectscpsswnormal",
                     simnsubjectstext,
@@ -1446,7 +1461,11 @@ ui <- fluidPage(
                        value = 20),
           
           # estimated outcomes
-          numericInput("timeEffectcpaswbinary", "Estimated time effect (timeEffect)", value = 0),
+          numericInput(
+            "timeEffectcpaswbinary",
+            "Estimated time effect (timeEffect)",
+            value = 0
+          ),
           numericInput("p0cpaswbinary", p0text, value = 0.2),
           numericInput("p1cpaswbinary", p1text, value = 0.31),
           
@@ -1479,7 +1498,7 @@ ui <- fluidPage(
           
           # nclusters
           numericInput("nclusterscpsswbinary", nclustersswtext, value = 12),
-
+          
           # nsubjects
           textInput("nsubjectscpsswbinary",
                     simnsubjectstext,
@@ -1933,7 +1952,7 @@ ui <- fluidPage(
           numericInput("nclusterscpsirgttcount",
                        simnclusterstext,
                        value = 10),
-
+          
           # nsubjects
           textInput("nsubjects2cpsirgttcount",
                     simnsubjectstext,
@@ -2041,15 +2060,14 @@ ui <- fluidPage(
           input.dismissMsgCrossover == false",
           wellPanel(
             HTML(
-              "<p>Note: Including time effects or many crossover steps may 
+              "<p>Note: Including time effects or many crossover steps may
               substantially increase calculation time. </p>"
             ),
             checkboxInput("dismissMsgCrossover", "dismiss this message", value = FALSE)
           )
         ),
         verbatimTextOutput("CRTpower", placeholder = TRUE),
-        conditionalPanel("input.meth == 'Simulation'",
-        textOutput("convergence")),
+        conditionalPanel("input.meth == 'Simulation'",),
         
         ####  DEBUG ACCESS PANEL START #####
         conditionalPanel(
@@ -2084,9 +2102,12 @@ ui <- fluidPage(
       ),
       tabPanel(
         "Parameters",
-        h5(id = "helpnote", "Note: This tab shows help for the 
-           clusterPower functions. For help with this app, see 
-           the Help tab."),
+        h5(
+          id = "helpnote",
+          "Note: This tab shows help for the
+           clusterPower functions. For help with this app, see
+           the Help tab."
+        ),
         shinyjs::hidden(
           textInput("fxnName", "clusterPower function name", value = "cpa.normal")
         ),
@@ -2115,8 +2136,11 @@ ui <- fluidPage(
       
       tabPanel(
         "Help",
-        h5(id = "helpnote", "Note: This tab shows help for this app. 
-           For help with the clusterPower functions, see the Parameters tab."),
+        h5(
+          id = "helpnote",
+          "Note: This tab shows help for this app.
+           For help with the clusterPower functions, see the Parameters tab."
+        ),
         tags$style(HTML("#helpnote{color: #337ab7;}")),
         HTML(
           "<p>To use the calculator, select the trial type, outcome distribution, and calculation method.
@@ -2271,7 +2295,6 @@ server <- function(input, output, session) {
                          names(formals(fxnName))))
     arghelper <- function(argname) {
       x <- paste0("input$", argname)
-      #  x <- eval(parse(text = x))
       return(x)
     }
     holder <- list()
@@ -2482,7 +2505,9 @@ server <- function(input, output, session) {
         val <- cps.normal(
           nsim = q$nsimcpsnormal,
           nclusters = c(q$nclusters1cpsnormal, q$nclusters2cpsnormal),
-          nsubjects = textToNum(c(q$nsubjects1cpsnormal, q$nsubjects2cpsnormal)),
+          nsubjects = textToNum(c(
+            q$nsubjects1cpsnormal, q$nsubjects2cpsnormal
+          )),
           mu = q$mucpsnormal,
           mu2 = q$mu2cpsnormal,
           ICC = q$ICCcpsnormal,
@@ -2528,7 +2553,9 @@ server <- function(input, output, session) {
       answer <<- future({
         val <- cps.binary(
           nsim = q$nsimcpsbinary,
-          nsubjects = textToNum(c(q$nsubjects1cpsbinary, q$nsubjects2cpsbinary)),
+          nsubjects = textToNum(c(
+            q$nsubjects1cpsbinary, q$nsubjects2cpsbinary
+          )),
           nclusters = c(q$nclusters1cpsbinary, q$nclusters2cpsbinary),
           p1 = q$p1cpsbinary,
           p2 = q$p2cpsbinary,
@@ -2568,7 +2595,9 @@ server <- function(input, output, session) {
       answer <<- future({
         val <- cps.count(
           nsim = q$nsimcpscount,
-          nsubjects = textToNum(c(q$nsubjects1cpscount, q$nsubjects2cpscount)),
+          nsubjects = textToNum(c(
+            q$nsubjects1cpscount, q$nsubjects2cpscount
+          )),
           nclusters = c(q$nclusters1cpscount, q$nclusters2cpscount),
           c1 = q$c1cpscount,
           c2 = q$c2cpscount,
@@ -2715,7 +2744,9 @@ server <- function(input, output, session) {
       answer <<- future({
         val <- cps.did.normal(
           nsim = q$nsimcpsdidnormal,
-          nsubjects = textToNum(c(q$nsubjects1cpsdidnormal, q$nsubjects2cpsdidnormal)),
+          nsubjects = textToNum(
+            c(q$nsubjects1cpsdidnormal, q$nsubjects2cpsdidnormal)
+          ),
           nclusters = c(q$nclusters1cpsdidnormal, q$nclusters2cpsdidnormal),
           delta_mu = q$delta_mucpsdidnormal,
           delta_mu2 = q$delta_mu2cpsdidnormal,
@@ -2763,7 +2794,9 @@ server <- function(input, output, session) {
       answer <<- future({
         val <- cps.did.binary(
           nsim = q$nsimcpsdidbinary,
-          nsubjects = textToNum(c(q$nsubjects1cpsdidbinary, q$nsubjects2cpsdidbinary)),
+          nsubjects = textToNum(
+            c(q$nsubjects1cpsdidbinary, q$nsubjects2cpsdidbinary)
+          ),
           nclusters = c(q$nclusters1cpsdidbinary, q$nclusters2cpsdidbinary),
           p1t0 = q$p1t0cpsdidbinary,
           p2t0 = q$p2t0cpsdidbinary,
@@ -2801,7 +2834,9 @@ server <- function(input, output, session) {
       answer <<- future({
         val <- cps.did.count(
           nsim = q$nsimcpsdidcount,
-          nsubjects = textToNum(c(q$nsubjects1cpsdidcount, q$nsubjects2cpsdidcount)),
+          nsubjects = textToNum(c(
+            q$nsubjects1cpsdidcount, q$nsubjects2cpsdidcount
+          )),
           nclusters = c(q$nclusters1cpsdidcount, q$nclusters2cpsdidcount),
           c1t0 = q$c1t0cpsdidcount,
           c2t0 = q$c2t0cpsdidcount,
@@ -2972,10 +3007,12 @@ server <- function(input, output, session) {
       answer <<- future({
         val <- cps.irgtt.normal(
           nsim = q$nsimcpsirgttnormal,
-          nsubjects = textToNum(c(
-            q$nsubjectscpsirgttnormal,
-            q$nsubjects2cpsirgttnormal
-          )),
+          nsubjects = textToNum(
+            c(
+              q$nsubjectscpsirgttnormal,
+              q$nsubjects2cpsirgttnormal
+            )
+          ),
           nclusters = q$nclusterscpsirgttnormal,
           mu = q$mucpsirgttnormal,
           mu2 = q$mu2cpsirgttnormal,
@@ -3018,10 +3055,12 @@ server <- function(input, output, session) {
       answer <<- future({
         val <- cps.irgtt.binary(
           nsim = q$nsimcpsirgttbinary,
-          nsubjects = textToNum(c(
-            q$nsubjectscpsirgttbinary,
-            q$nsubjects2cpsirgttbinary
-          )),
+          nsubjects = textToNum(
+            c(
+              q$nsubjectscpsirgttbinary,
+              q$nsubjects2cpsirgttbinary
+            )
+          ),
           nclusters = q$nclusterscpsirgttbinary,
           p1 = q$p1cpsirgttbinary,
           p2 = q$p2cpsirgttbinary,
@@ -3050,7 +3089,9 @@ server <- function(input, output, session) {
       answer <<- future({
         val <- cps.irgtt.count(
           nsim = q$nsimcpsirgttcount,
-          nsubjects = textToNum(c(q$nsubjectscpsirgttcount, q$nsubjects2cpsirgttcount)),
+          nsubjects = textToNum(
+            c(q$nsubjectscpsirgttcount, q$nsubjects2cpsirgttcount)
+          ),
           nclusters = q$nclusterscpsirgttcount,
           c1 = q$c1cpsirgttcount,
           c2 = q$c2cpsirgttcount,
@@ -3115,9 +3156,9 @@ server <- function(input, output, session) {
       values = unlist(isolate(x), use.names = FALSE),
       mode = unlist(lapply(isolate(x), mode))
     )
-    holderDebug <- holderDebug[order(holderDebug$names),]
+    holderDebug <- holderDebug[order(holderDebug$names), ]
     if (input$debugSearch != "") {
-      holderDebug <- holderDebug[grepl(x$debugSearch, holderDebug$names),]
+      holderDebug <- holderDebug[grepl(x$debugSearch, holderDebug$names), ]
     }
     return(holderDebug)
   })
@@ -3294,14 +3335,6 @@ server <- function(input, output, session) {
       write.csv(logargs$tab, file, row.names = FALSE)
     }
   )
-  
-  # convergence measures
-  convergenceTable <-  reactive({
-    q <- reactiveValuesToList(out1)
-    paste0(sum(q$power$convergence), " models converged", sep = "")
-  })
-  
-  output$convergence <- renderPrint(convergenceTable())
   
   # main power output
   resultdisplay <-  reactive({

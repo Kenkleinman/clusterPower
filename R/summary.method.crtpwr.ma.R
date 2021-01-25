@@ -3,9 +3,7 @@
 #' @param object A crtpwr.ma object
 #' @param ... other arguments passed to the summary method
 #'  
-#' @export
-#' 
-
+#' @noRd
 setMethod(
   "summary",
   signature(object = "crtpwr.ma"),

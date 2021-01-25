@@ -110,9 +110,9 @@
 #' @details
 #'
 #' The data generating model for observation \mjseqn{j} in cluster \mjseqn{i} is:
-#' 
+#'
 #' \mjsdeqn{y_{ij} \sim \text{Bernoulli}(\frac{e^{p_1 + b_i}}{1 + e^{p_1 + b_i} }) }
-#' for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)}, 
+#' for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)},
 #' while for the second group,
 #' \mjsdeqn{y_{ij} \sim \text{Bernoulli}(\frac{e^{p_2 + b_i}}{1 + e^{p_2 + b_i} }) }
 #' where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if
@@ -453,8 +453,10 @@ cps.binary = function(nsim = NULL,
         data = sim.dat,
         family = stats::binomial(link = 'logit')
       )
-      lmer.vcov = as.data.frame(lme4::VarCorr(lmer.mod))[, 4]
-      lmer.icc.vector = append(lmer.icc.vector, lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2]))
+      lmer.vcov <-
+        as.numeric(as.data.frame(lme4::VarCorr(lmer.mod))[, 4:5])
+      icc.val <- lmer.vcov[1] / (lmer.vcov[1] + lmer.vcov[2])
+      lmer.icc.vector <- append(lmer.icc.vector, icc.val)
     }
     
     # Set warnings to OFF
@@ -462,7 +464,7 @@ cps.binary = function(nsim = NULL,
     options(warn = -1)
     
     start.time = Sys.time()
-
+    
     # Fit GLMM (lmer)
     if (method == 'glmm') {
       if (irgtt == TRUE) {
@@ -481,12 +483,12 @@ cps.binary = function(nsim = NULL,
           pval.vector[index] <- NA
           converge.vector[index] <- FALSE
         } else {
-        glmm.values <- summary(my.mod)$tTable
-        est.vector[index] <- glmm.values['trt2', 'Value']
-        se.vector[index] <- glmm.values['trt2', 'Std.Error']
-        stat.vector[index] <- glmm.values['trt2', 't-value']
-        pval.vector[index] <- glmm.values['trt2', 'p-value']
-        converge.vector[index] <- TRUE
+          glmm.values <- summary(my.mod)$tTable
+          est.vector[index] <- glmm.values['trt2', 'Value']
+          se.vector[index] <- glmm.values['trt2', 'Std.Error']
+          stat.vector[index] <- glmm.values['trt2', 't-value']
+          pval.vector[index] <- glmm.values['trt2', 'p-value']
+          converge.vector[index] <- TRUE
         }
         index <- index + 1
       } else {
@@ -514,12 +516,12 @@ cps.binary = function(nsim = NULL,
           pval.vector = append(pval.vector, glmm.values['trt2', 'Pr(>|z|)'])
         }
       }
-        if (poorFitOverride == FALSE &&
-            length(converge.vector) > 50 &&
-            sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * 0.25)) {
-          stop("more than 25% of simulations are singular fit: check model specifications")
-        }
-
+      if (poorFitOverride == FALSE &&
+          length(converge.vector) > 50 &&
+          sum(converge.vector == FALSE, na.rm = TRUE) > (nsim * 0.25)) {
+        stop("more than 25% of simulations are singular fit: check model specifications")
+      }
+      
     }
     
     # Set warnings to ON
@@ -527,25 +529,25 @@ cps.binary = function(nsim = NULL,
     options(warn = 0)
     
     # Fit GEE (geeglm)
-    if (method == "gee"){
-    sim.dat = dplyr::arrange(sim.dat, clust)
-    if (irgtt == FALSE) {
-      my.mod = geepack::geeglm(
-        y ~ trt,
-        data = sim.dat,
-        family = stats::binomial(link = 'logit'),
-        id = clust,
-        corstr = "exchangeable"
-      )
-    } else {
-      my.mod = geepack::geeglm(
-        y ~ trt + (0 + trt | clust),
-        data = sim.dat,
-        family = stats::binomial(link = 'logit'),
-        id = clust,
-        corstr = "exchangeable"
-      ) 
-    }
+    if (method == "gee") {
+      sim.dat = dplyr::arrange(sim.dat, clust)
+      if (irgtt == FALSE) {
+        my.mod = geepack::geeglm(
+          y ~ trt,
+          data = sim.dat,
+          family = stats::binomial(link = 'logit'),
+          id = clust,
+          corstr = "exchangeable"
+        )
+      } else {
+        my.mod = geepack::geeglm(
+          y ~ trt + (0 + trt | clust),
+          data = sim.dat,
+          family = stats::binomial(link = 'logit'),
+          id = clust,
+          corstr = "exchangeable"
+        )
+      }
       gee.values = summary(my.mod)$coefficients
       est.vector = append(est.vector, gee.values['trt2', 'Estimate'])
       se.vector = append(se.vector, gee.values['trt2', 'Std.err'])
@@ -560,7 +562,7 @@ cps.binary = function(nsim = NULL,
       avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
       time.est = avg.iter.time * (nsim - 1) / 60
       hr.est = time.est %/% 60
-      min.est = round(time.est %% 60, 0)
+      min.est = round(time.est %% 60, 3)
       if (quiet == FALSE) {
         message(
           paste0(
@@ -657,8 +659,9 @@ cps.binary = function(nsim = NULL,
   } else {
     cps.model.temp <- cps.model.est
   }
-  power.parms <- clusterPower::confintCalc(alpha = alpha,
-                                           p.val = cps.model.temp[, 'p.value'])
+  power.parms <- confintCalc(nsim = nsim,
+                             alpha = alpha,
+                             p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs
   p1.p2.or = round(p1 / (1 - p1) / (p2 / (1 - p2)), 3)
@@ -682,8 +685,8 @@ cps.binary = function(nsim = NULL,
     # Create object containing estimated ICC values
     ICC = round(t(data.frame(
       'P_h' = c('ICC' = icc1),
-      'P_c' = c('ICC' = mean(icc2.vector)),
-      'lmer' = c('ICC' = mean(lmer.icc.vector))
+      'P_c' = c('ICC' = mean(icc2.vector, na.rm = TRUE)),
+      'lmer' = c('ICC' = mean(lmer.icc.vector, na.rm = TRUE))
     )), 3)
     # Create object containing all ICC values
     # Note: P_h is a single calculated value. No vector to be appended.
@@ -700,12 +703,12 @@ cps.binary = function(nsim = NULL,
   # Check & governor for inclusion of simulated datasets
   # Note: If number of non-convergent models exceeds 5% of NSIM,
   # override allSimData and output all simulated data sets
-
+  
   if (allSimData == FALSE &&
       (sum(converge.vector == FALSE) < sum(converge.vector == TRUE) * 0.05)) {
     simulated.datasets = NULL
   }
-
+  
   # Create list containing all output (class 'crtpwr') and return
   if (irgtt == FALSE) {
     complete.output = structure(

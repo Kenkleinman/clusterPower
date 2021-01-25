@@ -140,7 +140,7 @@
 #' \mjseqn{b_i \sim N(0,\sigma_b^2)} 
 #' and \mjseqn{y_{ij} \sim N(\mu_2 + b_i, \sigma^2)} .
 #' 
-#' All random terms are generated indepedent of one another.
+#' All random terms are generated independent of one another.
 #' 
 #' 
 #' For calls without \mjseqn{\sigma_2^2, \sigma_{b_2}^2} or \code{ICC2}, and using
@@ -293,7 +293,7 @@ cps.normal = function(nsim = NA,
   if (!is.wholenumber(nclusters) || nclusters < 1) {
     stop(paste0("NCLUSTERS", min1.warning))
   }
-  if (is.list(nsubjects)){
+  if (is.list(nsubjects)) {
     temp <- unlist(nsubjects)
   } else {
     temp <- nsubjects
@@ -568,7 +568,7 @@ cps.normal = function(nsim = NA,
           my.mod <-
             try(nlme::lme(
               y ~ as.factor(trt2),
-              random =  ~ 1 + as.factor(trt2) | clust2,
+              random =  ~ 0 + as.factor(trt2) | clust2,
               weights = nlme::varIdent(form =  ~ 1 |
                                          as.factor(trt2)),
               method = "ML",
@@ -581,7 +581,7 @@ cps.normal = function(nsim = NA,
             null.mod <-
               try(nlme::lme(
                 y ~ 1,
-                random =  ~ 1 + as.factor(trt2) | clust2,
+                random =  ~ 0 + as.factor(trt2) | clust2,
                 weights = nlme::varIdent(form =  ~ 1 |
                                            as.factor(trt2)),
                 method = "ML",
@@ -600,12 +600,12 @@ cps.normal = function(nsim = NA,
         
         if (sigma_sq == sigma_sq2 && sigma_b_sq != sigma_b_sq2) {
           my.mod <-
-            lmerTest::lmer(y ~ trt + (1 + as.factor(trt) | clust),
+            lmerTest::lmer(y ~ trt + (0 + as.factor(trt) | clust),
                            REML = FALSE,
                            data = sim.dat)
           # get the overall p-values (>Chisq)
           null.mod <-
-            stats::update.formula(my.mod, y ~ 1 + (1 + as.factor(trt) |
+            stats::update.formula(my.mod, y ~ 1 + (0 + as.factor(trt) |
                                                      clust))
           glmm.values = summary(my.mod)$coefficients
           pval.vector[i] = glmm.values['trt', 'Pr(>|t|)']
@@ -727,7 +727,7 @@ cps.normal = function(nsim = NA,
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
-        min.est = round(time.est %% 60, 0)
+        min.est = round(time.est %% 60, 3)
         if (min.est > 2 && timelimitOverride == FALSE){
           stop(paste0("Estimated completion time: ",
             hr.est,
@@ -757,7 +757,7 @@ cps.normal = function(nsim = NA,
         total.est = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         hr.est = total.est %/% 3600
         min.est = total.est %/% 60
-        sec.est = round(total.est %% 60, 0)
+        sec.est = round(total.est %% 60, 3)
         message(
           paste0(
             "Simulations Complete! Time Completed: ",
@@ -806,6 +806,7 @@ cps.normal = function(nsim = NA,
   # Calculate and store power estimate & confidence intervals
   cps.model.temp <- dplyr::filter(cps.model.est, converge == TRUE)
   power.parms <- confintCalc(alpha = alpha,
+                             nsim = nsim,
                               p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing group-specific cluster sizes

@@ -653,7 +653,7 @@ cps.count = function(nsim = NULL,
         avg.iter.time = as.numeric(difftime(Sys.time(), start.time, units = 'secs'))
         time.est = avg.iter.time * (nsim - 1) / 60
         hr.est = time.est %/% 60
-        min.est = round(time.est %% 60, 0)
+        min.est = round(time.est %% 60, 3)
         
         #time limit override (for Shiny)
         if (min.est > 2 && timelimitOverride == FALSE) {
@@ -731,6 +731,7 @@ cps.count = function(nsim = NULL,
   }
   
   power.parms <- confintCalc(alpha = alpha,
+                             nsim = nsim,
                              p.val = cps.model.temp[, 'p.value'])
   
   # Create object containing inputs

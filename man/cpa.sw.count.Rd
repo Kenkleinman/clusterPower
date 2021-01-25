@@ -24,7 +24,7 @@ cpa.sw.count(
 
 \item{nclusters}{Number of clusters}
 
-\item{steps}{Number of time steps}
+\item{steps}{Number of time steps. Baseline is assumed.}
 
 \item{nsubjects}{Average size of each cluster}
 
