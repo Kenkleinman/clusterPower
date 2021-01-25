@@ -179,14 +179,14 @@ cps.ma.binary.internal <-
           randint.holder[[j]] <- logit.p[j] + randint[[j]]
         }
         randintrandint <-
-          sapply(randint.holder, clusterPower:::expit)
+          sapply(randint.holder, expit)
       } else {
         randint.holder <-
           matrix(nrow = nclusters[1], ncol = length(logit.p))
         for (j in 1:length(logit.p)) {
           randint.holder[, j] <- logit.p[j] + randint[, j]
         }
-        randintrandint <- clusterPower:::expit(randint.holder)
+        randintrandint <- expit(randint.holder)
       }
       # Create y-value
       y.intercept <-  vector(mode = "numeric",

@@ -32,7 +32,7 @@ Cluster-randomized trials are a common clinical trial design, often even a requi
 However, for cluster-randomized trials, power calculations are complex, relying on approximations, and/or on more assumptions than simpler designs and closed-form solutions may not exist. Many available routines are crude approximations, and few are available in free software or in webapps for people without highly technical statistical training. This document introduces you to clusterPower's basic set of tools, and shows you how to implement them with your trial design.
 
 #### ICC considerations
-  Investigators should proceed cautiously when transferring intracluster correlation coefficient (ICC) from previous studies. This statistic, commonly denoted as $\rho$, is---in general terms---a metric for assessing the impact of clustering in cluster randomized trials. The ICC represents the proportion of total variability due to cluster-level variability. The equation for the ICC is $\sigma_{b}^2/(\sigma_{b}^2+\sigma^2)$ for normal outcomes. For other outcome distributions, e.g., for dichotomous outcomes, the definition of ICC may not be clear. Notably, extrapolating sample size or power esimates using the ICC for observed dichotomous outcomes may be particularly fraught (@eldridge2009intra and @@gatsonis2017methods).  For this reasor, we prefer to specificy models using natural parameters such as the variance of the random effects.  If you use the ICC for non-normal outcomes, make sure you understand how previous investigators determined their ICC values before applying their statistics in your calculations.
+  Investigators should proceed cautiously when transferring intracluster correlation coefficient (ICC) from previous studies. This statistic, commonly denoted as $\rho$, is---in general terms---a metric for assessing the impact of clustering in cluster randomized trials. The ICC represents the proportion of total variability due to cluster-level variability. The equation for the ICC is $\sigma_{b}^2/(\sigma_{b}^2+\sigma^2)$ for normal outcomes. For other outcome distributions, e.g., for dichotomous outcomes, the definition of ICC may not be clear. Notably, extrapolating sample size or power estimates using the ICC for observed dichotomous outcomes may be particularly fraught (@eldridge2009intra and @@gatsonis2017methods).  For this reason, we prefer to specify models using natural parameters such as the variance of the random effects.  If you use the ICC for non-normal outcomes, make sure you understand how previous investigators determined their ICC values before applying their statistics in your calculations.
 
 ------------------------
 
@@ -64,7 +64,7 @@ When clusters differ in size or the study outcome is non-normal, power can inste
 4. Perform data analysis, record whether null hypothesis was rejected.
 5. Repeat previous steps $K$ times.
 
-Power is estimated by $\sum r_{k}/K$, where $r_{k}=1$ if the null was rejected in iteration $k$. The confidence interval (CI) for the simulated power approximation is calculated based on binomial distribution properties. The approach can be easily modified to accomidate Poisson or dichotomous outcomes, and to adjust for differing cluster sizes, which marks an advantage of resampling methodology over some analytical approaches.
+Power is estimated by $\sum r_{k}/K$, where $r_{k}=1$ if the null was rejected in iteration $k$. The confidence interval (CI) for the simulated power approximation is calculated based on binomial distribution properties. The approach can be easily modified to accommodate Poisson or dichotomous outcomes, and to adjust for differing cluster sizes, which marks an advantage of resampling methodology over some analytical approaches.
   
 
  
@@ -83,15 +83,13 @@ where $i$ indicates a cluster, $j$ indicates a subject within the cluster, and $
 -----------------------
 
 ## Difference in difference designs
-In this design, all clusters are observed in a baseline period, then some clusters are randomized to a treatment. The design accomidates pre-existing differences between the arms and provides increased power. The difference in differences trial can be modeled as:
+In this design, all clusters are observed in a baseline period, then some clusters are randomized to a treatment. The design accommodates pre-existing differences between the arms and provides increased power. The difference in differences trial can be modeled as:
 
 \begin{equation}
 y_{itj}= \beta_{0}+x_{itj}\beta_{1}+p_{itj}\beta_{2}+x_{itj}p_{itj}\beta_{3}+b_{i}+e_{ij}
 \end{equation}
 
 where $t$ indexes period (baseline or intervention) and $x_{itj}=1$ if cluster $i$ is in the treatment group and $p_{itj}=1$ if time $t$ is in the intervention period, and $0$ otherwise. Notably, $\beta_{3}$ is the difference in period effect in the treatment group relative to the non-treatment group.  For assessing power by simulation, we determine whether $H_0: \beta_3=0$ is rejected or not.
-
-NOTE TO KK-- ADD IN THE EXTRA RANDOM EFFECT FOR THE SECOND TIME POINT??
 
 -----------------------
 
@@ -113,15 +111,12 @@ In an stepped wedge trial, all participants typically receive the intervention. 
 
 (eqn) [see @hussey2007design].
 
-JM-- Please add equation!! And a statement about how we do simulation!
-
-
 
 -----------------------
 
 ## Multi-arm trial designs 
 
-Frequently investigators need to design trials with three, four, or more arms. For a thourough discussion of the benefits of using mutli-arm approaches, see @parmar2014more and @o2014scientists. Consider the following linear model, where $k$ represents the treatment arm $k=1...k-1$:
+Frequently investigators need to design trials with three, four, or more arms. For a thorough discussion of the benefits of using mutli-arm approaches, see @parmar2014more and @o2014scientists. Consider the following linear model, where $k$ represents the treatment arm $k=1...k-1$:
 
 \begin{equation}
 y_{ij}= \beta_{0}+x_{1ij}\beta_{1}+x_{2ij}\beta_{2}+...x_{(k-1)ij}\beta_{(k-1)}+b_{i}+e_{ij}

@@ -45,7 +45,6 @@ subroutine der_likelihood_time(mu,beta,gammaobj,tau2, z0, z1, XX, JJ, KK, a, b, 
     derlikelihood_tau2 = 0.0d0
     derlikelihood_gammaobj = 0.0d0
     
-   !     write (unit=1, fmt=*) likelihoodf_denom
         
     prob = 0.0d0
     do i=1,GQ
@@ -1128,10 +1127,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
       temp2 = r8_gamma ( 0.5D+00 )
 
       if ( 500.0D+00 * temp .lt. abs ( temp2 * temp2 - pi ) ) then
-        write ( *, '(a)' ) ' '
-        write ( *, '(a)' ) 'CLASS_MATRIX - Fatal error!'
-        write ( *, '(a)' ) &
-         '  Gamma function does not match machine parameters.'
         stop 1
       end if
 
@@ -1487,13 +1482,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
           end if
 
           if ( itn .le. j ) then
-            write ( *, '(a)' ) ' '
-            write ( *, '(a)' ) 'IMTQLX - Fatal error!'
-            write ( *, '(a)' ) '  Iteration limit exceeded.'
-            write ( *, '(a,i8)' ) '  J = ', j
-            write ( *, '(a,i8)' ) '  L = ', l
-            write ( *, '(a,i8)' ) '  M = ', m
-            write ( *, '(a,i8)' ) '  N = ', n
             stop 1
           end if
 
@@ -1692,9 +1680,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
       double precision tmp
 
       if ( kind .le. 0 ) then
-        write ( *, '(a)' ) ' '
-        write ( *, '(a)' ) 'PARCHK - Fatal error!'
-        write ( *, '(a)' ) '  KIND .le. 0.'
         stop 1
       end if
 !
@@ -1702,18 +1687,12 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
 !
       if ( 3 .le. kind .and. kind .le. 8 .and. &
         alpha .le. -1.0D+00 ) then
-        write ( *, '(a)' ) ' '
-        write ( *, '(a)' ) 'PARCHK - Fatal error!'
-        write ( *, '(a)' ) '  3 .le. KIND and ALPHA .le. -1.'
         stop 1
       end if
 !
 !  Check BETA for Jacobi.
 !
       if ( kind .eq. 4 .and. beta .le. -1.0D+00 ) then
-        write ( *, '(a)' ) ' '
-        write ( *, '(a)' ) 'PARCHK - Fatal error!'
-        write ( *, '(a)' ) '  KIND .eq. 4 and BETA .le. -1.0.'
         stop 1
       end if
 !
@@ -1722,10 +1701,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
       if ( kind .eq. 8 ) then
         tmp = alpha + beta + m + 1.0D+00
         if ( 0.0D+00 .le. tmp .or. tmp .le. beta ) then
-          write ( *, '(a)' ) ' '
-          write ( *, '(a)' ) 'PARCHK - Fatal error!'
-          write ( *, '(a)' ) &
-           '  KIND .eq. 8 but condition on ALPHA and BETA fails.'
           stop 1
         end if
       end if
@@ -1883,9 +1858,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
         be = 0.0D+00
 
         if ( abs ( b - a ) .le. temp ) then
-          write ( *, '(a)' ) ' '
-          write ( *, '(a)' ) 'SCQF - Fatal error!'
-          write ( *, '(a)' ) '  |B - A| too small.'
           stop 1
         end if
 
@@ -1898,9 +1870,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
         be = -0.5D+00
 
         if ( abs ( b - a ) .le. temp ) then
-          write ( *, '(a)' ) ' '
-          write ( *, '(a)' ) 'SCQF - Fatal error!'
-          write ( *, '(a)' ) '  |B - A| too small.'
           stop 1
         end if
 
@@ -1913,9 +1882,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
         be = alpha
 
         if ( abs ( b - a ) .le. temp ) then
-          write ( *, '(a)' ) ' '
-          write ( *, '(a)' ) 'SCQF - Fatal error!'
-          write ( *, '(a)' ) '  |B - A| too small.'
           stop 1
         end if
 
@@ -1928,9 +1894,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
         be = beta
 
         if ( abs ( b - a ) .le. temp ) then
-          write ( *, '(a)' ) ' '
-          write ( *, '(a)' ) 'SCQF - Fatal error!'
-          write ( *, '(a)' ) '  |B - A| too small.'
           stop 1
         end if
 
@@ -1940,9 +1903,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
       else if ( kind .eq. 5 ) then
 
         if ( b .le. 0.0D+00 ) then
-          write ( *, '(a)' ) ' '
-          write ( *, '(a)' ) 'SCQF - Fatal error!'
-          write ( *, '(a)' ) '  B .le. 0'
           stop 1
         end if
 
@@ -1954,9 +1914,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
       else if ( kind .eq. 6 ) then
 
         if ( b .le. 0.0D+00 ) then
-          write ( *, '(a)' ) ' '
-          write ( *, '(a)' ) 'SCQF - Fatal error!'
-          write ( *, '(a)' ) '  B .le. 0.'
           stop 1
         end if
 
@@ -1971,9 +1928,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
         be = 0.0D+00
 
         if ( abs ( b - a ) .le. temp ) then
-          write ( *, '(a)' ) ' '
-          write ( *, '(a)' ) 'SCQF - Fatal error!'
-          write ( *, '(a)' ) '  |B - A| too small.'
           stop 1
         end if
 
@@ -1983,9 +1937,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
       else if ( kind .eq. 8 ) then
 
         if ( a + b .le. 0.0D+00 ) then
-          write ( *, '(a)' ) ' '
-          write ( *, '(a)' ) 'SCQF - Fatal error!'
-          write ( *, '(a)' ) '  A + B .le. 0.'
           stop 1
         end if
 
@@ -2000,9 +1951,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
         be = 0.5D+00
 
         if ( abs ( b - a ) .le. temp ) then
-          write ( *, '(a)' ) ' '
-          write ( *, '(a)' ) 'SCQF - Fatal error!'
-          write ( *, '(a)' ) '  |B - A| too small.'
           stop 1
         end if
 
@@ -2093,9 +2041,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
 !  Exit if the zero-th moment is not positive.
 !
       if ( zemu .le. 0.0D+00 ) then
-        write ( *, '(a)' ) ' '
-        write ( *, '(a)' ) 'SGQF - Fatal error!'
-        write ( *, '(a)' ) '  ZEMU .le. 0.'
         stop 1
       end if
 !

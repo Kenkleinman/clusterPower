@@ -57,8 +57,8 @@ parameters to suit their desired experimental situation.
 \details{
 The stepped wedge trial design is a type of cross-over
 design in which clusters change treatments in waves. Initially all the
-clusters recieve the same standard treatment, and at the end of the trial all
-of the clusters will be recieving the treatment of interest. More than one
+clusters receive the same standard treatment, and at the end of the trial all
+of the clusters will be receiving the treatment of interest. More than one
 cluster can change treatments in a wave, but the order in which clusters
 change treatments is randomly determined. The outcome of interest is assessed
 in each cluster during each wave.
@@ -75,16 +75,16 @@ Much of the FORTRAN code for this package was kindly provided by Dr. Zhou.
 
 # Estimate power for a trial with 3 steps and 9 clusters at the 
 # initiation of the study. Those 
-# clusters have 20 subjects each with no time effects. 
+# clusters have 14 subjects each with no time effects. 
 # We estimated arm outcome proportions of 
 # 0.2 (pre-treatment) and 0.31 (post-treatment) and intracluster 
 # correlation coefficient (ICC) of 0.05. 
-# The resulting power should be 0.7974636.
+# The resulting power should be 0.7992842.
 
 \dontrun{
 sw.bin <- cpa.sw.binary(nclusters = 9,
-  steps = 4,
-  nsubjects = 20,
+  steps = 3,
+  nsubjects = 14,
   timeEffect = 0,
   ICC = 0.05,
   p1 = 0.31,

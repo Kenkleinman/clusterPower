@@ -163,7 +163,7 @@ cps.sw.binary = function(nsim = NULL,
   if (length(steps) == 1) {
     if (!is.wholenumber(nclusters / steps)) {
       stop(
-        "nclusters/steps must be a whole number. See documentation for steps parameter in '?clusterPower::cps.sw.binary'"
+        "nclusters/steps must be a whole number. See documentation for steps parameter in '?cps.sw.binary'"
       )
     }
   }

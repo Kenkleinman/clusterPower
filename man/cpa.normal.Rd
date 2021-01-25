@@ -87,7 +87,7 @@ If \code{nsubjects} is a vector, the values \code{nclusters} and \code{CV} will 
   errors from it, notably about inability to bracket the root when
   invalid arguments are given. This generally means that no solution exists for which the 
   omitted parameter and the supplied parameters fulfill the equation.  In particular, the desired
-  power may not be acheiveable with any number of subjects or clusters.
+  power may not be achievable with any number of subjects or clusters.
 }
 
 \section{Testing details}{

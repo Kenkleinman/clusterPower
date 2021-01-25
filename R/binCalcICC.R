@@ -797,7 +797,7 @@ binCalcICC <-
             start.time = Sys.time()
           }
           holder[[j]][[k]] <- iccbin(
-            cid = cluster,
+            cid = "cluster",
             y = y,
             data = o2,
             method = method,

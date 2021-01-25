@@ -164,7 +164,7 @@ where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if none of
 \mjseqn{b_i \sim N(0,\sigma_b^2)} 
 and \mjseqn{y_{ij} \sim N(\mu_2 + b_i, \sigma^2)} .
 
-All random terms are generated indepedent of one another.
+All random terms are generated independent of one another.
 
 
 For calls without \mjseqn{\sigma_2^2, \sigma_{b_2}^2} or \code{ICC2}, and using
