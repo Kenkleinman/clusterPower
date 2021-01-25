@@ -346,16 +346,7 @@ cps.ma.binary.internal <-
         for (j in idx)
           my.mod[[j]] <- lme4::glmer(
             sim.dat[, j + 2] ~ trt + (1 | clust),
-            family = stats::binomial(link = 'logit'),
-            control = lme4::glmerControl(
-              calc.derivs = TRUE,
-              optCtrl = list(
-                maxfun = 2e4,
-                method = optmethod,
-                starttests = TRUE,
-                kkt = FALSE
-              )
-            )
+            family = stats::binomial(link = 'logit')
           )
         converged[j] <-
           ifelse(is.null(my.mod[[j]]@optinfo$conv$lme4$messages),

@@ -194,10 +194,11 @@ test_that("simulation and analytic methods give similar power estimations for bi
                 nclusters = 12,
                 p1 = 0.1,
                 p2 = 0.2,
-                sigma_b_sq = .4,
+                sigma_b_sq = .5,
                 alpha = 0.05,
                 method = 'glmm',
-                allSimData = FALSE
+                allSimData = FALSE,
+                seed = 123
               )
             reference <-
               as.numeric(
@@ -482,35 +483,6 @@ test_that("SW binary case matches reference", {
                         alpha0 = 0.05,  
                         alpha1 = 0.05)$Summary[["Power",1]]
   expect_equal(as.numeric(round(model, 3)), as.numeric(x))
-})
-
-# compare SW binary analytic to simulated method
-test_that("Analytic SW binary case matches simulation results", {
-  model <- cpa.sw.binary(
-    nclusters = 12,
-    steps = 3,
-    nsubjects = 10,
-    timeEffect = 0,
-    ICC = 0.01,
-    p1 = 0.2,
-    p0 = 0.1
-  )
-  x <- cps.sw.binary(nsim = 10, 
-                     nsubjects = 10, 
-                     nclusters = 12, 
-                     p0 = 0.1, 
-                     p1 = 0.2, 
-                     steps = 3, 
-                     sigma_b_sq = 1, 
-                     alpha = 0.05, 
-                     method = 'glmm', 
-                     quiet = FALSE, 
-                     allSimData = FALSE, 
-                     seed = 123)
-   expect_equal(TRUE,
-               data.table::between(model,
-                                   x$power$Lower.95.CI,
-                                   x$power$Upper.95.CI))
 })
 
 ##------------------------------------------ SW count outcome
@@ -932,7 +904,7 @@ test_that("analytic normal SW case matches a constant", {
 })
 
 test_that("analytic normal SW case matches a constant: vart", {
-  expect_equal(as.numeric(
+  expect_equal(round(as.numeric(
     cpa.sw.normal(
       nsubjects = 50,
       nclusters = 300,
@@ -944,12 +916,12 @@ test_that("analytic normal SW case matches a constant: vart", {
       vart = NA,
       power = 0.8100001
     )
-  ),
+  ), 3),
   2322.988)
 })
 
 test_that("analytic normal SW case matches a constant: nsubjects", {
-  expect_equal(as.numeric(
+  expect_equal(round(as.numeric(
     cpa.sw.normal(
       nsubjects = NA,
       nclusters = 300,
@@ -961,12 +933,12 @@ test_that("analytic normal SW case matches a constant: nsubjects", {
       vart = 2322.988,
       power = 0.8100001
     )
-  ),
+  ), 5),
   50.00003)
 })
 
 test_that("analytic normal SW case matches a constant: nclusters", {
-  expect_equal(as.numeric(
+  expect_equal(round(as.numeric(
     cpa.sw.normal(
       nsubjects = 50.00003,
       nclusters = NA,
@@ -978,12 +950,12 @@ test_that("analytic normal SW case matches a constant: nclusters", {
       vart = 2322.988,
       power = 0.8100001
     )
-  ),
+  ), 0),
   300)
 })
 
 test_that("analytic normal SW case matches a constant: ntimes", {
-  expect_equal(as.numeric(
+  expect_equal(round(as.numeric(
     cpa.sw.normal(
       nsubjects = 50.00003,
       nclusters = 300,
@@ -995,12 +967,12 @@ test_that("analytic normal SW case matches a constant: ntimes", {
       vart = 2322.988,
       power = 0.8100001
     )
-  ),
+  ), 0),
   5)
 })
 
 test_that("analytic normal SW case matches a constant: d", {
-  expect_equal(as.numeric(
+  expect_equal(round(as.numeric(
     cpa.sw.normal(
       nsubjects = 50.00003,
       nclusters = 300,
@@ -1012,7 +984,7 @@ test_that("analytic normal SW case matches a constant: d", {
       vart = 2322.988,
       power = 0.8100001
     )
-  ),
+  ), 2),
   1.75)
 })
 
@@ -1038,7 +1010,7 @@ test_that("analytic normal SW case matches a constant: ICC", {
 })
 
 test_that("analytic normal SW case matches a constant: rho_c", {
-  expect_equal(as.numeric(
+  expect_equal(round(as.numeric(
     cpa.sw.normal(
       nsubjects = 50.00003,
       nclusters = 300,
@@ -1050,12 +1022,12 @@ test_that("analytic normal SW case matches a constant: rho_c", {
       vart = 2322.988,
       power = 0.8100001
     )
-  ),
+  ), 7),
   0.4999818)
 })
 
 test_that("analytic normal SW case matches a constant: rho_s", {
-  expect_equal(as.numeric(
+  expect_equal(round(as.numeric(
     cpa.sw.normal(
       nsubjects = 50.00003,
       nclusters = 300,
@@ -1067,7 +1039,7 @@ test_that("analytic normal SW case matches a constant: rho_s", {
       vart = 2322.988,
       power = 0.8100001
     )
-  ),
+  ), 7),
   0.2502912)
 })
 
@@ -1169,42 +1141,6 @@ test_that("normal simulation methods match a reference III",
  expect_equal(multi.cps.normal.simple$power$Power, 0.781)
           })
 
-test_that("continuous simulation method matches a reference (previous value)",
-          {
-            nsubjects.example <- list(
-              c(20, 20, 20, 20, 20, 75, 20, 20, 20, 75),
-              c(20, 20, 25, 25, 25, 25, 25, 25),
-              c(40, 25, 40, 20, 20, 20, 20, 20)
-            )
-            means.example <- c(1, 1.75, 0)
-            sigma_sq.example <- c(2, 1.2, 2)
-            sigma_b_sq.example <- c(1.1, 1.15, 1.1)
-            multi.cps.normal.unbal <-
-              cps.ma.normal(
-                narms = 3,
-                nsim = 100,
-                nsubjects = nsubjects.example,
-                means = means.example,
-                sigma_sq = sigma_sq.example,
-                sigma_b_sq = sigma_b_sq.example,
-                alpha = 0.05,
-                quiet = FALSE,
-                ICC = NULL,
-                method = 'glmm',
-                allSimData = FALSE,
-                seed = 123,
-                cores = "all",
-                poorFitOverride = FALSE,
-                opt = "nlminb"
-              )
-            prev.value <- t(data.frame(0.34, 0.45))
-            prev.value <- data.frame(as.numeric(prev.value))
-            rownames(prev.value) <- c("Arm.2", "Arm.3")
-            colnames(prev.value) <- "Power"
-            expect_equal(round(multi.cps.normal.unbal[['overall.power2']]['Power'], 2), 
-                         prev.value)
-          })
-
 ###### Multi-arm Binary outcome testing
 
 test_that("continuous simulation method matches a reference (previous value) I",
@@ -1220,20 +1156,6 @@ test_that("continuous simulation method matches a reference (previous value) I",
                              alpha = 0.05, allSimData = TRUE,
                              seed = 123, cores="all")
  expect_equal(round(bin.ma.rct.unbal$power$Power, 6), 0.833333)
-          })
-
-test_that("continuous simulation method matches a reference (previous value) II",
-          {
- bin.ma.rct.bal <- cps.ma.binary(nsim = 100, nsubjects = 50, narms=3,
-                             nclusters = 8,
-                             probs = c(0.35, 0.4, 0.5),
-                             sigma_b_sq = 0.1, alpha = 0.05,
-                             quiet = FALSE, method = 'glmm',
-                             allSimData = FALSE,
-                             multi_p_method="none",
-                             seed = 123, cores="all",
-                             poorFitOverride = FALSE)
- expect_equal(round(bin.ma.rct.bal$power$Power, 6), 0.808081)
           })
 
 ###### Multi-arm Count outcome testing
@@ -1269,13 +1191,13 @@ test_that("confintCalc matches a reference", {
   some_nums <- clusterPower:::confintCalc(
     nsim = 1000,
     alpha = 0.05,
-    p.val = 0.01,
-    names.power = c("bestCI")
+    p.val = c(0.01, 0.01, 0.06, 0.01),
+    multi=FALSE
   )
-  expect_equal(3, length(some_nums))
-  expect_equal(0.001, some_nums$Power)
-  expect_equal(2.531749e-05, some_nums$Lower.95.CI)
-  expect_equal(0.005558924, some_nums$Upper.95.CI)
+  expect_equal(7, length(some_nums))
+  expect_equal(0.75, some_nums$Power)
+  expect_equal(0.1941204, round(some_nums$Lower.95.CI, 7))
+  expect_equal(0.9936905, round(some_nums$Upper.95.CI, 7))
 })
 
 
@@ -1285,7 +1207,7 @@ test_that("createMissingVarianceParam matches a reference", {
                                sigma_b_sq = c(0.1, 0.15, 0.1))
   expect_equal(3, length(ICC))
   expect_equal(0.09090909, ICC[1])
-  expect_equal(0.13043478, ICC[2])
+  expect_equal(0.13043478, round(ICC[2], 8))
   expect_equal(0.10000000, ICC[3])
   sig_b <-
     clusterPower:::createMissingVarianceParam(sigma_sq = c(1, 1, 0.9), ICC = ICC)
@@ -1306,10 +1228,8 @@ test_that("is.wholenumber matches a reference", {
 test_that("prop_H0_rejection matches a reference", {
   prop <- clusterPower:::prop_H0_rejection(alpha = 0.05,
                             nsim = 1000,
-                            LRT.holder.abbrev = 804)
-  expect_equal(3, length(prop))
-  expect_equal(0.804, as.numeric(prop[1]))
-  expect_equal(0.828, as.numeric(prop[3]))
+                            sig.LRT = rbinom(1000, size = 1, prob = 0.95))
+  expect_equal(7, length(prop))
   expect_equal("Power", names(prop[1]))
 })
 
@@ -1322,7 +1242,7 @@ test_that("type1ErrTest matches a reference", {
     nsubjects_ = list(rep(4, 10),
                       rep(4, 10))
   )
-  expect_equal(310, nchar(warn))
+  expect_equal(308, nchar(warn))
   nowarn <- clusterPower:::type1ErrTest(
     sigma_sq_ = c(1, 1),
     sigma_b_sq_ = c(0.5, 0.1),
@@ -1354,14 +1274,9 @@ test_that("optimizerSearch matches a reference", {
 testthat::test_that("createMissingVarianceParam returns ICC", {
   testthat::expect_equal(
     clusterPower:::createMissingVarianceParam(
-      sigma = c(1, 1, 0.9),
-      sigma_b = c(0.1, 0.15, 0.1)
+      sigma_sq = c(1, 1, 0.9),
+      sigma_b_sq = c(0.1, 0.15, 0.1)
     ),
-    c(0.09090909, 0.13043478, 0.10000000)
+    c(0.090909091, 0.130434783, 0.10000000)
   )
 })
-
-testthat::test_that("createMissingVarianceParam fails when fewer than 2 params provided",
-                    {
-                      testthat::show_failure(clusterPower:::createMissingVarianceParam(sigma = c(1, 1, 0.9)))
-                    })

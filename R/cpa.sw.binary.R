@@ -50,16 +50,16 @@
 #' 
 #' # Estimate power for a trial with 3 steps and 9 clusters at the 
 #' # initiation of the study. Those 
-#' # clusters have 20 subjects each with no time effects. 
+#' # clusters have 14 subjects each with no time effects. 
 #' # We estimated arm outcome proportions of 
 #' # 0.2 (pre-treatment) and 0.31 (post-treatment) and intracluster 
 #' # correlation coefficient (ICC) of 0.05. 
-#' # The resulting power should be 0.7974636.
+#' # The resulting power should be 0.7992842.
 #' 
 #' \dontrun{
 #' sw.bin <- cpa.sw.binary(nclusters = 9,
-#'   steps = 4,
-#'   nsubjects = 20,
+#'   steps = 3,
+#'   nsubjects = 14,
 #'   timeEffect = 0,
 #'   ICC = 0.05,
 #'   p1 = 0.31,
