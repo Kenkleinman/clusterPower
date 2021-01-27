@@ -9,7 +9,6 @@
 #' @author Alexandria Sakrejda (\email{acbro0@@umass.edu})
 #' 
 #' @export
-#' @noRd
 runExample <- function(appname = "main") {
   # find the examples
   validappnames <- list.files(system.file("shiny-examples", package = "clusterPower"))

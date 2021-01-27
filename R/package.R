@@ -8,7 +8,8 @@
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @importFrom shiny checkboxInput numericInput selectInput sliderInput textInput
 #' @importFrom foreach %dopar% %do%
-#' 
+#' @importFrom utils getAnywhere lsf.str
+#' @import mathjaxr
 #' 
 #' @noRd
 NULL

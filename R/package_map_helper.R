@@ -1,18 +1,19 @@
 #' Look up which internal functions are called by exported functions.
 #'
-#' @param packageName The name of the package in quotes. Defaults to "clusterPower".
-#'
 #' @author Alexandria Sakrejda (\email{acbro0@@umass.edu})
 #'
+#' @param packageName The name of the package in quotes. Defaults to "clusterPower".
+#'
+#' @return List of internal functions and the line numbers in which they appear 
+#' inside external functions.
+#'
 #' @export
-#' @noRd
-
 
 package_map_helper <-
   function(packageName = "clusterPower") {
     toSearchWithin <-
       function(exported_fxn_name) {
-        temp <- deparse(getAnywhere(exported_fxn_name)[[2]][[1]])
+        temp <- deparse(utils::getAnywhere(exported_fxn_name)[[2]][[1]])
         names(temp) <- exported_fxn_name
         return(temp)
       }
@@ -36,12 +37,12 @@ package_map_helper <-
     
     findFortran <- function(allx) {
       out <-
-        any(grepl(x = attributes(getAnywhere(allx)[["objs"]][[1]])$class, pattern = "FortranRoutine"))
+        any(grepl(x = attributes(utils::getAnywhere(allx)[["objs"]][[1]])$class, pattern = "FortranRoutine"))
       return(out)
     }
     
     pck <- paste0("package:", packageName, sep = "")
-    y <- lsf.str(pck)
+    y <- utils::lsf.str(pck)
     attributes(y) <- NULL
     holder <- list()
     holder <- lapply(y, toSearchWithin)
