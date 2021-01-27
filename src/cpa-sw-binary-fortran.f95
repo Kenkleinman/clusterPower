@@ -502,10 +502,6 @@ end subroutine syminverse
 
         c(l) = x / w(irow)
 
-        if ( icol <= irow ) then
-          exit
-        end if
-
         mdiag = mdiag - icol
         icol = icol - 1
         jcol = jcol - 1
@@ -517,9 +513,6 @@ end subroutine syminverse
     ndiag = ndiag - irow
     irow = irow - 1
 
-    if ( irow <= 0 ) then
-      exit
-    end if
 
   end do
 
@@ -659,10 +652,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
       end do
 
       l = l + 1
-
-      if ( irow == icol ) then
-        exit
-      end if
 
       if ( u(l) /= 0.0D+00 ) then
 
@@ -1126,10 +1115,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
 
       temp2 = r8_gamma ( 0.5D+00 )
 
-      if ( 500.0D+00 * temp .lt. abs ( temp2 * temp2 - pi ) ) then
-        stop 1
-      end if
-
       if ( kind .eq. 1 ) then
 
         ab = 0.0D+00
@@ -1481,9 +1466,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
             go to 30
           end if
 
-          if ( itn .le. j ) then
-            stop 1
-          end if
 
           j = j + 1
           g = ( d(l+1) - p ) / ( 2.0D+00 * e(l) )
@@ -1679,30 +1661,11 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
       integer m
       double precision tmp
 
-      if ( kind .le. 0 ) then
-        stop 1
-      end if
-!
-!  Check ALPHA for Gegenbauer, Jacobi, Laguerre, Hermite, Exponential.
-!
-      if ( 3 .le. kind .and. kind .le. 8 .and. &
-        alpha .le. -1.0D+00 ) then
-        stop 1
-      end if
-!
-!  Check BETA for Jacobi.
-!
-      if ( kind .eq. 4 .and. beta .le. -1.0D+00 ) then
-        stop 1
-      end if
-!
+
 !  Check ALPHA and BETA for rational.
 !
       if ( kind .eq. 8 ) then
         tmp = alpha + beta + m + 1.0D+00
-        if ( 0.0D+00 .le. tmp .or. tmp .le. beta ) then
-          stop 1
-        end if
       end if
 
       return
@@ -1857,9 +1820,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
         al = 0.0D+00
         be = 0.0D+00
 
-        if ( abs ( b - a ) .le. temp ) then
-          stop 1
-        end if
 
         shft = ( a + b ) / 2.0D+00
         slp = ( b - a ) / 2.0D+00
@@ -1869,10 +1829,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
         al = -0.5D+00
         be = -0.5D+00
 
-        if ( abs ( b - a ) .le. temp ) then
-          stop 1
-        end if
-
         shft = ( a + b ) / 2.0D+00
         slp = ( b - a ) / 2.0D+00
 
@@ -1880,10 +1836,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
 
         al = alpha
         be = alpha
-
-        if ( abs ( b - a ) .le. temp ) then
-          stop 1
-        end if
 
         shft = ( a + b ) / 2.0D+00
         slp = ( b - a ) / 2.0D+00
@@ -1893,18 +1845,10 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
         al = alpha
         be = beta
 
-        if ( abs ( b - a ) .le. temp ) then
-          stop 1
-        end if
-
         shft = ( a + b ) / 2.0D+00
         slp = ( b - a ) / 2.0D+00
 
       else if ( kind .eq. 5 ) then
-
-        if ( b .le. 0.0D+00 ) then
-          stop 1
-        end if
 
         shft = a
         slp = 1.0D+00 / b
@@ -1913,9 +1857,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
 
       else if ( kind .eq. 6 ) then
 
-        if ( b .le. 0.0D+00 ) then
-          stop 1
-        end if
 
         shft = a
         slp = 1.0D+00 / sqrt ( b )
@@ -1927,18 +1868,11 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
         al = alpha
         be = 0.0D+00
 
-        if ( abs ( b - a ) .le. temp ) then
-          stop 1
-        end if
-
         shft = ( a + b ) / 2.0D+00
         slp = ( b - a ) / 2.0D+00
 
       else if ( kind .eq. 8 ) then
 
-        if ( a + b .le. 0.0D+00 ) then
-          stop 1
-        end if
 
         shft = a
         slp = a + b
@@ -1949,10 +1883,6 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
 
         al = 0.5D+00
         be = 0.5D+00
-
-        if ( abs ( b - a ) .le. temp ) then
-          stop 1
-        end if
 
         shft = ( a + b ) / 2.0D+00
         slp = ( b - a ) / 2.0D+00
@@ -2037,12 +1967,7 @@ subroutine cholesky ( a, n, nn, u, nullty, ifault )
       double precision t(nt)
       double precision wts(nt)
       double precision zemu
-!
-!  Exit if the zero-th moment is not positive.
-!
-      if ( zemu .le. 0.0D+00 ) then
-        stop 1
-      end if
+
 !
 !  Set up vectors for IMTQLX.
 !
