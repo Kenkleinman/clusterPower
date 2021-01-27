@@ -272,7 +272,7 @@ cps.ma.count.internal <-
       ## Create clusters and initialize the progress bar
       cl <-
         parallel::makeCluster(rep("localhost", nc), type = "SOCK")
-      doSNOW::registerDoSNOW(cl)
+      doParallel::registerDoParallel(cl)
     }
     pb <- txtProgressBar(min = 1, max = nsim, style = 3)
     progress <- function(n)
@@ -372,7 +372,7 @@ cps.ma.count.internal <-
         }
         my.mod <- foreach::foreach(
           i = 1:nsim,
-          .options.snow = opts,
+          .options.parallel = opts,
           .packages = c("lme4", "optimx", "nloptr"),
           .inorder = FALSE
         ) %fun% {
@@ -411,7 +411,7 @@ cps.ma.count.internal <-
         }
         my.mod <- foreach::foreach(
           i = 1:nsim,
-          .options.snow = opts,
+          .options.parallel = opts,
           .packages = c("lme4", "optimx", "nloptr"),
           .inorder = FALSE
         ) %fun% {
@@ -497,7 +497,7 @@ cps.ma.count.internal <-
       # get the overall p-values (>Chisq)
       model.compare <- foreach::foreach(
         i = 1:nsim,
-        .options.snow = opts,
+        .options.parallel = opts,
         .packages = "car",
         .inorder = FALSE
       ) %fun% {
@@ -517,7 +517,7 @@ cps.ma.count.internal <-
       model.values <-
         foreach::foreach(
           i = 1:nsim,
-          .options.snow = opts,
+          .options.parallel = opts,
           .packages = "car",
           .inorder = FALSE
         ) %fun% {
@@ -592,7 +592,7 @@ cps.ma.count.internal <-
       if (family == "poisson") {
         my.mod <- foreach::foreach(
           i = 1:nsim,
-          .options.snow = opts,
+          .options.parallel = opts,
           .packages = "geepack",
           .inorder = FALSE
         ) %fun% {
@@ -607,7 +607,7 @@ cps.ma.count.internal <-
       if (family == "quasipoisson") {
         my.mod <- foreach::foreach(
           i = 1:nsim,
-          .options.snow = opts,
+          .options.parallel = opts,
           .packages = "geepack",
           .inorder = FALSE
         ) %fun% {

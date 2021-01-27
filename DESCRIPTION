@@ -1,11 +1,11 @@
 Package: clusterPower
 Version: 0.7.0
-Date: 2018-02-06	
+Date: 2021-01-27	
 Title: Power Calculations for Cluster-Randomized and Cluster-Randomized Crossover Trials
-Maintainer: Ken Kleinman, <ken.kleinman@gmail.com>
+Maintainer: Ken Kleinman <ken.kleinman@gmail.com>
 Authors@R: c(
   person("Ken", "Kleinman", email = "ken.kleinman@gmail.com", rol = c("aut","cre")),
-  person("Alexandria", "Sakrejda", email = "acbro0@schoolph.umass.edu", rol = c("aut")),
+  person("Alexandria", "Sakrejda", email = "alexandria.sakrejda@gmail.com", rol = c("aut")),
   person("Jon", "Moyer", email = "jon.moyer@gmail.com", rol = c("aut")),
   person("Joshua", "Nugent", email = "joshuanugent@gmail.com", rol = c("aut")),
   person("Nicholas", "Reich", email = "nick@schoolph.umass.edu", rol = c("aut")),
@@ -22,26 +22,24 @@ Imports: lme4 (>= 1.0),
     nlme (>= 3.1-149),
     foreach (>= 1.5.0),
     shiny (>= 1.0.5),
-    methods (>= 4.0.0)
+    methods (>= 4.0.0),
+    mathjaxr
 Description: Calculate power for cluster randomized trials (CRTs) that compare two means, two proportions, or two counts using closed-form solutions. In addition, calculate power for cluster randomized crossover trials (including multi-arm designs) using Monte Carlo methods. For more information, see Reich et al. (2012) <doi:10.1371/journal.pone.0035564>.
 Suggests: 
     MASS (<= 7.3-53),
     geepack (>= 1.2),
     nloptr (>= 1.2.2.2),
     optimx (>= 2020-4.2),
-    doSNOW (>= 1.0.18),
     doParallel (>= 1.0.15),
     shinyBS (>= 0.61),
     tidyverse (>= 1.1.1),
     DT (>= 0.2),
     stringr (>= 1.2.0),
     CRTSize,
-    SWSamp,
     data.table,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
-    mathjaxr,
     shinycssloaders
 RdMacros: mathjaxr
 VignetteBuilder: knitr

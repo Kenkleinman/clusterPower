@@ -239,7 +239,7 @@ cps.ma.binary.internal <-
       ## Create clusters and initialize the progress bar
       cl <-
         parallel::makeCluster(rep("localhost", nc), type = "SOCK")
-      doSNOW::registerDoSNOW(cl)
+      doParallel::registerDoParallel(cl)
     }
     pb <- txtProgressBar(min = 1, max = nsim, style = 3)
     progress <- function(n)
@@ -311,7 +311,7 @@ cps.ma.binary.internal <-
       
       my.mod <- foreach::foreach(
         i = 1:nsim,
-        .options.snow = opts,
+        .options.parallel = opts,
         .packages = c("lme4", "optimx"),
         .inorder = FALSE
       ) %fun% {
@@ -360,7 +360,7 @@ cps.ma.binary.internal <-
       # get the overall p-values (>Chisq)
       model.compare <- foreach::foreach(
         i = 1:nsim,
-        .options.snow = opts,
+        .options.parallel = opts,
         .packages = c("car", "optimx"),
         .inorder = FALSE
       ) %fun% {
@@ -410,7 +410,7 @@ cps.ma.binary.internal <-
       model.values <-
         foreach::foreach(
           i = 1:nsim,
-          .options.snow = opts,
+          .options.parallel = opts,
           .packages = "car",
           .inorder = FALSE
         ) %fun% {
@@ -488,7 +488,7 @@ cps.ma.binary.internal <-
       
       my.mod <- foreach::foreach(
         i = 1:nsim,
-        .options.snow = opts,
+        .options.parallel = opts,
         .packages = "geepack",
         .inorder = FALSE
       ) %fun% {

@@ -503,29 +503,6 @@ testthat::test_that("SW count case matches reference", {
   testthat::expect_equal(round(model, 6), x)
 })
 
-# compare to a HH.count
-testthat::test_that("SW count case matches HH.count", {
-  model <-
-    cpa.sw.count(
-      lambda1 = 1.75,
-      RR = 0.9,
-      nclusters = 21,
-      steps = 6,
-      nsubjects = 30,
-      ICC = 0.01
-    )
-  x <-
-    SWSamp::HH.count(
-      lambda1 = 1.75,
-      RR = 0.9,
-      I = 21,
-      J = 6,
-      K = 30,
-      rho = 0.01
-    )$power
-  testthat::expect_equal(model, x)
-})
-
 # compare to simulated method
 testthat::test_that("SW analytic count case matched simulated outcome", {
   model <-
@@ -1043,35 +1020,6 @@ test_that("analytic normal SW case matches a constant: rho_s", {
   0.2502912)
 })
 
-
-test_that("analytic normal SW case matches a function from SWSamp pkg", {
-  expect_equal(as.numeric(
-    cpa.sw.normal(
-      alpha = 0.05,
-      power = NA,
-      nclusters = 4,
-      nsubjects = 20,
-      ntimes = 4,
-      d = 5,
-      ICC = 0.05,
-      rho_c = 1,
-      rho_s = 0,
-      vart = 400
-    )
-  ),
-  as.numeric(
-    SWSamp::HH.normal(
-      mu = 0,
-      b.trt = 5,
-      sigma = sqrt(400),
-      I = 4 * 4,
-      J = 4,
-      K = 20,
-      rho = 0.05,
-      which.var = "total"
-    )$power
-  ))
-})
 
 
 #######################################
