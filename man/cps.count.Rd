@@ -166,11 +166,11 @@ mean count instead of the "mean event per unit time" in the preceding paragraph.
 }
 \details{
 If \code{family = 'poisson'}, the data generating model is:
-\mjsdeqn{y_{ij} \sim \text{Poisson}(e^{c_1 + b_i}) }
+\mjsdeqn{y_{ij} \sim \code{Poisson}(e^{c_1 + b_i}) }
 for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)},
 while for the second group,
 
-\mjsdeqn{y_{ij} \sim \text{Poisson}(e^{c_2 + b_i}) }
+\mjsdeqn{y_{ij} \sim \code{Poisson}(e^{c_2 + b_i}) }
 where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if
 \mjseqn{\sigma_{b_2}^2} is not specified, then the second group uses
 \mjseqn{b_i \sim N(0,\sigma_b^2)}.
@@ -179,12 +179,12 @@ If \code{family = 'neg.bin'}, the data generating model, using the
 alternative parameterization of the negative binomial distribution
 detailed in \code{stats::rnbinom}, is:
 
-\mjsdeqn{y_{ij} \sim \text{NB}(\mu = e^{c_1 + b_i}, \text{size} = 1) }
+\mjsdeqn{y_{ij} \sim \code{NB}(\mu = e^{c_1 + b_i}, \code{size} = 1) }
 
 for the first group or arm, where \mjseqn{b_i \sim N(0,\sigma_b^2)},
 while for the second group,
 
-\mjsdeqn{y_{ij} \sim \text{NB}(\mu = e^{c_2 + b_i}, \text{size} = 1) }
+\mjsdeqn{y_{ij} \sim \code{NB}(\mu = e^{c_2 + b_i}, \code{size} = 1) }
 where \mjseqn{b_i \sim N(0,\sigma_{b_2}^2)}; if
 \mjseqn{\sigma_{b_2}^2} is not specified, then the second group uses
 \mjseqn{b_i \sim N(0,\sigma_b^2)}.
