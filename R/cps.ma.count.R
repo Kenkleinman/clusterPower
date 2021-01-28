@@ -183,14 +183,14 @@
 #' @details
 #'
 #' If \code{family = 'poisson'}, the data generating model is:
-#' \mjsdeqn{y_{ijk} \sim \text{Poisson}(e^{c_k + b_{jk}}) }
+#' \mjsdeqn{y_{ijk} \sim \code{Poisson}(e^{c_k + b_{jk}}) }
 #' for observation \mjseqn{i}, in cluster \mjseqn{j}, in treatment arm \mjseqn{k}, where \mjseqn{b_{jk}\sim N(0,\sigma^2_{b_{k}})}.
 #'
 #' If \code{family = 'neg.bin'}, the data generating model, using the
 #' alternative parameterization of the negative binomial distribution
 #' detailed in \code{stats::rnbinom}, is:
 #'
-#' \mjsdeqn{y_{ijk} \sim \text{NB}(\mu = e^{c_k + b_{jk}}, \text{size} = 1) }
+#' \mjsdeqn{y_{ijk} \sim \code{NB}(\mu = e^{c_k + b_{jk}}, \code{size} = 1) }
 #'
 #' for observation \mjseqn{i}, in cluster \mjseqn{j}, in treatment arm \mjseqn{k}, where \mjseqn{b_{jk}\sim N(0,\sigma^2_{b_{k}})}.
 #'
