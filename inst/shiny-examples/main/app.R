@@ -86,28 +86,6 @@ nsubjectsdelim <-
 
 
 
-# returns the vignette for the help section link
-get_vignette_link <- function(...) {
-  x <- vignette(...)
-  
-  if (nzchar(out <- x$PDF)) {
-    ext <- tools::file_ext(out)
-    port <- if (tolower(ext) == "html")
-      tools::startDynamicHelp(NA)
-    else
-      0L
-    if (port > 0L) {
-      out <- sprintf("http://127.0.0.1:%d/library/%s/doc/%s",
-                     port,
-                     basename(x$Dir),
-                     out)
-      return(out)
-    }
-  }
-  stop("no html help found")
-}
-
-
 ui <- fluidPage(
   theme = shinytheme("united"),
   h1(
@@ -2072,7 +2050,6 @@ ui <- fluidPage(
         ####  DEBUG ACCESS PANEL START #####
         conditionalPanel(
           "input.debug == true",
-          actionButton("browser", "browser"),
           textInput("debugSearch", "Search input", value = ""),
           tableOutput("show_inputs")
         )
@@ -2115,14 +2092,17 @@ ui <- fluidPage(
           HTML(
             "<p>This table shows the values that the Shiny app passes
                    to the R functions.</p>
-            <p>Note: for more advanced features, see the clusterPower R package.</p>"
+            <p>Note: for more advanced features, see the"
           ),
-          checkboxInput("showHelp", "Show help documentation", value = FALSE)
+          tags$a(
+            " clusterPower R package.",
+            href = "https://cran.r-project.org/web/packages/clusterPower/clusterPower.pdf",
+            target = "_blank"
+          )
         ),
         fluidRow(
           column(width = 6, tableOutput("tracker")),
-          column(width = 6),
-          conditionalPanel("input.showHelp == true", htmlOutput("helpdetails"))
+          column(width = 6)
         ),
         downloadButton(
           "downloadData",
@@ -2159,7 +2139,7 @@ ui <- fluidPage(
         ),
         tags$a(
           "clusterPower vignette.",
-          href = get_vignette_link("clusterpower", package = "clusterPower"),
+          href = "https://cran.r-project.org/web/packages/clusterPower/vignettes/clusterpower.html",
           target = "_blank"
         ),
         HTML(
@@ -3167,28 +3147,7 @@ server <- function(input, output, session) {
     AllInputs()
   })
   
-  observeEvent(input$browser, {
-    browser()
-  })
-  
   ######################################### END DEBUG table
-  
-  #embedded documentation
-  
-  helplink <- function(fxnName = input$fxnName) {
-    help <- sprintf(
-      "http://127.0.0.1:%d/library/clusterPower/html/%s",
-      tools::startDynamicHelp(NA),
-      paste0(input$fxnName, ".html")
-    )
-    return(help)
-  }
-  
-  output$helpdetails <- renderUI({
-    tags$iframe(src = helplink(),
-                height = 600,
-                width = 600)
-  })
   
   #create the graphing table
   observeEvent(req(out1$power$power), {
