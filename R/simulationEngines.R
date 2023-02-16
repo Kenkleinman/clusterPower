@@ -496,7 +496,7 @@ make.base.data <- function(n.obs, n.clusters,
 #' 
 #' The expit and logit functions are useful shortcuts when using logistic regression models.
 #' 
-#' The logit function is defined as logit(p) = log(p)/log(1-p) and can also be 
+#' The logit function is defined as logit(p) = log(p/(1-p)) and can also be 
 #'   described as the log odds of a given probability. The expit is the inverse 
 #'   of the logit function and is defined as expit(x) = exp(x)/(1+exp(x)).
 #'   
