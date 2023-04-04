@@ -218,8 +218,8 @@ cps.ma.binary <- function(nsim = 1000,
   }
   
   # nsubjects must be whole numbers
-  if (sum(is.wholenumber(unlist(nsubjects)) == FALSE) != 0 ||
-      unlist(nsubjects) < 1) {
+  if (sum(is.wholenumber(unlist(nsubjects)) == FALSE) != 0 || 
+    any(unlist(nsubjects) < 1)) {
     stop("nsubjects must be positive integer values.")
   }
   

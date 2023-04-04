@@ -19,7 +19,7 @@ confintCalc <- function(alpha = alpha,
                         p.val = p.val,
                         nsim = nsim,
                         multi = FALSE) {
-  sig.val <-  ifelse(p.val < alpha, 1, 0)
+  sig.val <- sapply(p.val, function(x) ifelse(x < alpha, 1, 0))
   if (isTRUE(is.data.frame(sig.val)) ||
       isTRUE(is.matrix(sig.val))) {
     pval.power <- apply(sig.val, 2, FUN = sum)
