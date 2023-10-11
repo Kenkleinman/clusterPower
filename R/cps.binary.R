@@ -254,7 +254,7 @@ cps.binary = function(nsim = NULL,
   if (!is.wholenumber(nsim) || nsim < 1) {
     stop(paste0("NSIM", min1.warning))
   }
-  if (!is.wholenumber(nsubjects) || nsubjects < 1) {
+  if (any(!is.wholenumber(nsubjects) | nsubjects < 1)) {
     stop(paste0("NSUBJECTS", min1.warning))
   }
   if (!is.wholenumber(nclusters) || nclusters < 1) {
